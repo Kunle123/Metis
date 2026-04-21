@@ -67,6 +67,10 @@ export default async function BriefPage({ searchParams }: { searchParams?: Promi
 
   const briefVersion = await ensureLatestBriefVersion(activeIssue.id, mode);
   const artifact = (briefVersion?.artifact ?? null) as BriefArtifact | null;
+  const linkedSources = await prisma.source.findMany({
+    where: { issueId: activeIssue.id },
+    orderBy: [{ createdAt: "asc" }],
+  });
 
   const title = mode === "full" ? "Full Issue Brief" : "Executive Brief";
   const artifactMetadata = artifact
@@ -89,7 +93,7 @@ export default async function BriefPage({ searchParams }: { searchParams?: Promi
       confidence: s.confidence,
     }));
 
-  const evidenceItems = Array.from(new Set(sections.flatMap((s) => s.evidenceRefs))).slice(0, 3);
+  const evidenceItems = linkedSources.slice(0, 12);
 
   return (
     <MetisShell activePath="/brief" pageTitle={title}>
@@ -177,17 +181,21 @@ export default async function BriefPage({ searchParams }: { searchParams?: Promi
               <section className="space-y-3 border-t border-white/8 pt-7">
                 <div className="flex items-center justify-between gap-3">
                   <h3 className="text-[0.78rem] font-medium uppercase tracking-[0.2em] text-[rgba(176,171,160,0.68)]">Sources appendix</h3>
-                  <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{evidenceItems.length} entries</Badge>
+                  <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{linkedSources.length} entries</Badge>
                 </div>
                 <div className="space-y-4">
-                  {evidenceItems.map((id) => (
-                    <div key={id} className="border-t border-white/8 pt-4 first:border-t-0 first:pt-0">
+                  {linkedSources.map((s) => (
+                    <div key={s.id} className="border-t border-white/8 pt-4 first:border-t-0 first:pt-0">
                       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                         <div>
-                          <p className="text-sm font-medium text-[--metis-paper]">{id}</p>
-                          <p className="mt-1 text-[0.72rem] uppercase tracking-[0.2em] text-[--metis-ink-soft]">Linked evidence</p>
+                          <p className="text-sm font-medium text-[--metis-paper]">
+                            {s.sourceCode} · {s.title}
+                          </p>
+                          <p className="mt-1 text-[0.72rem] uppercase tracking-[0.2em] text-[--metis-ink-soft]">
+                            {s.tier} · {s.linkedSection ?? "—"}
+                          </p>
                         </div>
-                        <Badge className="w-fit border-0 bg-white/8 text-[--metis-paper-muted]">In use</Badge>
+                        <Badge className="w-fit border-0 bg-white/8 text-[--metis-paper-muted]">{s.reliability ?? "In use"}</Badge>
                       </div>
                     </div>
                   ))}
@@ -292,14 +300,16 @@ export default async function BriefPage({ searchParams }: { searchParams?: Promi
                     <p className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Evidence</p>
                   </div>
                   {evidenceItems.length ? (
-                    evidenceItems.map((id) => (
-                      <div key={id} className="border-t border-white/8 pt-3 first:border-t-0 first:pt-0">
+                    evidenceItems.map((s) => (
+                      <div key={s.id} className="border-t border-white/8 pt-3 first:border-t-0 first:pt-0">
                         <div className="flex items-start justify-between gap-3">
                           <div>
-                            <p className="text-sm font-medium text-[--metis-paper]">{id}</p>
-                            <p className="mt-1 text-[0.68rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Linked evidence</p>
+                            <p className="text-sm font-medium text-[--metis-paper]">{s.sourceCode}</p>
+                            <p className="mt-1 text-[0.68rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">
+                              {s.tier} · {s.linkedSection ?? "—"}
+                            </p>
                           </div>
-                          <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">In use</Badge>
+                          <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{s.reliability ?? "In use"}</Badge>
                         </div>
                       </div>
                     ))

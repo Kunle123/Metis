@@ -21,6 +21,7 @@ model Issue {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   briefVersions BriefVersion[]
+  sources       Source[]
 
   @@index([updatedAt])
 }
@@ -38,5 +39,25 @@ model BriefVersion {
 
   @@index([issueId, mode, createdAt])
   @@unique([issueId, mode, versionNumber])
+}
+
+model Source {
+  id             String   @id @default(uuid())
+  issueId         String
+  sourceCode      String
+  tier           String
+  title          String
+  note           String?
+  snippet        String?
+  reliability    String?
+  linkedSection  String?
+  url            String?
+  timestampLabel String?
+  createdAt      DateTime @default(now())
+
+  issue Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+
+  @@index([issueId, tier, createdAt])
+  @@unique([issueId, sourceCode])
 }
 
