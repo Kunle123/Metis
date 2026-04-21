@@ -142,7 +142,7 @@ export default async function DashboardPage() {
                       </div>
                     </div>
                     <Link
-                      href={index === 0 ? "/brief" : "/sources"}
+                      href={index === 0 ? `/issues/${issue.id}/brief?mode=full` : `/issues/${issue.id}/sources`}
                       className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-[--metis-brass-soft] transition group-hover:text-white"
                     >
                       Open workspace
