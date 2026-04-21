@@ -64,7 +64,7 @@
   }
 
   html {
-    scroll-behavior: smooth;
+    scroll-behavior: auto;
   }
 
   body {
@@ -116,7 +116,8 @@
 
   .metis-surface {
     position: relative;
-    overflow: hidden;
+    overflow-x: clip;
+    overflow-y: visible;
     backdrop-filter: blur(20px);
     --metis-surface-bg: linear-gradient(180deg, rgba(32, 39, 41, 0.98), rgba(22, 28, 30, 0.985));
     --metis-surface-border: rgba(255, 255, 255, 0.085);
