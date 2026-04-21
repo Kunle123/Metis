@@ -184,7 +184,7 @@ export function MetisShell({
 
   return (
     <div className="min-h-screen bg-[--background] text-[--foreground]">
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top_left,rgba(164,132,82,0.11),transparent_28%),radial-gradient(circle_at_top_right,rgba(56,84,103,0.08),transparent_18%),radial-gradient(circle_at_bottom_right,rgba(27,59,55,0.12),transparent_24%)]" />
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top_left,rgba(164,132,82,0.08),transparent_28%),radial-gradient(circle_at_top_right,rgba(56,84,103,0.06),transparent_18%),radial-gradient(circle_at_bottom_right,rgba(27,59,55,0.09),transparent_24%)]" />
       <div className="relative grid lg:grid-cols-[286px_minmax(0,1fr)]">
         <aside className="hidden border-r border-white/6 bg-[linear-gradient(180deg,rgba(7,10,11,0.99),rgba(11,15,16,0.985))] px-6 py-8 lg:flex lg:flex-col lg:justify-between">
           <div className="space-y-8">
@@ -306,7 +306,7 @@ export function MetisShell({
         </aside>
 
         <main className="relative min-h-0 min-w-0 px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
-          <div className="mx-auto flex max-w-[1520px] flex-col overflow-x-hidden rounded-[2rem] border border-white/8 bg-[linear-gradient(180deg,rgba(18,23,24,0.94),rgba(10,14,15,0.985))] shadow-[0_32px_120px_rgba(0,0,0,0.52)] backdrop-blur-xl">
+          <div className="mx-auto flex max-w-[1520px] flex-col overflow-x-hidden rounded-[2rem] border border-white/8 bg-[linear-gradient(180deg,rgba(18,23,24,0.94),rgba(10,14,15,0.985))] shadow-[0_32px_120px_rgba(0,0,0,0.52)]">
             <header className="border-b border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.028),rgba(255,255,255,0.012))] px-5 py-5 sm:px-7 lg:px-8">
               <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
                 <div className="space-y-2">
