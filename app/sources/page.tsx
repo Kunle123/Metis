@@ -21,7 +21,7 @@ export default async function SourcesLegacyPage() {
                   Sources is issue-scoped. Choose the issue you want to review and update.
                 </p>
               </header>
-              <IssueSwitcher onSelectHref={(issueId) => `/issues/${issueId}/sources`} />
+              <IssueSwitcher routeKind="sources" />
             </div>
           </div>
         </SurfaceCard>

@@ -59,7 +59,7 @@ export default async function IssueBriefPage({
   const issue = await getIssueById(issueId);
   if (!issue) {
     return (
-      <MetisShell activePath="/brief" pageTitle="Full Issue Brief">
+      <MetisShell activePath="/brief" pageTitle="Full Issue Brief" issueRoutePrefix={`/issues/${issueId}`}>
         <SurfaceCard className="overflow-hidden">
           <div className="px-6 py-6 text-[--metis-paper]">Issue not found.</div>
         </SurfaceCard>
@@ -98,7 +98,7 @@ export default async function IssueBriefPage({
   const evidenceItems = linkedSources.slice(0, 12);
 
   return (
-    <MetisShell activePath="/brief" pageTitle={title}>
+    <MetisShell activePath="/brief" pageTitle={title} issueRoutePrefix={`/issues/${issue.id}`}>
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <SurfaceCard className="overflow-hidden">
           <div className="border-b border-white/8 bg-[rgba(255,255,255,0.025)] px-6 py-5 sm:px-7">

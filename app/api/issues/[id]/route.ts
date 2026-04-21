@@ -26,10 +26,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   }
 
   try {
+    const { openGapsCount: _ignoredOpenGapsCount, ...safeUpdate } = parsed.data;
+
     const updated = await prisma.issue.update({
       where: { id },
       data: {
-        ...parsed.data,
+        ...safeUpdate,
       },
     });
 

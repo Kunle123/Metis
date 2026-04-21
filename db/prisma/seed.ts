@@ -13,7 +13,6 @@ const seededIssues = [
     status: "Ready to brief",
     ownerName: "Amina Shah",
     audience: "CEO, COO, GC",
-    openGapsCount: 17,
     sourcesCount: 9,
   },
   {
@@ -26,7 +25,6 @@ const seededIssues = [
     status: "Active",
     ownerName: "Jonas Reed",
     audience: "Corporate Affairs, Legal",
-    openGapsCount: 3,
     sourcesCount: 11,
   },
   {
@@ -39,7 +37,6 @@ const seededIssues = [
     status: "Monitoring",
     ownerName: "Lena Brooks",
     audience: "External Affairs",
-    openGapsCount: 5,
     sourcesCount: 14,
   },
   {
@@ -52,7 +49,6 @@ const seededIssues = [
     status: "Needs validation",
     ownerName: null,
     audience: "CMO, Sales, Support",
-    openGapsCount: 9,
     sourcesCount: 6,
   },
   {
@@ -65,7 +61,6 @@ const seededIssues = [
     status: "Open gap",
     ownerName: "Priya Nair",
     audience: "CEO, COO, Comms",
-    openGapsCount: 12,
     sourcesCount: 4,
   },
   {
@@ -78,7 +73,6 @@ const seededIssues = [
     status: "Ready for review",
     ownerName: "Miguel Alvarez",
     audience: "Support, Regional Leads",
-    openGapsCount: 4,
     sourcesCount: 7,
   },
 ] as const;
@@ -96,7 +90,6 @@ async function main() {
         status: issue.status,
         ownerName: issue.ownerName,
         audience: issue.audience,
-        openGapsCount: issue.openGapsCount,
         sourcesCount: issue.sourcesCount,
       },
     });

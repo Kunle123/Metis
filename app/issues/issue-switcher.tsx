@@ -12,12 +12,27 @@ type IssueListItem = {
   updatedAt: string;
 };
 
+export type IssueSwitcherRouteKind = "brief" | "sources" | "gaps" | "input";
+
+function hrefForIssueRoute(issueId: string, routeKind: IssueSwitcherRouteKind) {
+  switch (routeKind) {
+    case "brief":
+      return `/issues/${issueId}/brief?mode=full`;
+    case "sources":
+      return `/issues/${issueId}/sources`;
+    case "gaps":
+      return `/issues/${issueId}/gaps`;
+    case "input":
+      return `/issues/${issueId}/input`;
+  }
+}
+
 export function IssueSwitcher({
   initialIssueId,
-  onSelectHref,
+  routeKind,
 }: {
   initialIssueId?: string;
-  onSelectHref: (issueId: string) => string;
+  routeKind: IssueSwitcherRouteKind;
 }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
@@ -74,7 +89,7 @@ export function IssueSwitcher({
                   <button
                     key={i.id}
                     type="button"
-                    onClick={() => router.push(onSelectHref(i.id))}
+                    onClick={() => router.push(hrefForIssueRoute(i.id, routeKind))}
                     className="w-full px-4 py-3 text-left transition hover:bg-white/[0.04]"
                   >
                     <div className="flex items-start justify-between gap-3">

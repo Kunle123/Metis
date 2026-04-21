@@ -1,16 +1,14 @@
 import Link from "next/link";
-import { AlertTriangle, FileOutput, Library, RefreshCcw, ScanSearch } from "lucide-react";
 
-import { ConfidencePill, SurfaceCard, MetisShell } from "@/components/MetisShell";
-import { Badge } from "@/components/ui/badge";
+import { MetisShell, SurfaceCard } from "@/components/MetisShell";
 import { Button } from "@/components/ui/button";
 import { IssueSwitcher } from "@/app/issues/issue-switcher";
 
 export const dynamic = "force-dynamic";
 
-export default async function BriefLegacyPage() {
+export default async function InputLegacyPage() {
   return (
-    <MetisShell activePath="/brief" pageTitle="Brief">
+    <MetisShell activePath="/input" pageTitle="Internal Input">
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <SurfaceCard className="overflow-hidden">
           <div className="px-6 py-6 sm:px-7 sm:py-7">
@@ -18,10 +16,10 @@ export default async function BriefLegacyPage() {
               <header className="space-y-3 border-b border-white/8 pb-6">
                 <h2 className="font-[Cormorant_Garamond] text-[2.15rem] leading-none text-[--metis-paper]">Select an issue</h2>
                 <p className="max-w-3xl text-sm leading-7 text-[--metis-paper-muted]">
-                  Brief is issue-scoped. Choose the issue you want to open.
+                  Internal input is issue-scoped. Choose the issue you want to record against.
                 </p>
               </header>
-              <IssueSwitcher routeKind="brief" />
+              <IssueSwitcher routeKind="input" />
             </div>
           </div>
         </SurfaceCard>
@@ -37,4 +35,3 @@ export default async function BriefLegacyPage() {
     </MetisShell>
   );
 }
-

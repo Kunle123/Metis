@@ -139,7 +139,9 @@ const primaryNav = [
   { id: "input", group: navGroups[1], path: "/input", shortLabel: "Input" },
   { id: "compare", group: navGroups[2], path: "/compare", shortLabel: "Compare" },
   { id: "export", group: navGroups[2], path: "/export", shortLabel: "Export" },
-];
+] as const;
+
+const issueWorkspaceNavIds = new Set<(typeof primaryNav)[number]["id"]>(["brief", "sources", "gaps", "input"]);
 
 export function MetisShell({
   activePath,
@@ -147,14 +149,27 @@ export function MetisShell({
   pageMeta,
   children,
   showOperationalSnapshot,
+  issueRoutePrefix,
 }: {
   activePath: string;
   pageTitle: string;
   pageMeta?: string;
   children: ReactNode;
   showOperationalSnapshot?: boolean;
+  /**
+   * When viewing issue-scoped workspace pages, keep left-rail navigation inside the same issue.
+   * Example: `/issues/<issueId>`
+   */
+  issueRoutePrefix?: string;
 }) {
   const shouldShowOperationalSnapshot = showOperationalSnapshot ?? activePath === "/";
+
+  function navHrefForItem(item: (typeof primaryNav)[number]) {
+    if (issueRoutePrefix && issueWorkspaceNavIds.has(item.id)) {
+      return `${issueRoutePrefix}${item.path}`;
+    }
+    return item.path;
+  }
 
   // Sprint 0: static operational snapshot and active issue preview to preserve Manus shell layout.
   const issueStats = [
@@ -221,7 +236,7 @@ export function MetisShell({
                         return (
                           <Link
                             key={item.id}
-                            href={item.path}
+                            href={navHrefForItem(item)}
                             className={cn(
                               "group relative flex items-start gap-3 overflow-hidden rounded-[1.3rem] border px-4 py-3 transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60",
                               isActive

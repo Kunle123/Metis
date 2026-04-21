@@ -34,7 +34,8 @@ export async function POST(request: Request) {
       status: parsed.data.status,
       ownerName: parsed.data.ownerName ?? null,
       audience: parsed.data.audience ?? null,
-      openGapsCount: parsed.data.openGapsCount ?? 0,
+      // `openGapsCount` is derived from persisted `Gap` rows; ignore any client-provided value.
+      openGapsCount: 0,
       sourcesCount: parsed.data.sourcesCount ?? 0,
     },
   });
