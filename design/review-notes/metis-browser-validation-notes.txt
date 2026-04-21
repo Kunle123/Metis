@@ -1,0 +1,25 @@
+Brief review
+- Header chrome is slightly lighter after removing the audience badge from the deep-screen status strip.
+- Full Issue Brief renders without page-level narration; the artifact body remains intact.
+- The executive commentary block no longer reads like self-referential editorial explanation.
+- The page still shows the operational timestamp pill, which remains acceptable as live workspace metadata.
+
+Sources review
+- Page title now reads "Sources" and the main ledger heading also reads "Sources".
+- Source notes and quoted evidence remain intact.
+- The support rail no longer contains the route-style sentence pointing to /gaps.
+- The replacement line "2 open conflicts" reads as direct operational status and fits the surrounding chrome.
+
+Gaps review
+- The support rail now shows direct counts for input records and resolved gaps rather than route placeholders.
+- The clarification cards still read as operational items, and the ledger remains visually coherent after the copy cleanup.
+- The page title still reads "Clarification Gaps"; it remains acceptable, though slightly more formal than the shortened internal labels elsewhere.
+
+Export review
+- The packaging surface remains concise and operational overall.
+- The screen does not introduce new page-level narration after the pass.
+- One residual line in the preview card, "Package: executive brief.", is still acceptable but slightly more label-like than the surrounding brief language.
+
+Final validation update
+- Export preview now uses the direct line "Internal circulation." instead of the more annotative package label.
+- A final TypeScript check and production build both completed successfully after the last copy polish.
