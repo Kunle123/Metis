@@ -1,0 +1,21 @@
+# OS
+.DS_Store
+
+# Logs
+*.log
+
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+.next/
+
+# Coverage
+coverage/
+
+# Env files
+.env
+.env.*
+
