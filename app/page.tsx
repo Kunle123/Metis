@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Filter, Search, Star, Zap } from "lucide-react";
 
+import { IssueSummaryRow } from "@/components/dashboard/IssueSummaryRow";
 import { MetisShell, SurfaceCard } from "@/components/MetisShell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -97,59 +98,11 @@ export default async function DashboardPage() {
 
             <div className="space-y-4 p-4 sm:p-5">
               {issues.map((issue, index) => (
-                <div
+                <IssueSummaryRow
                   key={issue.id}
-                  className="group grid gap-5 rounded-[1.65rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.015))] p-5 transition hover:border-white/14 hover:bg-white/[0.05] lg:grid-cols-[1.3fr_0.8fr_190px]"
-                >
-                  <div className="space-y-4">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{issue.issueType}</Badge>
-                      <Badge className="border-0 bg-rose-900/35 text-rose-100">{issue.severity}</Badge>
-                      <Badge className="border-0 bg-emerald-950/35 text-emerald-100">{issue.status}</Badge>
-                    </div>
-                    <div>
-                      <h4 className="text-lg font-medium text-[--metis-paper]">{issue.title}</h4>
-                      <p className="mt-3 max-w-3xl text-sm leading-7 text-[--metis-paper-muted]">{issue.summary}</p>
-                    </div>
-                  </div>
-
-                  <div className="rounded-[1.35rem] border border-white/10 bg-[rgba(0,0,0,0.14)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
-                    <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-1">
-                      <div>
-                        <p className="text-[0.68rem] uppercase tracking-[0.24em] text-[--metis-ink-soft]">Owner</p>
-                        <p className="mt-2 text-sm text-[--metis-paper]">{issue.ownerName ?? "—"}</p>
-                      </div>
-                      <div className="border-t border-white/8 pt-4 sm:border-l sm:border-t-0 sm:pl-4 sm:pt-0 lg:border-l-0 lg:border-t lg:pl-0 lg:pt-4">
-                        <p className="text-[0.68rem] uppercase tracking-[0.24em] text-[--metis-ink-soft]">Audience</p>
-                        <p className="mt-2 text-sm text-[--metis-paper]">{issue.audience ?? "—"}</p>
-                      </div>
-                      <div className="border-t border-white/8 pt-4 sm:border-l sm:border-t-0 sm:pl-4 sm:pt-0 lg:border-l-0 lg:border-t lg:pl-0 lg:pt-4">
-                        <p className="text-[0.68rem] uppercase tracking-[0.24em] text-[--metis-ink-soft]">Refreshed</p>
-                        <p className="mt-2 text-sm text-[--metis-paper]">{issue.updatedAt.toLocaleString()}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="rounded-[1.35rem] border border-white/10 bg-[rgba(255,255,255,0.03)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
-                    <div className="grid grid-cols-2 gap-3 border-b border-white/8 pb-4">
-                      <div className="rounded-[1rem] border border-white/10 bg-[rgba(0,0,0,0.16)] p-3">
-                        <p className="text-[0.68rem] uppercase tracking-[0.24em] text-[--metis-ink-soft]">Open gaps</p>
-                        <div className="mt-2 text-2xl text-[--metis-paper]">{issue.openGapsCount}</div>
-                      </div>
-                      <div className="rounded-[1rem] border border-white/10 bg-[rgba(0,0,0,0.16)] p-3">
-                        <p className="text-[0.68rem] uppercase tracking-[0.24em] text-[--metis-ink-soft]">Sources</p>
-                        <div className="mt-2 text-2xl text-[--metis-paper]">{issue.sourcesCount}</div>
-                      </div>
-                    </div>
-                    <Link
-                      href={index === 0 ? `/issues/${issue.id}/brief?mode=full` : `/issues/${issue.id}/sources`}
-                      className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-[--metis-brass-soft] transition group-hover:text-white"
-                    >
-                      Open workspace
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </div>
-                </div>
+                  issue={issue}
+                  workspaceHref={index === 0 ? `/issues/${issue.id}/brief?mode=full` : `/issues/${issue.id}/sources`}
+                />
               ))}
             </div>
           </SurfaceCard>
