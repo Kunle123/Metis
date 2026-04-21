@@ -60,7 +60,7 @@ export default async function IssueBriefPage({
   if (!issue) {
     return (
       <MetisShell activePath="/brief" pageTitle="Full Issue Brief" issueRoutePrefix={`/issues/${issueId}`}>
-        <SurfaceCard className="overflow-hidden">
+        <SurfaceCard>
           <div className="px-6 py-6 text-[--metis-paper]">Issue not found.</div>
         </SurfaceCard>
       </MetisShell>
@@ -100,7 +100,7 @@ export default async function IssueBriefPage({
   return (
     <MetisShell activePath="/brief" pageTitle={title} issueRoutePrefix={`/issues/${issue.id}`}>
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
-        <SurfaceCard className="overflow-hidden">
+        <SurfaceCard>
           <div className="border-b border-white/8 bg-[rgba(255,255,255,0.025)] px-6 py-5 sm:px-7">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="text-[0.62rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">
@@ -227,7 +227,7 @@ export default async function IssueBriefPage({
           )}
         </SurfaceCard>
 
-        <SurfaceCard className="metis-support-surface overflow-hidden">
+        <SurfaceCard className="metis-support-surface">
           <div className="divide-y divide-white/8">
             <div className="space-y-5 px-5 py-5">
               <div className="grid gap-3 rounded-[1.2rem] border border-white/8 bg-[rgba(0,0,0,0.16)] px-4 py-4 text-sm leading-6 text-[--metis-paper-muted]">

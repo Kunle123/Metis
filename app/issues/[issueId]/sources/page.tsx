@@ -51,7 +51,7 @@ export default async function IssueSourcesPage({ params }: { params: Promise<{ i
   if (!issue) {
     return (
       <MetisShell activePath="/sources" pageTitle="Sources" issueRoutePrefix={`/issues/${issueId}`}>
-        <SurfaceCard className="overflow-hidden">
+        <SurfaceCard>
           <div className="px-6 py-6 text-[--metis-paper]">Issue not found.</div>
         </SurfaceCard>
       </MetisShell>
@@ -77,7 +77,7 @@ export default async function IssueSourcesPage({ params }: { params: Promise<{ i
   return (
     <MetisShell activePath="/sources" pageTitle="Sources" issueRoutePrefix={`/issues/${issue.id}`}>
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
-        <SurfaceCard className="overflow-hidden">
+        <SurfaceCard>
           <div className="border-b border-white/8 bg-[rgba(255,255,255,0.025)] px-6 py-5 sm:px-7">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="text-[0.62rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">
@@ -158,7 +158,7 @@ export default async function IssueSourcesPage({ params }: { params: Promise<{ i
           </div>
         </SurfaceCard>
 
-        <SurfaceCard className="metis-support-surface overflow-hidden">
+        <SurfaceCard className="metis-support-surface">
           <div className="divide-y divide-white/8">
             <div className="space-y-3 px-5 py-5">
               {sectionPosture.map((item) => (

@@ -27,7 +27,7 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
 
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
-        <SurfaceCard className="overflow-hidden">
+        <SurfaceCard>
           <div className="border-b border-white/8 bg-[rgba(255,255,255,0.025)] px-6 py-5 sm:px-7">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
@@ -124,7 +124,7 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
           </div>
         </SurfaceCard>
 
-        <SurfaceCard className="metis-support-surface overflow-hidden">
+        <SurfaceCard className="metis-support-surface">
           <div className="divide-y divide-white/8">
             <div className="px-5 py-5 text-sm leading-6 text-[--metis-paper-muted]">
               <div className="space-y-4 rounded-[1.2rem] border border-white/8 bg-[rgba(0,0,0,0.18)] px-4 py-4">

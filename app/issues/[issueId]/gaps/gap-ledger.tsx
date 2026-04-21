@@ -181,7 +181,7 @@ export function GapLedger({
 
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_312px]">
-      <SurfaceCard className="overflow-hidden">
+      <SurfaceCard>
         <div className="border-b border-white/8 bg-[rgba(255,255,255,0.025)] px-6 py-5 sm:px-7">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper]">Clarification gaps</h2>
@@ -369,7 +369,7 @@ export function GapLedger({
         </div>
       </SurfaceCard>
 
-      <SurfaceCard className="metis-support-surface overflow-hidden">
+      <SurfaceCard className="metis-support-surface">
         <div className="divide-y divide-white/8">
           <div className="space-y-3 px-5 py-5">
             <p className="text-[0.68rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">By section</p>
