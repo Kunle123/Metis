@@ -16,7 +16,7 @@
   },
   "prisma": {
     "schema": "db/prisma/schema.prisma",
-    "seed": "ts-node --transpile-only db/prisma/seed.ts"
+    "seed": "tsx db/prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
@@ -36,6 +36,7 @@
     "prisma": "^6.19.3",
     "tailwindcss": "^4.2.4",
     "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
     "typescript": "^6.0.3"
   }
 }
