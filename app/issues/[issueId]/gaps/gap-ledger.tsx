@@ -277,7 +277,7 @@ export function GapLedger({
                     </div>
 
                     <div className="space-y-4 xl:border-l xl:border-white/8 xl:pl-6">
-                      <div className="metis-surface metis-support-surface space-y-3 rounded-[1.15rem] border px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                      <div className="space-y-3 rounded-[1.15rem] border border-white/8 bg-[rgba(0,0,0,0.18)] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
                         <div>
                           <p className="text-[0.68rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Affected section</p>
                           <p className="mt-2 text-sm leading-6 text-[--metis-paper]">{gap.linkedSection}</p>

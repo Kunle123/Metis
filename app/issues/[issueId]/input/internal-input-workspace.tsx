@@ -77,7 +77,7 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
                   <p className="text-base leading-8 text-[--metis-paper]">{primaryInput.response}</p>
                 </div>
 
-                <div className="metis-surface metis-support-surface space-y-3 rounded-[1.2rem] border px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                <div className="space-y-3 rounded-[1.2rem] border border-white/8 bg-[rgba(0,0,0,0.18)] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
                   {captureState.map((item) => (
                     <div key={item.label} className="space-y-2 border-t border-white/8 pt-3 first:border-t-0 first:pt-0">
                       <p className="text-[0.68rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">{item.label}</p>
