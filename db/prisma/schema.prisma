@@ -20,7 +20,23 @@ model Issue {
   sourcesCount  Int      @default(0)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  briefVersions BriefVersion[]
 
   @@index([updatedAt])
+}
+
+model BriefVersion {
+  id                        String   @id @default(uuid())
+  issueId                    String
+  mode                       String
+  versionNumber              Int
+  generatedFromIssueUpdatedAt DateTime
+  artifact                   Json
+  createdAt                  DateTime @default(now())
+
+  issue Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+
+  @@index([issueId, mode, createdAt])
+  @@unique([issueId, mode, versionNumber])
 }
 
