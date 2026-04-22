@@ -40,7 +40,17 @@ export default async function IssueGapsPage({ params }: { params: Promise<{ issu
   }));
 
   return (
-    <MetisShell activePath="/gaps" pageTitle="Gaps" issueRoutePrefix={`/issues/${issue.id}`}>
+    <MetisShell
+      activePath="/gaps"
+      pageTitle="Gaps"
+      issueRoutePrefix={`/issues/${issue.id}`}
+      activeIssue={{
+        title: issue.title,
+        severity: issue.severity,
+        openGapsCount: issue.openGapsCount,
+        updatedAt: issue.updatedAt,
+      }}
+    >
       <GapLedger issueId={issue.id} gaps={gaps} internalInputs={internalInputs} issueOpenGapsCount={issue.openGapsCount} />
     </MetisShell>
   );

@@ -98,7 +98,17 @@ export default async function IssueBriefPage({
   const evidenceItems = linkedSources.slice(0, 12);
 
   return (
-    <MetisShell activePath="/brief" pageTitle={title} issueRoutePrefix={`/issues/${issue.id}`}>
+    <MetisShell
+      activePath="/brief"
+      pageTitle={title}
+      issueRoutePrefix={`/issues/${issue.id}`}
+      activeIssue={{
+        title: issue.title,
+        severity: issue.severity,
+        openGapsCount: issue.openGapsCount,
+        updatedAt: issue.updatedAt,
+      }}
+    >
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <SurfaceCard>
           <div className="border-b border-white/8 bg-[rgba(255,255,255,0.025)] px-6 py-5 sm:px-7">
@@ -126,7 +136,7 @@ export default async function IssueBriefPage({
                   </Link>
                 </div>
                 <Button asChild className="rounded-full bg-[--metis-brass] text-[--metis-dark] hover:bg-[--metis-brass-soft]">
-                  <Link href={`/issues/${issue.id}/export`}>
+                  <Link href={`/issues/${issue.id}/export?mode=${mode}`}>
                     <FileOutput className="mr-2 h-4 w-4" />
                     Prepare output
                   </Link>

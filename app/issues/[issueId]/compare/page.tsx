@@ -78,7 +78,17 @@ export default async function IssueComparePage({
   // 0 versions: show empty state.
   if (!current) {
     return (
-      <MetisShell activePath="/compare" pageTitle="Brief Delta" issueRoutePrefix={`/issues/${issue.id}`}>
+      <MetisShell
+        activePath="/compare"
+        pageTitle="Brief Delta"
+        issueRoutePrefix={`/issues/${issue.id}`}
+        activeIssue={{
+          title: issue.title,
+          severity: issue.severity,
+          openGapsCount: issue.openGapsCount,
+          updatedAt: issue.updatedAt,
+        }}
+      >
         <SurfaceCard>
           <div className="px-6 py-6 text-[--metis-paper]">No brief versions yet.</div>
         </SurfaceCard>
@@ -117,7 +127,17 @@ export default async function IssueComparePage({
   const readinessMovement = compare.summary.readinessMovement ?? [];
 
   return (
-    <MetisShell activePath="/compare" pageTitle="Brief Delta" issueRoutePrefix={`/issues/${issue.id}`}>
+    <MetisShell
+      activePath="/compare"
+      pageTitle="Brief Delta"
+      issueRoutePrefix={`/issues/${issue.id}`}
+      activeIssue={{
+        title: issue.title,
+        severity: issue.severity,
+        openGapsCount: issue.openGapsCount,
+        updatedAt: issue.updatedAt,
+      }}
+    >
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_330px]">
         <SurfaceCard className="overflow-hidden">
           <div className="border-b border-white/8 bg-[rgba(255,255,255,0.025)] px-6 py-5">

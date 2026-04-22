@@ -30,7 +30,17 @@ export default async function IssueInternalInputPage({ params }: { params: Promi
   );
 
   return (
-    <MetisShell activePath="/input" pageTitle="Internal Input" issueRoutePrefix={`/issues/${issue.id}`}>
+    <MetisShell
+      activePath="/input"
+      pageTitle="Internal Input"
+      issueRoutePrefix={`/issues/${issue.id}`}
+      activeIssue={{
+        title: issue.title,
+        severity: issue.severity,
+        openGapsCount: issue.openGapsCount,
+        updatedAt: issue.updatedAt,
+      }}
+    >
       <InternalInputWorkspace issueId={issue.id} inputs={inputs} />
     </MetisShell>
   );

@@ -150,6 +150,7 @@ export function MetisShell({
   children,
   showOperationalSnapshot,
   issueRoutePrefix,
+  activeIssue,
 }: {
   activePath: string;
   pageTitle: string;
@@ -161,6 +162,12 @@ export function MetisShell({
    * Example: `/issues/<issueId>`
    */
   issueRoutePrefix?: string;
+  activeIssue?: {
+    title: string;
+    severity?: string | null;
+    openGapsCount?: number | null;
+    updatedAt?: Date | null;
+  };
 }) {
   const shouldShowOperationalSnapshot = showOperationalSnapshot ?? activePath === "/";
 
@@ -286,18 +293,22 @@ export function MetisShell({
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <h3 className="text-base font-medium leading-6 text-[--metis-paper]">Active issue</h3>
-                    <p className="mt-1 text-sm text-[--metis-paper-muted]">Select an issue from the ledger.</p>
+                    <p className="mt-1 text-sm text-[--metis-paper-muted]">
+                      {activeIssue?.title ?? "Select an issue from the ledger."}
+                    </p>
                   </div>
-                  <Badge className="border-0 bg-rose-900/40 text-rose-100">Critical</Badge>
+                  <Badge className="border-0 bg-rose-900/40 text-rose-100">{activeIssue?.severity ?? "Critical"}</Badge>
                 </div>
                 <div className="grid grid-cols-2 gap-3 text-xs text-[--metis-paper-muted]">
                   <div className="rounded-2xl border border-white/8 bg-[rgba(0,0,0,0.16)] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
                     <div className="text-[0.68rem] uppercase tracking-[0.2em] text-[--metis-ink-soft]">Open gaps</div>
-                    <div className="mt-2 text-xl text-[--metis-paper]">—</div>
+                    <div className="mt-2 text-xl text-[--metis-paper]">{activeIssue?.openGapsCount ?? "—"}</div>
                   </div>
                   <div className="rounded-2xl border border-white/8 bg-[rgba(0,0,0,0.16)] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
                     <div className="text-[0.68rem] uppercase tracking-[0.2em] text-[--metis-ink-soft]">Updated</div>
-                    <div className="mt-2 text-sm text-[--metis-paper]">—</div>
+                    <div className="mt-2 text-sm text-[--metis-paper]">
+                      {activeIssue?.updatedAt ? activeIssue.updatedAt.toLocaleString() : "—"}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -320,7 +331,7 @@ export function MetisShell({
                     Refreshed 12 minutes ago
                   </div>
                   <Button asChild className="rounded-full bg-[--metis-brass] px-5 text-[--metis-dark] hover:bg-[--metis-brass-soft]">
-                    <Link href="/export" aria-disabled="true">
+                    <Link href={issueRoutePrefix ? `${issueRoutePrefix}/export` : "/export"} aria-disabled={!issueRoutePrefix}>
                       <FileText className="mr-2 h-4 w-4" />
                       Prepare output
                     </Link>

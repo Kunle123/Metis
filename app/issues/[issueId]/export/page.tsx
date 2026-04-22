@@ -88,7 +88,17 @@ export default async function IssueExportPage({
 
   if (!latest) {
     return (
-      <MetisShell activePath="/export" pageTitle="Circulation Package" issueRoutePrefix={`/issues/${issue.id}`}>
+      <MetisShell
+        activePath="/export"
+        pageTitle="Circulation Package"
+        issueRoutePrefix={`/issues/${issue.id}`}
+        activeIssue={{
+          title: issue.title,
+          severity: issue.severity,
+          openGapsCount: issue.openGapsCount,
+          updatedAt: issue.updatedAt,
+        }}
+      >
         <SurfaceCard className="overflow-hidden">
           <div className="border-b border-white/8 bg-[rgba(255,255,255,0.025)] px-6 py-5 sm:px-7">
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -126,7 +136,17 @@ export default async function IssueExportPage({
   const emailChannel = CirculationChannelSchema.parse("email");
 
   return (
-    <MetisShell activePath="/export" pageTitle="Circulation Package" issueRoutePrefix={`/issues/${issue.id}`}>
+    <MetisShell
+      activePath="/export"
+      pageTitle="Circulation Package"
+      issueRoutePrefix={`/issues/${issue.id}`}
+      activeIssue={{
+        title: issue.title,
+        severity: issue.severity,
+        openGapsCount: issue.openGapsCount,
+        updatedAt: issue.updatedAt,
+      }}
+    >
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
         <SurfaceCard className="overflow-hidden">
           <div className="border-b border-white/8 bg-[rgba(255,255,255,0.025)] px-6 py-5 sm:px-7">
