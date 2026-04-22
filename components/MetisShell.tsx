@@ -330,12 +330,19 @@ export function MetisShell({
                     <Clock3 className="h-4 w-4 text-[--metis-brass]" />
                     Refreshed 12 minutes ago
                   </div>
-                  <Button asChild className="rounded-full bg-[--metis-brass] px-5 text-[--metis-dark] hover:bg-[--metis-brass-soft]">
-                    <Link href={issueRoutePrefix ? `${issueRoutePrefix}/export` : "/export"} aria-disabled={!issueRoutePrefix}>
+                  {issueRoutePrefix ? (
+                    <Button asChild className="rounded-full bg-[--metis-brass] px-5 text-[--metis-dark] hover:bg-[--metis-brass-soft]">
+                      <Link href={`${issueRoutePrefix}/export`}>
+                        <FileText className="mr-2 h-4 w-4" />
+                        Prepare output
+                      </Link>
+                    </Button>
+                  ) : (
+                    <Button disabled className="rounded-full bg-[--metis-brass] px-5 text-[--metis-dark] opacity-60">
                       <FileText className="mr-2 h-4 w-4" />
                       Prepare output
-                    </Link>
-                  </Button>
+                    </Button>
+                  )}
                 </div>
               </div>
             </header>
