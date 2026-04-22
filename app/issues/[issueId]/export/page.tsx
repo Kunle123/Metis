@@ -4,6 +4,7 @@ import { CheckCircle2, Copy, Download, Eye, FileText, Mail, RefreshCcw } from "l
 import { MetisShell, ReadinessPill, SurfaceCard } from "@/components/MetisShell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { CirculationEventTypeSchema, CirculationChannelSchema } from "@metis/shared/circulation";
 import { prisma } from "@/lib/db/prisma";
 import { getIssueById } from "@/lib/issues/getIssueContext";
 import { BriefModeSchema, BriefArtifactSchema, type BriefMode, type BriefArtifact } from "@metis/shared/briefVersion";
@@ -116,6 +117,14 @@ export default async function IssueExportPage({
   const artifact = BriefArtifactSchema.parse(latest.artifact) as BriefArtifact;
   const rendered = renderExportPackage({ issue, mode, format: selectedFormat, artifact });
 
+  // Wave 4: strict event semantics for export actions.
+  const preparedEvent = CirculationEventTypeSchema.parse("prepared");
+  const downloadedEvent = CirculationEventTypeSchema.parse("downloaded");
+  const copiedEvent = CirculationEventTypeSchema.parse("copied");
+  const fileChannel = CirculationChannelSchema.parse("file");
+  const copyChannel = CirculationChannelSchema.parse("copy");
+  const emailChannel = CirculationChannelSchema.parse("email");
+
   return (
     <MetisShell activePath="/export" pageTitle="Circulation Package" issueRoutePrefix={`/issues/${issue.id}`}>
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
@@ -181,18 +190,46 @@ export default async function IssueExportPage({
             </section>
 
             <section className="grid gap-3 border-t border-white/8 pt-8 sm:grid-cols-3">
-              <Button className="justify-start rounded-[1rem] bg-[--metis-brass] text-[--metis-dark] hover:bg-[--metis-brass-soft]">
-                <Download className="mr-2 h-4 w-4" />
-                Export file
-              </Button>
-              <Button variant="outline" className="justify-start rounded-[1rem] border-white/10 bg-white/[0.03] text-[--metis-paper] hover:bg-white/[0.08]">
-                <Copy className="mr-2 h-4 w-4 text-[--metis-brass]" />
-                Copy executive text
-              </Button>
-              <Button variant="outline" className="justify-start rounded-[1rem] border-white/10 bg-white/[0.03] text-[--metis-paper] hover:bg-white/[0.08]">
-                <Mail className="mr-2 h-4 w-4 text-[--metis-brass]" />
-                Email-ready package
-              </Button>
+              <form action={`/api/issues/${issue.id}/export`} method="post">
+                <input type="hidden" name="briefVersionId" value={latest.id} />
+                <input type="hidden" name="format" value={selectedFormat} />
+                <input type="hidden" name="logEvent.eventType" value={downloadedEvent} />
+                <input type="hidden" name="logEvent.channel" value={fileChannel} />
+                <Button type="submit" className="w-full justify-start rounded-[1rem] bg-[--metis-brass] text-[--metis-dark] hover:bg-[--metis-brass-soft]">
+                  <Download className="mr-2 h-4 w-4" />
+                  Export file
+                </Button>
+              </form>
+
+              <form action={`/api/issues/${issue.id}/export`} method="post">
+                <input type="hidden" name="briefVersionId" value={latest.id} />
+                <input type="hidden" name="format" value={selectedFormat} />
+                <input type="hidden" name="logEvent.eventType" value={copiedEvent} />
+                <input type="hidden" name="logEvent.channel" value={copyChannel} />
+                <Button
+                  type="submit"
+                  variant="outline"
+                  className="w-full justify-start rounded-[1rem] border-white/10 bg-white/[0.03] text-[--metis-paper] hover:bg-white/[0.08]"
+                >
+                  <Copy className="mr-2 h-4 w-4 text-[--metis-brass]" />
+                  Copy executive text
+                </Button>
+              </form>
+
+              <form action={`/api/issues/${issue.id}/export`} method="post">
+                <input type="hidden" name="briefVersionId" value={latest.id} />
+                <input type="hidden" name="format" value="email-ready" />
+                <input type="hidden" name="logEvent.eventType" value={preparedEvent} />
+                <input type="hidden" name="logEvent.channel" value={emailChannel} />
+                <Button
+                  type="submit"
+                  variant="outline"
+                  className="w-full justify-start rounded-[1rem] border-white/10 bg-white/[0.03] text-[--metis-paper] hover:bg-white/[0.08]"
+                >
+                  <Mail className="mr-2 h-4 w-4 text-[--metis-brass]" />
+                  Email-ready package
+                </Button>
+              </form>
             </section>
           </div>
         </SurfaceCard>

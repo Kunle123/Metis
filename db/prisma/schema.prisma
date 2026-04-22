@@ -22,6 +22,8 @@ model Issue {
   updatedAt     DateTime @updatedAt
   briefVersions BriefVersion[]
   briefComparisons BriefComparison[]
+  artifactExports ArtifactExport[]
+  circulationEvents CirculationEvent[]
   sources       Source[]
   gaps          Gap[]
   internalInputs InternalInput[]
@@ -46,6 +48,8 @@ model BriefVersion {
   derivedVersions        BriefVersion[] @relation("BriefVersionDerivation")
   comparisonsFrom        BriefComparison[] @relation("BriefComparisonFrom")
   comparisonsTo          BriefComparison[] @relation("BriefComparisonTo")
+  artifactExports        ArtifactExport[]
+  circulationEvents      CirculationEvent[]
 
   @@index([issueId, mode, createdAt])
   @@unique([issueId, mode, versionNumber])
@@ -68,6 +72,47 @@ model BriefComparison {
 
   @@unique([fromBriefVersionId, toBriefVersionId])
   @@index([issueId, mode, createdAt])
+}
+
+model ArtifactExport {
+  id            String   @id @default(uuid())
+  issueId        String
+  briefVersionId String
+  mode           String
+  format         String
+  filename       String
+  mimeType       String
+  content        String
+  createdAt      DateTime @default(now())
+
+  issue        Issue       @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  briefVersion BriefVersion @relation(fields: [briefVersionId], references: [id], onDelete: Cascade)
+  circulationEvents CirculationEvent[]
+
+  @@index([issueId, createdAt])
+  @@index([briefVersionId, createdAt])
+}
+
+model CirculationEvent {
+  id            String   @id @default(uuid())
+  issueId        String
+  briefVersionId String
+  exportId       String?
+  actorLabel     String?
+  eventType      String
+  channel        String?
+  audienceLabel  String?
+  postureState   String
+  note           String?
+  createdAt      DateTime @default(now())
+
+  issue        Issue        @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  briefVersion BriefVersion @relation(fields: [briefVersionId], references: [id], onDelete: Cascade)
+  export       ArtifactExport? @relation(fields: [exportId], references: [id], onDelete: SetNull)
+
+  @@index([issueId, createdAt])
+  @@index([briefVersionId, createdAt])
+  @@index([exportId])
 }
 
 model Source {
