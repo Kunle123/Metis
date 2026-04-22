@@ -141,7 +141,7 @@ const primaryNav = [
   { id: "export", group: navGroups[2], path: "/export", shortLabel: "Export" },
 ] as const;
 
-const issueWorkspaceNavIds = new Set<(typeof primaryNav)[number]["id"]>(["brief", "sources", "gaps", "input"]);
+const issueWorkspaceNavIds = new Set<(typeof primaryNav)[number]["id"]>(["brief", "sources", "gaps", "input", "compare", "export"]);
 
 export function MetisShell({
   activePath,

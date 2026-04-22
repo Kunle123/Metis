@@ -126,7 +126,7 @@ export default async function IssueBriefPage({
                   </Link>
                 </div>
                 <Button asChild className="rounded-full bg-[--metis-brass] text-[--metis-dark] hover:bg-[--metis-brass-soft]">
-                  <Link href="/export" aria-disabled="true">
+                  <Link href={`/issues/${issue.id}/export`}>
                     <FileOutput className="mr-2 h-4 w-4" />
                     Prepare output
                   </Link>
@@ -304,7 +304,7 @@ export default async function IssueBriefPage({
                 </Link>
               </Button>
               <Button asChild variant="outline" className="w-full rounded-full border-white/10 bg-white/[0.03] text-[--metis-paper] hover:bg-white/[0.08]">
-                <Link href="/compare" aria-disabled="true">
+                <Link href={`/issues/${issue.id}/compare`}>
                   <RefreshCcw className="mr-2 h-4 w-4" />
                   Open delta
                 </Link>

@@ -21,6 +21,7 @@ model Issue {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   briefVersions BriefVersion[]
+  briefComparisons BriefComparison[]
   sources       Source[]
   gaps          Gap[]
   internalInputs InternalInput[]
@@ -34,13 +35,39 @@ model BriefVersion {
   mode                       String
   versionNumber              Int
   generatedFromIssueUpdatedAt DateTime
+  circulationState           String   @default("Ready for review")
+  circulationNotes           String?
+  derivedFromBriefVersionId  String?
   artifact                   Json
   createdAt                  DateTime @default(now())
 
   issue Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  derivedFromBriefVersion BriefVersion? @relation("BriefVersionDerivation", fields: [derivedFromBriefVersionId], references: [id], onDelete: SetNull)
+  derivedVersions        BriefVersion[] @relation("BriefVersionDerivation")
+  comparisonsFrom        BriefComparison[] @relation("BriefComparisonFrom")
+  comparisonsTo          BriefComparison[] @relation("BriefComparisonTo")
 
   @@index([issueId, mode, createdAt])
   @@unique([issueId, mode, versionNumber])
+  @@index([derivedFromBriefVersionId])
+}
+
+model BriefComparison {
+  id               String   @id @default(uuid())
+  issueId           String
+  mode              String
+  fromBriefVersionId String
+  toBriefVersionId   String
+  changeCount       Int
+  summary           Json
+  createdAt         DateTime @default(now())
+
+  issue          Issue        @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  fromBriefVersion BriefVersion @relation("BriefComparisonFrom", fields: [fromBriefVersionId], references: [id], onDelete: Cascade)
+  toBriefVersion   BriefVersion @relation("BriefComparisonTo", fields: [toBriefVersionId], references: [id], onDelete: Cascade)
+
+  @@unique([fromBriefVersionId, toBriefVersionId])
+  @@index([issueId, mode, createdAt])
 }
 
 model Source {
