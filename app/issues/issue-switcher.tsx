@@ -12,12 +12,14 @@ type IssueListItem = {
   updatedAt: string;
 };
 
-export type IssueSwitcherRouteKind = "brief" | "sources" | "gaps" | "input";
+export type IssueSwitcherRouteKind = "brief" | "compare" | "sources" | "gaps" | "input";
 
 function hrefForIssueRoute(issueId: string, routeKind: IssueSwitcherRouteKind) {
   switch (routeKind) {
     case "brief":
       return `/issues/${issueId}/brief?mode=full`;
+    case "compare":
+      return `/issues/${issueId}/compare?mode=full`;
     case "sources":
       return `/issues/${issueId}/sources`;
     case "gaps":
