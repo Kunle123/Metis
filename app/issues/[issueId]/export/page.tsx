@@ -261,14 +261,14 @@ export default async function IssueExportPage({
               <div className="rounded-[1.6rem] border border-[--metis-brass]/20 bg-[linear-gradient(180deg,rgba(255,251,242,0.98),rgba(250,246,237,0.96))] p-5 text-[--metis-dark] shadow-[0_20px_60px_rgba(0,0,0,0.18)]">
                 <div className="flex items-center justify-between gap-4 border-b border-[rgba(36,31,23,0.08)] pb-4">
                   <div>
-                    <p className="text-[0.68rem] uppercase tracking-[0.24em] text-[rgba(36,31,23,0.5)]">
+                    <p className="text-[0.68rem] uppercase tracking-[0.24em] text-[rgba(36,31,23,0.72)]">
                       {packageOptions.find((o) => o.id === selectedFormat)?.label ?? "Preview"}
                     </p>
-                    <h3 className="mt-2 font-[Cormorant_Garamond] text-3xl">{issue.title}</h3>
+                    <h3 className="mt-2 font-[Cormorant_Garamond] text-3xl text-[rgba(36,31,23,0.92)]">{issue.title}</h3>
                   </div>
                   <FileText className="h-5 w-5 text-[--metis-brass]" />
                 </div>
-                <div className="mt-5 space-y-3 text-sm leading-7">
+                <div className="mt-5 space-y-3 text-sm leading-7 text-[rgba(36,31,23,0.78)]">
                   <p>{artifact.lede}</p>
                   <p>{artifact.metadata.circulation} circulation.</p>
                   <p>v{latest.versionNumber}</p>
