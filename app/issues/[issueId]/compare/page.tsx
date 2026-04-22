@@ -146,7 +146,9 @@ export default async function IssueComparePage({
                 {prior ? `${versionLabel(prior)} → ${versionLabel(current)}` : versionLabel(current)}
               </p>
               <div className="flex flex-wrap items-center gap-2">
-                <ReadinessPill state="Updated since last version" />
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(112,191,232,0.48)] bg-[rgba(19,86,118,0.6)] px-2.5 py-1 text-[0.62rem] font-medium uppercase tracking-[0.18em] text-sky-50 ring-1 ring-[rgba(138,214,250,0.2)] shadow-[0_10px_24px_rgba(14,48,73,0.18),inset_0_1px_0_rgba(255,255,255,0.06)]">
+                  Updated
+                </span>
                 <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{compare.changeCount} changes</Badge>
               </div>
             </div>
