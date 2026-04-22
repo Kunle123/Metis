@@ -1,0 +1,201 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+
+type IssuePriority = "Critical" | "High" | "Normal" | "Low";
+type OperatorPosture = "Monitoring" | "Active" | "Holding" | "Closed";
+
+const priorities: readonly IssuePriority[] = ["Critical", "High", "Normal", "Low"] as const;
+const postures: readonly OperatorPosture[] = ["Monitoring", "Active", "Holding", "Closed"] as const;
+const severities = ["Critical", "High", "Moderate", "Low"] as const;
+
+export function SetupForm() {
+  const router = useRouter();
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const [title, setTitle] = useState("");
+  const [issueType, setIssueType] = useState("");
+  const [audience, setAudience] = useState("");
+  const [priority, setPriority] = useState<IssuePriority>("Normal");
+  const [summary, setSummary] = useState("");
+  const [severity, setSeverity] = useState<(typeof severities)[number]>("High");
+  const [operatorPosture, setOperatorPosture] = useState<OperatorPosture>("Monitoring");
+  const [ownerName, setOwnerName] = useState("");
+
+  const canSubmit = useMemo(() => {
+    return title.trim().length > 0 && issueType.trim().length > 0 && summary.trim().length > 0 && severity.trim().length > 0;
+  }, [title, issueType, summary, severity]);
+
+  async function onSubmit() {
+    if (!canSubmit || submitting) return;
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      const res = await fetch("/api/issues", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          title: title.trim(),
+          issueType: issueType.trim(),
+          audience: audience.trim().length ? audience.trim() : null,
+          priority,
+          summary: summary.trim(),
+          severity,
+          operatorPosture,
+          ownerName: ownerName.trim().length ? ownerName.trim() : null,
+          status: "Ready to brief",
+        }),
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        setError(text.length ? text : `Request failed (${res.status})`);
+        return;
+      }
+
+      const created = await res.json();
+      const issueId = created?.id as string | undefined;
+      if (!issueId) {
+        setError("Issue created but response was missing id.");
+        return;
+      }
+
+      router.push(`/issues/${issueId}/brief?mode=full`);
+    } catch (e: any) {
+      setError(e?.message ?? "Request failed.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="space-y-8">
+      <div className="grid gap-5 md:grid-cols-2">
+        <div>
+          <label className="mb-3 block text-sm font-medium text-[--metis-paper]">Issue title</label>
+          <Input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="European customer portal outage"
+            className="h-12 rounded-[1.15rem] border-white/12 bg-[rgba(255,255,255,0.065)] text-[--metis-paper]"
+          />
+        </div>
+
+        <div>
+          <label className="mb-3 block text-sm font-medium text-[--metis-paper]">Issue type</label>
+          <Input
+            value={issueType}
+            onChange={(e) => setIssueType(e.target.value)}
+            placeholder="Cyber incident"
+            className="h-12 rounded-[1.15rem] border-white/12 bg-[rgba(255,255,255,0.065)] text-[--metis-paper]"
+          />
+        </div>
+
+        <div>
+          <label className="mb-3 block text-sm font-medium text-[--metis-paper]">Audience</label>
+          <Input
+            value={audience}
+            onChange={(e) => setAudience(e.target.value)}
+            placeholder="CEO, COO, GC"
+            className="h-12 rounded-[1.15rem] border-white/12 bg-[rgba(255,255,255,0.065)] text-[--metis-paper]"
+          />
+        </div>
+
+        <div>
+          <label className="mb-3 block text-sm font-medium text-[--metis-paper]">Urgency</label>
+          <div className="relative">
+            <select
+              value={priority}
+              onChange={(e) => setPriority(e.target.value as IssuePriority)}
+              className="h-12 w-full appearance-none rounded-[1.15rem] border border-white/12 bg-[rgba(255,255,255,0.065)] px-3 text-sm text-[--metis-paper] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
+            >
+              {priorities.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="md:col-span-2">
+          <label className="mb-3 block text-sm font-medium text-[--metis-paper]">Working line</label>
+          <Textarea
+            value={summary}
+            onChange={(e) => setSummary(e.target.value)}
+            placeholder="Customer self-service remains degraded while security containment is verified…"
+            className="min-h-[148px] rounded-[1.25rem] border-white/12 bg-[rgba(255,255,255,0.065)] px-4 py-4 text-sm leading-7 text-[--metis-paper]"
+          />
+        </div>
+
+        <div>
+          <label className="mb-3 block text-sm font-medium text-[--metis-paper]">Severity</label>
+          <div className="relative">
+            <select
+              value={severity}
+              onChange={(e) => setSeverity(e.target.value as any)}
+              className="h-12 w-full appearance-none rounded-[1.15rem] border border-white/12 bg-[rgba(255,255,255,0.065)] px-3 text-sm text-[--metis-paper] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
+            >
+              {severities.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label className="mb-3 block text-sm font-medium text-[--metis-paper]">Operator posture (optional)</label>
+          <div className="relative">
+            <select
+              value={operatorPosture}
+              onChange={(e) => setOperatorPosture(e.target.value as OperatorPosture)}
+              className="h-12 w-full appearance-none rounded-[1.15rem] border border-white/12 bg-[rgba(255,255,255,0.065)] px-3 text-sm text-[--metis-paper] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
+            >
+              {postures.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label className="mb-3 block text-sm font-medium text-[--metis-paper]">Owner (optional)</label>
+          <Input
+            value={ownerName}
+            onChange={(e) => setOwnerName(e.target.value)}
+            placeholder="Amina Shah"
+            className="h-12 rounded-[1.15rem] border-white/12 bg-[rgba(255,255,255,0.065)] text-[--metis-paper]"
+          />
+        </div>
+      </div>
+
+      {error ? (
+        <div className="rounded-[1.2rem] border border-rose-400/20 bg-rose-900/20 px-4 py-3 text-sm text-rose-100">
+          {error}
+        </div>
+      ) : null}
+
+      <div className="flex flex-wrap items-center gap-3">
+        <Button
+          onClick={onSubmit}
+          disabled={!canSubmit || submitting}
+          className="rounded-full bg-[--metis-brass] px-5 text-[--metis-dark] hover:bg-[--metis-brass-soft]"
+        >
+          {submitting ? "Creating issue..." : "Create issue & open brief"}
+        </Button>
+      </div>
+    </div>
+  );
+}
+

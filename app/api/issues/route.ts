@@ -32,6 +32,8 @@ export async function POST(request: Request) {
       issueType: parsed.data.issueType,
       severity: parsed.data.severity,
       status: parsed.data.status,
+      priority: parsed.data.priority ?? "Normal",
+      operatorPosture: parsed.data.operatorPosture ?? "Monitoring",
       ownerName: parsed.data.ownerName ?? null,
       audience: parsed.data.audience ?? null,
       // `openGapsCount` is derived from persisted `Gap` rows; ignore any client-provided value.
