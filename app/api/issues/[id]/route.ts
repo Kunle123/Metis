@@ -70,6 +70,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
           refType: "Issue",
           refId: id,
         });
+
+        // Return a fresh read so PATCH reflects persisted lastActivityAt.
+        const refreshed = await tx.issue.findUnique({ where: { id } });
+        if (!refreshed) throw new Error("Not found");
+        return refreshed;
       }
 
       return next;
