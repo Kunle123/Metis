@@ -5,6 +5,7 @@ import { PatchIssueTriageInputSchema } from "@metis/shared/activity";
 import { prisma } from "@/lib/db/prisma";
 import { IssueActivityKinds } from "@/lib/issues/activityKinds";
 import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
+import { requireMutation } from "@/lib/governance/requireMutation";
 
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -21,6 +22,9 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
 }
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const gate = await requireMutation(request);
+  if (gate instanceof NextResponse) return gate;
+
   const { id } = await params;
   const json = await request.json();
   const parsed = UpdateIssueInputSchema.safeParse(json);

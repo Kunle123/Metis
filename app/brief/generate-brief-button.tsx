@@ -20,6 +20,7 @@ export function GenerateBriefButton({ issueId, mode }: { issueId: string; mode: 
           await fetch(`/api/issues/${issueId}/brief-versions`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
+            credentials: "include",
             body: JSON.stringify({ mode }),
           });
         } finally {

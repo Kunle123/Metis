@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { CompareRequestSchema, CompareResponseSchema, CirculationStateSchema } from "@metis/shared/compare";
 import { prisma } from "@/lib/db/prisma";
 import { compareBriefArtifacts } from "@/lib/brief/compareBriefVersions";
+import { requireMutation } from "@/lib/governance/requireMutation";
 
 function serializeBriefVersionMeta(v: {
   id: string;
@@ -75,6 +76,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const gate = await requireMutation(request);
+  if (gate instanceof NextResponse) return gate;
+
   const { id: issueId } = await params;
   const json = await request.json();
   const parsed = CompareRequestSchema.safeParse(json);

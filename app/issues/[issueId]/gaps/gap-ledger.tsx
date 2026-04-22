@@ -103,6 +103,7 @@ export function GapLedger({
       const res = await fetch(`/api/issues/${issueId}/gaps/${gapId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ prompt: nextPrompt }),
       });
       if (!res.ok) {
@@ -131,6 +132,7 @@ export function GapLedger({
       const res = await fetch(`/api/issues/${issueId}/gaps/${gapId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ status: "Resolved", resolvedByInternalInputId: selected }),
       });
       if (!res.ok) {
@@ -152,6 +154,7 @@ export function GapLedger({
       const res = await fetch(`/api/issues/${issueId}/gaps/${gapId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ status: "Open" }),
       });
       if (!res.ok) {

@@ -51,7 +51,7 @@ export function IssueSwitcher({
   async function loadIssues() {
     setIsLoading(true);
     try {
-      const res = await fetch("/api/issues", { cache: "no-store" });
+      const res = await fetch("/api/issues", { cache: "no-store", credentials: "include" });
       const data = (await res.json()) as Array<{ id: string; title: string; updatedAt: string }>;
       setIssues(data);
     } finally {

@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 
-const REQUIRED_ENVS = ["METIS_PROD_BASE_URL", "METIS_SMOKE_ISSUE_ID"];
+const REQUIRED_ENVS = ["METIS_PROD_BASE_URL", "METIS_SMOKE_ISSUE_ID", "METIS_SMOKE_EMAIL", "METIS_SMOKE_PASSWORD"];
 
 function requireEnv(name) {
   const v = process.env[name];
@@ -25,13 +25,33 @@ function pickDifferent(current, allowed) {
   return next ?? allowed[0];
 }
 
-async function httpJson(method, url, { body, timeoutMs } = {}) {
+function buildCookieHeader(rawCookie) {
+  const c = (rawCookie ?? "").trim();
+  return c ? { cookie: c } : {};
+}
+
+function extractSessionCookieFromSetCookie(setCookie) {
+  if (!setCookie) return null;
+  const values = Array.isArray(setCookie) ? setCookie : [setCookie];
+  for (const v of values) {
+    // Only care about our session cookie.
+    if (v.startsWith("metis_session=")) {
+      return v.split(";")[0] ?? null;
+    }
+  }
+  return null;
+}
+
+async function httpJson(method, url, { body, timeoutMs, cookie } = {}) {
   const controller = new AbortController();
   const t = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const res = await fetch(url, {
       method,
-      headers: body ? { "content-type": "application/json" } : undefined,
+      headers: {
+        ...(body ? { "content-type": "application/json" } : {}),
+        ...buildCookieHeader(cookie),
+      },
       body: body ? JSON.stringify(body) : undefined,
       signal: controller.signal,
     });
@@ -58,6 +78,8 @@ async function main() {
 
   const baseUrl = requireEnv("METIS_PROD_BASE_URL");
   const issueId = requireEnv("METIS_SMOKE_ISSUE_ID");
+  const email = requireEnv("METIS_SMOKE_EMAIL");
+  const password = requireEnv("METIS_SMOKE_PASSWORD");
   const timeoutMs = Number(process.env.METIS_SMOKE_TIMEOUT_MS ?? "15000");
 
   const priorityAllowed = ["Critical", "High", "Normal", "Low"];
@@ -74,11 +96,51 @@ async function main() {
   console.log(`Metis prod smoke started at ${startedAt}`);
   console.log(`Target: ${baseUrl} (issue ${issueId})`);
 
+  let sessionCookie = "";
+
   try {
+    // Login to establish session (Wave 7)
+    {
+      const loginUrl = urlJoin(baseUrl, "/api/auth/login");
+      const controller = new AbortController();
+      const t = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        const res = await fetch(loginUrl, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ email, password }),
+          signal: controller.signal,
+        });
+        const text = await res.text();
+        let json = null;
+        try {
+          json = text ? JSON.parse(text) : null;
+        } catch {
+          json = null;
+        }
+        if (!res.ok) {
+          printLine("fail", "POST /api/auth/login", `HTTP ${res.status}`);
+          throw new Error(`Login failed: ${res.status}`);
+        }
+        const setCookie = res.headers.getSetCookie ? res.headers.getSetCookie() : res.headers.get("set-cookie");
+        const part = Array.isArray(setCookie)
+          ? extractSessionCookieFromSetCookie(setCookie)
+          : extractSessionCookieFromSetCookie(setCookie);
+        if (!part) {
+          printLine("fail", "POST /api/auth/login", "missing metis_session cookie in response");
+          throw new Error("Login did not return metis_session cookie");
+        }
+        sessionCookie = part;
+        printLine("pass", "POST /api/auth/login", `user=${json?.user?.email ?? email}`);
+      } finally {
+        clearTimeout(t);
+      }
+    }
+
     // Issue fetch (baseline)
     {
       const url = urlJoin(baseUrl, `/api/issues/${issueId}`);
-      const res = await httpJson("GET", url, { timeoutMs });
+      const res = await httpJson("GET", url, { timeoutMs, cookie: sessionCookie });
       if (!res.ok) {
         printLine("fail", "GET issue", `HTTP ${res.status}`);
         throw new Error(`GET ${url} failed: ${res.status}`);
@@ -96,7 +158,7 @@ async function main() {
     {
       const nextPriority = pickDifferent(baseline.priority, priorityAllowed);
       const url = urlJoin(baseUrl, `/api/issues/${issueId}`);
-      const res = await httpJson("PATCH", url, { timeoutMs, body: { priority: nextPriority } });
+      const res = await httpJson("PATCH", url, { timeoutMs, body: { priority: nextPriority }, cookie: sessionCookie });
       if (!res.ok) {
         printLine("fail", "PATCH priority", `HTTP ${res.status}`);
         throw new Error(`PATCH priority failed: ${res.status}`);
@@ -110,7 +172,7 @@ async function main() {
 
       // Verify activity + lastActivityAt coherence
       const actUrl = urlJoin(baseUrl, `/api/issues/${issueId}/activity?limit=5`);
-      const actRes = await httpJson("GET", actUrl, { timeoutMs });
+      const actRes = await httpJson("GET", actUrl, { timeoutMs, cookie: sessionCookie });
       if (!actRes.ok) {
         printLine("fail", "GET activity", `HTTP ${actRes.status}`);
         throw new Error(`GET activity failed: ${actRes.status}`);
@@ -122,7 +184,7 @@ async function main() {
         throw new Error("Expected at least one activity item");
       }
       const issueUrl = urlJoin(baseUrl, `/api/issues/${issueId}`);
-      const issueRes = await httpJson("GET", issueUrl, { timeoutMs });
+      const issueRes = await httpJson("GET", issueUrl, { timeoutMs, cookie: sessionCookie });
       if (!issueRes.ok) throw new Error(`GET issue after priority failed: ${issueRes.status}`);
       if (issueRes.json?.lastActivityAt !== newest.createdAt) {
         printLine("fail", "lastActivityAt sync (priority)", `issue=${issueRes.json?.lastActivityAt}, activity=${newest.createdAt}`);
@@ -135,7 +197,7 @@ async function main() {
     {
       const nextPosture = pickDifferent(baseline.operatorPosture, postureAllowed);
       const url = urlJoin(baseUrl, `/api/issues/${issueId}`);
-      const res = await httpJson("PATCH", url, { timeoutMs, body: { operatorPosture: nextPosture } });
+      const res = await httpJson("PATCH", url, { timeoutMs, body: { operatorPosture: nextPosture }, cookie: sessionCookie });
       if (!res.ok) {
         printLine("fail", "PATCH operatorPosture", `HTTP ${res.status}`);
         throw new Error(`PATCH operatorPosture failed: ${res.status}`);
@@ -148,14 +210,14 @@ async function main() {
       printLine("pass", "PATCH operatorPosture", `set to ${nextPosture}`);
 
       const actUrl = urlJoin(baseUrl, `/api/issues/${issueId}/activity?limit=5`);
-      const actRes = await httpJson("GET", actUrl, { timeoutMs });
+      const actRes = await httpJson("GET", actUrl, { timeoutMs, cookie: sessionCookie });
       if (!actRes.ok) throw new Error(`GET activity after posture failed: ${actRes.status}`);
       const items = actRes.json?.items ?? [];
       const newest = items[0] ?? null;
       if (!newest) throw new Error("Expected activity after operatorPosture mutation");
 
       const issueUrl = urlJoin(baseUrl, `/api/issues/${issueId}`);
-      const issueRes = await httpJson("GET", issueUrl, { timeoutMs });
+      const issueRes = await httpJson("GET", issueUrl, { timeoutMs, cookie: sessionCookie });
       if (!issueRes.ok) throw new Error(`GET issue after posture failed: ${issueRes.status}`);
       if (issueRes.json?.lastActivityAt !== newest.createdAt) {
         printLine("fail", "lastActivityAt sync (posture)", `issue=${issueRes.json?.lastActivityAt}, activity=${newest.createdAt}`);
@@ -168,7 +230,7 @@ async function main() {
     let latestBrief = null;
     {
       const url = urlJoin(baseUrl, `/api/issues/${issueId}/brief-versions/latest?mode=full`);
-      const res = await httpJson("GET", url, { timeoutMs });
+      const res = await httpJson("GET", url, { timeoutMs, cookie: sessionCookie });
       if (res.status === 404) {
         printLine("skip", "GET latest brief (full)", "no brief versions yet");
       } else if (!res.ok) {
@@ -187,6 +249,7 @@ async function main() {
         const res = await httpJson("POST", url, {
           timeoutMs,
           body: { mode: "full", fromBriefVersionId: compareFromId, toBriefVersionId: compareToId },
+          cookie: sessionCookie,
         });
         if (!res.ok) {
           printLine("fail", "POST compare", `HTTP ${res.status}`);
@@ -211,6 +274,7 @@ async function main() {
             format: "executive-brief",
             logEvent: { eventType: "prepared", channel: "file" },
           },
+          cookie: sessionCookie,
         });
         if (!res.ok) {
           printLine("fail", "POST export", `HTTP ${res.status}`);
@@ -236,7 +300,7 @@ async function main() {
         const controller = new AbortController();
         const t = setTimeout(() => controller.abort(), timeoutMs);
         try {
-          const res = await fetch(urlJoin(baseUrl, path), { signal: controller.signal });
+          const res = await fetch(urlJoin(baseUrl, path), { signal: controller.signal, headers: buildCookieHeader(sessionCookie) });
           if (res.status === 200) {
             printLine("pass", `GET ${path}`, "200");
           } else {
@@ -262,6 +326,7 @@ async function main() {
       const res = await httpJson("PATCH", url, {
         timeoutMs,
         body: { priority: baseline.priority, operatorPosture: baseline.operatorPosture },
+        cookie: sessionCookie,
       });
       if (!res.ok) {
         printLine("fail", "RESTORE triage", `HTTP ${res.status} (manual restore may be needed)`);

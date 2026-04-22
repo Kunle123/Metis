@@ -7,13 +7,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "tsc -p tsconfig.json --noEmit",
     "smoke:prod": "node scripts/prod-smoke.mjs",
     "prisma": "prisma",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "provision:user": "node scripts/provision-user.mjs"
   },
   "prisma": {
     "schema": "db/prisma/schema.prisma",
@@ -21,6 +22,8 @@
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
+    "bcryptjs": "^3.0.3",
+    "jose": "^6.2.2",
     "lucide-react": "^1.8.0",
     "next": "^16.2.4",
     "react": "^19.2.5",
@@ -29,6 +32,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.2.4",
+    "@types/bcryptjs": "^2.4.6",
     "@types/node": "^25.6.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",

@@ -5,8 +5,12 @@ import { prisma } from "@/lib/db/prisma";
 import { generateBriefFromIssue } from "@/lib/brief/generateBriefFromIssue";
 import { IssueActivityKinds } from "@/lib/issues/activityKinds";
 import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
+import { requireMutation } from "@/lib/governance/requireMutation";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const gate = await requireMutation(request);
+  if (gate instanceof NextResponse) return gate;
+
   const { id: issueId } = await params;
   const json = await request.json();
   const parsed = CreateBriefVersionInputSchema.safeParse(json);

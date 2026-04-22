@@ -28,6 +28,7 @@ export function InternalInputCreateForm({ issueId }: { issueId: string }) {
       const res = await fetch(`/api/issues/${issueId}/internal-inputs`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           role,
           name,

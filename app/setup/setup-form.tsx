@@ -41,6 +41,7 @@ export function SetupForm() {
       const res = await fetch("/api/issues", {
         method: "POST",
         headers: { "content-type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           title: title.trim(),
           issueType: issueType.trim(),

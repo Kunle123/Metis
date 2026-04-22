@@ -75,6 +75,14 @@ Build order is:
 - compare and export
 - AI-assisted ingestion later
 
+### 10. Access + governance (Wave 7; 2026-04-22)
+Metis uses a **minimal, Metis-owned login** (not SSO) to protect a leadership-facing comms workspace:
+- Users are stored in Postgres (`User`) with a **global role** (`Viewer | Operator | Admin`).
+- Authentication is a **signed HTTP-only session cookie** (`metis_session`) using `METIS_SESSION_SECRET`.
+- **All pages and APIs require a logged-in session** (unauthenticated users are directed to `/login` or receive `401` on APIs, except public auth routes under `/api/auth/*`).
+- **All logged-in users can read**; **only `Operator` and `Admin` can mutate** durable state (writes are blocked for `Viewer` at the API layer).
+- **No in-app user administration in Wave 7**; initial users are provisioned outside the app (seed/SQL/CLI script).
+
 ---
 
 ## Open decisions

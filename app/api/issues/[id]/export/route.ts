@@ -8,6 +8,7 @@ import { prisma } from "@/lib/db/prisma";
 import { renderExportPackage } from "@/lib/export/renderExportPackage";
 import { IssueActivityKinds } from "@/lib/issues/activityKinds";
 import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
+import { requireMutation } from "@/lib/governance/requireMutation";
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id: issueId } = await params;
@@ -64,6 +65,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const gate = await requireMutation(request);
+  if (gate instanceof NextResponse) return gate;
+
   const { id: issueId } = await params;
 
   let body: unknown;

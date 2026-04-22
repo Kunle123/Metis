@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db/prisma";
 import { isOpenGapStatus } from "@/lib/gaps/openGapsCount";
 import { IssueActivityKinds } from "@/lib/issues/activityKinds";
 import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
+import { requireMutation } from "@/lib/governance/requireMutation";
 
 function serializeGap(gap: {
   id: string;
@@ -49,6 +50,9 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
 }
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string; gapId: string }> }) {
+  const gate = await requireMutation(request);
+  if (gate instanceof NextResponse) return gate;
+
   const { id: issueId, gapId } = await params;
   const json = await request.json();
   const parsed = PatchGapInputSchema.safeParse(json);

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { CreateIssueInputSchema } from "@metis/shared/issue";
 import { prisma } from "@/lib/db/prisma";
+import { requireMutation } from "@/lib/governance/requireMutation";
 
 export async function GET() {
   const issues = await prisma.issue.findMany({
@@ -13,11 +14,15 @@ export async function GET() {
       ...issue,
       createdAt: issue.createdAt.toISOString(),
       updatedAt: issue.updatedAt.toISOString(),
+      lastActivityAt: issue.lastActivityAt.toISOString(),
     })),
   );
 }
 
 export async function POST(request: Request) {
+  const gate = await requireMutation(request);
+  if (gate instanceof NextResponse) return gate;
+
   const json = await request.json();
   const parsed = CreateIssueInputSchema.safeParse(json);
 
@@ -46,6 +51,7 @@ export async function POST(request: Request) {
     ...created,
     createdAt: created.createdAt.toISOString(),
     updatedAt: created.updatedAt.toISOString(),
+    lastActivityAt: created.lastActivityAt.toISOString(),
   });
 }
 

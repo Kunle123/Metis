@@ -29,6 +29,7 @@ export function SourceEntryForm({ issueId }: { issueId: string }) {
       const res = await fetch(`/api/issues/${issueId}/sources`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           tier,
           title,
