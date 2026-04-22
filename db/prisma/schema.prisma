@@ -14,21 +14,26 @@ model Issue {
   issueType     String
   severity      String
   status        String
+  priority      String   @default("Normal")
+  operatorPosture String @default("Monitoring")
   ownerName     String?
   audience      String?
   openGapsCount Int      @default(0)
   sourcesCount  Int      @default(0)
+  lastActivityAt DateTime @default(now())
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   briefVersions BriefVersion[]
   briefComparisons BriefComparison[]
   artifactExports ArtifactExport[]
   circulationEvents CirculationEvent[]
+  activities    IssueActivity[]
   sources       Source[]
   gaps          Gap[]
   internalInputs InternalInput[]
 
   @@index([updatedAt])
+  @@index([lastActivityAt])
 }
 
 model BriefVersion {
@@ -113,6 +118,22 @@ model CirculationEvent {
   @@index([issueId, createdAt])
   @@index([briefVersionId, createdAt])
   @@index([exportId])
+}
+
+model IssueActivity {
+  id        String   @id @default(uuid())
+  issueId   String
+  kind      String
+  summary   String
+  refType   String?
+  refId     String?
+  actorLabel String?
+  createdAt DateTime @default(now())
+
+  issue Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+
+  @@index([issueId, createdAt])
+  @@index([issueId, kind, createdAt])
 }
 
 model Source {

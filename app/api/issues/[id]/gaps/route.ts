@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { CreateGapInputSchema, GapSeveritySchema, GapStatusSchema } from "@metis/shared/gap";
 import { prisma } from "@/lib/db/prisma";
 import { isOpenGapStatus } from "@/lib/gaps/openGapsCount";
+import { IssueActivityKinds } from "@/lib/issues/activityKinds";
+import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
 
 function serializeGap(gap: {
   id: string;
@@ -112,6 +114,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         data: { openGapsCount: { increment: 1 } },
       });
     }
+
+    await writeIssueActivity(tx, {
+      issueId,
+      kind: IssueActivityKinds.gap_created,
+      summary: "Gap created",
+      refType: "Gap",
+      refId: gap.id,
+    });
 
     return gap;
   });

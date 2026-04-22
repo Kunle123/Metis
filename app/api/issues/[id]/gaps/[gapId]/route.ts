@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { GapSeveritySchema, GapStatusSchema, PatchGapInputSchema } from "@metis/shared/gap";
 import { prisma } from "@/lib/db/prisma";
 import { isOpenGapStatus } from "@/lib/gaps/openGapsCount";
+import { IssueActivityKinds } from "@/lib/issues/activityKinds";
+import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
 
 function serializeGap(gap: {
   id: string;
@@ -117,6 +119,26 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         where: { id: issueId },
         data: { openGapsCount: { decrement: openDelta } },
       });
+    }
+
+    if (existing.status !== gap.status) {
+      if (existing.status === "Open" && gap.status === "Resolved") {
+        await writeIssueActivity(tx, {
+          issueId,
+          kind: IssueActivityKinds.gap_resolved,
+          summary: "Gap resolved",
+          refType: "Gap",
+          refId: gap.id,
+        });
+      } else if (existing.status === "Resolved" && gap.status === "Open") {
+        await writeIssueActivity(tx, {
+          issueId,
+          kind: IssueActivityKinds.gap_reopened,
+          summary: "Gap reopened",
+          refType: "Gap",
+          refId: gap.id,
+        });
+      }
     }
 
     return gap;

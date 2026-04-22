@@ -6,6 +6,8 @@ import { ExportFormatSchema, ExportPackageResponseSchema } from "@metis/shared/e
 import { ArtifactExportResponseSchema, CreateArtifactExportInputSchema } from "@metis/shared/circulation";
 import { prisma } from "@/lib/db/prisma";
 import { renderExportPackage } from "@/lib/export/renderExportPackage";
+import { IssueActivityKinds } from "@/lib/issues/activityKinds";
+import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id: issueId } = await params;
@@ -137,8 +139,16 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       },
     });
 
+    await writeIssueActivity(tx, {
+      issueId,
+      kind: IssueActivityKinds.export_created,
+      summary: "Export package created",
+      refType: "ArtifactExport",
+      refId: exportRow.id,
+    });
+
     if (logEvent) {
-      await tx.circulationEvent.create({
+      const event = await tx.circulationEvent.create({
         data: {
           issueId,
           briefVersionId: briefVersion.id,
@@ -150,6 +160,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
           postureState,
           note: logEvent.note ?? null,
         },
+      });
+
+      await writeIssueActivity(tx, {
+        issueId,
+        kind: IssueActivityKinds.circulation_event_created,
+        summary: "Circulation event logged",
+        refType: "CirculationEvent",
+        refId: event.id,
       });
     }
 

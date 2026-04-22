@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 
 import { CreateInternalInputInputSchema, InternalInputConfidenceSchema } from "@metis/shared/internalInput";
 import { prisma } from "@/lib/db/prisma";
+import { IssueActivityKinds } from "@/lib/issues/activityKinds";
+import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
 
 function serializeInternalInput(input: {
   id: string;
@@ -60,17 +62,29 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: "Invalid confidence" }, { status: 400 });
   }
 
-  const created = await prisma.internalInput.create({
-    data: {
+  const created = await prisma.$transaction(async (tx) => {
+    const input = await tx.internalInput.create({
+      data: {
+        issueId,
+        role: parsed.data.role,
+        name: parsed.data.name,
+        response: parsed.data.response,
+        confidence: confidenceParsed.data,
+        linkedSection: parsed.data.linkedSection ?? null,
+        visibility: parsed.data.visibility ?? null,
+        timestampLabel: parsed.data.timestampLabel ?? null,
+      },
+    });
+
+    await writeIssueActivity(tx, {
       issueId,
-      role: parsed.data.role,
-      name: parsed.data.name,
-      response: parsed.data.response,
-      confidence: confidenceParsed.data,
-      linkedSection: parsed.data.linkedSection ?? null,
-      visibility: parsed.data.visibility ?? null,
-      timestampLabel: parsed.data.timestampLabel ?? null,
-    },
+      kind: IssueActivityKinds.internal_input_created,
+      summary: "Internal input created",
+      refType: "InternalInput",
+      refId: input.id,
+    });
+
+    return input;
   });
 
   return NextResponse.json(serializeInternalInput(created));

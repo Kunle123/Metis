@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 
 import { CreateSourceInputSchema, SourceTierSchema } from "@metis/shared/source";
 import { prisma } from "@/lib/db/prisma";
+import { IssueActivityKinds } from "@/lib/issues/activityKinds";
+import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
 
 const tierOrder = ["Official", "Internal", "Major media", "Market signal"] as const;
 
@@ -78,7 +80,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         ? parsed.data.sourceCode.trim()
         : nextSourceCode(existingCodes.map((e) => e.sourceCode));
 
-    return tx.source.create({
+    const source = await tx.source.create({
       data: {
         issueId,
         sourceCode: code,
@@ -92,6 +94,16 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         timestampLabel: parsed.data.timestampLabel ?? null,
       },
     });
+
+    await writeIssueActivity(tx, {
+      issueId,
+      kind: IssueActivityKinds.source_created,
+      summary: `Source ${source.sourceCode} created`,
+      refType: "Source",
+      refId: source.id,
+    });
+
+    return source;
   });
 
   return NextResponse.json({

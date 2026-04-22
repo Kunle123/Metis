@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { CreateBriefVersionInputSchema } from "@metis/shared/briefVersion";
 import { prisma } from "@/lib/db/prisma";
 import { generateBriefFromIssue } from "@/lib/brief/generateBriefFromIssue";
+import { IssueActivityKinds } from "@/lib/issues/activityKinds";
+import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id: issueId } = await params;
@@ -32,14 +34,26 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const versionNumber = (latest?.versionNumber ?? 0) + 1;
   const artifact = generateBriefFromIssue(issue, parsed.data.mode);
 
-  const created = await prisma.briefVersion.create({
-    data: {
+  const created = await prisma.$transaction(async (tx) => {
+    const briefVersion = await tx.briefVersion.create({
+      data: {
+        issueId,
+        mode: parsed.data.mode,
+        versionNumber,
+        generatedFromIssueUpdatedAt: issue.updatedAt,
+        artifact,
+      },
+    });
+
+    await writeIssueActivity(tx, {
       issueId,
-      mode: parsed.data.mode,
-      versionNumber,
-      generatedFromIssueUpdatedAt: issue.updatedAt,
-      artifact,
-    },
+      kind: IssueActivityKinds.brief_version_created,
+      summary: `Brief version ${briefVersion.versionNumber} created`,
+      refType: "BriefVersion",
+      refId: briefVersion.id,
+    });
+
+    return briefVersion;
   });
 
   return NextResponse.json({
