@@ -143,6 +143,8 @@ const primaryNav = [
 
 const issueWorkspaceNavIds = new Set<(typeof primaryNav)[number]["id"]>(["brief", "sources", "gaps", "input", "compare", "export"]);
 
+const issueOnlyNav = [{ id: "activity", group: navGroups[1], path: "/activity", shortLabel: "Activity" }] as const;
+
 export function MetisShell({
   activePath,
   pageTitle,
@@ -178,6 +180,10 @@ export function MetisShell({
     return item.path;
   }
 
+  function navHrefForIssueOnlyItem(item: (typeof issueOnlyNav)[number]) {
+    return `${issueRoutePrefix}${item.path}`;
+  }
+
   // Sprint 0: static operational snapshot and active issue preview to preserve Manus shell layout.
   const issueStats = [
     { label: "Active issues", value: "12", detail: "+3 since yesterday" },
@@ -210,6 +216,7 @@ export function MetisShell({
             <nav className="space-y-5">
               {navGroups.map((group) => {
                 const items = primaryNav.filter((item) => item.group === group);
+                const issueItems = issueRoutePrefix ? issueOnlyNav.filter((item) => item.group === group) : [];
                 const groupIsActive = items.some((item) => item.path === activePath);
 
                 return (
@@ -280,6 +287,50 @@ export function MetisShell({
                           </Link>
                         );
                       })}
+                      {issueRoutePrefix
+                        ? issueItems.map((item) => {
+                            const isActive = item.path === activePath;
+                            return (
+                              <Link
+                                key={item.id}
+                                href={navHrefForIssueOnlyItem(item)}
+                                className={cn(
+                                  "group relative flex items-start gap-3 overflow-hidden rounded-[1.3rem] border px-4 py-3 transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60",
+                                  isActive
+                                    ? "border-[rgba(224,183,111,0.48)] bg-[linear-gradient(135deg,rgba(224,183,111,0.28),rgba(78,55,20,0.76))] ring-1 ring-[rgba(224,183,111,0.3)] shadow-[0_28px_72px_rgba(0,0,0,0.42),inset_0_1px_0_rgba(255,255,255,0.1)]"
+                                    : "border-white/5 bg-[rgba(0,0,0,0.18)] hover:border-white/10 hover:bg-[rgba(255,255,255,0.045)]",
+                                )}
+                              >
+                                <span
+                                  className={cn(
+                                    "absolute inset-y-2 left-1 w-[6px] rounded-full bg-transparent transition duration-300",
+                                    isActive && "bg-[--metis-brass-soft] shadow-[0_0_28px_rgba(224,183,111,0.5)]",
+                                  )}
+                                />
+                                <span
+                                  className={cn(
+                                    "mt-1 h-2.5 w-2.5 rounded-full border border-white/10 bg-white/10 shadow-[0_0_0_4px_rgba(255,255,255,0.02)]",
+                                    isActive &&
+                                      "border-[--metis-brass-soft]/70 bg-[--metis-brass-soft] shadow-[0_0_0_5px_rgba(224,183,111,0.16)]",
+                                  )}
+                                />
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center justify-between gap-4">
+                                    <span className={cn("text-sm font-medium text-[--metis-paper]", isActive && "text-white")}>
+                                      {item.shortLabel}
+                                    </span>
+                                    <ChevronRight
+                                      className={cn(
+                                        "h-4 w-4 text-[--metis-ink-soft] transition duration-300",
+                                        isActive ? "translate-x-0 text-[--metis-brass-soft]" : "group-hover:translate-x-0.5",
+                                      )}
+                                    />
+                                  </div>
+                                </div>
+                              </Link>
+                            );
+                          })
+                        : null}
                     </div>
                   </div>
                 );
