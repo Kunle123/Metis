@@ -52,17 +52,24 @@ const templateCards = [
   },
 ] as const;
 
-const quickLinks = [
+const dashboardQuickLinksBase = [
   { label: "Open brief", href: "/brief" },
   { label: "Review sources", href: "/sources" },
   { label: "Review gaps", href: "/gaps" },
-  { label: "Prepare output", href: "/export" },
 ] as const;
 
 export default async function DashboardPage() {
   const issues = await prisma.issue.findMany({
     orderBy: { updatedAt: "desc" },
   });
+
+  const firstIssue = issues[0] ?? null;
+  const quickLinks = firstIssue
+    ? [
+        ...dashboardQuickLinksBase,
+        { label: "Prepare output" as const, href: `/issues/${firstIssue.id}/export` },
+      ]
+    : [...dashboardQuickLinksBase];
 
   return (
     <MetisShell activePath="/" pageTitle="Issues Dashboard">
