@@ -118,25 +118,31 @@ export default async function IssueBriefPage({
                 Issue · <span className="text-[--metis-paper]">{issue.title}</span>
               </div>
               <div className="flex flex-wrap items-center justify-end gap-3">
-                <div className="inline-flex rounded-full border border-white/8 bg-[rgba(0,0,0,0.14)] p-0.5">
+                <div className="inline-flex rounded-full border border-white/10 bg-[rgba(0,0,0,0.2)] p-0.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
                   <Link
                     href={`/issues/${issue.id}/brief?mode=full`}
-                    className={`rounded-full px-3.5 py-1.5 text-[0.68rem] font-medium uppercase tracking-[0.18em] transition ${
-                      mode === "full" ? "bg-[--metis-brass] text-[--metis-dark]" : "text-[--metis-paper-muted] hover:text-[--metis-paper]"
+                    aria-current={mode === "full" ? "page" : undefined}
+                    className={`inline-flex min-h-9 min-w-0 items-center justify-center rounded-full px-3.5 py-1.5 text-[0.68rem] font-medium uppercase tracking-[0.18em] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/45 focus-visible:ring-offset-1 focus-visible:ring-offset-[#0a0e0f] ${
+                      mode === "full"
+                        ? "bg-[--metis-brass] font-semibold text-[--metis-dark] shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_1px_2px_rgba(0,0,0,0.45)] ring-1 ring-black/25"
+                        : "border border-white/10 bg-white/[0.08] text-[--metis-paper-muted] hover:border-white/16 hover:bg-white/[0.12] hover:text-[--metis-paper]"
                     }`}
                   >
                     Full issue brief
                   </Link>
                   <Link
                     href={`/issues/${issue.id}/brief?mode=executive`}
-                    className={`rounded-full px-3.5 py-1.5 text-[0.68rem] font-medium uppercase tracking-[0.18em] transition ${
-                      mode === "executive" ? "bg-[--metis-brass] text-[--metis-dark]" : "text-[--metis-paper-muted] hover:text-[--metis-paper]"
+                    aria-current={mode === "executive" ? "page" : undefined}
+                    className={`inline-flex min-h-9 min-w-0 items-center justify-center rounded-full px-3.5 py-1.5 text-[0.68rem] font-medium uppercase tracking-[0.18em] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/45 focus-visible:ring-offset-1 focus-visible:ring-offset-[#0a0e0f] ${
+                      mode === "executive"
+                        ? "bg-[--metis-brass] font-semibold text-[--metis-dark] shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_1px_2px_rgba(0,0,0,0.45)] ring-1 ring-black/25"
+                        : "border border-white/10 bg-white/[0.08] text-[--metis-paper-muted] hover:border-white/16 hover:bg-white/[0.12] hover:text-[--metis-paper]"
                     }`}
                   >
                     Executive brief
                   </Link>
                 </div>
-                <Button asChild className="rounded-full bg-[--metis-brass] text-[--metis-dark] hover:bg-[--metis-brass-soft]">
+                <Button asChild className="rounded-full bg-[--metis-brass] text-[--metis-dark] shadow-[0_2px_10px_rgba(0,0,0,0.45)] ring-1 ring-white/15 hover:bg-[--metis-brass-soft] focus-visible:ring-2 focus-visible:ring-[--metis-brass-soft] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0e0f]">
                   <Link href={`/issues/${issue.id}/export?mode=${mode}`}>
                     <FileOutput className="mr-2 h-4 w-4" />
                     Prepare output
