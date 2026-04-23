@@ -46,10 +46,11 @@ export function renderExportPackage({
 
   if (format === "email-ready") {
     const lede = artifact.lede;
+    const circulation = artifact.metadata.circulation;
     const actions = artifact.executive.immediateActions.map((a) => `- ${a}`).join("\n");
     return {
       mimeType: "text/plain" as const,
-      content: `${title}\n\n${lede}\n\nImmediate actions:\n${actions}\n`,
+      content: `Subject: ${title}\nCirculation: ${circulation}\n\n${lede}\n\nImmediate actions:\n${actions}\n`,
     };
   }
 
