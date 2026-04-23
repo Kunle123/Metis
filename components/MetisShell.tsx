@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { LogoutButton } from "@/components/LogoutButton";
 
 type ConfidenceLevel = "Confirmed" | "Likely" | "Unclear" | "Needs validation";
 type ReadinessState =
@@ -381,6 +382,7 @@ export function MetisShell({
                     <Clock3 className="h-4 w-4 text-[--metis-brass]" />
                     Refreshed 12 minutes ago
                   </div>
+                  <LogoutButton />
                   {issueRoutePrefix ? (
                     <Button asChild className="rounded-full bg-[--metis-brass] px-5 text-[--metis-dark] hover:bg-[--metis-brass-soft]">
                       <Link href={`${issueRoutePrefix}/export`}>
