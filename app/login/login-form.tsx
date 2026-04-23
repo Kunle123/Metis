@@ -9,7 +9,15 @@ import { Input } from "@/components/ui/input";
 export function LoginForm() {
   const router = useRouter();
   const sp = useSearchParams();
-  const from = sp.get("from") ?? "/";
+  const from = sp.get("from");
+
+  function getSafeRedirectTarget(raw: string | null) {
+    if (!raw) return "/";
+    if (!raw.startsWith("/")) return "/";
+    if (raw.startsWith("//")) return "/";
+    if (raw === "/login" || raw.startsWith("/login/") || raw.startsWith("/login?")) return "/";
+    return raw;
+  }
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -32,7 +40,7 @@ export function LoginForm() {
         setError(text || `Login failed (${res.status})`);
         return;
       }
-      router.push(from);
+      router.replace(getSafeRedirectTarget(from));
     } catch (e: any) {
       setError(e?.message ?? "Login failed");
     } finally {
