@@ -124,6 +124,12 @@ export default async function IssueExportPage({
     );
   }
 
+  const recentCirculationEvents = await prisma.circulationEvent.findMany({
+    where: { issueId: issue.id },
+    orderBy: { createdAt: "desc" },
+    take: 5,
+  });
+
   const artifact = BriefArtifactSchema.parse(latest.artifact) as BriefArtifact;
   const rendered = renderExportPackage({ issue, mode, format: selectedFormat, artifact });
 
@@ -274,6 +280,40 @@ export default async function IssueExportPage({
                   <p>v{latest.versionNumber}</p>
                 </div>
               </div>
+            </div>
+
+            <div className="space-y-4 px-5 py-5">
+              <p className="text-[0.58rem] uppercase tracking-[0.16em] text-[rgba(176,171,160,0.58)]">Recent circulation record</p>
+              {recentCirculationEvents.length === 0 ? (
+                <div className="rounded-[1.25rem] border border-white/10 bg-[rgba(255,255,255,0.04)] px-4 py-3 text-sm leading-6 text-[--metis-paper-muted]">
+                  No circulation actions logged yet.
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {recentCirculationEvents.map((e) => (
+                    <div
+                      key={e.id}
+                      className="rounded-[1.25rem] border border-white/10 bg-[rgba(255,255,255,0.04)] px-4 py-3"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-[--metis-paper]">
+                            {e.eventType}
+                            {e.channel ? ` · ${e.channel}` : ""}
+                            {e.postureState ? ` · ${e.postureState}` : ""}
+                          </p>
+                          {e.audienceLabel ? (
+                            <p className="mt-1 text-sm leading-6 text-[--metis-paper-muted]">{e.audienceLabel}</p>
+                          ) : null}
+                        </div>
+                        <p className="shrink-0 text-[0.68rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">
+                          {e.createdAt.toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="space-y-4 px-5 py-5">
