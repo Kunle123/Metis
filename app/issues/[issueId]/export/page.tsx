@@ -150,6 +150,7 @@ export default async function IssueExportPage({
         title: issue.title,
         severity: issue.severity,
         openGapsCount: issue.openGapsCount,
+        ownerName: issue.ownerName,
         updatedAt: issue.updatedAt,
       }}
     >

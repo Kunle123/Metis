@@ -48,6 +48,7 @@ export default async function IssueGapsPage({ params }: { params: Promise<{ issu
         title: issue.title,
         severity: issue.severity,
         openGapsCount: issue.openGapsCount,
+        ownerName: issue.ownerName,
         updatedAt: issue.updatedAt,
       }}
     >

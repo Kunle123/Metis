@@ -169,6 +169,7 @@ export function MetisShell({
     title: string;
     severity?: string | null;
     openGapsCount?: number | null;
+    ownerName?: string | null;
     updatedAt?: Date | null;
   };
 }) {
@@ -375,6 +376,11 @@ export function MetisShell({
                 <div className="space-y-2">
                   {pageMeta ? <p className="text-[0.68rem] uppercase tracking-[0.28em] text-[--metis-ink-soft]">{pageMeta}</p> : null}
                   <h1 className="font-[Cormorant_Garamond] text-3xl text-[--metis-paper] sm:text-4xl">{pageTitle}</h1>
+                  {activeIssue?.ownerName ? (
+                    <p className="text-[0.68rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">
+                      Owner · <span className="text-[--metis-paper]">{activeIssue.ownerName}</span>
+                    </p>
+                  ) : null}
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3">

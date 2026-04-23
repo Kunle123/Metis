@@ -38,6 +38,7 @@ export default async function IssueInternalInputPage({ params }: { params: Promi
         title: issue.title,
         severity: issue.severity,
         openGapsCount: issue.openGapsCount,
+        ownerName: issue.ownerName,
         updatedAt: issue.updatedAt,
       }}
     >

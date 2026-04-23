@@ -106,6 +106,7 @@ export default async function IssueBriefPage({
         title: issue.title,
         severity: issue.severity,
         openGapsCount: issue.openGapsCount,
+        ownerName: issue.ownerName,
         updatedAt: issue.updatedAt,
       }}
     >

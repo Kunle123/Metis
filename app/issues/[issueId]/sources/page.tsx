@@ -83,6 +83,7 @@ export default async function IssueSourcesPage({ params }: { params: Promise<{ i
         title: issue.title,
         severity: issue.severity,
         openGapsCount: issue.openGapsCount,
+        ownerName: issue.ownerName,
         updatedAt: issue.updatedAt,
       }}
     >
