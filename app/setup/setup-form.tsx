@@ -18,6 +18,7 @@ export function SetupForm() {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [contextPasteError, setContextPasteError] = useState<string | null>(null);
 
   const [title, setTitle] = useState("");
   const [issueType, setIssueType] = useState("");
@@ -79,6 +80,21 @@ export function SetupForm() {
       setError(e?.message ?? "Request failed.");
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function onPasteContext() {
+    setContextPasteError(null);
+    try {
+      if (typeof navigator === "undefined" || !navigator.clipboard?.readText) {
+        setContextPasteError("Clipboard paste is not available in this browser.");
+        return;
+      }
+      const text = await navigator.clipboard.readText();
+      const next = context.trim().length ? `${context}\n\n${text}` : text;
+      setContext(next);
+    } catch {
+      setContextPasteError("Clipboard access was denied.");
     }
   }
 
@@ -209,13 +225,26 @@ export function SetupForm() {
         </div>
 
         <div className="space-y-3 border-t border-white/8 pt-5">
-          <p className="text-[0.72rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Context</p>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-[0.72rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Context</p>
+            <Button
+              type="button"
+              onClick={onPasteContext}
+              variant="outline"
+              className="h-9 rounded-full border-white/10 bg-white/[0.03] px-4 text-[--metis-paper] hover:bg-white/[0.08]"
+            >
+              Paste
+            </Button>
+          </div>
           <Textarea
             value={context}
             onChange={(e) => setContext(e.target.value)}
             placeholder="Additional context leaders need…"
             className="min-h-[154px] rounded-[1.2rem] border-white/12 bg-[rgba(255,255,255,0.055)] px-4 py-4 text-sm leading-7 text-[--metis-paper]"
           />
+          {contextPasteError ? (
+            <div className="rounded-md border border-rose-400/20 bg-rose-900/20 px-3 py-2 text-sm text-rose-100">{contextPasteError}</div>
+          ) : null}
         </div>
       </div>
 
