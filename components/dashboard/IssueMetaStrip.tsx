@@ -19,7 +19,7 @@ export function IssueMetaStrip({
           <p className="mt-2 text-sm text-[--metis-paper]">{audience ?? "—"}</p>
         </div>
         <div className="min-w-0 border-t border-white/8 pt-4 sm:border-l sm:border-t-0 sm:pl-4 sm:pt-0 lg:border-l-0 lg:border-t lg:pl-0 lg:pt-4">
-          <p className="text-[0.68rem] uppercase tracking-[0.24em] text-[--metis-ink-soft]">Refreshed</p>
+          <p className="text-[0.68rem] uppercase tracking-[0.24em] text-[--metis-ink-soft]">Updated</p>
           <p className="mt-2 text-sm text-[--metis-paper]">{updatedAt.toLocaleString()}</p>
         </div>
       </div>
