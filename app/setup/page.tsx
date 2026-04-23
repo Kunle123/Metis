@@ -22,38 +22,9 @@ export default async function SetupPage() {
           </div>
 
           <div className="space-y-8 px-6 py-6 sm:px-7 sm:py-7">
-            <section className="space-y-5">
-              <SetupForm />
-            </section>
-
             <section className="grid gap-6 border-t border-white/8 pt-8 xl:grid-cols-[minmax(0,1fr)_280px] xl:items-start">
               <div className="space-y-5">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-[0.72rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Confirmed facts</p>
-                    <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">Placeholder</Badge>
-                  </div>
-                  <div className="min-h-[172px] rounded-[1.2rem] border border-white/12 bg-[rgba(255,255,255,0.055)] px-4 py-4 text-sm leading-7 text-[--metis-paper-muted]">
-                    Static placeholder. Evidence capture will land here.
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-[0.72rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Open questions</p>
-                    <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">Placeholder</Badge>
-                  </div>
-                  <div className="min-h-[172px] rounded-[1.2rem] border border-white/12 bg-[rgba(255,255,255,0.055)] px-4 py-4 text-sm leading-7 text-[--metis-paper-muted]">
-                    Static placeholder. Clarification capture will land here.
-                  </div>
-                </div>
-
-                <div className="space-y-3 border-t border-white/8 pt-5">
-                  <p className="text-[0.72rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Context</p>
-                  <div className="min-h-[154px] rounded-[1.2rem] border border-white/12 bg-[rgba(255,255,255,0.055)] px-4 py-4 text-sm leading-7 text-[--metis-paper-muted]">
-                    Static placeholder. Additional context will land here.
-                  </div>
-                </div>
+                <SetupForm />
               </div>
 
               <div className="metis-surface metis-support-surface space-y-4 rounded-[1.45rem] border px-5 py-5 shadow-[0_16px_40px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.03)]">

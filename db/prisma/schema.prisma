@@ -20,6 +20,9 @@ model Issue {
   id            String   @id @default(uuid())
   title         String
   summary       String
+  confirmedFacts String?
+  openQuestions  String?
+  context        String?
   issueType     String
   severity      String
   status        String

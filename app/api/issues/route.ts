@@ -34,6 +34,9 @@ export async function POST(request: Request) {
     data: {
       title: parsed.data.title,
       summary: parsed.data.summary,
+      confirmedFacts: parsed.data.confirmedFacts ?? null,
+      openQuestions: parsed.data.openQuestions ?? null,
+      context: parsed.data.context ?? null,
       issueType: parsed.data.issueType,
       severity: parsed.data.severity,
       status: parsed.data.status,

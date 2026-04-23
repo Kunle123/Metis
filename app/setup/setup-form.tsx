@@ -24,6 +24,9 @@ export function SetupForm() {
   const [audience, setAudience] = useState("");
   const [priority, setPriority] = useState<IssuePriority>("Normal");
   const [summary, setSummary] = useState("");
+  const [confirmedFacts, setConfirmedFacts] = useState("");
+  const [openQuestions, setOpenQuestions] = useState("");
+  const [context, setContext] = useState("");
   const [severity, setSeverity] = useState<(typeof severities)[number]>("High");
   const [operatorPosture, setOperatorPosture] = useState<OperatorPosture>("Monitoring");
   const [ownerName, setOwnerName] = useState("");
@@ -48,6 +51,9 @@ export function SetupForm() {
           audience: audience.trim().length ? audience.trim() : null,
           priority,
           summary: summary.trim(),
+          confirmedFacts: confirmedFacts.trim().length ? confirmedFacts.trim() : null,
+          openQuestions: openQuestions.trim().length ? openQuestions.trim() : null,
+          context: context.trim().length ? context.trim() : null,
           severity,
           operatorPosture,
           ownerName: ownerName.trim().length ? ownerName.trim() : null,
@@ -177,6 +183,38 @@ export function SetupForm() {
             onChange={(e) => setOwnerName(e.target.value)}
             placeholder="Amina Shah"
             className="h-12 rounded-[1.15rem] border-white/12 bg-[rgba(255,255,255,0.065)] text-[--metis-paper]"
+          />
+        </div>
+      </div>
+
+      <div className="space-y-5">
+        <div className="space-y-3">
+          <p className="text-[0.72rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Confirmed facts</p>
+          <Textarea
+            value={confirmedFacts}
+            onChange={(e) => setConfirmedFacts(e.target.value)}
+            placeholder="What we are confident is true right now…"
+            className="min-h-[172px] rounded-[1.2rem] border-white/12 bg-[rgba(255,255,255,0.055)] px-4 py-4 text-sm leading-7 text-[--metis-paper]"
+          />
+        </div>
+
+        <div className="space-y-3">
+          <p className="text-[0.72rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Open questions</p>
+          <Textarea
+            value={openQuestions}
+            onChange={(e) => setOpenQuestions(e.target.value)}
+            placeholder="What we still need to confirm…"
+            className="min-h-[172px] rounded-[1.2rem] border-white/12 bg-[rgba(255,255,255,0.055)] px-4 py-4 text-sm leading-7 text-[--metis-paper]"
+          />
+        </div>
+
+        <div className="space-y-3 border-t border-white/8 pt-5">
+          <p className="text-[0.72rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Context</p>
+          <Textarea
+            value={context}
+            onChange={(e) => setContext(e.target.value)}
+            placeholder="Additional context leaders need…"
+            className="min-h-[154px] rounded-[1.2rem] border-white/12 bg-[rgba(255,255,255,0.055)] px-4 py-4 text-sm leading-7 text-[--metis-paper]"
           />
         </div>
       </div>
