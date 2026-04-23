@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 
 function readinessFromConfidence(confidence: BriefConfidence) {
   if (confidence === "Needs validation") return { label: "Needs validation", tone: "bg-[rgba(118,27,46,0.56)] text-rose-50" };
-  if (confidence === "Unclear") return { label: "Open gap", tone: "bg-[rgba(131,82,17,0.72)] text-amber-50" };
+  if (confidence === "Unclear") return { label: "Needs clarification", tone: "bg-[rgba(131,82,17,0.72)] text-amber-50" };
   if (confidence === "Confirmed") return { label: "Ready to circulate", tone: "bg-[rgba(18,91,60,0.76)] text-emerald-50" };
   return { label: "Ready for review", tone: "bg-[rgba(49,63,82,0.72)] text-slate-50" };
 }
@@ -80,7 +80,7 @@ export default async function IssueBriefPage({
         { label: "Audience", value: artifact.metadata.audience ?? "—" },
         { label: "Circulation", value: artifact.metadata.circulation },
         { label: "Last revision", value: artifact.metadata.lastRevisionLabel },
-        { label: "Open gaps", value: artifact.metadata.openGapsLabel },
+        { label: "Clarification gaps", value: artifact.metadata.openGapsLabel },
       ] as const)
     : ([] as const);
 
@@ -90,7 +90,7 @@ export default async function IssueBriefPage({
     .filter((s) => s.confidence === "Needs validation" || s.confidence === "Unclear")
     .slice(0, 3)
     .map((s) => ({
-      title: `${displayTitles(s.id, s.title)} requires validation`,
+      title: `${displayTitles(s.id, s.title)} needs ${s.confidence === "Unclear" ? "clarification" : "validation"}`,
       owner: "—",
       confidence: s.confidence,
     }));
@@ -247,7 +247,7 @@ export default async function IssueBriefPage({
                   <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{issue.status}</Badge>
                 </div>
                 <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-3">
-                  <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Open gaps</span>
+                  <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Clarification gaps</span>
                   <Badge className="border-0 bg-[rgba(124,78,18,0.6)] text-amber-50">{issue.openGapsCount}</Badge>
                 </div>
                 <div className="space-y-2 border-t border-white/8 pt-3">

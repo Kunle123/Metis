@@ -4,6 +4,7 @@ import { ArrowRight, Link2, Lock, PencilLine, PlusCircle } from "lucide-react";
 import { ConfidencePill, ReadinessPill, SurfaceCard } from "@/components/MetisShell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { confidenceDisplayLabel } from "@/lib/ui/confidenceDisplayLabel";
 import type { InternalInput } from "@metis/shared/internalInput";
 
 import { InternalInputCreateForm } from "./input-create-form";
@@ -20,7 +21,7 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
   const captureState = primaryInput
     ? ([
         { label: "Linked section", value: primaryInput.linkedSection ?? "—" },
-        { label: "Confidence", value: primaryInput.confidence },
+        { label: "Confidence", value: confidenceDisplayLabel(primaryInput.confidence) },
         { label: "Recorded at", value: new Date(primaryInput.createdAt).toLocaleString() },
       ] as const)
     : ([] as const);
@@ -156,7 +157,7 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
               </Button>
               <Button asChild variant="outline" className="w-full rounded-full border-white/10 bg-white/[0.03] text-[--metis-paper] hover:bg-white/[0.08]">
                 <Link href={`/issues/${issueId}/gaps`}>
-                  Open gaps
+                  Review clarification gaps
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>

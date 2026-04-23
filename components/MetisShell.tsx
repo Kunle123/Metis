@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { LogoutButton } from "@/components/LogoutButton";
+import { confidenceDisplayLabel } from "@/lib/ui/confidenceDisplayLabel";
 
 type ConfidenceLevel = "Confirmed" | "Likely" | "Unclear" | "Needs validation";
 type ReadinessState =
@@ -73,7 +74,7 @@ export function ConfidencePill({ level }: { level: ConfidenceLevel }) {
         confidenceClassMap[level],
       )}
     >
-      {level}
+      {confidenceDisplayLabel(level)}
     </span>
   );
 }
@@ -354,7 +355,7 @@ export function MetisShell({
                 </div>
                 <div className="grid grid-cols-2 gap-3 text-xs text-[--metis-paper-muted]">
                   <div className="rounded-2xl border border-white/8 bg-[rgba(0,0,0,0.16)] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
-                    <div className="text-[0.68rem] uppercase tracking-[0.2em] text-[--metis-ink-soft]">Open gaps</div>
+                    <div className="text-[0.68rem] uppercase tracking-[0.2em] text-[--metis-ink-soft]">Clarification gaps</div>
                     <div className="mt-2 text-xl text-[--metis-paper]">{activeIssue?.openGapsCount ?? "—"}</div>
                   </div>
                   <div className="rounded-2xl border border-white/8 bg-[rgba(0,0,0,0.16)] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">

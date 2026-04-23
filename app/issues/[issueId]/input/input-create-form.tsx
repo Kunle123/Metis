@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { confidenceDisplayLabel } from "@/lib/ui/confidenceDisplayLabel";
 import type { InternalInputConfidence } from "@metis/shared/internalInput";
 
 const confidenceLevels: InternalInputConfidence[] = ["Confirmed", "Likely", "Unclear", "Needs validation"];
@@ -87,7 +88,7 @@ export function InternalInputCreateForm({ issueId }: { issueId: string }) {
             >
               {confidenceLevels.map((c) => (
                 <option key={c} value={c}>
-                  {c}
+                  {confidenceDisplayLabel(c)}
                 </option>
               ))}
             </select>
