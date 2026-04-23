@@ -13,7 +13,7 @@ export default async function IssueActivityPage({ params }: { params: Promise<{ 
 
   if (!issue) {
     return (
-      <MetisShell activePath="/brief" pageTitle="Activity" issueRoutePrefix={`/issues/${issueId}`}>
+      <MetisShell activePath="/activity" pageTitle="Activity" issueRoutePrefix={`/issues/${issueId}`}>
         <SurfaceCard>
           <div className="px-6 py-6 text-[--metis-paper]">Issue not found.</div>
         </SurfaceCard>
@@ -29,7 +29,7 @@ export default async function IssueActivityPage({ params }: { params: Promise<{ 
 
   return (
     <MetisShell
-      activePath="/brief"
+      activePath="/activity"
       pageTitle="Activity"
       issueRoutePrefix={`/issues/${issue.id}`}
       activeIssue={{
