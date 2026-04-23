@@ -375,6 +375,11 @@ export function MetisShell({
               <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
                 <div className="space-y-2">
                   {pageMeta ? <p className="text-[0.68rem] uppercase tracking-[0.28em] text-[--metis-ink-soft]">{pageMeta}</p> : null}
+                  {issueRoutePrefix && activeIssue?.title ? (
+                    <p className="text-[0.68rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">
+                      Issue · <span className="text-[--metis-paper]">{activeIssue.title}</span>
+                    </p>
+                  ) : null}
                   <h1 className="font-[Cormorant_Garamond] text-3xl text-[--metis-paper] sm:text-4xl">{pageTitle}</h1>
                   {activeIssue?.ownerName ? (
                     <p className="text-[0.68rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">
