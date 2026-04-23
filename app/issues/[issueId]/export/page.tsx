@@ -217,7 +217,7 @@ export default async function IssueExportPage({
                 <input type="hidden" name="logEvent.channel" value={fileChannel} />
                 <Button type="submit" className="w-full justify-start rounded-[1rem] bg-[--metis-brass] text-[--metis-dark] hover:bg-[--metis-brass-soft]">
                   <Download className="mr-2 h-4 w-4" />
-                  Export file
+                  Download package file
                 </Button>
               </form>
 
@@ -232,7 +232,7 @@ export default async function IssueExportPage({
                   className="w-full justify-start rounded-[1rem] border-white/10 bg-white/[0.03] text-[--metis-paper] hover:bg-white/[0.08]"
                 >
                   <Copy className="mr-2 h-4 w-4 text-[--metis-brass]" />
-                  Copy executive text
+                  Copy executive brief text
                 </Button>
               </form>
 
@@ -247,7 +247,7 @@ export default async function IssueExportPage({
                   className="w-full justify-start rounded-[1rem] border-white/10 bg-white/[0.03] text-[--metis-paper] hover:bg-white/[0.08]"
                 >
                   <Mail className="mr-2 h-4 w-4 text-[--metis-brass]" />
-                  Email-ready package
+                  Copy email-ready package
                 </Button>
               </form>
             </section>
