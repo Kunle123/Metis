@@ -265,13 +265,13 @@ export default async function IssueComparePage({
                   Open export
                 </Link>
               </Button>
-              <Button asChild variant="outline" className="w-full rounded-full border-white/10 bg-white/[0.03] text-[--metis-paper] hover:bg-white/[0.08]">
+              <Button asChild variant="outline" className="w-full rounded-full">
                 <Link href={`/issues/${issue.id}/brief?mode=${mode}`}>
                   <RefreshCcw className="mr-2 h-4 w-4" />
                   Open brief
                 </Link>
               </Button>
-              <Button asChild variant="outline" className="w-full rounded-full border-white/10 bg-white/[0.03] text-[--metis-paper] hover:bg-white/[0.08]">
+              <Button asChild variant="outline" className="w-full rounded-full">
                 <Link href={`/issues/${issue.id}/sources`}>
                   <ScanSearch className="mr-2 h-4 w-4" />
                   Open sources
