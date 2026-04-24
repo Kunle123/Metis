@@ -78,7 +78,7 @@ export function GapCreateForm({ issueId }: { issueId: string }) {
             <p className="mt-1 text-sm text-[--metis-paper-muted]">Creates a persisted clarification gap for this issue.</p>
           </div>
           <Button
-            className="rounded-full bg-[--metis-brass] px-5 text-[--metis-dark] hover:bg-[--metis-brass-soft]"
+            className="rounded-full px-5"
             disabled={
               isSaving ||
               !title.trim() ||
@@ -99,7 +99,7 @@ export function GapCreateForm({ issueId }: { issueId: string }) {
             <select
               value={severity}
               onChange={(e) => setSeverity(e.target.value as GapSeverity)}
-              className="h-11 w-full rounded-full border border-white/10 bg-white/[0.04] px-4 text-sm text-[--metis-paper]"
+              className="h-11 w-full rounded-full border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
             >
               {severities.map((s) => (
                 <option key={s} value={s}>
@@ -113,7 +113,7 @@ export function GapCreateForm({ issueId }: { issueId: string }) {
             <Input
               value={linkedSection}
               onChange={(e) => setLinkedSection(e.target.value)}
-              className="h-11 rounded-full border-white/10 bg-white/[0.04]"
+              className="h-11 rounded-full"
               placeholder="e.g., Executive Summary"
             />
           </label>
@@ -124,7 +124,7 @@ export function GapCreateForm({ issueId }: { issueId: string }) {
           <Input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="h-11 rounded-full border-white/10 bg-white/[0.04]"
+            className="h-11 rounded-full"
             placeholder="Short statement of what is missing"
           />
         </label>
@@ -135,7 +135,7 @@ export function GapCreateForm({ issueId }: { issueId: string }) {
             value={whyItMatters}
             onChange={(e) => setWhyItMatters(e.target.value)}
             rows={3}
-            className="w-full rounded-[1.1rem] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-[--metis-paper]"
+            className="w-full rounded-[1.1rem] border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 py-3 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
             placeholder="Why this gap matters for the brief"
           />
         </label>
@@ -145,7 +145,7 @@ export function GapCreateForm({ issueId }: { issueId: string }) {
           <Input
             value={stakeholder}
             onChange={(e) => setStakeholder(e.target.value)}
-            className="h-11 rounded-full border-white/10 bg-white/[0.04]"
+            className="h-11 rounded-full"
             placeholder="e.g., Legal counsel"
           />
         </label>
@@ -156,7 +156,7 @@ export function GapCreateForm({ issueId }: { issueId: string }) {
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             rows={4}
-            className="w-full rounded-[1.1rem] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-[--metis-paper]"
+            className="w-full rounded-[1.1rem] border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 py-3 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
             placeholder="The exact clarification question"
           />
         </label>

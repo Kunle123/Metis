@@ -99,7 +99,7 @@ export function SourceEntryForm({ issueId }: { issueId: string }) {
             <select
               value={tier}
               onChange={(e) => setTier(e.target.value as SourceTier)}
-              className="h-11 w-full rounded-full border border-white/10 bg-white/[0.04] px-4 text-sm text-[--metis-paper]"
+              className="h-11 w-full rounded-full border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
             >
               {tiers.map((t) => (
                 <option key={t} value={t}>
@@ -114,7 +114,7 @@ export function SourceEntryForm({ issueId }: { issueId: string }) {
             <Input
               value={timestampLabel}
               onChange={(e) => setTimestampLabel(e.target.value)}
-              className="h-11 rounded-full border-white/10 bg-white/[0.04]"
+              className="h-11 rounded-full"
               placeholder="e.g., 07:10 CET (observed) / 09:30 CET (reported)"
             />
           </label>
@@ -126,7 +126,7 @@ export function SourceEntryForm({ issueId }: { issueId: string }) {
           <Input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="h-11 rounded-full border-white/10 bg-white/[0.04]"
+            className="h-11 rounded-full"
             placeholder='e.g., "Provider confirms regional outage" / "Internal logs show elevated 5xx"'
           />
         </label>
@@ -137,7 +137,7 @@ export function SourceEntryForm({ issueId }: { issueId: string }) {
           <Input
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            className="h-11 rounded-full border-white/10 bg-white/[0.04]"
+            className="h-11 rounded-full"
             placeholder="e.g., Confirms scope is limited to EU; US unaffected."
           />
         </label>
@@ -149,7 +149,7 @@ export function SourceEntryForm({ issueId }: { issueId: string }) {
             value={snippet}
             onChange={(e) => setSnippet(e.target.value)}
             rows={3}
-            className="w-full rounded-[1.1rem] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-[--metis-paper]"
+            className="w-full rounded-[1.1rem] border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 py-3 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
             placeholder="e.g., “We have identified the root cause and are rolling out a fix…”"
           />
         </label>
@@ -161,7 +161,7 @@ export function SourceEntryForm({ issueId }: { issueId: string }) {
             <Input
               value={linkedSection}
               onChange={(e) => setLinkedSection(e.target.value)}
-              className="h-11 rounded-full border-white/10 bg-white/[0.04]"
+              className="h-11 rounded-full"
               placeholder="e.g., Chronology / Confirmed vs unclear / Executive summary"
             />
           </label>
@@ -171,7 +171,7 @@ export function SourceEntryForm({ issueId }: { issueId: string }) {
             <Input
               value={reliability}
               onChange={(e) => setReliability(e.target.value)}
-              className="h-11 rounded-full border-white/10 bg-white/[0.04]"
+              className="h-11 rounded-full"
               placeholder="e.g., High (direct log) / Medium (single report) / Low (unverified)"
             />
           </label>
@@ -183,7 +183,7 @@ export function SourceEntryForm({ issueId }: { issueId: string }) {
           <Input
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            className="h-11 rounded-full border-white/10 bg-white/[0.04]"
+            className="h-11 rounded-full"
             placeholder="e.g., https://… (article, doc, ticket, dashboard link)"
           />
         </label>

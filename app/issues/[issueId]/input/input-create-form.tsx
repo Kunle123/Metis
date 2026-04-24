@@ -83,7 +83,7 @@ export function InternalInputCreateForm({ issueId }: { issueId: string }) {
             <p className="mt-1 text-sm text-[--metis-paper-muted]">Stored on the issue record for attribution and gap resolution.</p>
           </div>
           <Button
-            className="rounded-full bg-[--metis-brass] px-5 text-[--metis-dark] hover:bg-[--metis-brass-soft]"
+            className="rounded-full px-5"
             disabled={isSaving || !role.trim() || !name.trim() || !response.trim()}
             onClick={onSubmit}
           >
@@ -97,7 +97,7 @@ export function InternalInputCreateForm({ issueId }: { issueId: string }) {
             <select
               value={confidence}
               onChange={(e) => setConfidence(e.target.value as InternalInputConfidence)}
-              className="h-11 w-full rounded-full border border-white/10 bg-white/[0.04] px-4 text-sm text-[--metis-paper]"
+              className="h-11 w-full rounded-full border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
             >
               {confidenceLevels.map((c) => (
                 <option key={c} value={c}>
@@ -111,7 +111,7 @@ export function InternalInputCreateForm({ issueId }: { issueId: string }) {
             <Input
               value={timestampLabel}
               onChange={(e) => setTimestampLabel(e.target.value)}
-              className="h-11 rounded-full border-white/10 bg-white/[0.04]"
+              className="h-11 rounded-full"
               placeholder="e.g., 07:10 CET"
             />
           </label>
@@ -120,11 +120,11 @@ export function InternalInputCreateForm({ issueId }: { issueId: string }) {
         <div className="grid gap-3 md:grid-cols-2">
           <label className="space-y-2">
             <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Role</span>
-            <Input value={role} onChange={(e) => setRole(e.target.value)} className="h-11 rounded-full border-white/10 bg-white/[0.04]" />
+            <Input value={role} onChange={(e) => setRole(e.target.value)} className="h-11 rounded-full" />
           </label>
           <label className="space-y-2">
             <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Name</span>
-            <Input value={name} onChange={(e) => setName(e.target.value)} className="h-11 rounded-full border-white/10 bg-white/[0.04]" />
+            <Input value={name} onChange={(e) => setName(e.target.value)} className="h-11 rounded-full" />
           </label>
         </div>
 
@@ -134,7 +134,7 @@ export function InternalInputCreateForm({ issueId }: { issueId: string }) {
             value={response}
             onChange={(e) => setResponse(e.target.value)}
             rows={5}
-            className="w-full rounded-[1.1rem] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-[--metis-paper]"
+            className="w-full rounded-[1.1rem] border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 py-3 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
             placeholder="Attributable internal wording"
           />
         </label>
@@ -145,7 +145,7 @@ export function InternalInputCreateForm({ issueId }: { issueId: string }) {
             <Input
               value={linkedSection}
               onChange={(e) => setLinkedSection(e.target.value)}
-              className="h-11 rounded-full border-white/10 bg-white/[0.04]"
+              className="h-11 rounded-full"
               placeholder="Free-text section label"
             />
           </label>
@@ -154,7 +154,7 @@ export function InternalInputCreateForm({ issueId }: { issueId: string }) {
             <Input
               value={visibility}
               onChange={(e) => setVisibility(e.target.value)}
-              className="h-11 rounded-full border-white/10 bg-white/[0.04]"
+              className="h-11 rounded-full"
               placeholder="e.g., Internal legal"
             />
           </label>

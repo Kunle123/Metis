@@ -140,7 +140,7 @@ export function SetupForm() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="European customer portal outage"
-            className="h-12 rounded-[1.15rem] border-white/12 bg-[rgba(255,255,255,0.065)] text-[--metis-paper]"
+            className="h-12 rounded-[1.15rem]"
           />
         </div>
 
@@ -150,7 +150,7 @@ export function SetupForm() {
             value={issueType}
             onChange={(e) => setIssueType(e.target.value)}
             placeholder="Cyber incident"
-            className="h-12 rounded-[1.15rem] border-white/12 bg-[rgba(255,255,255,0.065)] text-[--metis-paper]"
+            className="h-12 rounded-[1.15rem]"
           />
         </div>
 
@@ -160,7 +160,7 @@ export function SetupForm() {
             value={audience}
             onChange={(e) => setAudience(e.target.value)}
             placeholder="CEO, COO, GC"
-            className="h-12 rounded-[1.15rem] border-white/12 bg-[rgba(255,255,255,0.065)] text-[--metis-paper]"
+            className="h-12 rounded-[1.15rem]"
           />
         </div>
 
@@ -170,7 +170,7 @@ export function SetupForm() {
             <select
               value={priority}
               onChange={(e) => setPriority(e.target.value as IssuePriority)}
-              className="h-12 w-full appearance-none rounded-[1.15rem] border border-white/12 bg-[rgba(255,255,255,0.065)] px-3 text-sm text-[--metis-paper] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
+              className="h-12 w-full appearance-none rounded-[1.15rem] border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-3 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
             >
               {priorities.map((p) => (
                 <option key={p} value={p}>
@@ -187,7 +187,7 @@ export function SetupForm() {
             value={summary}
             onChange={(e) => setSummary(e.target.value)}
             placeholder="Customer self-service remains degraded while security containment is verified…"
-            className="min-h-[148px] rounded-[1.25rem] border-white/12 bg-[rgba(255,255,255,0.065)] px-4 py-4 text-sm leading-7 text-[--metis-paper]"
+            className="min-h-[148px] rounded-[1.25rem] px-4 py-4 text-sm leading-7"
           />
         </div>
 
@@ -197,7 +197,7 @@ export function SetupForm() {
             <select
               value={severity}
               onChange={(e) => setSeverity(e.target.value as any)}
-              className="h-12 w-full appearance-none rounded-[1.15rem] border border-white/12 bg-[rgba(255,255,255,0.065)] px-3 text-sm text-[--metis-paper] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
+              className="h-12 w-full appearance-none rounded-[1.15rem] border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-3 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
             >
               {severities.map((s) => (
                 <option key={s} value={s}>
@@ -214,7 +214,7 @@ export function SetupForm() {
             <select
               value={operatorPosture}
               onChange={(e) => setOperatorPosture(e.target.value as OperatorPosture)}
-              className="h-12 w-full appearance-none rounded-[1.15rem] border border-white/12 bg-[rgba(255,255,255,0.065)] px-3 text-sm text-[--metis-paper] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
+              className="h-12 w-full appearance-none rounded-[1.15rem] border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-3 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
             >
               {postures.map((p) => (
                 <option key={p} value={p}>
@@ -231,7 +231,7 @@ export function SetupForm() {
             value={ownerName}
             onChange={(e) => setOwnerName(e.target.value)}
             placeholder="Amina Shah"
-            className="h-12 rounded-[1.15rem] border-white/12 bg-[rgba(255,255,255,0.065)] text-[--metis-paper]"
+            className="h-12 rounded-[1.15rem]"
           />
         </div>
       </div>
@@ -244,7 +244,7 @@ export function SetupForm() {
               type="button"
               onClick={onPasteConfirmedFacts}
               variant="outline"
-              className="h-9 rounded-full border-white/10 bg-white/[0.03] px-4 text-[--metis-paper] hover:bg-white/[0.08]"
+              className="h-9 rounded-full px-4"
             >
               Paste
             </Button>
@@ -253,7 +253,7 @@ export function SetupForm() {
             value={confirmedFacts}
             onChange={(e) => setConfirmedFacts(e.target.value)}
             placeholder="What we are confident is true right now…"
-            className="min-h-[172px] rounded-[1.2rem] border-white/12 bg-[rgba(255,255,255,0.055)] px-4 py-4 text-sm leading-7 text-[--metis-paper]"
+            className="min-h-[172px] rounded-[1.2rem] px-4 py-4 text-sm leading-7"
           />
           {confirmedFactsPasteError ? (
             <div className="rounded-md border border-rose-400/20 bg-rose-900/20 px-3 py-2 text-sm text-rose-100">
@@ -268,7 +268,7 @@ export function SetupForm() {
             value={openQuestions}
             onChange={(e) => setOpenQuestions(e.target.value)}
             placeholder="What we still need to confirm…"
-            className="min-h-[172px] rounded-[1.2rem] border-white/12 bg-[rgba(255,255,255,0.055)] px-4 py-4 text-sm leading-7 text-[--metis-paper]"
+            className="min-h-[172px] rounded-[1.2rem] px-4 py-4 text-sm leading-7"
           />
         </div>
 
@@ -288,7 +288,7 @@ export function SetupForm() {
             value={context}
             onChange={(e) => setContext(e.target.value)}
             placeholder="Additional context leaders need…"
-            className="min-h-[154px] rounded-[1.2rem] border-white/12 bg-[rgba(255,255,255,0.055)] px-4 py-4 text-sm leading-7 text-[--metis-paper]"
+            className="min-h-[154px] rounded-[1.2rem] px-4 py-4 text-sm leading-7"
           />
           {contextPasteError ? (
             <div className="rounded-md border border-rose-400/20 bg-rose-900/20 px-3 py-2 text-sm text-rose-100">{contextPasteError}</div>
@@ -306,7 +306,7 @@ export function SetupForm() {
         <Button
           onClick={onSubmit}
           disabled={!canSubmit || submitting}
-          className="rounded-full bg-[--metis-brass] px-5 text-[--metis-dark] hover:bg-[--metis-brass-soft]"
+          className="rounded-full px-5"
         >
           {submitting ? "Creating issue..." : "Create issue & open brief"}
         </Button>
