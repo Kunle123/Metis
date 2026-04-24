@@ -269,20 +269,20 @@ export function GapLedger({
                                   [gap.id]: event.target.value,
                                 }))
                               }
-                              className="min-h-[140px] w-full rounded-[1rem] border border-white/12 bg-[rgba(0,0,0,0.16)] px-4 py-4 text-sm leading-7 text-[--metis-paper]"
+                              className="min-h-[140px] w-full rounded-[1rem] border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 py-4 text-sm leading-7 text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
                             />
                             <div className="flex flex-wrap gap-2">
                               <Button
                                 onClick={() => void saveQuestion(gap.id)}
                                 disabled={busyGapId === gap.id}
-                                className="rounded-full bg-[--metis-brass] text-[--metis-dark] hover:bg-[--metis-brass-soft]"
+                                className="rounded-full"
                               >
                                 Save question
                               </Button>
                               <Button
                                 variant="outline"
                                 onClick={() => setEditingId(null)}
-                                className="rounded-full border-white/10 bg-white/[0.03] text-[--metis-paper] hover:bg-white/[0.08]"
+                                className="rounded-full"
                               >
                                 Cancel
                               </Button>
@@ -313,7 +313,7 @@ export function GapLedger({
                       </div>
 
                       <div className="grid gap-3">
-                        <Button asChild className="w-full rounded-full bg-[--metis-brass] text-[--metis-dark] hover:bg-[--metis-brass-soft]">
+                        <Button asChild className="w-full rounded-full">
                           <Link href={`/issues/${issueId}/input`}>
                             <MessageSquareText className="mr-2 h-4 w-4" />
                             Add manual input
@@ -323,7 +323,7 @@ export function GapLedger({
                           variant="outline"
                           onClick={() => startEditing(gap)}
                           disabled={gap.status === "Resolved"}
-                          className="w-full rounded-full border-white/10 bg-white/[0.03] text-[--metis-paper] hover:bg-white/[0.08] disabled:opacity-60"
+                          className="w-full rounded-full disabled:opacity-60"
                         >
                           <PencilLine className="mr-2 h-4 w-4" />
                           Edit question
@@ -331,7 +331,7 @@ export function GapLedger({
                         <Button
                           variant="outline"
                           onClick={() => void copyQuestion(gap)}
-                          className="w-full rounded-full border-white/10 bg-white/[0.03] text-[--metis-paper] hover:bg-white/[0.08]"
+                          className="w-full rounded-full"
                         >
                           <Copy className="mr-2 h-4 w-4" />
                           {copiedId === gap.id ? "Copied" : "Copy question"}
@@ -348,7 +348,7 @@ export function GapLedger({
                                   [gap.id]: e.target.value,
                                 }))
                               }
-                              className="h-11 w-full rounded-full border border-white/10 bg-white/[0.04] px-4 text-sm text-[--metis-paper]"
+                              className="h-11 w-full rounded-full border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
                             >
                               <option value="">Select an input record…</option>
                               {internalInputs.map((i) => (
@@ -361,7 +361,7 @@ export function GapLedger({
                               variant="outline"
                               disabled={busyGapId === gap.id || internalInputs.length === 0}
                               onClick={() => void resolveGap(gap.id)}
-                              className="w-full rounded-full border-white/10 bg-white/[0.03] text-[--metis-paper] hover:bg-white/[0.08] disabled:opacity-60"
+                              className="w-full rounded-full disabled:opacity-60"
                             >
                               <CheckCircle2 className="mr-2 h-4 w-4" />
                               Mark resolved
@@ -372,7 +372,7 @@ export function GapLedger({
                             variant="outline"
                             disabled={busyGapId === gap.id}
                             onClick={() => void reopenGap(gap.id)}
-                            className="w-full rounded-full border-white/10 bg-white/[0.03] text-[--metis-paper] hover:bg-white/[0.08]"
+                            className="w-full rounded-full"
                           >
                             Reopen gap
                           </Button>
@@ -428,7 +428,7 @@ export function GapLedger({
           </div>
 
           <div className="grid gap-3 px-5 py-5">
-            <Button asChild className="w-full rounded-full bg-[--metis-brass] text-[--metis-dark] hover:bg-[--metis-brass-soft]">
+            <Button asChild className="w-full rounded-full">
               <Link href={`/issues/${issueId}/input`}>Add attributable input</Link>
             </Button>
           </div>

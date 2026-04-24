@@ -115,7 +115,7 @@ export default async function IssueExportPage({
             <p className="max-w-3xl text-sm leading-7 text-[--metis-paper-muted]">
               Prepare output requires a stored brief version. Generate the first brief, then return here to package it for circulation.
             </p>
-            <Button asChild className="w-fit rounded-full bg-[--metis-brass] px-5 text-[--metis-dark] hover:bg-[--metis-brass-soft]">
+            <Button asChild className="w-fit rounded-full px-5">
               <Link href={`/issues/${issue.id}/brief?mode=${mode}`}>Open brief</Link>
             </Button>
           </div>
@@ -222,7 +222,7 @@ export default async function IssueExportPage({
                 <input type="hidden" name="format" value={selectedFormat} />
                 <input type="hidden" name="logEvent.eventType" value={downloadedEvent} />
                 <input type="hidden" name="logEvent.channel" value={fileChannel} />
-                <Button type="submit" className="w-full justify-start rounded-[1rem] bg-[--metis-brass] text-[--metis-dark] hover:bg-[--metis-brass-soft]">
+                <Button type="submit" className="w-full justify-start rounded-[1rem]">
                   <Download className="mr-2 h-4 w-4" />
                   Download package file
                 </Button>
@@ -236,7 +236,7 @@ export default async function IssueExportPage({
                 <Button
                   type="submit"
                   variant="outline"
-                  className="w-full justify-start rounded-[1rem] border-white/10 bg-white/[0.03] text-[--metis-paper] hover:bg-white/[0.08]"
+                  className="w-full justify-start rounded-[1rem]"
                 >
                   <Copy className="mr-2 h-4 w-4 text-[--metis-brass]" />
                   Copy executive brief text
@@ -251,7 +251,7 @@ export default async function IssueExportPage({
                 <Button
                   type="submit"
                   variant="outline"
-                  className="w-full justify-start rounded-[1rem] border-white/10 bg-white/[0.03] text-[--metis-paper] hover:bg-white/[0.08]"
+                  className="w-full justify-start rounded-[1rem]"
                 >
                   <Mail className="mr-2 h-4 w-4 text-[--metis-brass]" />
                   Copy email-ready package
@@ -335,13 +335,13 @@ export default async function IssueExportPage({
             </div>
 
             <div className="grid gap-3 px-5 py-5">
-              <Button asChild variant="outline" className="w-full rounded-full border-white/10 bg-white/[0.03] text-[--metis-paper] hover:bg-white/[0.08]">
+              <Button asChild variant="outline" className="w-full rounded-full">
                 <Link href={`/issues/${issue.id}/brief?mode=${mode}`}>
                   <Eye className="mr-2 h-4 w-4" />
                   Open brief
                 </Link>
               </Button>
-              <Button asChild variant="outline" className="w-full rounded-full border-white/10 bg-white/[0.03] text-[--metis-paper] hover:bg-white/[0.08]">
+              <Button asChild variant="outline" className="w-full rounded-full">
                 <Link href={`/issues/${issue.id}/compare?mode=${mode}`}>
                   <RefreshCcw className="mr-2 h-4 w-4" />
                   Open delta
