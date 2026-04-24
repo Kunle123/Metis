@@ -16,7 +16,7 @@ export function Button({ className, variant = "default", asChild, ...props }: Pr
   const variantClass =
     variant === "outline"
       ? "border border-[var(--metis-secondary-border)] bg-[var(--metis-secondary-bg)] text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-secondary-inset)] hover:border-[var(--metis-secondary-border-hover)] hover:bg-[var(--metis-secondary-bg-hover)] hover:shadow-[inset_0_1px_0_var(--metis-secondary-inset-hover)] disabled:border-[var(--metis-secondary-border-disabled)] disabled:bg-[var(--metis-secondary-bg-disabled)] disabled:text-[--metis-paper-muted] disabled:shadow-none disabled:opacity-[0.88]"
-      : "border border-transparent bg-[--metis-brass] text-[--metis-dark] shadow-[0_2px_10px_rgba(0,0,0,0.4)] ring-1 ring-inset ring-white/14 hover:bg-[--metis-brass-soft] hover:shadow-[0_3px_12px_rgba(0,0,0,0.45)] disabled:border-[var(--metis-primary-border-disabled)] disabled:bg-[var(--metis-primary-bg-disabled)] disabled:text-[var(--metis-primary-text-disabled)] disabled:shadow-[inset_0_1px_0_var(--metis-primary-inset-disabled),0_1px_0_rgba(0,0,0,0.22)] disabled:ring-1 disabled:ring-inset disabled:ring-white/[0.08] disabled:opacity-100";
+      : "border border-transparent bg-[--metis-brass] text-[--metis-dark] shadow-[0_2px_10px_rgba(0,0,0,0.4)] ring-1 ring-inset ring-white/14 hover:bg-[--metis-brass-soft] hover:shadow-[0_3px_12px_rgba(0,0,0,0.45)] disabled:border-[var(--metis-primary-border-disabled)] disabled:bg-[var(--metis-primary-bg-disabled)] disabled:text-[var(--metis-primary-text-disabled)] disabled:shadow-[inset_0_1px_0_var(--metis-primary-inset-disabled)] disabled:ring-0 disabled:opacity-100";
 
   if (asChild) {
     // Minimal "asChild" support: allow passing an <a> via children with className applied.
