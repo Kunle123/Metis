@@ -15,7 +15,7 @@ export function Button({ className, variant = "default", asChild, ...props }: Pr
 
   const variantClass =
     variant === "outline"
-      ? "border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] hover:border-[var(--metis-control-border-hover)] hover:bg-[var(--metis-control-bg-hover)] hover:shadow-[inset_0_1px_0_var(--metis-control-inset-hover)] disabled:border-[var(--metis-control-border-disabled)] disabled:bg-[var(--metis-control-bg-disabled)] disabled:shadow-none"
+      ? "border border-[var(--metis-secondary-border)] bg-[var(--metis-secondary-bg)] text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-secondary-inset)] hover:border-[var(--metis-secondary-border-hover)] hover:bg-[var(--metis-secondary-bg-hover)] hover:shadow-[inset_0_1px_0_var(--metis-secondary-inset-hover)] disabled:border-[var(--metis-secondary-border-disabled)] disabled:bg-[var(--metis-secondary-bg-disabled)] disabled:shadow-none"
       : "bg-[--metis-brass] text-[--metis-dark] shadow-[0_2px_10px_rgba(0,0,0,0.4)] ring-1 ring-inset ring-white/14 hover:bg-[--metis-brass-soft] hover:shadow-[0_3px_12px_rgba(0,0,0,0.45)] disabled:shadow-none disabled:ring-0";
 
   if (asChild) {
