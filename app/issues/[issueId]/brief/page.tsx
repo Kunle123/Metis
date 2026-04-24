@@ -114,9 +114,6 @@ export default async function IssueBriefPage({
         <SurfaceCard>
           <div className="border-b border-white/8 bg-[rgba(255,255,255,0.025)] px-6 py-5 sm:px-7">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="text-[0.62rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">
-                Issue · <span className="text-[--metis-paper]">{issue.title}</span>
-              </div>
               <div className="flex flex-wrap items-center justify-end gap-3">
                 <div className="inline-flex rounded-full border border-white/10 bg-[rgba(0,0,0,0.2)] p-0.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
                   <Link
