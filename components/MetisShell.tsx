@@ -137,8 +137,8 @@ const primaryNav = [
   { id: "setup", group: navGroups[0], path: "/setup", shortLabel: "Setup" },
   { id: "brief", group: navGroups[1], path: "/brief", shortLabel: "Brief" },
   { id: "sources", group: navGroups[1], path: "/sources", shortLabel: "Sources" },
-  { id: "gaps", group: navGroups[1], path: "/gaps", shortLabel: "Gaps" },
-  { id: "input", group: navGroups[1], path: "/input", shortLabel: "Input" },
+  { id: "gaps", group: navGroups[1], path: "/gaps", shortLabel: "Clarification gaps" },
+  { id: "input", group: navGroups[1], path: "/input", shortLabel: "Internal input" },
   { id: "compare", group: navGroups[2], path: "/compare", shortLabel: "Compare" },
   { id: "export", group: navGroups[2], path: "/export", shortLabel: "Export" },
 ] as const;
@@ -248,92 +248,76 @@ export function MetisShell({
                       ) : null}
                     </div>
                     <div className="space-y-2">
-                      {items.map((item) => {
-                        const isActive = item.path === activePath;
-                        return (
-                          <Link
-                            key={item.id}
-                            href={navHrefForItem(item)}
-                            className={cn(
-                              "group relative flex items-start gap-3 overflow-hidden rounded-[1.3rem] border px-4 py-3 transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60",
-                              isActive
-                                ? "border-[rgba(224,183,111,0.48)] bg-[linear-gradient(135deg,rgba(224,183,111,0.28),rgba(78,55,20,0.76))] ring-1 ring-[rgba(224,183,111,0.3)] shadow-[0_28px_72px_rgba(0,0,0,0.42),inset_0_1px_0_rgba(255,255,255,0.1)]"
-                                : "border-white/5 bg-[rgba(0,0,0,0.18)] hover:border-white/10 hover:bg-[rgba(255,255,255,0.045)]",
-                            )}
-                          >
-                            <span
+                      {(() => {
+                        const issueWorkspaceItems = issueRoutePrefix ? items.filter((item) => issueWorkspaceNavIds.has(item.id)) : [];
+                        const nonIssueItems = issueRoutePrefix ? items.filter((item) => !issueWorkspaceNavIds.has(item.id)) : items;
+                        const showIssueWorkspace = issueRoutePrefix && (issueWorkspaceItems.length > 0 || issueItems.length > 0);
+
+                        const renderNavLink = (
+                          item: (typeof primaryNav)[number] | (typeof issueOnlyNav)[number],
+                          href: string,
+                          isIndented: boolean,
+                        ) => {
+                          const isActive = item.path === activePath;
+                          return (
+                            <Link
+                              key={item.id}
+                              href={href}
                               className={cn(
-                                "absolute inset-y-2 left-1 w-[6px] rounded-full bg-transparent transition duration-300",
-                                isActive && "bg-[--metis-brass-soft] shadow-[0_0_28px_rgba(224,183,111,0.5)]",
+                                "group relative flex items-start gap-3 overflow-hidden rounded-[1.3rem] border px-4 py-3 transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60",
+                                isIndented && "ml-2",
+                                isActive
+                                  ? "border-[rgba(224,183,111,0.48)] bg-[linear-gradient(135deg,rgba(224,183,111,0.28),rgba(78,55,20,0.76))] ring-1 ring-[rgba(224,183,111,0.3)] shadow-[0_28px_72px_rgba(0,0,0,0.42),inset_0_1px_0_rgba(255,255,255,0.1)]"
+                                  : "border-white/5 bg-[rgba(0,0,0,0.18)] hover:border-white/10 hover:bg-[rgba(255,255,255,0.045)]",
                               )}
-                            />
-                            <span
-                              className={cn(
-                                "mt-1 h-2.5 w-2.5 rounded-full border border-white/10 bg-white/10 shadow-[0_0_0_4px_rgba(255,255,255,0.02)]",
-                                isActive &&
-                                  "border-[--metis-brass-soft]/70 bg-[--metis-brass-soft] shadow-[0_0_0_5px_rgba(224,183,111,0.16)]",
-                              )}
-                            />
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center justify-between gap-4">
-                                <span className={cn("text-sm font-medium text-[--metis-paper]", isActive && "text-white")}>
-                                  {item.shortLabel}
-                                </span>
-                                <ChevronRight
-                                  className={cn(
-                                    "h-4 w-4 text-[--metis-ink-soft] transition duration-300",
-                                    isActive ? "translate-x-0 text-[--metis-brass-soft]" : "group-hover:translate-x-0.5",
-                                  )}
-                                />
-                              </div>
-                            </div>
-                          </Link>
-                        );
-                      })}
-                      {issueRoutePrefix
-                        ? issueItems.map((item) => {
-                            const isActive = item.path === activePath;
-                            return (
-                              <Link
-                                key={item.id}
-                                href={navHrefForIssueOnlyItem(item)}
+                            >
+                              <span
                                 className={cn(
-                                  "group relative flex items-start gap-3 overflow-hidden rounded-[1.3rem] border px-4 py-3 transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60",
-                                  isActive
-                                    ? "border-[rgba(224,183,111,0.48)] bg-[linear-gradient(135deg,rgba(224,183,111,0.28),rgba(78,55,20,0.76))] ring-1 ring-[rgba(224,183,111,0.3)] shadow-[0_28px_72px_rgba(0,0,0,0.42),inset_0_1px_0_rgba(255,255,255,0.1)]"
-                                    : "border-white/5 bg-[rgba(0,0,0,0.18)] hover:border-white/10 hover:bg-[rgba(255,255,255,0.045)]",
+                                  "absolute inset-y-2 left-1 w-[6px] rounded-full bg-transparent transition duration-300",
+                                  isActive && "bg-[--metis-brass-soft] shadow-[0_0_28px_rgba(224,183,111,0.5)]",
                                 )}
-                              >
-                                <span
-                                  className={cn(
-                                    "absolute inset-y-2 left-1 w-[6px] rounded-full bg-transparent transition duration-300",
-                                    isActive && "bg-[--metis-brass-soft] shadow-[0_0_28px_rgba(224,183,111,0.5)]",
-                                  )}
-                                />
-                                <span
-                                  className={cn(
-                                    "mt-1 h-2.5 w-2.5 rounded-full border border-white/10 bg-white/10 shadow-[0_0_0_4px_rgba(255,255,255,0.02)]",
-                                    isActive &&
-                                      "border-[--metis-brass-soft]/70 bg-[--metis-brass-soft] shadow-[0_0_0_5px_rgba(224,183,111,0.16)]",
-                                  )}
-                                />
-                                <div className="min-w-0 flex-1">
-                                  <div className="flex items-center justify-between gap-4">
-                                    <span className={cn("text-sm font-medium text-[--metis-paper]", isActive && "text-white")}>
-                                      {item.shortLabel}
-                                    </span>
-                                    <ChevronRight
-                                      className={cn(
-                                        "h-4 w-4 text-[--metis-ink-soft] transition duration-300",
-                                        isActive ? "translate-x-0 text-[--metis-brass-soft]" : "group-hover:translate-x-0.5",
-                                      )}
-                                    />
-                                  </div>
+                              />
+                              <span
+                                className={cn(
+                                  "mt-1 h-2.5 w-2.5 rounded-full border border-white/10 bg-white/10 shadow-[0_0_0_4px_rgba(255,255,255,0.02)]",
+                                  isActive &&
+                                    "border-[--metis-brass-soft]/70 bg-[--metis-brass-soft] shadow-[0_0_0_5px_rgba(224,183,111,0.16)]",
+                                )}
+                              />
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center justify-between gap-4">
+                                  <span className={cn("text-sm font-medium text-[--metis-paper]", isActive && "text-white")}>
+                                    {item.shortLabel}
+                                  </span>
+                                  <ChevronRight
+                                    className={cn(
+                                      "h-4 w-4 text-[--metis-ink-soft] transition duration-300",
+                                      isActive ? "translate-x-0 text-[--metis-brass-soft]" : "group-hover:translate-x-0.5",
+                                    )}
+                                  />
                                 </div>
-                              </Link>
-                            );
-                          })
-                        : null}
+                              </div>
+                            </Link>
+                          );
+                        };
+
+                        return (
+                          <>
+                            {nonIssueItems.map((item) => renderNavLink(item, navHrefForItem(item), false))}
+                            {showIssueWorkspace ? (
+                              <div className="pt-1">
+                                <p className="px-1 text-[0.56rem] font-medium uppercase tracking-[0.22em] text-[rgba(176,171,160,0.62)]">
+                                  Issue workspace
+                                </p>
+                                <div className="mt-2 space-y-2 border-l border-white/8 pl-2">
+                                  {issueWorkspaceItems.map((item) => renderNavLink(item, navHrefForItem(item), true))}
+                                  {issueItems.map((item) => renderNavLink(item, navHrefForIssueOnlyItem(item), true))}
+                                </div>
+                              </div>
+                            ) : null}
+                          </>
+                        );
+                      })()}
                     </div>
                   </div>
                 );
