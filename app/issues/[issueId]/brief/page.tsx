@@ -120,15 +120,15 @@ export default async function IssueBriefPage({
                   <div
                     role="group"
                     aria-label="Brief mode"
-                    className="inline-flex rounded-full border border-white/12 bg-[rgba(0,0,0,0.22)] p-0.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+                    className="inline-flex overflow-hidden rounded-full border border-white/14 bg-[rgba(0,0,0,0.32)] p-0.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
                   >
                   <Link
                     href={`/issues/${issue.id}/brief?mode=full`}
                     aria-current={mode === "full" ? "page" : undefined}
-                    className={`inline-flex min-h-9 min-w-0 items-center justify-center rounded-full px-3.5 py-1.5 text-[0.68rem] font-medium uppercase tracking-[0.18em] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/45 focus-visible:ring-offset-1 focus-visible:ring-offset-[#0a0e0f] ${
+                    className={`inline-flex min-h-9 min-w-0 flex-1 items-center justify-center px-3.5 py-1.5 text-[0.68rem] font-medium uppercase tracking-[0.18em] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/45 focus-visible:ring-offset-1 focus-visible:ring-offset-[#0a0e0f] ${
                       mode === "full"
-                        ? "bg-[--metis-brass] font-semibold text-[--metis-dark] shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_1px_2px_rgba(0,0,0,0.45)] ring-1 ring-black/25"
-                        : "border border-white/10 bg-white/[0.08] text-[--metis-paper-muted] hover:border-white/16 hover:bg-white/[0.12] hover:text-[--metis-paper]"
+                        ? "bg-[--metis-brass] font-semibold text-[--metis-dark]"
+                        : "bg-transparent text-[--metis-paper-muted] hover:bg-white/[0.06] hover:text-[--metis-paper]"
                     }`}
                   >
                     Full issue brief
@@ -136,10 +136,10 @@ export default async function IssueBriefPage({
                   <Link
                     href={`/issues/${issue.id}/brief?mode=executive`}
                     aria-current={mode === "executive" ? "page" : undefined}
-                    className={`inline-flex min-h-9 min-w-0 items-center justify-center rounded-full px-3.5 py-1.5 text-[0.68rem] font-medium uppercase tracking-[0.18em] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/45 focus-visible:ring-offset-1 focus-visible:ring-offset-[#0a0e0f] ${
+                    className={`inline-flex min-h-9 min-w-0 flex-1 items-center justify-center px-3.5 py-1.5 text-[0.68rem] font-medium uppercase tracking-[0.18em] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/45 focus-visible:ring-offset-1 focus-visible:ring-offset-[#0a0e0f] ${
                       mode === "executive"
-                        ? "bg-[--metis-brass] font-semibold text-[--metis-dark] shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_1px_2px_rgba(0,0,0,0.45)] ring-1 ring-black/25"
-                        : "border border-white/10 bg-white/[0.08] text-[--metis-paper-muted] hover:border-white/16 hover:bg-white/[0.12] hover:text-[--metis-paper]"
+                        ? "bg-[--metis-brass] font-semibold text-[--metis-dark]"
+                        : "bg-transparent text-[--metis-paper-muted] hover:bg-white/[0.06] hover:text-[--metis-paper]"
                     }`}
                   >
                     Executive brief
