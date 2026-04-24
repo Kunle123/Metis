@@ -115,7 +115,13 @@ export default async function IssueBriefPage({
           <div className="border-b border-white/8 bg-[rgba(255,255,255,0.025)] px-6 py-5 sm:px-7">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex flex-wrap items-center justify-end gap-3">
-                <div className="inline-flex rounded-full border border-white/10 bg-[rgba(0,0,0,0.2)] p-0.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+                <div className="flex items-center gap-3">
+                  <span className="text-[0.58rem] font-medium uppercase tracking-[0.22em] text-[--metis-ink-soft]">Brief mode</span>
+                  <div
+                    role="group"
+                    aria-label="Brief mode"
+                    className="inline-flex rounded-full border border-white/12 bg-[rgba(0,0,0,0.22)] p-0.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+                  >
                   <Link
                     href={`/issues/${issue.id}/brief?mode=full`}
                     aria-current={mode === "full" ? "page" : undefined}
@@ -138,6 +144,7 @@ export default async function IssueBriefPage({
                   >
                     Executive brief
                   </Link>
+                  </div>
                 </div>
                 <Button asChild className="rounded-full bg-[--metis-brass] text-[--metis-dark] shadow-[0_2px_10px_rgba(0,0,0,0.45)] ring-1 ring-white/15 hover:bg-[--metis-brass-soft] focus-visible:ring-2 focus-visible:ring-[--metis-brass-soft] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0e0f]">
                   <Link href={`/issues/${issue.id}/export?mode=${mode}`}>

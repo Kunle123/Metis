@@ -62,7 +62,7 @@ export function GapCreateForm({ issueId }: { issueId: string }) {
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="text-[0.62rem] uppercase tracking-[0.2em] text-[--metis-ink-soft]">Register gap</p>
+            <p className="text-[0.58rem] font-medium uppercase tracking-[0.18em] text-[--metis-ink-soft]">Register gap</p>
             <p className="mt-1 text-sm text-[--metis-paper-muted]">Creates a persisted clarification gap for this issue.</p>
           </div>
           <Button
@@ -83,7 +83,7 @@ export function GapCreateForm({ issueId }: { issueId: string }) {
 
         <div className="grid gap-3 md:grid-cols-2">
           <label className="space-y-2">
-            <span className="text-[0.62rem] uppercase tracking-[0.2em] text-[--metis-ink-soft]">Severity</span>
+            <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Severity</span>
             <select
               value={severity}
               onChange={(e) => setSeverity(e.target.value as GapSeverity)}
@@ -97,7 +97,7 @@ export function GapCreateForm({ issueId }: { issueId: string }) {
             </select>
           </label>
           <label className="space-y-2">
-            <span className="text-[0.62rem] uppercase tracking-[0.2em] text-[--metis-ink-soft]">Affected section (free text)</span>
+            <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Affected section (free text)</span>
             <Input
               value={linkedSection}
               onChange={(e) => setLinkedSection(e.target.value)}
@@ -108,7 +108,7 @@ export function GapCreateForm({ issueId }: { issueId: string }) {
         </div>
 
         <label className="space-y-2">
-          <span className="text-[0.62rem] uppercase tracking-[0.2em] text-[--metis-ink-soft]">Missing (title)</span>
+          <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Missing (title)</span>
           <Input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -118,7 +118,7 @@ export function GapCreateForm({ issueId }: { issueId: string }) {
         </label>
 
         <label className="space-y-2">
-          <span className="text-[0.62rem] uppercase tracking-[0.2em] text-[--metis-ink-soft]">Impact</span>
+          <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Impact</span>
           <textarea
             value={whyItMatters}
             onChange={(e) => setWhyItMatters(e.target.value)}
@@ -129,7 +129,7 @@ export function GapCreateForm({ issueId }: { issueId: string }) {
         </label>
 
         <label className="space-y-2">
-          <span className="text-[0.62rem] uppercase tracking-[0.2em] text-[--metis-ink-soft]">Stakeholder role</span>
+          <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Stakeholder role</span>
           <Input
             value={stakeholder}
             onChange={(e) => setStakeholder(e.target.value)}
@@ -139,7 +139,7 @@ export function GapCreateForm({ issueId }: { issueId: string }) {
         </label>
 
         <label className="space-y-2">
-          <span className="text-[0.62rem] uppercase tracking-[0.2em] text-[--metis-ink-soft]">Drafted question</span>
+          <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Drafted question</span>
           <textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}

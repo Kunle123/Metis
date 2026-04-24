@@ -66,7 +66,7 @@ export function InternalInputCreateForm({ issueId }: { issueId: string }) {
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="text-[0.62rem] uppercase tracking-[0.2em] text-[--metis-ink-soft]">Capture internal input</p>
+            <p className="text-[0.58rem] font-medium uppercase tracking-[0.18em] text-[--metis-ink-soft]">Capture internal input</p>
             <p className="mt-1 text-sm text-[--metis-paper-muted]">Stored on the issue record for attribution and gap resolution.</p>
           </div>
           <Button
@@ -80,7 +80,7 @@ export function InternalInputCreateForm({ issueId }: { issueId: string }) {
 
         <div className="grid gap-3 md:grid-cols-2">
           <label className="space-y-2">
-            <span className="text-[0.62rem] uppercase tracking-[0.2em] text-[--metis-ink-soft]">Confidence</span>
+            <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Confidence</span>
             <select
               value={confidence}
               onChange={(e) => setConfidence(e.target.value as InternalInputConfidence)}
@@ -94,7 +94,7 @@ export function InternalInputCreateForm({ issueId }: { issueId: string }) {
             </select>
           </label>
           <label className="space-y-2">
-            <span className="text-[0.62rem] uppercase tracking-[0.2em] text-[--metis-ink-soft]">Timestamp label</span>
+            <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Timestamp label</span>
             <Input
               value={timestampLabel}
               onChange={(e) => setTimestampLabel(e.target.value)}
@@ -106,17 +106,17 @@ export function InternalInputCreateForm({ issueId }: { issueId: string }) {
 
         <div className="grid gap-3 md:grid-cols-2">
           <label className="space-y-2">
-            <span className="text-[0.62rem] uppercase tracking-[0.2em] text-[--metis-ink-soft]">Role</span>
+            <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Role</span>
             <Input value={role} onChange={(e) => setRole(e.target.value)} className="h-11 rounded-full border-white/10 bg-white/[0.04]" />
           </label>
           <label className="space-y-2">
-            <span className="text-[0.62rem] uppercase tracking-[0.2em] text-[--metis-ink-soft]">Name</span>
+            <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Name</span>
             <Input value={name} onChange={(e) => setName(e.target.value)} className="h-11 rounded-full border-white/10 bg-white/[0.04]" />
           </label>
         </div>
 
         <label className="space-y-2">
-          <span className="text-[0.62rem] uppercase tracking-[0.2em] text-[--metis-ink-soft]">Response</span>
+          <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Response</span>
           <textarea
             value={response}
             onChange={(e) => setResponse(e.target.value)}
@@ -128,7 +128,7 @@ export function InternalInputCreateForm({ issueId }: { issueId: string }) {
 
         <div className="grid gap-3 md:grid-cols-2">
           <label className="space-y-2">
-            <span className="text-[0.62rem] uppercase tracking-[0.2em] text-[--metis-ink-soft]">Linked section (optional)</span>
+            <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Linked section (optional)</span>
             <Input
               value={linkedSection}
               onChange={(e) => setLinkedSection(e.target.value)}
@@ -137,7 +137,7 @@ export function InternalInputCreateForm({ issueId }: { issueId: string }) {
             />
           </label>
           <label className="space-y-2">
-            <span className="text-[0.62rem] uppercase tracking-[0.2em] text-[--metis-ink-soft]">Visibility (optional)</span>
+            <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Visibility (optional)</span>
             <Input
               value={visibility}
               onChange={(e) => setVisibility(e.target.value)}

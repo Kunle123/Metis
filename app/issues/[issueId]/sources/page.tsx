@@ -91,6 +91,7 @@ export default async function IssueSourcesPage({ params }: { params: Promise<{ i
         <SurfaceCard>
           <div className="border-b border-white/8 bg-[rgba(255,255,255,0.025)] px-6 py-5 sm:px-7">
             <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper]">Sources</h2>
               <div className="flex flex-wrap items-center justify-end gap-2">
                 {tierCounts.map((item) => (
                   <Badge key={item.tier} className={tierTone[item.tier]}>
