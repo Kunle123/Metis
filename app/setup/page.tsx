@@ -11,12 +11,12 @@ export const dynamic = "force-dynamic";
 
 export default async function SetupPage() {
   return (
-    <MetisShell activePath="/setup" pageTitle="Issue Intake">
+    <MetisShell activePath="/setup" pageTitle="New issue">
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <SurfaceCard className="overflow-hidden">
           <div className="border-b border-white/8 bg-[rgba(255,255,255,0.025)] px-6 py-5 sm:px-7">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <h2 className="font-[Cormorant_Garamond] text-[1.9rem] leading-none text-[--metis-paper]">Intake record</h2>
+              <h2 className="font-[Cormorant_Garamond] text-[1.9rem] leading-none text-[--metis-paper]">Issue record</h2>
               <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">Draft</Badge>
             </div>
           </div>
@@ -60,6 +60,9 @@ export default async function SetupPage() {
                 <span className="text-[0.68rem] uppercase tracking-[0.18em] text-[--metis-ink-soft]">Next step</span>
                 <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">Create issue</Badge>
               </div>
+              <p className="mt-3">
+                After creating the issue, add sources, clarification gaps, and internal input to strengthen the brief.
+              </p>
             </div>
 
             <div className="grid gap-3 px-5 py-5">
