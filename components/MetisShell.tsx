@@ -374,9 +374,9 @@ export function MetisShell({
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3">
-                  <div className="hidden items-center gap-3 rounded-full border border-white/10 bg-[rgba(255,255,255,0.035)] px-4 py-2 text-sm text-[--metis-paper-muted] md:flex">
-                    <Clock3 className="h-4 w-4 text-[--metis-brass]" />
-                    Refreshed 12 minutes ago
+                  <div className="hidden items-center gap-2 text-[0.72rem] leading-5 text-[--metis-paper-muted] md:flex">
+                    <Clock3 className="h-3.5 w-3.5 shrink-0 text-[--metis-brass]/65" aria-hidden />
+                    <span className="text-[--metis-ink-soft]">Refreshed 12 minutes ago</span>
                   </div>
                   <LogoutButton />
                   {issueRoutePrefix ? (
@@ -387,7 +387,7 @@ export function MetisShell({
                       </Link>
                     </Button>
                   ) : (
-                    <Button disabled className="rounded-full px-5 opacity-60">
+                    <Button disabled className="rounded-full px-5">
                       <FileText className="mr-2 h-4 w-4" />
                       Prepare output
                     </Button>

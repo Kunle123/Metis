@@ -72,7 +72,7 @@ export default async function IssueActivityPage({ params }: { params: Promise<{ 
 
         <SurfaceCard className="metis-support-surface overflow-hidden">
           <div className="grid gap-3 px-5 py-5">
-            <Button asChild className="w-full rounded-full">
+            <Button asChild variant="outline" className="w-full rounded-full">
               <Link href={`/issues/${issue.id}/brief?mode=full`}>Open brief</Link>
             </Button>
             <Button asChild variant="outline" className="w-full rounded-full">

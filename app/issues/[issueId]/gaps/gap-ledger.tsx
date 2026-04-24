@@ -313,7 +313,7 @@ export function GapLedger({
                       </div>
 
                       <div className="grid gap-3">
-                        <Button asChild className="w-full rounded-full">
+                        <Button asChild variant="outline" className="w-full rounded-full">
                           <Link href={`/issues/${issueId}/input`}>
                             <MessageSquareText className="mr-2 h-4 w-4" />
                             Add manual input
@@ -323,7 +323,7 @@ export function GapLedger({
                           variant="outline"
                           onClick={() => startEditing(gap)}
                           disabled={gap.status === "Resolved"}
-                          className="w-full rounded-full disabled:opacity-60"
+                          className="w-full rounded-full"
                         >
                           <PencilLine className="mr-2 h-4 w-4" />
                           Edit question
@@ -361,7 +361,7 @@ export function GapLedger({
                               variant="outline"
                               disabled={busyGapId === gap.id || internalInputs.length === 0}
                               onClick={() => void resolveGap(gap.id)}
-                              className="w-full rounded-full disabled:opacity-60"
+                              className="w-full rounded-full"
                             >
                               <CheckCircle2 className="mr-2 h-4 w-4" />
                               Mark resolved
@@ -428,7 +428,7 @@ export function GapLedger({
           </div>
 
           <div className="grid gap-3 px-5 py-5">
-            <Button asChild className="w-full rounded-full">
+            <Button asChild variant="outline" className="w-full rounded-full">
               <Link href={`/issues/${issueId}/input`}>Add attributable input</Link>
             </Button>
           </div>

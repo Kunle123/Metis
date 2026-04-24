@@ -31,6 +31,11 @@
   --metis-secondary-inset-hover: color-mix(in oklab, var(--metis-brass) 38%, rgb(255 255 255 / 0.1));
   --metis-secondary-border-disabled: color-mix(in oklab, var(--metis-brass) 38%, transparent);
   --metis-secondary-bg-disabled: color-mix(in oklab, var(--metis-brass) 6%, transparent);
+  /* Primary (default) Button disabled: keep frame + label readable; avoid opacity-only wash. */
+  --metis-primary-bg-disabled: color-mix(in oklab, var(--metis-brass) 36%, var(--metis-frame));
+  --metis-primary-border-disabled: rgb(255 255 255 / 0.2);
+  --metis-primary-text-disabled: color-mix(in oklab, var(--metis-dark) 58%, var(--metis-paper-muted));
+  --metis-primary-inset-disabled: rgb(255 255 255 / 0.06);
   --shadow-card: 0 24px 72px rgba(0, 0, 0, 0.26);
   --background: var(--metis-frame);
   --foreground: var(--metis-paper);

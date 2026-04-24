@@ -28,7 +28,7 @@ export function LogoutButton() {
       onClick={onLogout}
       disabled={submitting}
       variant="outline"
-      className="rounded-full border-white/10 bg-white/[0.03] text-[--metis-paper]"
+      className="rounded-full px-4"
     >
       {submitting ? "Logging out..." : "Log out"}
     </Button>

@@ -259,7 +259,7 @@ export default async function IssueComparePage({
             </div>
 
             <div className="grid gap-3 px-5 py-5">
-              <Button asChild className="w-full rounded-full">
+              <Button asChild variant="outline" className="w-full rounded-full">
                 <Link href={`/issues/${issue.id}/export`}>
                   <FileOutput className="mr-2 h-4 w-4" />
                   Open export

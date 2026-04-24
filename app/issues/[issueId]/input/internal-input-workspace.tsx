@@ -150,7 +150,7 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
             </div>
 
             <div className="grid gap-3 px-5 py-5">
-              <Button asChild className="w-full rounded-full">
+              <Button asChild variant="outline" className="w-full rounded-full">
                 <Link href={`/issues/${issueId}/brief?mode=full`}>
                   <PlusCircle className="mr-2 h-4 w-4" />
                   Open brief
