@@ -114,6 +114,7 @@ export default async function IssueBriefPage({
         <SurfaceCard>
           <div className="border-b border-white/8 bg-[rgba(255,255,255,0.025)] px-6 py-5 sm:px-7">
             <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-sm leading-6 text-[--metis-paper-muted]">Produce the executive output for the issue.</p>
               <div className="flex flex-wrap items-center justify-end gap-3">
                 <div className="flex items-center gap-3">
                   <span className="text-[0.58rem] font-medium uppercase tracking-[0.22em] text-[--metis-ink-soft]">Brief mode</span>

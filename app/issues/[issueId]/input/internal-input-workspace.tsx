@@ -33,6 +33,7 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
                 <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper] sm:text-[2rem]">Attributable input</h2>
+                <p className="mt-1 text-sm leading-6 text-[--metis-paper-muted]">Capture internal input and guidance for the issue.</p>
               </div>
               {primaryInput ? (
                 <div className="flex flex-wrap items-center gap-2">

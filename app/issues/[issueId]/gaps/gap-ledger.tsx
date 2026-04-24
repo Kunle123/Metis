@@ -199,7 +199,10 @@ export function GapLedger({
       <SurfaceCard>
         <div className="border-b border-white/8 bg-[rgba(255,255,255,0.025)] px-6 py-5 sm:px-7">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper]">Clarification gaps</h2>
+            <div className="space-y-1">
+              <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper]">Clarification gaps</h2>
+              <p className="text-sm leading-6 text-[--metis-paper-muted]">Track open questions that need clarification before the brief.</p>
+            </div>
             <div className="flex flex-wrap items-center gap-2">
               <Badge className="border-0 bg-[rgba(124,78,18,0.6)] text-amber-50">{openCount} open</Badge>
               <Badge className="border-0 bg-[rgba(18,84,58,0.62)] text-emerald-50">{resolvedCount} resolved</Badge>
