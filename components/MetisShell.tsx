@@ -380,14 +380,14 @@ export function MetisShell({
                   </div>
                   <LogoutButton />
                   {issueRoutePrefix ? (
-                    <Button asChild className="rounded-full bg-[--metis-brass] px-5 text-[--metis-dark] shadow-[0_2px_10px_rgba(0,0,0,0.45)] ring-1 ring-white/15 hover:bg-[--metis-brass-soft] focus-visible:ring-2 focus-visible:ring-[--metis-brass-soft] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0e0f]">
+                    <Button asChild className="rounded-full px-5">
                       <Link href={`${issueRoutePrefix}/export`}>
                         <FileText className="mr-2 h-4 w-4" />
                         Prepare output
                       </Link>
                     </Button>
                   ) : (
-                    <Button disabled className="rounded-full bg-[--metis-brass] px-5 text-[--metis-dark] opacity-60">
+                    <Button disabled className="rounded-full px-5 opacity-60">
                       <FileText className="mr-2 h-4 w-4" />
                       Prepare output
                     </Button>

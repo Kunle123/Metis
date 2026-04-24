@@ -84,7 +84,7 @@ export function SourceEntryForm({ issueId }: { issueId: string }) {
             <p className="mt-1 text-sm text-[--metis-paper-muted]">Add evidence to the issue record. This does not send or route anything.</p>
           </div>
           <Button
-            className="rounded-full bg-[--metis-brass] px-5 text-[--metis-dark] hover:bg-[--metis-brass-soft]"
+            className="rounded-full px-5"
             disabled={isSaving || !title.trim()}
             onClick={onSubmit}
           >

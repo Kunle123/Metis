@@ -197,7 +197,7 @@ export default async function IssueSourcesPage({ params }: { params: Promise<{ i
             </div>
 
             <div className="grid gap-3 px-5 py-5">
-              <Button asChild className="w-full rounded-full bg-[--metis-brass] text-[--metis-dark] hover:bg-[--metis-brass-soft]">
+              <Button asChild className="w-full rounded-full">
                 <Link href={`/issues/${issue.id}/brief?mode=full`}>
                   Open brief
                   <ArrowRight className="ml-2 h-4 w-4" />

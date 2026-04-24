@@ -147,7 +147,7 @@ export default async function IssueBriefPage({
                   </Link>
                   </div>
                 </div>
-                <Button asChild className="rounded-full bg-[--metis-brass] text-[--metis-dark] shadow-[0_2px_10px_rgba(0,0,0,0.45)] ring-1 ring-white/15 hover:bg-[--metis-brass-soft] focus-visible:ring-2 focus-visible:ring-[--metis-brass-soft] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0e0f]">
+                <Button asChild className="rounded-full">
                   <Link href={`/issues/${issue.id}/export?mode=${mode}`}>
                     <FileOutput className="mr-2 h-4 w-4" />
                     Prepare output
@@ -319,13 +319,13 @@ export default async function IssueBriefPage({
             </div>
 
             <div className="grid gap-3 px-5 py-5">
-              <Button asChild className="w-full rounded-full bg-[--metis-brass] text-[--metis-dark] hover:bg-[--metis-brass-soft]">
+              <Button asChild className="w-full rounded-full">
                 <Link href={`/issues/${issue.id}/sources`}>
                   <ScanSearch className="mr-2 h-4 w-4" />
                   Open sources
                 </Link>
               </Button>
-              <Button asChild variant="outline" className="w-full rounded-full border-white/10 bg-white/[0.03] text-[--metis-paper] hover:bg-white/[0.08]">
+              <Button asChild variant="outline" className="w-full rounded-full">
                 <Link href={`/issues/${issue.id}/compare`}>
                   <RefreshCcw className="mr-2 h-4 w-4" />
                   Open delta
