@@ -15,7 +15,7 @@ export function Button({ className, variant = "default", asChild, ...props }: Pr
 
   const variantClass =
     variant === "outline"
-      ? "border border-white/18 bg-white/[0.07] text-[--metis-paper] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-white/24 hover:bg-white/[0.12] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] disabled:border-white/10 disabled:bg-white/[0.04] disabled:shadow-none"
+      ? "border border-white/24 bg-white/[0.11] text-[--metis-paper] shadow-[inset_0_1px_0_rgba(255,255,255,0.09)] hover:border-white/32 hover:bg-white/[0.17] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] disabled:border-white/12 disabled:bg-white/[0.05] disabled:shadow-none"
       : "bg-[--metis-brass] text-[--metis-dark] shadow-[0_2px_10px_rgba(0,0,0,0.4)] ring-1 ring-inset ring-white/14 hover:bg-[--metis-brass-soft] hover:shadow-[0_3px_12px_rgba(0,0,0,0.45)] disabled:shadow-none disabled:ring-0";
 
   if (asChild) {
