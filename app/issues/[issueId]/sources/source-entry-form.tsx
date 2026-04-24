@@ -95,6 +95,7 @@ export function SourceEntryForm({ issueId }: { issueId: string }) {
         <div className="grid gap-3 md:grid-cols-2">
           <label className="space-y-2">
             <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Tier</span>
+            <p className="text-xs leading-5 text-[--metis-paper-muted]">How direct the source is (official, internal, media, or market signal).</p>
             <select
               value={tier}
               onChange={(e) => setTier(e.target.value as SourceTier)}
@@ -109,45 +110,82 @@ export function SourceEntryForm({ issueId }: { issueId: string }) {
           </label>
           <label className="space-y-2">
             <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Timestamp label</span>
-            <Input value={timestampLabel} onChange={(e) => setTimestampLabel(e.target.value)} className="h-11 rounded-full border-white/10 bg-white/[0.04]" placeholder="e.g., 07:10 CET" />
+            <p className="text-xs leading-5 text-[--metis-paper-muted]">When the information was observed or reported (include time zone).</p>
+            <Input
+              value={timestampLabel}
+              onChange={(e) => setTimestampLabel(e.target.value)}
+              className="h-11 rounded-full border-white/10 bg-white/[0.04]"
+              placeholder="e.g., 07:10 CET (observed) / 09:30 CET (reported)"
+            />
           </label>
         </div>
 
         <label className="space-y-2">
           <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Title</span>
-          <Input value={title} onChange={(e) => setTitle(e.target.value)} className="h-11 rounded-full border-white/10 bg-white/[0.04]" placeholder="Short evidence title" />
+          <p className="text-xs leading-5 text-[--metis-paper-muted]">A short headline for what we learned.</p>
+          <Input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="h-11 rounded-full border-white/10 bg-white/[0.04]"
+            placeholder='e.g., "Provider confirms regional outage" / "Internal logs show elevated 5xx"'
+          />
         </label>
 
         <label className="space-y-2">
           <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Note (optional)</span>
-          <Input value={note} onChange={(e) => setNote(e.target.value)} className="h-11 rounded-full border-white/10 bg-white/[0.04]" placeholder="One-line context" />
+          <p className="text-xs leading-5 text-[--metis-paper-muted]">Why it matters, caveats, or how it should be used in the brief.</p>
+          <Input
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            className="h-11 rounded-full border-white/10 bg-white/[0.04]"
+            placeholder="e.g., Confirms scope is limited to EU; US unaffected."
+          />
         </label>
 
         <label className="space-y-2">
           <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Snippet (optional)</span>
+          <p className="text-xs leading-5 text-[--metis-paper-muted]">Paste the key quote or excerpt (1–3 lines).</p>
           <textarea
             value={snippet}
             onChange={(e) => setSnippet(e.target.value)}
             rows={3}
             className="w-full rounded-[1.1rem] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-[--metis-paper]"
-            placeholder="Quoted excerpt"
+            placeholder="e.g., “We have identified the root cause and are rolling out a fix…”"
           />
         </label>
 
         <div className="grid gap-3 md:grid-cols-2">
           <label className="space-y-2">
             <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Linked section (optional)</span>
-            <Input value={linkedSection} onChange={(e) => setLinkedSection(e.target.value)} className="h-11 rounded-full border-white/10 bg-white/[0.04]" placeholder="e.g., Chronology" />
+            <p className="text-xs leading-5 text-[--metis-paper-muted]">Where this should appear in the brief (free text).</p>
+            <Input
+              value={linkedSection}
+              onChange={(e) => setLinkedSection(e.target.value)}
+              className="h-11 rounded-full border-white/10 bg-white/[0.04]"
+              placeholder="e.g., Chronology / Confirmed vs unclear / Executive summary"
+            />
           </label>
           <label className="space-y-2">
             <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Reliability (optional)</span>
-            <Input value={reliability} onChange={(e) => setReliability(e.target.value)} className="h-11 rounded-full border-white/10 bg-white/[0.04]" placeholder="e.g., High confidence internal operational log" />
+            <p className="text-xs leading-5 text-[--metis-paper-muted]">Your confidence + why (corroboration, directness, recency).</p>
+            <Input
+              value={reliability}
+              onChange={(e) => setReliability(e.target.value)}
+              className="h-11 rounded-full border-white/10 bg-white/[0.04]"
+              placeholder="e.g., High (direct log) / Medium (single report) / Low (unverified)"
+            />
           </label>
         </div>
 
         <label className="space-y-2">
           <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">URL (optional)</span>
-          <Input value={url} onChange={(e) => setUrl(e.target.value)} className="h-11 rounded-full border-white/10 bg-white/[0.04]" placeholder="https://…" />
+          <p className="text-xs leading-5 text-[--metis-paper-muted]">Link to the original artifact when available.</p>
+          <Input
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            className="h-11 rounded-full border-white/10 bg-white/[0.04]"
+            placeholder="e.g., https://… (article, doc, ticket, dashboard link)"
+          />
         </label>
 
         {error ? (
