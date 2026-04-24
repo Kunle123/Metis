@@ -32,7 +32,7 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
           <div className="border-b border-white/8 bg-[rgba(255,255,255,0.025)] px-6 py-5 sm:px-7">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <h2 className="font-[Cormorant_Garamond] text-[2.15rem] leading-none text-[--metis-paper] sm:text-[2.5rem]">Attributable input</h2>
+                <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper] sm:text-[2rem]">Attributable input</h2>
               </div>
               {primaryInput ? (
                 <div className="flex flex-wrap items-center gap-2">

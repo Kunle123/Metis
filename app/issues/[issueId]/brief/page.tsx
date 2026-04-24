@@ -128,7 +128,7 @@ export default async function IssueBriefPage({
                     className={`inline-flex min-h-9 min-w-0 flex-1 items-center justify-center whitespace-nowrap px-3.5 py-1.5 text-[0.68rem] font-medium uppercase tracking-[0.18em] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/45 focus-visible:ring-offset-1 focus-visible:ring-offset-[#0a0e0f] ${
                       mode === "full"
                         ? "bg-[--metis-brass] font-semibold text-[--metis-dark]"
-                        : "bg-transparent text-[rgba(176,171,160,0.64)] hover:bg-white/[0.06] hover:text-[--metis-paper]"
+                        : "bg-transparent text-[rgba(176,171,160,0.52)] hover:bg-white/[0.06] hover:text-[--metis-paper]"
                     }`}
                   >
                     Full brief
@@ -139,7 +139,7 @@ export default async function IssueBriefPage({
                     className={`inline-flex min-h-9 min-w-0 flex-1 items-center justify-center whitespace-nowrap px-3.5 py-1.5 text-[0.68rem] font-medium uppercase tracking-[0.18em] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/45 focus-visible:ring-offset-1 focus-visible:ring-offset-[#0a0e0f] ${
                       mode === "executive"
                         ? "bg-[--metis-brass] font-semibold text-[--metis-dark]"
-                        : "bg-transparent text-[rgba(176,171,160,0.64)] hover:bg-white/[0.06] hover:text-[--metis-paper]"
+                        : "bg-transparent text-[rgba(176,171,160,0.52)] hover:bg-white/[0.06] hover:text-[--metis-paper]"
                     }`}
                   >
                     Executive brief
