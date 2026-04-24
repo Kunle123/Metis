@@ -8,6 +8,7 @@ import { CheckCircle2, Copy, MessageSquareText, PencilLine } from "lucide-react"
 import { SurfaceCard } from "@/components/MetisShell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useUnsavedChangesWarning } from "@/lib/hooks/useUnsavedChangesWarning";
 import { cn } from "@/lib/utils";
 import type { Gap } from "@metis/shared/gap";
 
@@ -84,6 +85,17 @@ export function GapLedger({
   );
 
   const openCountMatchesIssue = openCount === issueOpenGapsCount;
+
+  const isEditingDirty = useMemo(() => {
+    if (!editingId) return false;
+    const gap = gaps.find((item) => item.id === editingId);
+    if (!gap) return false;
+    const original = gap.prompt.trim();
+    const draft = (draftQuestions[editingId] ?? gap.prompt).trim();
+    return draft !== original;
+  }, [draftQuestions, editingId, gaps]);
+
+  useUnsavedChangesWarning({ isDirty: isEditingDirty, isSaving: !!busyGapId });
 
   const startEditing = (gap: Gap) => {
     setEditingId(gap.id);

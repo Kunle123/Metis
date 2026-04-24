@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useUnsavedChangesWarning } from "@/lib/hooks/useUnsavedChangesWarning";
 
 type IssuePriority = "Critical" | "High" | "Normal" | "Low";
 type OperatorPosture = "Monitoring" | "Active" | "Holding" | "Closed";
@@ -32,6 +33,22 @@ export function SetupForm() {
   const [severity, setSeverity] = useState<(typeof severities)[number]>("High");
   const [operatorPosture, setOperatorPosture] = useState<OperatorPosture>("Monitoring");
   const [ownerName, setOwnerName] = useState("");
+
+  const isDirty = useMemo(() => {
+    const hasText =
+      title.trim().length > 0 ||
+      issueType.trim().length > 0 ||
+      audience.trim().length > 0 ||
+      summary.trim().length > 0 ||
+      confirmedFacts.trim().length > 0 ||
+      openQuestions.trim().length > 0 ||
+      context.trim().length > 0 ||
+      ownerName.trim().length > 0;
+    const hasSelectionChange = priority !== "Normal" || severity !== "High" || operatorPosture !== "Monitoring";
+    return hasText || hasSelectionChange;
+  }, [audience, confirmedFacts, context, issueType, openQuestions, operatorPosture, ownerName, priority, severity, summary, title]);
+
+  useUnsavedChangesWarning({ isDirty, isSaving: submitting });
 
   const canSubmit = useMemo(() => {
     return title.trim().length > 0 && issueType.trim().length > 0 && summary.trim().length > 0 && severity.trim().length > 0;

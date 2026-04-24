@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { confidenceDisplayLabel } from "@/lib/ui/confidenceDisplayLabel";
+import { useUnsavedChangesWarning } from "@/lib/hooks/useUnsavedChangesWarning";
 import type { InternalInputConfidence } from "@metis/shared/internalInput";
 
 const confidenceLevels: InternalInputConfidence[] = ["Confirmed", "Likely", "Unclear", "Needs validation"];
@@ -15,12 +16,24 @@ export function InternalInputCreateForm({ issueId }: { issueId: string }) {
   const [role, setRole] = useState("");
   const [name, setName] = useState("");
   const [response, setResponse] = useState("");
-  const [confidence, setConfidence] = useState<InternalInputConfidence>("Likely");
+  const defaultConfidence: InternalInputConfidence = "Likely";
+  const [confidence, setConfidence] = useState<InternalInputConfidence>(defaultConfidence);
   const [linkedSection, setLinkedSection] = useState("");
   const [visibility, setVisibility] = useState("");
   const [timestampLabel, setTimestampLabel] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const isDirty =
+    confidence !== defaultConfidence ||
+    role.trim().length > 0 ||
+    name.trim().length > 0 ||
+    response.trim().length > 0 ||
+    linkedSection.trim().length > 0 ||
+    visibility.trim().length > 0 ||
+    timestampLabel.trim().length > 0;
+
+  useUnsavedChangesWarning({ isDirty, isSaving });
 
   async function onSubmit() {
     setError(null);

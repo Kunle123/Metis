@@ -5,13 +5,15 @@ import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useUnsavedChangesWarning } from "@/lib/hooks/useUnsavedChangesWarning";
 import type { SourceTier } from "@metis/shared/source";
 
 const tiers: SourceTier[] = ["Official", "Internal", "Major media", "Market signal"];
 
 export function SourceEntryForm({ issueId }: { issueId: string }) {
   const router = useRouter();
-  const [tier, setTier] = useState<SourceTier>("Internal");
+  const defaultTier: SourceTier = "Internal";
+  const [tier, setTier] = useState<SourceTier>(defaultTier);
   const [title, setTitle] = useState("");
   const [note, setNote] = useState("");
   const [snippet, setSnippet] = useState("");
@@ -21,6 +23,18 @@ export function SourceEntryForm({ issueId }: { issueId: string }) {
   const [timestampLabel, setTimestampLabel] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const isDirty =
+    tier !== defaultTier ||
+    title.trim().length > 0 ||
+    note.trim().length > 0 ||
+    snippet.trim().length > 0 ||
+    linkedSection.trim().length > 0 ||
+    reliability.trim().length > 0 ||
+    url.trim().length > 0 ||
+    timestampLabel.trim().length > 0;
+
+  useUnsavedChangesWarning({ isDirty, isSaving });
 
   async function onSubmit() {
     setError(null);

@@ -5,20 +5,32 @@ import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useUnsavedChangesWarning } from "@/lib/hooks/useUnsavedChangesWarning";
 import type { GapSeverity } from "@metis/shared/gap";
 
 const severities: GapSeverity[] = ["Critical", "Important", "Watch"];
 
 export function GapCreateForm({ issueId }: { issueId: string }) {
   const router = useRouter();
+  const defaultSeverity: GapSeverity = "Important";
   const [title, setTitle] = useState("");
   const [whyItMatters, setWhyItMatters] = useState("");
   const [stakeholder, setStakeholder] = useState("");
   const [linkedSection, setLinkedSection] = useState("");
-  const [severity, setSeverity] = useState<GapSeverity>("Important");
+  const [severity, setSeverity] = useState<GapSeverity>(defaultSeverity);
   const [prompt, setPrompt] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const isDirty =
+    title.trim().length > 0 ||
+    whyItMatters.trim().length > 0 ||
+    stakeholder.trim().length > 0 ||
+    linkedSection.trim().length > 0 ||
+    prompt.trim().length > 0 ||
+    severity !== defaultSeverity;
+
+  useUnsavedChangesWarning({ isDirty, isSaving });
 
   async function onSubmit() {
     setError(null);
