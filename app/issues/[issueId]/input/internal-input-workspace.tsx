@@ -150,13 +150,13 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
             </div>
 
             <div className="grid gap-3 px-5 py-5">
-              <Button asChild className="w-full rounded-full bg-[--metis-brass] text-[--metis-dark] hover:bg-[--metis-brass-soft]">
+              <Button asChild className="w-full rounded-full">
                 <Link href={`/issues/${issueId}/brief?mode=full`}>
                   <PlusCircle className="mr-2 h-4 w-4" />
                   Open brief
                 </Link>
               </Button>
-              <Button asChild variant="outline" className="w-full rounded-full border-white/10 bg-white/[0.03] text-[--metis-paper] hover:bg-white/[0.08]">
+              <Button asChild variant="outline" className="w-full rounded-full">
                 <Link href={`/issues/${issueId}/gaps`}>
                   Review clarification gaps
                   <ArrowRight className="ml-2 h-4 w-4" />

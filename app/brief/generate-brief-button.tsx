@@ -12,7 +12,7 @@ export function GenerateBriefButton({ issueId, mode }: { issueId: string; mode: 
 
   return (
     <Button
-      className="rounded-full bg-[--metis-brass] px-5 text-[--metis-dark] hover:bg-[--metis-brass-soft]"
+      className="rounded-full px-5"
       disabled={isLoading}
       onClick={async () => {
         setIsLoading(true);
