@@ -82,6 +82,7 @@ export function SourceEntryForm({ issueId }: { issueId: string }) {
           <div>
             <p className="text-[0.58rem] font-medium uppercase tracking-[0.18em] text-[--metis-ink-soft]">Manual source entry</p>
             <p className="mt-1 text-sm text-[--metis-paper-muted]">Add evidence to the issue record. This does not send or route anything.</p>
+            <p className="mt-1 text-sm text-[--metis-paper-muted]">Title is required; note or snippet improves brief quality.</p>
           </div>
           <Button
             className="rounded-full px-5"
@@ -109,7 +110,7 @@ export function SourceEntryForm({ issueId }: { issueId: string }) {
             </select>
           </label>
           <label className="space-y-2">
-            <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Timestamp label</span>
+            <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Timestamp label (optional)</span>
             <p className="text-xs leading-5 text-[--metis-paper-muted]">When the information was observed or reported (include time zone).</p>
             <Input
               value={timestampLabel}

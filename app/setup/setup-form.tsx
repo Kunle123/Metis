@@ -133,6 +133,7 @@ export function SetupForm() {
 
   return (
     <div className="space-y-8">
+      <p className="text-sm leading-6 text-[--metis-paper-muted]">Fields marked (optional) can be left blank.</p>
       <div className="grid gap-5 md:grid-cols-2">
         <div>
           <label className="mb-3 block text-sm font-medium text-[--metis-paper]">Issue title</label>
@@ -155,7 +156,7 @@ export function SetupForm() {
         </div>
 
         <div>
-          <label className="mb-3 block text-sm font-medium text-[--metis-paper]">Audience</label>
+          <label className="mb-3 block text-sm font-medium text-[--metis-paper]">Audience (optional)</label>
           <Input
             value={audience}
             onChange={(e) => setAudience(e.target.value)}
@@ -239,7 +240,7 @@ export function SetupForm() {
       <div className="space-y-5">
         <div className="space-y-3">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-[0.72rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Confirmed facts</p>
+            <p className="text-[0.72rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Confirmed facts (optional)</p>
             <Button
               type="button"
               onClick={onPasteConfirmedFacts}
@@ -263,7 +264,7 @@ export function SetupForm() {
         </div>
 
         <div className="space-y-3">
-          <p className="text-[0.72rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Open questions</p>
+          <p className="text-[0.72rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Open questions (optional)</p>
           <Textarea
             value={openQuestions}
             onChange={(e) => setOpenQuestions(e.target.value)}
@@ -274,7 +275,7 @@ export function SetupForm() {
 
         <div className="space-y-3 border-t border-white/8 pt-5">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-[0.72rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Context</p>
+            <p className="text-[0.72rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Context (optional)</p>
             <Button
               type="button"
               onClick={onPasteContext}

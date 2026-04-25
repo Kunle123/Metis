@@ -76,6 +76,7 @@ export function GapCreateForm({ issueId }: { issueId: string }) {
           <div>
             <p className="text-[0.58rem] font-medium uppercase tracking-[0.18em] text-[--metis-ink-soft]">Register gap</p>
             <p className="mt-1 text-sm text-[--metis-paper-muted]">Creates a persisted clarification gap for this issue.</p>
+            <p className="mt-1 text-sm text-[--metis-paper-muted]">All fields below are required to register a gap.</p>
           </div>
           <Button
             className="rounded-full px-5"

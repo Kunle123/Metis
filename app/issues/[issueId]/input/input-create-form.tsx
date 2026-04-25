@@ -81,6 +81,7 @@ export function InternalInputCreateForm({ issueId }: { issueId: string }) {
           <div>
             <p className="text-[0.58rem] font-medium uppercase tracking-[0.18em] text-[--metis-ink-soft]">Capture internal input</p>
             <p className="mt-1 text-sm text-[--metis-paper-muted]">Stored on the issue record for attribution and gap resolution.</p>
+            <p className="mt-1 text-sm text-[--metis-paper-muted]">Fields marked (optional) can be left blank.</p>
           </div>
           <Button
             className="rounded-full px-5"
@@ -107,7 +108,7 @@ export function InternalInputCreateForm({ issueId }: { issueId: string }) {
             </select>
           </label>
           <label className="space-y-2">
-            <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Timestamp label</span>
+            <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Timestamp label (optional)</span>
             <Input
               value={timestampLabel}
               onChange={(e) => setTimestampLabel(e.target.value)}
