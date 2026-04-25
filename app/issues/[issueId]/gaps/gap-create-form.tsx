@@ -22,6 +22,9 @@ export function GapCreateForm({ issueId }: { issueId: string }) {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const missingRequired =
+    !title.trim() || !whyItMatters.trim() || !stakeholder.trim() || !linkedSection.trim() || !prompt.trim();
+
   const isDirty =
     title.trim().length > 0 ||
     whyItMatters.trim().length > 0 ||
@@ -93,6 +96,7 @@ export function GapCreateForm({ issueId }: { issueId: string }) {
             {isSaving ? "Saving…" : "Add gap"}
           </Button>
         </div>
+        {missingRequired && !isSaving ? <p className="text-sm leading-6 text-[--metis-paper-muted]">Complete required fields to continue.</p> : null}
 
         <div className="grid gap-3 md:grid-cols-2">
           <label className="space-y-2">

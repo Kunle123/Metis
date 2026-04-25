@@ -36,6 +36,8 @@ export function SourceEntryForm({ issueId }: { issueId: string }) {
 
   useUnsavedChangesWarning({ isDirty, isSaving });
 
+  const missingRequired = !title.trim() || !note.trim();
+
   async function onSubmit() {
     setError(null);
     setIsSaving(true);
@@ -96,6 +98,7 @@ export function SourceEntryForm({ issueId }: { issueId: string }) {
             {isSaving ? "Saving…" : "Add source"}
           </Button>
         </div>
+        {missingRequired && !isSaving ? <p className="text-sm leading-6 text-[--metis-paper-muted]">Complete required fields to continue.</p> : null}
 
         <div className="grid gap-3 md:grid-cols-2">
           <label className="space-y-2">

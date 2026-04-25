@@ -83,6 +83,16 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: "Invalid request", issues: parsed.error.issues }, { status: 400 });
   }
 
+  const titleTrimmed = parsed.data.title.trim();
+  const whyItMattersTrimmed = parsed.data.whyItMatters.trim();
+  const stakeholderTrimmed = parsed.data.stakeholder.trim();
+  const linkedSectionTrimmed = parsed.data.linkedSection.trim();
+  const promptTrimmed = parsed.data.prompt.trim();
+
+  if (!titleTrimmed.length || !whyItMattersTrimmed.length || !stakeholderTrimmed.length || !linkedSectionTrimmed.length || !promptTrimmed.length) {
+    return NextResponse.json({ error: "Missing required fields." }, { status: 400 });
+  }
+
   const issue = await prisma.issue.findUnique({ where: { id: issueId } });
   if (!issue) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
@@ -101,13 +111,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const gap = await tx.gap.create({
       data: {
         issueId,
-        title: parsed.data.title,
-        whyItMatters: parsed.data.whyItMatters,
-        stakeholder: parsed.data.stakeholder,
-        linkedSection: parsed.data.linkedSection,
+        title: titleTrimmed,
+        whyItMatters: whyItMattersTrimmed,
+        stakeholder: stakeholderTrimmed,
+        linkedSection: linkedSectionTrimmed,
         severity: severityParsed.data,
         status: statusParsed.data,
-        prompt: parsed.data.prompt,
+        prompt: promptTrimmed,
         resolvedByInternalInputId: null,
       },
     });

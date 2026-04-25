@@ -58,6 +58,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: "Invalid request", issues: parsed.error.issues }, { status: 400 });
   }
 
+  const roleTrimmed = parsed.data.role.trim();
+  const nameTrimmed = parsed.data.name.trim();
+  const responseTrimmed = parsed.data.response.trim();
+
+  if (!roleTrimmed.length || !nameTrimmed.length || !responseTrimmed.length) {
+    return NextResponse.json({ error: "Missing required fields." }, { status: 400 });
+  }
+
   const issue = await prisma.issue.findUnique({ where: { id: issueId } });
   if (!issue) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
@@ -70,9 +78,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const input = await tx.internalInput.create({
       data: {
         issueId,
-        role: parsed.data.role,
-        name: parsed.data.name,
-        response: parsed.data.response,
+        role: roleTrimmed,
+        name: nameTrimmed,
+        response: responseTrimmed,
         confidence: confidenceParsed.data,
         linkedSection: parsed.data.linkedSection ?? null,
         visibility: parsed.data.visibility ?? null,

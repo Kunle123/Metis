@@ -304,6 +304,9 @@ export function SetupForm() {
       ) : null}
 
       <div className="flex flex-wrap items-center gap-3">
+        {!canSubmit && !submitting ? (
+          <p className="text-sm leading-6 text-[--metis-paper-muted]">Complete required fields to continue.</p>
+        ) : null}
         <Button
           onClick={onSubmit}
           disabled={!canSubmit || submitting}

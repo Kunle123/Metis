@@ -24,6 +24,8 @@ export function InternalInputCreateForm({ issueId }: { issueId: string }) {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const missingRequired = !role.trim() || !name.trim() || !response.trim();
+
   const isDirty =
     confidence !== defaultConfidence ||
     role.trim().length > 0 ||
@@ -91,6 +93,7 @@ export function InternalInputCreateForm({ issueId }: { issueId: string }) {
             {isSaving ? "Saving…" : "Save input"}
           </Button>
         </div>
+        {missingRequired && !isSaving ? <p className="text-sm leading-6 text-[--metis-paper-muted]">Complete required fields to continue.</p> : null}
 
         <div className="grid gap-3 md:grid-cols-2">
           <label className="space-y-2">

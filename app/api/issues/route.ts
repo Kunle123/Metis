@@ -30,14 +30,22 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid request", issues: parsed.error.issues }, { status: 400 });
   }
 
+  const titleTrimmed = parsed.data.title.trim();
+  const issueTypeTrimmed = parsed.data.issueType.trim();
+  const summaryTrimmed = parsed.data.summary.trim();
+
+  if (!titleTrimmed.length || !issueTypeTrimmed.length || !summaryTrimmed.length) {
+    return NextResponse.json({ error: "Missing required fields." }, { status: 400 });
+  }
+
   const created = await prisma.issue.create({
     data: {
-      title: parsed.data.title,
-      summary: parsed.data.summary,
+      title: titleTrimmed,
+      summary: summaryTrimmed,
       confirmedFacts: parsed.data.confirmedFacts ?? null,
       openQuestions: parsed.data.openQuestions ?? null,
       context: parsed.data.context ?? null,
-      issueType: parsed.data.issueType,
+      issueType: issueTypeTrimmed,
       severity: parsed.data.severity,
       status: parsed.data.status,
       priority: parsed.data.priority ?? "Normal",
