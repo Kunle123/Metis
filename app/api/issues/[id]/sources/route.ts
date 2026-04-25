@@ -64,6 +64,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: "Invalid request", issues: parsed.error.issues }, { status: 400 });
   }
 
+  const titleTrimmed = parsed.data.title.trim();
+  const noteTrimmed = (parsed.data.note ?? "").trim();
+
+  if (!titleTrimmed.length || !noteTrimmed.length) {
+    return NextResponse.json({ error: "Title and note are required." }, { status: 400 });
+  }
+
   // validate tier is one of the known values even if Prisma stores string
   const tierParsed = SourceTierSchema.safeParse(parsed.data.tier);
   if (!tierParsed.success) {
@@ -89,8 +96,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         issueId,
         sourceCode: code,
         tier: parsed.data.tier,
-        title: parsed.data.title,
-        note: parsed.data.note ?? null,
+        title: titleTrimmed,
+        note: noteTrimmed,
         snippet: parsed.data.snippet ?? null,
         reliability: parsed.data.reliability ?? null,
         linkedSection: parsed.data.linkedSection ?? null,

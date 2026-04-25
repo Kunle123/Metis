@@ -40,14 +40,17 @@ export function SourceEntryForm({ issueId }: { issueId: string }) {
     setError(null);
     setIsSaving(true);
     try {
+      const titleTrimmed = title.trim();
+      const noteTrimmed = note.trim();
+
       const res = await fetch(`/api/issues/${issueId}/sources`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
           tier,
-          title,
-          note: note.trim() ? note : null,
+          title: titleTrimmed,
+          note: noteTrimmed,
           snippet: snippet.trim() ? snippet : null,
           linkedSection: linkedSection.trim() ? linkedSection : null,
           reliability: reliability.trim() ? reliability : null,
@@ -82,11 +85,12 @@ export function SourceEntryForm({ issueId }: { issueId: string }) {
           <div>
             <p className="text-[0.58rem] font-medium uppercase tracking-[0.18em] text-[--metis-ink-soft]">Manual source entry</p>
             <p className="mt-1 text-sm text-[--metis-paper-muted]">Add evidence to the issue record. This does not send or route anything.</p>
-            <p className="mt-1 text-sm text-[--metis-paper-muted]">Title is required; note or snippet improves brief quality.</p>
+            <p className="mt-1 text-sm text-[--metis-paper-muted]">Title = what the source is.</p>
+            <p className="mt-1 text-sm text-[--metis-paper-muted]">Note = why it matters / how it should be used in the brief.</p>
           </div>
           <Button
             className="rounded-full px-5"
-            disabled={isSaving || !title.trim()}
+            disabled={isSaving || !title.trim() || !note.trim()}
             onClick={onSubmit}
           >
             {isSaving ? "Saving…" : "Add source"}
@@ -133,7 +137,7 @@ export function SourceEntryForm({ issueId }: { issueId: string }) {
         </label>
 
         <label className="space-y-2">
-          <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Note (optional)</span>
+          <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Note</span>
           <p className="text-xs leading-5 text-[--metis-paper-muted]">Why it matters, caveats, or how it should be used in the brief.</p>
           <Input
             value={note}
