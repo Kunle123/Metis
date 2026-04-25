@@ -15,12 +15,44 @@ const priorities: readonly IssuePriority[] = ["Critical", "High", "Normal", "Low
 const postures: readonly OperatorPosture[] = ["Monitoring", "Active", "Holding", "Closed"] as const;
 const severities = ["Critical", "High", "Moderate", "Low"] as const;
 
+type StructureSuggestions = {
+  title: string | null;
+  issueType: string | null;
+  summary: string | null;
+  confirmedFacts: string | null;
+  openQuestions: string | null;
+  context: string | null;
+  audience: string | null;
+  ownerName: string | null;
+  severity: (typeof severities)[number] | null;
+  priority: IssuePriority | null;
+  operatorPosture: OperatorPosture | null;
+  needsMore: string[];
+  limitations: string;
+};
+
+type StructureResponse = {
+  ok: true;
+  suggestions: StructureSuggestions;
+  needsMore: string[];
+  limitations: string;
+};
+
 export function SetupForm() {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmedFactsPasteError, setConfirmedFactsPasteError] = useState<string | null>(null);
   const [contextPasteError, setContextPasteError] = useState<string | null>(null);
+
+  const [intakeRawNotes, setIntakeRawNotes] = useState("");
+  const [structLoading, setStructLoading] = useState(false);
+  const [structError, setStructError] = useState<string | null>(null);
+  const [structureResponse, setStructureResponse] = useState<StructureResponse | null>(null);
+
+  const [userTouchedPriority, setUserTouchedPriority] = useState(false);
+  const [userTouchedSeverity, setUserTouchedSeverity] = useState(false);
+  const [userTouchedPosture, setUserTouchedPosture] = useState(false);
 
   const [title, setTitle] = useState("");
   const [issueType, setIssueType] = useState("");
@@ -36,6 +68,7 @@ export function SetupForm() {
 
   const isDirty = useMemo(() => {
     const hasText =
+      intakeRawNotes.trim().length > 0 ||
       title.trim().length > 0 ||
       issueType.trim().length > 0 ||
       audience.trim().length > 0 ||
@@ -46,7 +79,7 @@ export function SetupForm() {
       ownerName.trim().length > 0;
     const hasSelectionChange = priority !== "Normal" || severity !== "High" || operatorPosture !== "Monitoring";
     return hasText || hasSelectionChange;
-  }, [audience, confirmedFacts, context, issueType, openQuestions, operatorPosture, ownerName, priority, severity, summary, title]);
+  }, [audience, confirmedFacts, context, intakeRawNotes, issueType, openQuestions, operatorPosture, ownerName, priority, severity, summary, title]);
 
   useUnsavedChangesWarning({ isDirty, isSaving: submitting });
 
@@ -131,9 +164,162 @@ export function SetupForm() {
     }
   }
 
+  async function onStructureWithAI() {
+    const raw = intakeRawNotes.trim();
+    if (!raw.length) return;
+    setStructLoading(true);
+    setStructError(null);
+    setStructureResponse(null);
+    try {
+      const res = await fetch("/api/setup/structure-notes", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ rawNotes: raw }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { error?: string; ok?: boolean };
+      if (!res.ok) {
+        setStructError(data?.error ?? `Request failed (${res.status})`);
+        return;
+      }
+      if (data && typeof data === "object" && (data as StructureResponse).ok) {
+        setStructureResponse(data as StructureResponse);
+      } else {
+        setStructError("Unexpected response from AI assist.");
+      }
+    } catch (e: unknown) {
+      setStructError((e as Error)?.message ?? "Request failed.");
+    } finally {
+      setStructLoading(false);
+    }
+  }
+
+  function applyToEmptyOnly() {
+    if (!structureResponse) return;
+    const s = structureResponse.suggestions;
+    if (!title.trim() && s.title) setTitle(s.title);
+    if (!issueType.trim() && s.issueType) setIssueType(s.issueType);
+    if (!audience.trim() && s.audience) setAudience(s.audience);
+    if (!summary.trim() && s.summary) setSummary(s.summary);
+    if (!confirmedFacts.trim() && s.confirmedFacts) setConfirmedFacts(s.confirmedFacts);
+    if (!openQuestions.trim() && s.openQuestions) setOpenQuestions(s.openQuestions);
+    if (!context.trim() && s.context) setContext(s.context);
+    if (!ownerName.trim() && s.ownerName) setOwnerName(s.ownerName);
+    if (!userTouchedPriority && s.priority) setPriority(s.priority);
+    if (!userTouchedSeverity && s.severity) setSeverity(s.severity);
+    if (!userTouchedPosture && s.operatorPosture) setOperatorPosture(s.operatorPosture);
+  }
+
+  function onClearStructurePreview() {
+    setStructureResponse(null);
+    setStructError(null);
+  }
+
   return (
     <div className="space-y-8">
       <p className="text-sm leading-6 text-[--metis-paper-muted]">Fields marked (optional) can be left blank.</p>
+
+      <div className="space-y-4">
+        <p className="text-[0.72rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">AI assist</p>
+        <p className="text-sm leading-6 text-[--metis-paper-muted]">
+          Paste rough notes. This suggests fields for you to review. It does not create the issue or submit the form.
+        </p>
+        <Textarea
+          value={intakeRawNotes}
+          onChange={(e) => setIntakeRawNotes(e.target.value)}
+          placeholder="Paste messy situation notes, fragments, or bullets…"
+          className="min-h-[120px] rounded-[1.2rem] px-4 py-4 text-sm leading-7"
+        />
+        <div className="flex flex-wrap items-center gap-3">
+          <Button
+            type="button"
+            onClick={onStructureWithAI}
+            disabled={structLoading || !intakeRawNotes.trim().length}
+            className="rounded-full px-5"
+          >
+            {structLoading ? "Structuring…" : "Structure with AI"}
+          </Button>
+          <Button
+            type="button"
+            onClick={() => setIntakeRawNotes("")}
+            variant="outline"
+            className="h-10 rounded-full px-4"
+            disabled={structLoading || !intakeRawNotes.length}
+          >
+            Clear
+          </Button>
+        </div>
+        {structError ? (
+          <div
+            className="mt-4 rounded-md border border-rose-400/20 bg-rose-900/20 px-3 py-2 text-sm text-rose-100"
+            role="alert"
+          >
+            {structError}
+          </div>
+        ) : null}
+        {structureResponse ? (
+          <div className="space-y-5 border-t border-white/8 pt-5">
+            <div>
+              <p className="text-sm font-medium text-[--metis-paper]">AI suggestions</p>
+              <p className="mt-1 text-sm leading-6 text-[--metis-paper-muted]">
+                Review before applying. Existing fields won’t be overwritten.
+              </p>
+              <p className="mt-1 text-xs text-[--metis-paper-muted]">Suggestions may be incomplete or uncertain.</p>
+            </div>
+
+            <div className="space-y-4 pl-1">
+              {[
+                { label: "Suggested title", v: structureResponse.suggestions.title },
+                { label: "Suggested issue type", v: structureResponse.suggestions.issueType },
+                { label: "Suggested working line", v: structureResponse.suggestions.summary },
+                { label: "Suggested audience", v: structureResponse.suggestions.audience },
+                { label: "Suggested confirmed facts", v: structureResponse.suggestions.confirmedFacts },
+                { label: "Suggested open questions", v: structureResponse.suggestions.openQuestions },
+                { label: "Suggested context", v: structureResponse.suggestions.context },
+                { label: "Suggested owner", v: structureResponse.suggestions.ownerName },
+                { label: "Suggested severity", v: structureResponse.suggestions.severity },
+                { label: "Suggested urgency", v: structureResponse.suggestions.priority },
+                { label: "Suggested operator posture", v: structureResponse.suggestions.operatorPosture },
+              ].map(({ label, v }) => (
+                <div key={label} className="space-y-1">
+                  <p className="text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">{label}</p>
+                  <p className="text-sm leading-6 text-[--metis-paper] whitespace-pre-wrap">{v ? String(v) : "—"}</p>
+                </div>
+              ))}
+            </div>
+
+            {structureResponse.needsMore.length > 0 ? (
+              <div className="space-y-2">
+                <p className="text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">Needs more information</p>
+                <ul className="list-disc space-y-1 pl-5 text-sm leading-6 text-[--metis-paper-muted]">
+                  {structureResponse.needsMore.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+
+            {structureResponse.limitations ? (
+              <p className="text-sm leading-6 text-[--metis-paper-muted]">{structureResponse.limitations}</p>
+            ) : null}
+
+            <div className="flex flex-wrap items-center gap-3">
+              <Button type="button" onClick={applyToEmptyOnly} variant="outline" className="h-9 rounded-full px-4">
+                Apply to empty fields
+              </Button>
+              <Button
+                type="button"
+                onClick={onClearStructurePreview}
+                variant="outline"
+                className="h-9 rounded-full border-white/10 bg-white/[0.03] px-4 text-[--metis-paper] hover:bg-white/[0.08]"
+              >
+                Clear suggestions
+              </Button>
+            </div>
+          </div>
+        ) : null}
+      </div>
+
       <div className="grid gap-5 md:grid-cols-2">
         <div>
           <label className="mb-3 block text-sm font-medium text-[--metis-paper]">Issue title</label>
@@ -170,7 +356,10 @@ export function SetupForm() {
           <div className="relative">
             <select
               value={priority}
-              onChange={(e) => setPriority(e.target.value as IssuePriority)}
+              onChange={(e) => {
+                setUserTouchedPriority(true);
+                setPriority(e.target.value as IssuePriority);
+              }}
               className="h-12 w-full appearance-none rounded-[1.15rem] border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-3 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
             >
               {priorities.map((p) => (
@@ -197,7 +386,10 @@ export function SetupForm() {
           <div className="relative">
             <select
               value={severity}
-              onChange={(e) => setSeverity(e.target.value as any)}
+              onChange={(e) => {
+                setUserTouchedSeverity(true);
+                setSeverity(e.target.value as (typeof severities)[number]);
+              }}
               className="h-12 w-full appearance-none rounded-[1.15rem] border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-3 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
             >
               {severities.map((s) => (
@@ -214,7 +406,10 @@ export function SetupForm() {
           <div className="relative">
             <select
               value={operatorPosture}
-              onChange={(e) => setOperatorPosture(e.target.value as OperatorPosture)}
+              onChange={(e) => {
+                setUserTouchedPosture(true);
+                setOperatorPosture(e.target.value as OperatorPosture);
+              }}
               className="h-12 w-full appearance-none rounded-[1.15rem] border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-3 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
             >
               {postures.map((p) => (
