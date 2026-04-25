@@ -31,9 +31,30 @@ type StructureSuggestions = {
   limitations: string;
 };
 
+type SuggestedSource = {
+  title: string | null;
+  note: string | null;
+  snippet: string | null;
+  tier: "Official" | "Internal" | "Major media" | "Market signal" | null;
+  reliability: string | null;
+  linkedSection: string | null;
+  whyThisIsEvidence: string | null;
+};
+
+type SuggestedGap = {
+  title: string | null;
+  whyItMatters: string | null;
+  stakeholder: string | null;
+  linkedSection: string | null;
+  prompt: string | null;
+  severity: "Critical" | "Important" | "Watch" | null;
+};
+
 type StructureResponse = {
   ok: true;
   suggestions: StructureSuggestions;
+  suggestedSources: SuggestedSource[];
+  suggestedGaps: SuggestedGap[];
   needsMore: string[];
   limitations: string;
 };
@@ -133,6 +154,17 @@ export function SetupForm() {
 
       didNavigate = true;
       setSuppressUnsavedWarning(true);
+      try {
+        const anyWindow = window as any;
+        anyWindow.__metisIntakeSuggestions = anyWindow.__metisIntakeSuggestions ?? {};
+        anyWindow.__metisIntakeSuggestions[issueId] = {
+          suggestedSources: structureResponse?.suggestedSources ?? [],
+          suggestedGaps: structureResponse?.suggestedGaps ?? [],
+          createdAt: Date.now(),
+        };
+      } catch {
+        // best-effort only; suggestions are transient
+      }
       router.push(`/issues/${issueId}/brief?mode=full&from=setup`);
     } catch (e: any) {
       setError(e?.message ?? "Request failed.");
@@ -295,6 +327,53 @@ export function SetupForm() {
                 </div>
               ))}
             </div>
+
+            {structureResponse.suggestedSources?.length ? (
+              <div className="space-y-3 border-t border-white/8 pt-5">
+                <p className="text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">Suggested sources</p>
+                <div className="space-y-4 pl-1">
+                  {structureResponse.suggestedSources.map((src, idx) => (
+                    <div key={`${src.title ?? "source"}-${idx}`} className="space-y-1">
+                      <p className="text-sm leading-6 text-[--metis-paper]">{src.title ?? "—"}</p>
+                      {src.note ? <p className="text-sm leading-6 text-[--metis-paper-muted] whitespace-pre-wrap">{src.note}</p> : null}
+                      {src.whyThisIsEvidence ? (
+                        <p className="text-xs leading-6 text-[--metis-paper-muted] whitespace-pre-wrap">{src.whyThisIsEvidence}</p>
+                      ) : null}
+                      {src.snippet ? (
+                        <p className="text-xs leading-6 text-[--metis-paper-muted] whitespace-pre-wrap">Snippet: {src.snippet}</p>
+                      ) : null}
+                      <p className="text-xs text-[--metis-paper-muted]">
+                        Tier: {src.tier ?? "—"} {src.linkedSection ? `· Section: ${src.linkedSection}` : ""}{" "}
+                        {src.reliability ? `· Reliability: ${src.reliability}` : ""}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            {structureResponse.suggestedGaps?.length ? (
+              <div className="space-y-3 border-t border-white/8 pt-5">
+                <p className="text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">Suggested clarification gaps</p>
+                <div className="space-y-4 pl-1">
+                  {structureResponse.suggestedGaps.map((gap, idx) => (
+                    <div key={`${gap.title ?? "gap"}-${idx}`} className="space-y-1">
+                      <p className="text-sm leading-6 text-[--metis-paper]">{gap.title ?? "—"}</p>
+                      {gap.prompt ? (
+                        <p className="text-sm leading-6 text-[--metis-paper-muted] whitespace-pre-wrap">{gap.prompt}</p>
+                      ) : null}
+                      {gap.whyItMatters ? (
+                        <p className="text-xs leading-6 text-[--metis-paper-muted] whitespace-pre-wrap">{gap.whyItMatters}</p>
+                      ) : null}
+                      <p className="text-xs text-[--metis-paper-muted]">
+                        Severity: {gap.severity ?? "—"} {gap.stakeholder ? `· Stakeholder: ${gap.stakeholder}` : ""}{" "}
+                        {gap.linkedSection ? `· Section: ${gap.linkedSection}` : ""}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
 
             {structureResponse.needsMore.length > 0 ? (
               <div className="space-y-2">

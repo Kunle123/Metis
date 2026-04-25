@@ -3,6 +3,8 @@ import { z } from "zod";
 const severityEnum = z.enum(["Critical", "High", "Moderate", "Low"]);
 const priorityEnum = z.enum(["Critical", "High", "Normal", "Low"]);
 const postureEnum = z.enum(["Monitoring", "Active", "Holding", "Closed"]);
+const sourceTierEnum = z.enum(["Official", "Internal", "Major media", "Market signal"]);
+const gapSeverityEnum = z.enum(["Critical", "Important", "Watch"]);
 
 export const StructureSetupSuggestionsSchema = z.object({
   title: z.string().nullable().optional(),
@@ -20,9 +22,30 @@ export const StructureSetupSuggestionsSchema = z.object({
   limitations: z.string().default(""),
 });
 
+const SuggestedSourceSchema = z.object({
+  title: z.string().min(1).nullable(),
+  note: z.string().min(1).nullable(),
+  snippet: z.string().nullable(),
+  tier: sourceTierEnum.nullable(),
+  reliability: z.string().nullable(),
+  linkedSection: z.string().nullable(),
+  whyThisIsEvidence: z.string().nullable(),
+});
+
+const SuggestedGapSchema = z.object({
+  title: z.string().min(1).nullable(),
+  whyItMatters: z.string().min(1).nullable(),
+  stakeholder: z.string().min(1).nullable(),
+  linkedSection: z.string().min(1).nullable(),
+  prompt: z.string().min(1).nullable(),
+  severity: gapSeverityEnum.nullable(),
+});
+
 export const StructureSetupResponseSchema = z.object({
   ok: z.literal(true),
   suggestions: StructureSetupSuggestionsSchema,
+  suggestedSources: z.array(SuggestedSourceSchema).default([]),
+  suggestedGaps: z.array(SuggestedGapSchema).default([]),
   needsMore: z.array(z.string()),
   limitations: z.string(),
 });
@@ -35,7 +58,7 @@ const MAX_RAW_NOTES = 32_000;
 
 const SYSTEM = `You are a structured-intake helper for a crisis/operations "issue" record in a product called Metis.
 
-Your job is to SUGGEST field values that map a user's raw notes to these fields. You do NOT create records and you do NOT act autonomously.
+Your job is to SUGGEST field values that map a user's raw notes into structured work. You do NOT create records and you do NOT act autonomously.
 
 Rules:
 - Output a single JSON object only (no markdown, no backticks) matching the keys requested in the user message.
@@ -46,6 +69,10 @@ Rules:
 - "severity" must be one of: Critical, High, Moderate, Low, or null if not inferable.
 - "priority" must be one of: Critical, High, Normal, Low, or null.
 - "operatorPosture" must be one of: Monitoring, Active, Holding, Closed, or null.
+- "suggestedSources" are potential evidence items to locate or confirm. They are NOT verified facts. Do not invent URLs. Only include snippet text if present in the notes.
+- Each suggested source should include a title and a note (what the evidence would show / where to find it) and a short justification in "whyThisIsEvidence".
+- "suggestedGaps" are unresolved questions / missing information. They must be phrased as questions/prompts, not assertions. Keep them separate from confirmed facts.
+- Gap severity must be one of: Critical, Important, Watch, or null if not inferable.
 - "needsMore" is an array of short strings (what is missing to fill the form well). Use an empty array if the notes are sufficient.
 - "limitations" is a short string about what you could not infer or what remains uncertain.`;
 
@@ -68,6 +95,17 @@ function stringArray(v: unknown): string[] {
   return v.filter((x): x is string => typeof x === "string").map((x) => x.trim()).filter(Boolean);
 }
 
+function unknownArray(v: unknown): unknown[] {
+  if (!Array.isArray(v)) return [];
+  return v;
+}
+
+function nullableObject(v: unknown): Record<string, unknown> | null {
+  if (!v || typeof v !== "object") return null;
+  if (Array.isArray(v)) return null;
+  return v as Record<string, unknown>;
+}
+
 const USER_KEY_SCHEMA = `Return JSON with exactly these keys:
 - title (string or null)
 - issueType (string or null)
@@ -80,6 +118,21 @@ const USER_KEY_SCHEMA = `Return JSON with exactly these keys:
 - severity ("Critical" | "High" | "Moderate" | "Low" or null)
 - priority ("Critical" | "High" | "Normal" | "Low" or null)
 - operatorPosture ("Monitoring" | "Active" | "Holding" | "Closed" or null)
+- suggestedSources (array of objects):
+  - title (string or null)
+  - note (string or null)
+  - snippet (string or null)
+  - tier ("Official" | "Internal" | "Major media" | "Market signal" or null)
+  - reliability (string or null)
+  - linkedSection (string or null)
+  - whyThisIsEvidence (string or null)
+- suggestedGaps (array of objects):
+  - title (string or null)
+  - whyItMatters (string or null)
+  - stakeholder (string or null)
+  - linkedSection (string or null)
+  - prompt (string or null)
+  - severity ("Critical" | "Important" | "Watch" or null)
 - needsMore (array of strings)
 - limitations (string)`;
 
@@ -157,6 +210,8 @@ export async function callStructureSetupModel(rawNotes: string): Promise<Structu
       severity: z.unknown().optional(),
       priority: z.unknown().optional(),
       operatorPosture: z.unknown().optional(),
+      suggestedSources: z.unknown().optional(),
+      suggestedGaps: z.unknown().optional(),
       needsMore: z.unknown().optional(),
       limitations: z.unknown().optional(),
     })
@@ -183,9 +238,39 @@ export async function callStructureSetupModel(rawNotes: string): Promise<Structu
     limitations: typeof s.limitations === "string" ? s.limitations : "",
   });
 
+  const suggestedSources = unknownArray(s.suggestedSources)
+    .map(nullableObject)
+    .filter((x): x is Record<string, unknown> => Boolean(x))
+    .map((obj) => ({
+      title: nullableString(obj.title),
+      note: nullableString(obj.note),
+      snippet: nullableString(obj.snippet),
+      tier: pickEnum(obj.tier, sourceTierEnum),
+      reliability: nullableString(obj.reliability),
+      linkedSection: nullableString(obj.linkedSection),
+      whyThisIsEvidence: nullableString(obj.whyThisIsEvidence),
+    }));
+
+  const suggestedGaps = unknownArray(s.suggestedGaps)
+    .map(nullableObject)
+    .filter((x): x is Record<string, unknown> => Boolean(x))
+    .map((obj) => ({
+      title: nullableString(obj.title),
+      whyItMatters: nullableString(obj.whyItMatters),
+      stakeholder: nullableString(obj.stakeholder),
+      linkedSection: nullableString(obj.linkedSection),
+      prompt: nullableString(obj.prompt),
+      severity: pickEnum(obj.severity, gapSeverityEnum),
+    }));
+
+  const suggestedSourcesValidated = z.array(SuggestedSourceSchema).parse(suggestedSources);
+  const suggestedGapsValidated = z.array(SuggestedGapSchema).parse(suggestedGaps);
+
   return {
     ok: true,
     suggestions,
+    suggestedSources: suggestedSourcesValidated,
+    suggestedGaps: suggestedGapsValidated,
     needsMore: suggestions.needsMore,
     limitations: suggestions.limitations,
   };

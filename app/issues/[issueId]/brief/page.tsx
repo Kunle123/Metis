@@ -8,6 +8,7 @@ import { prisma } from "@/lib/db/prisma";
 import { getIssueById } from "@/lib/issues/getIssueContext";
 import { BriefModeSchema, type BriefMode, type BriefConfidence, type BriefArtifact } from "@metis/shared/briefVersion";
 import { GenerateBriefButton } from "@/app/brief/generate-brief-button";
+import { IntakeSuggestionsPanel } from "@/app/issues/[issueId]/brief/intake-suggestions-panel";
 
 export const dynamic = "force-dynamic";
 
@@ -157,6 +158,8 @@ export default async function IssueBriefPage({
               </div>
             </div>
           </div>
+
+          {fromSetup === "setup" ? <IntakeSuggestionsPanel issueId={issue.id} /> : null}
 
           {artifact ? (
             mode === "full" ? (
