@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 
 import { CreateGapInputSchema, GapSeveritySchema, GapStatusSchema } from "@metis/shared/gap";
 import { prisma } from "@/lib/db/prisma";
@@ -139,6 +140,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
     return gap;
   });
+
+  revalidatePath("/");
+  revalidatePath(`/issues/${issueId}`);
 
   return NextResponse.json(serializeGap(created));
 }

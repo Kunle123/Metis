@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 
 import { CreateSourceInputSchema, SourceTierSchema } from "@metis/shared/source";
 import { prisma } from "@/lib/db/prisma";
@@ -106,6 +107,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       },
     });
 
+    await tx.issue.update({
+      where: { id: issueId },
+      data: { sourcesCount: { increment: 1 } },
+    });
+
     await writeIssueActivity(tx, {
       issueId,
       kind: IssueActivityKinds.source_created,
@@ -116,6 +122,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
     return source;
   });
+
+  revalidatePath("/");
+  revalidatePath(`/issues/${issueId}`);
 
   return NextResponse.json({
     ...created,

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 
 import { CreateInternalInputInputSchema, InternalInputConfidenceSchema } from "@metis/shared/internalInput";
 import { prisma } from "@/lib/db/prisma";
@@ -98,6 +99,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
     return input;
   });
+
+  revalidatePath("/");
+  revalidatePath(`/issues/${issueId}`);
 
   return NextResponse.json(serializeInternalInput(created));
 }

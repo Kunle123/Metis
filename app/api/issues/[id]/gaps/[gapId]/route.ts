@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 
 import { GapSeveritySchema, GapStatusSchema, PatchGapInputSchema } from "@metis/shared/gap";
 import { prisma } from "@/lib/db/prisma";
@@ -152,6 +153,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   if (updated.status === "Resolved" && !updated.resolvedByInternalInputId) {
     return NextResponse.json({ error: "Invariant violated: resolved gap missing internal input" }, { status: 500 });
   }
+
+  revalidatePath("/");
+  revalidatePath(`/issues/${issueId}`);
 
   return NextResponse.json(serializeGap(updated));
 }

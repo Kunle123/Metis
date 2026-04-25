@@ -108,7 +108,7 @@ export default async function DashboardPage() {
                 <IssueSummaryRow
                   key={issue.id}
                   issue={issue}
-                  workspaceHref={index === 0 ? `/issues/${issue.id}/brief?mode=full` : `/issues/${issue.id}/sources`}
+                  workspaceHref={`/issues/${issue.id}`}
                 />
               ))}
             </div>
