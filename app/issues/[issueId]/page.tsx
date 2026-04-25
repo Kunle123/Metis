@@ -6,6 +6,7 @@ import { getIssueById } from "@/lib/issues/getIssueContext";
 import { SourceEntryForm } from "./sources/source-entry-form";
 import { GapCreateForm } from "./gaps/gap-create-form";
 import { InternalInputCreateForm } from "./input/input-create-form";
+import { WorkspaceGapCards, WorkspaceSourceCards } from "./workspace-cards";
 import { WorkspaceSection } from "./workspace-section";
 
 export const dynamic = "force-dynamic";
@@ -77,7 +78,7 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
                 ["facts", "Confirmed vs unclear"],
                 ["sources", "Sources"],
                 ["gaps", "Gaps"],
-                ["input", "Input"],
+                  ["input", "Observations"],
               ].map(([id, label]) => sectionNavItem(id, label))}
             </div>
           </div>
@@ -123,33 +124,21 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
                 form={<SourceEntryForm issueId={issue.id} />}
               >
                 {sources.length ? (
-                  sources.slice(0, 8).map((s) => (
-                    <article key={s.id} className="rounded-[1.25rem] border border-white/10 bg-[rgba(255,255,255,0.03)] px-5 py-5">
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium text-[--metis-paper]">{s.title}</p>
-                          <p className="mt-1 text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">
-                            {s.sourceCode} · {s.tier} · {s.linkedSection ?? "—"}
-                          </p>
-                          {s.note ? <p className="mt-3 text-sm leading-6 text-[--metis-paper-muted]">{s.note}</p> : null}
-                          {s.snippet ? (
-                            <p className="mt-3 line-clamp-3 text-sm leading-6 text-[--metis-paper]">“{s.snippet}”</p>
-                          ) : null}
-                          {s.url ? (
-                            <a
-                              className="mt-3 inline-flex text-sm font-medium text-[--metis-brass-soft] underline decoration-white/10 underline-offset-4 transition hover:text-white hover:decoration-white/20"
-                              href={s.url}
-                              target="_blank"
-                              rel="noreferrer"
-                            >
-                              Open link
-                            </a>
-                          ) : null}
-                        </div>
-                        <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{s.reliability ?? "—"}</Badge>
-                      </div>
-                    </article>
-                  ))
+                  <WorkspaceSourceCards
+                    issueId={issue.id}
+                    sources={sources.slice(0, 8).map((s) => ({
+                      id: s.id,
+                      title: s.title,
+                      note: s.note,
+                      snippet: s.snippet,
+                      url: s.url,
+                      tier: s.tier,
+                      section: s.linkedSection ?? null,
+                      reliability: s.reliability ?? null,
+                      observedAt: null,
+                      createdAt: s.createdAt.toISOString(),
+                    }))}
+                  />
                 ) : (
                   <p className="text-sm text-[--metis-paper-muted]">No sources yet.</p>
                 )}
@@ -165,26 +154,19 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
                 form={<GapCreateForm issueId={issue.id} />}
               >
                 {gaps.length ? (
-                  gaps.slice(0, 8).map((g) => (
-                    <article key={g.id} className="rounded-[1.25rem] border border-white/10 bg-[rgba(255,255,255,0.03)] px-5 py-5">
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium text-[--metis-paper]">{g.title}</p>
-                          <p className="mt-1 text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">
-                            {g.severity} · {g.status} · {g.linkedSection}
-                          </p>
-                          <p className="mt-3 text-sm leading-6 text-[--metis-paper-muted] whitespace-pre-wrap">{g.prompt}</p>
-                          <a
-                            className="mt-3 inline-flex text-sm font-medium text-[--metis-brass-soft] underline decoration-white/10 underline-offset-4 transition hover:text-white hover:decoration-white/20"
-                            href={`/issues/${issue.id}/gaps#${g.id}`}
-                          >
-                            Open in gaps
-                          </a>
-                        </div>
-                        <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{g.stakeholder}</Badge>
-                      </div>
-                    </article>
-                  ))
+                  <WorkspaceGapCards
+                    issueId={issue.id}
+                    gaps={gaps.slice(0, 8).map((g) => ({
+                      id: g.id,
+                      prompt: g.prompt,
+                      whyItMatters: g.whyItMatters ?? null,
+                      status: g.status ?? null,
+                      severity: g.severity ?? null,
+                      stakeholder: g.stakeholder ?? null,
+                      section: g.linkedSection ?? null,
+                      createdAt: g.createdAt.toISOString(),
+                    }))}
+                  />
                 ) : (
                   <p className="text-sm text-[--metis-paper-muted]">No gaps yet.</p>
                 )}
