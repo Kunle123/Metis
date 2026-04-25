@@ -8,6 +8,7 @@ import { getIssueById } from "@/lib/issues/getIssueContext";
 import { SourceEntryForm } from "./sources/source-entry-form";
 import { GapCreateForm } from "./gaps/gap-create-form";
 import { InternalInputCreateForm } from "./input/input-create-form";
+import { WorkspaceSection } from "./workspace-section";
 
 export const dynamic = "force-dynamic";
 
@@ -116,15 +117,13 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
             </section>
 
             <section id="sources" className="space-y-6 border-t border-white/8 pt-10">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="space-y-1">
-                  <p className="text-[0.72rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Sources</p>
-                  <p className="text-sm leading-6 text-[--metis-paper-muted]">Evidence linked to this issue.</p>
-                </div>
-                <ButtonAsLink href={`/issues/${issue.id}/sources`} label="Open full sources" />
-              </div>
-
-              <div className="space-y-3">
+              <WorkspaceSection
+                title="Sources"
+                description="Evidence and artifacts linked to this issue."
+                addLabel="Add source"
+                advancedHref={`/issues/${issue.id}/sources`}
+                form={<SourceEntryForm issueId={issue.id} />}
+              >
                 {sources.length ? (
                   sources.slice(0, 8).map((s) => (
                     <article key={s.id} className="rounded-[1.25rem] border border-white/10 bg-[rgba(255,255,255,0.03)] px-5 py-5">
@@ -143,24 +142,17 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
                 ) : (
                   <p className="text-sm text-[--metis-paper-muted]">No sources yet.</p>
                 )}
-              </div>
-
-              <div className="border-t border-white/8 pt-6">
-                <p className="mb-4 text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">Add source</p>
-                <SourceEntryForm issueId={issue.id} />
-              </div>
+              </WorkspaceSection>
             </section>
 
             <section id="gaps" className="space-y-6 border-t border-white/8 pt-10">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="space-y-1">
-                  <p className="text-[0.72rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Gaps</p>
-                  <p className="text-sm leading-6 text-[--metis-paper-muted]">Clarification gaps that must be answered.</p>
-                </div>
-                <ButtonAsLink href={`/issues/${issue.id}/gaps`} label="Open full gaps" />
-              </div>
-
-              <div className="space-y-3">
+              <WorkspaceSection
+                title="Gaps"
+                description="Unknowns and questions that must be answered."
+                addLabel="Add gap"
+                advancedHref={`/issues/${issue.id}/gaps`}
+                form={<GapCreateForm issueId={issue.id} />}
+              >
                 {gaps.length ? (
                   gaps.slice(0, 8).map((g) => (
                     <article key={g.id} className="rounded-[1.25rem] border border-white/10 bg-[rgba(255,255,255,0.03)] px-5 py-5">
@@ -179,24 +171,17 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
                 ) : (
                   <p className="text-sm text-[--metis-paper-muted]">No gaps yet.</p>
                 )}
-              </div>
-
-              <div className="border-t border-white/8 pt-6">
-                <p className="mb-4 text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">Add gap</p>
-                <GapCreateForm issueId={issue.id} />
-              </div>
+              </WorkspaceSection>
             </section>
 
             <section id="input" className="space-y-6 border-t border-white/8 pt-10">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="space-y-1">
-                  <p className="text-[0.72rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Input</p>
-                  <p className="text-sm leading-6 text-[--metis-paper-muted]">Attributable internal input linked to sections.</p>
-                </div>
-                <ButtonAsLink href={`/issues/${issue.id}/input`} label="Open full input" />
-              </div>
-
-              <div className="space-y-3">
+              <WorkspaceSection
+                title="Observations"
+                description="Attributable internal observations linked to sections."
+                addLabel="Add observation"
+                advancedHref={`/issues/${issue.id}/input`}
+                form={<InternalInputCreateForm issueId={issue.id} />}
+              >
                 {inputs.length ? (
                   inputs.slice(0, 6).map((i) => (
                     <article key={i.id} className="rounded-[1.25rem] border border-white/10 bg-[rgba(255,255,255,0.03)] px-5 py-5">
@@ -215,30 +200,14 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
                     </article>
                   ))
                 ) : (
-                  <p className="text-sm text-[--metis-paper-muted]">No internal input yet.</p>
+                  <p className="text-sm text-[--metis-paper-muted]">No observations yet.</p>
                 )}
-              </div>
-
-              <div className="border-t border-white/8 pt-6">
-                <p className="mb-4 text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">Add input</p>
-                <InternalInputCreateForm issueId={issue.id} />
-              </div>
+              </WorkspaceSection>
             </section>
           </div>
         </SurfaceCard>
       </div>
     </MetisShell>
-  );
-}
-
-function ButtonAsLink({ href, label }: { href: string; label: string }) {
-  return (
-    <Link
-      href={href}
-      className="rounded-full border border-white/10 bg-[rgba(255,255,255,0.025)] px-4 py-2.5 text-sm text-[--metis-paper-muted] transition hover:border-white/14 hover:bg-white/[0.05] hover:text-[--metis-paper]"
-    >
-      {label}
-    </Link>
   );
 }
 

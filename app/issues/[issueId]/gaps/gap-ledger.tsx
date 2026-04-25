@@ -414,7 +414,7 @@ export function GapLedger({
 
           <div className="space-y-3 px-5 py-5 text-sm leading-6 text-[--metis-paper-muted]">
             <div className="flex items-center justify-between gap-3">
-              <span className="text-[--metis-paper]">Input records</span>
+              <span className="text-[--metis-paper]">Observation records</span>
               <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{internalInputs.length}</Badge>
             </div>
             <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-3">

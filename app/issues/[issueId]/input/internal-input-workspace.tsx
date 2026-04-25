@@ -32,8 +32,8 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
           <div className="border-b border-white/8 bg-[rgba(255,255,255,0.025)] px-6 py-5 sm:px-7">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper] sm:text-[2rem]">Attributable input</h2>
-                <p className="mt-1 text-sm leading-6 text-[--metis-paper-muted]">Capture internal input and guidance for the issue.</p>
+                <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper] sm:text-[2rem]">Attributable observation</h2>
+                <p className="mt-1 text-sm leading-6 text-[--metis-paper-muted]">Capture internal observations and guidance for the issue.</p>
               </div>
               {primaryInput ? (
                 <div className="flex flex-wrap items-center gap-2">
@@ -41,7 +41,7 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
                   <ReadinessPill state="Updated since last version" />
                 </div>
               ) : (
-                <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">No inputs yet</Badge>
+                <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">No observations yet</Badge>
               )}
             </div>
           </div>
@@ -98,7 +98,7 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
 
             <section className="space-y-4 border-t border-white/8 pt-8">
               <div className="flex items-center justify-between gap-3">
-                <h3 className="font-[Cormorant_Garamond] text-[1.75rem] leading-none text-[--metis-paper]">Linked inputs</h3>
+                <h3 className="font-[Cormorant_Garamond] text-[1.75rem] leading-none text-[--metis-paper]">Linked observations</h3>
                 <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{inputs.length} records</Badge>
               </div>
               <div className="space-y-3">

@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 export default async function InputLegacyPage() {
   return (
-    <MetisShell activePath="/input" pageTitle="Internal Input">
+    <MetisShell activePath="/input" pageTitle="Internal observations">
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <SurfaceCard className="overflow-hidden">
           <div className="px-6 py-6 sm:px-7 sm:py-7">
@@ -16,7 +16,7 @@ export default async function InputLegacyPage() {
               <header className="space-y-3 border-b border-white/8 pb-6">
                 <h2 className="font-[Cormorant_Garamond] text-[2.15rem] leading-none text-[--metis-paper]">Select an issue</h2>
                 <p className="max-w-3xl text-sm leading-7 text-[--metis-paper-muted]">
-                  Internal input is issue-scoped. Choose the issue you want to record against.
+                  Internal observations are issue-scoped. Choose the issue you want to record against.
                 </p>
               </header>
               <IssueSwitcher routeKind="input" />
