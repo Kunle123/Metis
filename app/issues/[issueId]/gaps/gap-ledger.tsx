@@ -227,6 +227,7 @@ export function GapLedger({
 
               return (
                 <article
+                  id={gap.id}
                   key={gap.id}
                   className={cn(
                     "rounded-[1.55rem] border px-5 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]",

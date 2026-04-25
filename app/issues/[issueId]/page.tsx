@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 import { MetisShell, SurfaceCard } from "@/components/MetisShell";
 import { Badge } from "@/components/ui/badge";
 import { prisma } from "@/lib/db/prisma";
@@ -134,6 +132,19 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
                             {s.sourceCode} · {s.tier} · {s.linkedSection ?? "—"}
                           </p>
                           {s.note ? <p className="mt-3 text-sm leading-6 text-[--metis-paper-muted]">{s.note}</p> : null}
+                          {s.snippet ? (
+                            <p className="mt-3 line-clamp-3 text-sm leading-6 text-[--metis-paper]">“{s.snippet}”</p>
+                          ) : null}
+                          {s.url ? (
+                            <a
+                              className="mt-3 inline-flex text-sm font-medium text-[--metis-brass-soft] underline decoration-white/10 underline-offset-4 transition hover:text-white hover:decoration-white/20"
+                              href={s.url}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              Open link
+                            </a>
+                          ) : null}
                         </div>
                         <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{s.reliability ?? "—"}</Badge>
                       </div>
@@ -163,6 +174,12 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
                             {g.severity} · {g.status} · {g.linkedSection}
                           </p>
                           <p className="mt-3 text-sm leading-6 text-[--metis-paper-muted] whitespace-pre-wrap">{g.prompt}</p>
+                          <a
+                            className="mt-3 inline-flex text-sm font-medium text-[--metis-brass-soft] underline decoration-white/10 underline-offset-4 transition hover:text-white hover:decoration-white/20"
+                            href={`/issues/${issue.id}/gaps#${g.id}`}
+                          >
+                            Open in gaps
+                          </a>
                         </div>
                         <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{g.stakeholder}</Badge>
                       </div>
@@ -182,6 +199,9 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
                 advancedHref={`/issues/${issue.id}/input`}
                 form={<InternalInputCreateForm issueId={issue.id} />}
               >
+                <p className="text-sm leading-6 text-[--metis-paper-muted]">
+                  Observations are attributable internal statements. Sources are external or internal artifacts used as evidence.
+                </p>
                 {inputs.length ? (
                   inputs.slice(0, 6).map((i) => (
                     <article key={i.id} className="rounded-[1.25rem] border border-white/10 bg-[rgba(255,255,255,0.03)] px-5 py-5">
