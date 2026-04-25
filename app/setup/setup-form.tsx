@@ -275,7 +275,7 @@ export function SetupForm() {
             type="button"
             onClick={onStructureWithAI}
             disabled={structLoading || !intakeRawNotes.trim().length}
-            className="rounded-full px-5"
+            className="h-10 rounded-full px-5"
           >
             {structLoading ? "Structuring…" : "Structure with AI"}
           </Button>
@@ -335,17 +335,18 @@ export function SetupForm() {
                   {structureResponse.suggestedSources.map((src, idx) => (
                     <div key={`${src.title ?? "source"}-${idx}`} className="space-y-1">
                       <p className="text-sm leading-6 text-[--metis-paper]">{src.title ?? "—"}</p>
+                      <p className="text-xs text-[--metis-paper-muted]">
+                        Tier: {src.tier ?? "—"}
+                        {src.linkedSection ? ` · Section: ${src.linkedSection}` : ""}
+                        {src.reliability ? ` · Reliability: ${src.reliability}` : ""}
+                      </p>
                       {src.note ? <p className="text-sm leading-6 text-[--metis-paper-muted] whitespace-pre-wrap">{src.note}</p> : null}
                       {src.whyThisIsEvidence ? (
-                        <p className="text-xs leading-6 text-[--metis-paper-muted] whitespace-pre-wrap">{src.whyThisIsEvidence}</p>
+                        <p className="text-xs leading-6 text-[--metis-paper-muted] whitespace-pre-wrap">Why: {src.whyThisIsEvidence}</p>
                       ) : null}
                       {src.snippet ? (
                         <p className="text-xs leading-6 text-[--metis-paper-muted] whitespace-pre-wrap">Snippet: {src.snippet}</p>
                       ) : null}
-                      <p className="text-xs text-[--metis-paper-muted]">
-                        Tier: {src.tier ?? "—"} {src.linkedSection ? `· Section: ${src.linkedSection}` : ""}{" "}
-                        {src.reliability ? `· Reliability: ${src.reliability}` : ""}
-                      </p>
                     </div>
                   ))}
                 </div>
@@ -359,16 +360,17 @@ export function SetupForm() {
                   {structureResponse.suggestedGaps.map((gap, idx) => (
                     <div key={`${gap.title ?? "gap"}-${idx}`} className="space-y-1">
                       <p className="text-sm leading-6 text-[--metis-paper]">{gap.title ?? "—"}</p>
+                      <p className="text-xs text-[--metis-paper-muted]">
+                        Severity: {gap.severity ?? "—"}
+                        {gap.stakeholder ? ` · Stakeholder: ${gap.stakeholder}` : ""}
+                        {gap.linkedSection ? ` · Section: ${gap.linkedSection}` : ""}
+                      </p>
                       {gap.prompt ? (
                         <p className="text-sm leading-6 text-[--metis-paper-muted] whitespace-pre-wrap">{gap.prompt}</p>
                       ) : null}
                       {gap.whyItMatters ? (
-                        <p className="text-xs leading-6 text-[--metis-paper-muted] whitespace-pre-wrap">{gap.whyItMatters}</p>
+                        <p className="text-xs leading-6 text-[--metis-paper-muted] whitespace-pre-wrap">Why: {gap.whyItMatters}</p>
                       ) : null}
-                      <p className="text-xs text-[--metis-paper-muted]">
-                        Severity: {gap.severity ?? "—"} {gap.stakeholder ? `· Stakeholder: ${gap.stakeholder}` : ""}{" "}
-                        {gap.linkedSection ? `· Section: ${gap.linkedSection}` : ""}
-                      </p>
                     </div>
                   ))}
                 </div>

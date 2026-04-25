@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 
@@ -55,6 +56,7 @@ function clearBundle(issueId: string) {
 type ItemState = { status: "idle" | "creating" | "created" | "error"; message?: string };
 
 export function IntakeSuggestionsPanel({ issueId }: { issueId: string }) {
+  const router = useRouter();
   const [bundle, setBundle] = useState<IntakeSuggestionBundle | null>(null);
   const [isOpen, setIsOpen] = useState(true);
 
@@ -117,18 +119,19 @@ export function IntakeSuggestionsPanel({ issueId }: { issueId: string }) {
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-[--metis-paper]">{src.title ?? "Untitled source"}</p>
-                          {src.note ? <p className="mt-1 text-sm leading-6 text-[--metis-paper-muted] whitespace-pre-wrap">{src.note}</p> : null}
-                          {src.whyThisIsEvidence ? (
-                            <p className="mt-1 text-xs leading-6 text-[--metis-paper-muted] whitespace-pre-wrap">{src.whyThisIsEvidence}</p>
-                          ) : null}
                           <p className="mt-1 text-xs text-[--metis-paper-muted]">
-                            Tier: {src.tier ?? "—"} {src.linkedSection ? `· Section: ${src.linkedSection}` : ""}{" "}
-                            {src.reliability ? `· Reliability: ${src.reliability}` : ""}
+                            Tier: {src.tier ?? "—"}
+                            {src.linkedSection ? ` · Section: ${src.linkedSection}` : ""}
+                            {src.reliability ? ` · Reliability: ${src.reliability}` : ""}
                           </p>
+                          {src.note ? <p className="mt-2 text-sm leading-6 text-[--metis-paper-muted] whitespace-pre-wrap">{src.note}</p> : null}
+                          {src.whyThisIsEvidence ? (
+                            <p className="mt-1 text-xs leading-6 text-[--metis-paper-muted] whitespace-pre-wrap">Why: {src.whyThisIsEvidence}</p>
+                          ) : null}
                         </div>
                         <Button
                           type="button"
-                          className="rounded-full px-4"
+                          className="h-9 rounded-full px-4"
                           disabled={st === "creating" || st === "created" || missing}
                           onClick={async () => {
                             setSourceState((m) => ({ ...m, [idx]: { status: "creating" } }));
@@ -151,6 +154,7 @@ export function IntakeSuggestionsPanel({ issueId }: { issueId: string }) {
                               const data = (await res.json().catch(() => ({}))) as { error?: string };
                               if (!res.ok) throw new Error(data?.error ?? `Request failed (${res.status})`);
                               setSourceState((m) => ({ ...m, [idx]: { status: "created" } }));
+                              router.refresh();
                             } catch (e: unknown) {
                               setSourceState((m) => ({ ...m, [idx]: { status: "error", message: (e as Error)?.message ?? "Failed." } }));
                             }
@@ -190,18 +194,19 @@ export function IntakeSuggestionsPanel({ issueId }: { issueId: string }) {
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-[--metis-paper]">{gap.title ?? "Untitled gap"}</p>
-                          {gap.prompt ? <p className="mt-1 text-sm leading-6 text-[--metis-paper-muted] whitespace-pre-wrap">{gap.prompt}</p> : null}
-                          {gap.whyItMatters ? (
-                            <p className="mt-1 text-xs leading-6 text-[--metis-paper-muted] whitespace-pre-wrap">{gap.whyItMatters}</p>
-                          ) : null}
                           <p className="mt-1 text-xs text-[--metis-paper-muted]">
-                            Severity: {gap.severity ?? "—"} {gap.stakeholder ? `· Stakeholder: ${gap.stakeholder}` : ""}{" "}
-                            {gap.linkedSection ? `· Section: ${gap.linkedSection}` : ""}
+                            Severity: {gap.severity ?? "—"}
+                            {gap.stakeholder ? ` · Stakeholder: ${gap.stakeholder}` : ""}
+                            {gap.linkedSection ? ` · Section: ${gap.linkedSection}` : ""}
                           </p>
+                          {gap.prompt ? <p className="mt-2 text-sm leading-6 text-[--metis-paper-muted] whitespace-pre-wrap">{gap.prompt}</p> : null}
+                          {gap.whyItMatters ? (
+                            <p className="mt-1 text-xs leading-6 text-[--metis-paper-muted] whitespace-pre-wrap">Why: {gap.whyItMatters}</p>
+                          ) : null}
                         </div>
                         <Button
                           type="button"
-                          className="rounded-full px-4"
+                          className="h-9 rounded-full px-4"
                           disabled={st === "creating" || st === "created" || missing}
                           onClick={async () => {
                             setGapState((m) => ({ ...m, [idx]: { status: "creating" } }));
@@ -222,6 +227,7 @@ export function IntakeSuggestionsPanel({ issueId }: { issueId: string }) {
                               const data = (await res.json().catch(() => ({}))) as { error?: string };
                               if (!res.ok) throw new Error(data?.error ?? `Request failed (${res.status})`);
                               setGapState((m) => ({ ...m, [idx]: { status: "created" } }));
+                              router.refresh();
                             } catch (e: unknown) {
                               setGapState((m) => ({ ...m, [idx]: { status: "error", message: (e as Error)?.message ?? "Failed." } }));
                             }

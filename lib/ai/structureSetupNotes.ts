@@ -70,8 +70,11 @@ Rules:
 - "priority" must be one of: Critical, High, Normal, Low, or null.
 - "operatorPosture" must be one of: Monitoring, Active, Holding, Closed, or null.
 - "suggestedSources" are potential evidence items to locate or confirm. They are NOT verified facts. Do not invent URLs. Only include snippet text if present in the notes.
-- Each suggested source should include a title and a note (what the evidence would show / where to find it) and a short justification in "whyThisIsEvidence".
+- Each suggested source must be an evidence artifact already mentioned or clearly present in the notes (e.g., a specific ticket, email, confirmation, metric/spike, incident record). Do not propose tasks as sources.
+- Do not phrase sources as actions (avoid titles starting with: Review, Check, Analyze, Investigate, Confirm, Verify). Those belong as gaps/tasks.
+- Each suggested source should include a title and a note (what the evidence is / where it exists) and a short justification in "whyThisIsEvidence".
 - "suggestedGaps" are unresolved questions / missing information. They must be phrased as questions/prompts, not assertions. Keep them separate from confirmed facts.
+- "suggestedGaps" should include verification tasks and investigative next steps (e.g., review logs, confirm counts, analyze tickets).
 - Gap severity must be one of: Critical, Important, Watch, or null if not inferable.
 - "needsMore" is an array of short strings (what is missing to fill the form well). Use an empty array if the notes are sufficient.
 - "limitations" is a short string about what you could not infer or what remains uncertain.`;
@@ -105,6 +108,8 @@ function nullableObject(v: unknown): Record<string, unknown> | null {
   if (Array.isArray(v)) return null;
   return v as Record<string, unknown>;
 }
+
+const SOURCE_ACTION_VERB = /^(review|check|analy[sz]e|investigat(e|ion)|confirm|verify|look into|triage)\b/i;
 
 const USER_KEY_SCHEMA = `Return JSON with exactly these keys:
 - title (string or null)
@@ -266,13 +271,44 @@ export async function callStructureSetupModel(rawNotes: string): Promise<Structu
   const suggestedSourcesValidated = z.array(SuggestedSourceSchema).parse(suggestedSources);
   const suggestedGapsValidated = z.array(SuggestedGapSchema).parse(suggestedGaps);
 
+  const reclassified = reclassifyActionSources(suggestedSourcesValidated, suggestedGapsValidated);
+
   return {
     ok: true,
     suggestions,
-    suggestedSources: suggestedSourcesValidated,
-    suggestedGaps: suggestedGapsValidated,
+    suggestedSources: reclassified.suggestedSources,
+    suggestedGaps: reclassified.suggestedGaps,
     needsMore: suggestions.needsMore,
     limitations: suggestions.limitations,
+  };
+}
+
+function reclassifyActionSources(
+  suggestedSources: z.infer<typeof SuggestedSourceSchema>[],
+  suggestedGaps: z.infer<typeof SuggestedGapSchema>[],
+) {
+  const sources: z.infer<typeof SuggestedSourceSchema>[] = [];
+  const gaps: z.infer<typeof SuggestedGapSchema>[] = [...suggestedGaps];
+
+  for (const src of suggestedSources) {
+    const title = (src.title ?? "").trim();
+    if (title && SOURCE_ACTION_VERB.test(title)) {
+      gaps.push({
+        title,
+        prompt: title,
+        whyItMatters: src.note ?? src.whyThisIsEvidence ?? null,
+        stakeholder: null,
+        linkedSection: src.linkedSection ?? null,
+        severity: null,
+      });
+      continue;
+    }
+    sources.push(src);
+  }
+
+  return {
+    suggestedSources: z.array(SuggestedSourceSchema).parse(sources),
+    suggestedGaps: z.array(SuggestedGapSchema).parse(gaps),
   };
 }
 
