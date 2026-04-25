@@ -61,6 +61,7 @@ const dashboardQuickLinksBase = [
 export default async function DashboardPage() {
   const issues = await prisma.issue.findMany({
     orderBy: { updatedAt: "desc" },
+    include: { _count: { select: { sources: true } } },
   });
 
   const firstIssue = issues[0] ?? null;
@@ -107,7 +108,10 @@ export default async function DashboardPage() {
               {issues.map((issue, index) => (
                 <IssueSummaryRow
                   key={issue.id}
-                  issue={issue}
+                  issue={{
+                    ...issue,
+                    sourcesCount: issue._count.sources,
+                  }}
                   workspaceHref={`/issues/${issue.id}`}
                 />
               ))}

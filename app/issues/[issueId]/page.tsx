@@ -45,7 +45,7 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
 
   return (
     <MetisShell
-      activePath="/brief"
+      activePath="/"
       pageTitle="Issue workspace"
       issueRoutePrefix={`/issues/${issue.id}`}
       activeIssue={{

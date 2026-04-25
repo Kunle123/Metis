@@ -53,13 +53,13 @@ export function WorkspaceSection({
         </div>
       </div>
 
-      <div className="space-y-3">{children}</div>
-
       <div id={regionId} className={expanded ? "block" : "hidden"} aria-hidden={!expanded}>
         <div className="rounded-[1.25rem] border border-white/8 bg-[rgba(0,0,0,0.14)] px-5 py-5">
           {form}
         </div>
       </div>
+
+      <div className="space-y-3">{children}</div>
     </div>
   );
 }
