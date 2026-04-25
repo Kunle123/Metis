@@ -164,7 +164,14 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
                       severity: g.severity ?? null,
                       stakeholder: g.stakeholder ?? null,
                       section: g.linkedSection ?? null,
+                      resolvedByInternalInputId: g.resolvedByInternalInputId ?? null,
                       createdAt: g.createdAt.toISOString(),
+                    }))}
+                    internalInputs={inputs.slice(0, 50).map((i) => ({
+                      id: i.id,
+                      role: i.role,
+                      name: i.name,
+                      createdAt: i.createdAt.toISOString(),
                     }))}
                   />
                 ) : (

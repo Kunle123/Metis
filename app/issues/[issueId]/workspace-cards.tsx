@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ChevronDown, ChevronRight, Copy, ExternalLink } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { CheckCircle2, ChevronDown, ChevronRight, Copy, ExternalLink, PencilLine, RotateCcw, Save, X } from "lucide-react";
 
 type GapCardData = {
   id: string;
@@ -12,6 +13,7 @@ type GapCardData = {
   severity: string | null;
   stakeholder: string | null;
   section: string | null;
+  resolvedByInternalInputId: string | null;
   createdAt: string;
 };
 
@@ -54,17 +56,25 @@ function ActionButton({
   onClick,
   children,
   disabled,
+  tone = "neutral",
 }: {
   onClick?: () => void;
   children: React.ReactNode;
   disabled?: boolean;
+  tone?: "neutral" | "primary" | "danger";
 }) {
+  const toneClass =
+    tone === "primary"
+      ? "bg-white/10 hover:bg-white/15 text-white"
+      : tone === "danger"
+        ? "bg-rose-900/25 hover:bg-rose-900/35 text-rose-50 border-rose-200/15"
+        : "bg-white/5 hover:bg-white/10 text-white/80";
   return (
     <button
       type="button"
       disabled={disabled}
       onClick={onClick}
-      className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/80 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+      className={`inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-1.5 text-xs disabled:cursor-not-allowed disabled:opacity-50 ${toneClass}`}
     >
       {children}
     </button>
@@ -121,17 +131,65 @@ function CardShell({
 export function WorkspaceGapCards({
   issueId,
   gaps,
+  internalInputs,
 }: {
   issueId: string;
   gaps: GapCardData[];
+  internalInputs: Array<{ id: string; role: string; name: string; createdAt: string }>;
 }) {
+  const router = useRouter();
   const [openId, setOpenId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [draftPromptById, setDraftPromptById] = useState<Record<string, string>>({});
+  const [resolveSelectionById, setResolveSelectionById] = useState<Record<string, string>>({});
+  const [busyGapId, setBusyGapId] = useState<string | null>(null);
+  const [errorById, setErrorById] = useState<Record<string, string>>({});
+
+  const inputLabelById = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const i of internalInputs) {
+      const shortId = i.id.slice(0, 8);
+      m.set(i.id, `${shortId}… · ${i.role} · ${i.name}`);
+    }
+    return m;
+  }, [internalInputs]);
+
+  function beginEdit(gap: GapCardData) {
+    setEditingId(gap.id);
+    setDraftPromptById((cur) => ({ ...cur, [gap.id]: cur[gap.id] ?? gap.prompt }));
+    setErrorById((cur) => {
+      const next = { ...cur };
+      delete next[gap.id];
+      return next;
+    });
+  }
+
+  async function patchGap(gapId: string, body: unknown) {
+    const res = await fetch(`/api/issues/${issueId}/gaps/${gapId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text || `Request failed (${res.status})`);
+    }
+    return res.json();
+  }
 
   return (
     <div className="space-y-3">
       {gaps.map((g) => {
         const expanded = openId === g.id;
         const preview = clampText(g.prompt, 140);
+        const isEditing = editingId === g.id;
+        const draftPrompt = (draftPromptById[g.id] ?? g.prompt).trimEnd();
+        const canEdit = (g.status ?? "") !== "Resolved";
+        const isResolved = (g.status ?? "") === "Resolved";
+        const resolvedByLabel = g.resolvedByInternalInputId
+          ? inputLabelById.get(g.resolvedByInternalInputId) ?? g.resolvedByInternalInputId
+          : null;
 
         return (
           <div key={g.id}>
@@ -154,8 +212,66 @@ export function WorkspaceGapCards({
               {expanded ? (
                 <div className="mt-3 space-y-3">
                   <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-2">
-                    <p className="text-xs text-white/50">Question</p>
-                    <p className="mt-1 whitespace-pre-wrap text-sm text-white/85">{g.prompt}</p>
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="text-xs text-white/50">Drafted question</p>
+                      {isEditing ? <span className="text-xs text-[--metis-brass-soft]">Editing</span> : null}
+                    </div>
+
+                    {isEditing ? (
+                      <div className="mt-2 space-y-2">
+                        <textarea
+                          value={draftPromptById[g.id] ?? g.prompt}
+                          onChange={(e) =>
+                            setDraftPromptById((cur) => ({
+                              ...cur,
+                              [g.id]: e.target.value,
+                            }))
+                          }
+                          className="min-h-[120px] w-full rounded-[0.95rem] border border-white/10 bg-white/[0.04] px-3 py-3 text-sm leading-6 text-white/90 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
+                        />
+                        <div className="flex flex-wrap items-center gap-2">
+                          <ActionButton
+                            tone="primary"
+                            disabled={busyGapId === g.id || draftPrompt.trim().length === 0}
+                            onClick={async () => {
+                              setBusyGapId(g.id);
+                              setErrorById((cur) => ({ ...cur, [g.id]: "" }));
+                              try {
+                                await patchGap(g.id, { prompt: draftPrompt.trim() });
+                                setEditingId(null);
+                                router.refresh();
+                              } catch (e) {
+                                setErrorById((cur) => ({
+                                  ...cur,
+                                  [g.id]: e instanceof Error ? e.message : "Unknown error",
+                                }));
+                              } finally {
+                                setBusyGapId(null);
+                              }
+                            }}
+                          >
+                            <Save size={14} />
+                            Save
+                          </ActionButton>
+                          <ActionButton
+                            disabled={busyGapId === g.id}
+                            onClick={() => {
+                              setEditingId(null);
+                              setDraftPromptById((cur) => {
+                                const next = { ...cur };
+                                delete next[g.id];
+                                return next;
+                              });
+                            }}
+                          >
+                            <X size={14} />
+                            Cancel
+                          </ActionButton>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="mt-2 whitespace-pre-wrap text-sm text-white/85">{g.prompt}</p>
+                    )}
                   </div>
 
                   {g.whyItMatters ? (
@@ -167,7 +283,79 @@ export function WorkspaceGapCards({
                     </div>
                   ) : null}
 
+                  <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-2">
+                    <p className="text-xs text-white/50">Resolution</p>
+                    {isResolved ? (
+                      <p className="mt-2 text-sm text-white/80">
+                        Resolved by: <span className="text-white/90">{resolvedByLabel ?? "—"}</span>
+                      </p>
+                    ) : (
+                      <>
+                        <p className="mt-2 text-sm text-white/70">
+                          Select an observation record to mark this gap resolved.
+                        </p>
+                        <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
+                          <select
+                            value={resolveSelectionById[g.id] ?? ""}
+                            onChange={(e) =>
+                              setResolveSelectionById((cur) => ({
+                                ...cur,
+                                [g.id]: e.target.value,
+                              }))
+                            }
+                            className="h-10 w-full rounded-full border border-white/10 bg-white/[0.04] px-4 text-sm text-white/85 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
+                          >
+                            <option value="">Select an observation…</option>
+                            {internalInputs.map((i) => (
+                              <option key={i.id} value={i.id}>
+                                {inputLabelById.get(i.id) ?? i.id}
+                              </option>
+                            ))}
+                          </select>
+                          <ActionButton
+                            tone="primary"
+                            disabled={busyGapId === g.id || internalInputs.length === 0}
+                            onClick={async () => {
+                              const selected = (resolveSelectionById[g.id] ?? "").trim();
+                              if (!selected) {
+                                setErrorById((cur) => ({
+                                  ...cur,
+                                  [g.id]: "Select an observation before marking resolved.",
+                                }));
+                                return;
+                              }
+                              setBusyGapId(g.id);
+                              setErrorById((cur) => ({ ...cur, [g.id]: "" }));
+                              try {
+                                await patchGap(g.id, { status: "Resolved", resolvedByInternalInputId: selected });
+                                router.refresh();
+                              } catch (e) {
+                                setErrorById((cur) => ({
+                                  ...cur,
+                                  [g.id]: e instanceof Error ? e.message : "Unknown error",
+                                }));
+                              } finally {
+                                setBusyGapId(null);
+                              }
+                            }}
+                          >
+                            <CheckCircle2 size={14} />
+                            Mark resolved
+                          </ActionButton>
+                        </div>
+                      </>
+                    )}
+                    {errorById[g.id] ? <p className="mt-2 text-sm text-rose-200">{errorById[g.id]}</p> : null}
+                  </div>
+
                   <div className="flex flex-wrap items-center gap-2">
+                    <ActionButton
+                      disabled={!canEdit || busyGapId === g.id}
+                      onClick={() => beginEdit(g)}
+                    >
+                      <PencilLine size={14} />
+                      Edit question
+                    </ActionButton>
                     <ActionButton
                       onClick={async () => {
                         try {
@@ -176,10 +364,34 @@ export function WorkspaceGapCards({
                           // best-effort
                         }
                       }}
+                      disabled={busyGapId === g.id}
                     >
                       <Copy size={14} />
                       Copy question
                     </ActionButton>
+                    {isResolved ? (
+                      <ActionButton
+                        disabled={busyGapId === g.id}
+                        onClick={async () => {
+                          setBusyGapId(g.id);
+                          setErrorById((cur) => ({ ...cur, [g.id]: "" }));
+                          try {
+                            await patchGap(g.id, { status: "Open" });
+                            router.refresh();
+                          } catch (e) {
+                            setErrorById((cur) => ({
+                              ...cur,
+                              [g.id]: e instanceof Error ? e.message : "Unknown error",
+                            }));
+                          } finally {
+                            setBusyGapId(null);
+                          }
+                        }}
+                      >
+                        <RotateCcw size={14} />
+                        Reopen
+                      </ActionButton>
+                    ) : null}
                     <ActionLink href={`/issues/${issueId}/gaps#${g.id}`}>
                       Advanced view
                     </ActionLink>
