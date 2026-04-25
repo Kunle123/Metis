@@ -18,12 +18,58 @@ function confidenceFromStatus(status: string) {
   return "Likely" as const;
 }
 
+function cleanText(value: unknown) {
+  if (typeof value !== "string") return "";
+  return value.trim();
+}
+
+function paragraphOrFallback(text: string, fallback: string) {
+  return text.length ? text : fallback;
+}
+
+function bulletsFromMultiline(text: string) {
+  const lines = text
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
+  if (!lines.length) return "";
+  return lines.map((l) => `- ${l.replace(/^-+\s*/, "")}`).join("\n");
+}
+
 export function generateBriefFromIssue(issue: Issue, mode: BriefMode): BriefArtifact {
   const updatedAtLabel = nowLabel();
   const confidence = confidenceFromStatus(issue.status);
 
   const lede =
     issue.summary.length > 220 ? `${issue.summary.slice(0, 217).trimEnd()}…` : issue.summary;
+
+  const summary = cleanText(issue.summary);
+  const confirmedFacts = cleanText(issue.confirmedFacts ?? "");
+  const openQuestions = cleanText(issue.openQuestions ?? "");
+  const context = cleanText(issue.context ?? "");
+
+  const confirmedBlock = paragraphOrFallback(
+    bulletsFromMultiline(confirmedFacts),
+    "No confirmed facts recorded yet.",
+  );
+  const unknownsBlock = paragraphOrFallback(
+    bulletsFromMultiline(openQuestions),
+    "No open questions recorded yet.",
+  );
+
+  const timelineBody = openQuestions.toLowerCase().includes("when") || openQuestions.toLowerCase().includes("timeline")
+    ? "Timeline is not yet captured. Record key timestamps and milestones as they are confirmed.\n\nOpen questions indicate missing time anchors."
+    : "Timeline is not yet captured. Record key timestamps and operational milestones as they are confirmed.";
+
+  const recommendedActions = [
+    "Confirm what is known vs under validation.",
+    openQuestions.length ? "Resolve the open questions before broad circulation." : null,
+    "Assign an owner and set the next update cadence.",
+    "Link sources as evidence as they are reviewed.",
+  ]
+    .filter(Boolean)
+    .map((x, i) => `${i + 1}) ${x}`)
+    .join("\n");
 
   const artifact: BriefArtifact = {
     lede,
@@ -38,16 +84,15 @@ export function generateBriefFromIssue(issue: Issue, mode: BriefMode): BriefArti
         {
           id: "executive-summary",
           title: "Executive summary",
-          body: issue.summary,
-          confidence,
+          body: paragraphOrFallback(summary, "No working line recorded yet."),
+          confidence: summary.length ? confidence : "Unclear",
           updatedAtLabel,
           evidenceRefs: [],
         },
         {
           id: "chronology",
           title: "Chronology",
-          body:
-            "Timeline is not yet captured in Sprint 1. Record key timestamps and operational milestones as they are confirmed.",
+          body: timelineBody,
           confidence: "Unclear",
           updatedAtLabel,
           evidenceRefs: [],
@@ -55,18 +100,21 @@ export function generateBriefFromIssue(issue: Issue, mode: BriefMode): BriefArti
         {
           id: "confirmed-vs-unclear",
           title: "Confirmed vs unclear",
-          body:
-            "Confirmed: the core issue is active.\nUnclear: exposure, notification thresholds, and final narrative framing remain under validation.",
-          confidence,
+          body: `Confirmed\n${confirmedBlock}\n\nUnclear / needs confirmation\n${unknownsBlock}`,
+          confidence: openQuestions.length ? "Unclear" : confidence,
           updatedAtLabel,
           evidenceRefs: [],
         },
         {
           id: "narrative-map",
           title: "Stakeholder narratives",
-          body:
-            "Internal narrative remains anchored on verified facts. External narrative pressure may evolve; capture themes only after evidence is reviewed.",
-          confidence: "Likely",
+          body: paragraphOrFallback(
+            context.length
+              ? `Context (from intake)\n${context}\n\nNarrative discipline\n- Keep internal updates anchored on confirmed facts.\n- Treat unknowns as open questions until validated.\n- Avoid speculative exposure language in broad circulation.`
+              : "Keep updates anchored on confirmed facts. Treat unknowns as open questions until validated. Avoid speculative exposure language in broad circulation.",
+            "Keep updates anchored on confirmed facts.",
+          ),
+          confidence: context.length ? "Likely" : confidence,
           updatedAtLabel,
           evidenceRefs: [],
         },
@@ -74,16 +122,17 @@ export function generateBriefFromIssue(issue: Issue, mode: BriefMode): BriefArti
           id: "implications",
           title: "Implications",
           body:
-            "Implications will be refined as validation completes. Avoid circulating unverified exposure language.",
-          confidence,
+            openQuestions.length || !confirmedFacts.length
+              ? "Implications are not yet fully supported by confirmed facts. Treat impacts, exposure, and notification thresholds as pending until validated."
+              : "Implications should be revisited as evidence is reviewed and sources are linked.",
+          confidence: openQuestions.length ? "Unclear" : confidence,
           updatedAtLabel,
           evidenceRefs: [],
         },
         {
           id: "recommended-actions",
           title: "Recommended actions",
-          body:
-            "1) Confirm what is known vs unverified.\n2) Align leadership phrasing for internal circulation.\n3) Set the next update cadence and owner.",
+          body: recommendedActions,
           confidence: "Likely",
           updatedAtLabel,
           evidenceRefs: [],
@@ -92,15 +141,14 @@ export function generateBriefFromIssue(issue: Issue, mode: BriefMode): BriefArti
     },
     executive: {
       blocks: [
-        { label: "Situation", body: issue.summary },
+        { label: "Situation", body: paragraphOrFallback(summary, "No working line recorded yet.") },
         {
           label: "Current line",
-          body: `Current status: ${issue.status}. Maintain conservative language until validation completes.`,
+          body: `Current status: ${issue.status}. Severity: ${issue.severity}. Urgency: ${issue.priority}. Operator posture: ${issue.operatorPosture}.`,
         },
         {
           label: "Unresolved",
-          body:
-            "Key unknowns remain. Do not elevate uncertain claims into circulation without review.",
+          body: unknownsBlock,
         },
         {
           label: "Circulation status",
@@ -108,13 +156,13 @@ export function generateBriefFromIssue(issue: Issue, mode: BriefMode): BriefArti
         },
         {
           label: "Immediate actions",
-          body: "Confirm facts, align leadership phrasing, and set the next update cadence.",
+          body: recommendedActions,
         },
       ],
       immediateActions: [
-        "Approve conservative leadership wording for the next internal send.",
-        "Confirm which facts are confirmed vs under validation.",
-        "Set the next update cadence and owner.",
+        "Confirm what is known vs under validation.",
+        openQuestions.length ? "Resolve the open questions before broad circulation." : "Link evidence sources as they are reviewed.",
+        "Assign an owner and set the next update cadence.",
       ],
     },
   };

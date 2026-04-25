@@ -53,6 +53,7 @@ export default async function IssueBriefPage({
   const { issueId } = await params;
   const sp = (await searchParams) ?? {};
   const modeRaw = typeof sp.mode === "string" ? sp.mode : Array.isArray(sp.mode) ? sp.mode[0] : undefined;
+  const fromSetup = typeof sp.from === "string" ? sp.from : Array.isArray(sp.from) ? sp.from[0] : undefined;
   const parsedMode = BriefModeSchema.safeParse(modeRaw ?? "full");
   const mode = parsedMode.success ? parsedMode.data : ("full" as const);
 
@@ -236,7 +237,9 @@ export default async function IssueBriefPage({
               <header className="space-y-3 border-b border-white/8 pb-6">
                 <h2 className="font-[Cormorant_Garamond] text-[2.15rem] leading-none text-[--metis-paper]">No brief version yet</h2>
                 <p className="max-w-3xl text-sm leading-7 text-[--metis-paper-muted]">
-                  Generate the first-pass brief artifact from the current issue record. This will create a stored brief version for this mode.
+                  {fromSetup === "setup"
+                    ? "This issue record has been created. Generate a first-pass brief from the issue record (and later: sources, gaps, and internal input)."
+                    : "Generate a first-pass brief from the current issue record. This will create a stored brief version for this mode."}
                 </p>
               </header>
               <div className="flex flex-wrap items-center justify-between gap-3">

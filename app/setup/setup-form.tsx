@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,8 @@ type StructureResponse = {
 export function SetupForm() {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
+  const submitLock = useRef(false);
+  const [suppressUnsavedWarning, setSuppressUnsavedWarning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmedFactsPasteError, setConfirmedFactsPasteError] = useState<string | null>(null);
   const [contextPasteError, setContextPasteError] = useState<string | null>(null);
@@ -81,17 +83,20 @@ export function SetupForm() {
     return hasText || hasSelectionChange;
   }, [audience, confirmedFacts, context, intakeRawNotes, issueType, openQuestions, operatorPosture, ownerName, priority, severity, summary, title]);
 
-  useUnsavedChangesWarning({ isDirty, isSaving: submitting });
+  useUnsavedChangesWarning({ isDirty, isSaving: submitting || suppressUnsavedWarning });
 
   const canSubmit = useMemo(() => {
     return title.trim().length > 0 && issueType.trim().length > 0 && summary.trim().length > 0 && severity.trim().length > 0;
   }, [title, issueType, summary, severity]);
 
   async function onSubmit() {
-    if (!canSubmit || submitting) return;
+    if (!canSubmit) return;
+    if (submitLock.current) return;
+    submitLock.current = true;
     setSubmitting(true);
     setError(null);
 
+    let didNavigate = false;
     try {
       const res = await fetch("/api/issues", {
         method: "POST",
@@ -126,11 +131,14 @@ export function SetupForm() {
         return;
       }
 
-      router.push(`/issues/${issueId}/brief?mode=full`);
+      didNavigate = true;
+      setSuppressUnsavedWarning(true);
+      router.push(`/issues/${issueId}/brief?mode=full&from=setup`);
     } catch (e: any) {
       setError(e?.message ?? "Request failed.");
     } finally {
-      setSubmitting(false);
+      submitLock.current = false;
+      if (!didNavigate) setSubmitting(false);
     }
   }
 
