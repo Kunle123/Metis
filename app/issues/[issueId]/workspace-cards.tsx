@@ -200,6 +200,7 @@ export function WorkspaceGapCards({
   internalInputs: Array<{ id: string; role: string; name: string; createdAt: string }>;
 }) {
   const router = useRouter();
+  const WHY_COLLAPSE_CHARS = 260;
   const [openId, setOpenId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draftPromptById, setDraftPromptById] = useState<Record<string, string>>({});
@@ -220,6 +221,7 @@ export function WorkspaceGapCards({
   >({});
   const [obsSavingGapId, setObsSavingGapId] = useState<string | null>(null);
   const [obsErrorById, setObsErrorById] = useState<Record<string, string>>({});
+  const [whyExpandedById, setWhyExpandedById] = useState<Record<string, boolean>>({});
 
   const inputLabelById = useMemo(() => {
     const m = new Map<string, string>();
@@ -342,6 +344,15 @@ export function WorkspaceGapCards({
           confidence: "Likely" as const,
         };
         const obsMissingRequired = !obsDraft.role.trim() || !obsDraft.name.trim() || !obsDraft.response.trim();
+        const why = (g.whyItMatters ?? "").trim();
+        const hasWhy = (g.whyItMatters ?? "").trim().length > 0;
+        const whyExpanded = whyExpandedById[g.id] ?? false;
+        const whyLong = why.length > WHY_COLLAPSE_CHARS;
+        const whyDisplay = !hasWhy
+          ? ""
+          : !whyLong || whyExpanded
+            ? (g.whyItMatters ?? "").trim()
+            : `${(g.whyItMatters ?? "").trim().slice(0, WHY_COLLAPSE_CHARS).trimEnd()}…`;
 
         return (
           <div key={g.id}>
@@ -364,112 +375,160 @@ export function WorkspaceGapCards({
                 </>
               }
               details={
-                <div className="space-y-3">
-                  <div className="relative overflow-hidden rounded-[1.05rem] border border-[color-mix(in_oklab,var(--metis-brass)_26%,rgba(255,255,255,0.12))] bg-[linear-gradient(135deg,rgba(164,132,82,0.16),rgba(255,255,255,0.03))] pl-4 pr-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+                <div className="space-y-2.5">
+                  {/* Zone 1 — decision header: question + compact chips + tertiary utilities */}
+                  <div className="relative overflow-hidden rounded-[1.05rem] border border-[color-mix(in_oklab,var(--metis-brass)_26%,rgba(255,255,255,0.12))] bg-[linear-gradient(135deg,rgba(164,132,82,0.14),rgba(255,255,255,0.03))] pl-4 pr-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
                     <div className="pointer-events-none absolute inset-y-0 left-0 w-[3px] bg-[color-mix(in_oklab,var(--metis-brass)_70%,transparent)]" />
-                    <div className="flex flex-wrap items-start justify-between gap-2">
-                      <p className="text-[0.62rem] font-medium uppercase tracking-[0.22em] text-[color-mix(in_oklab,var(--metis-brass-soft)_86%,transparent)]">
-                        Open question
-                      </p>
-                      <div className="flex flex-wrap items-center justify-end gap-2">
+                    <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
+                      <div className="min-w-0 flex-1">
+                        {isEditing ? (
+                          <div className="space-y-2">
+                            <textarea
+                              value={draftPromptById[g.id] ?? g.prompt}
+                              onChange={(e) =>
+                                setDraftPromptById((cur) => ({
+                                  ...cur,
+                                  [g.id]: e.target.value,
+                                }))
+                              }
+                              className="min-h-[120px] w-full rounded-[0.95rem] border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-3 py-3 text-sm leading-6 text-white/90 shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
+                            />
+                            <div className="flex flex-wrap items-center gap-2">
+                              <ActionButton
+                                tone="primary"
+                                disabled={busyGapId === g.id || draftPrompt.trim().length === 0}
+                                onClick={async () => {
+                                  setBusyGapId(g.id);
+                                  setErrorById((cur) => ({ ...cur, [g.id]: "" }));
+                                  try {
+                                    await patchGap(g.id, { prompt: draftPrompt.trim() });
+                                    setEditingId(null);
+                                    router.refresh();
+                                  } catch (e) {
+                                    setErrorById((cur) => ({
+                                      ...cur,
+                                      [g.id]: e instanceof Error ? e.message : "Unknown error",
+                                    }));
+                                  } finally {
+                                    setBusyGapId(null);
+                                  }
+                                }}
+                              >
+                                <Save size={14} />
+                                Save
+                              </ActionButton>
+                              <ActionButton
+                                disabled={busyGapId === g.id}
+                                onClick={() => {
+                                  setEditingId(null);
+                                  setDraftPromptById((cur) => {
+                                    const next = { ...cur };
+                                    delete next[g.id];
+                                    return next;
+                                  });
+                                }}
+                              >
+                                <X size={14} />
+                                Cancel
+                              </ActionButton>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="whitespace-pre-wrap text-[1.05rem] font-semibold leading-7 text-[--metis-paper]">
+                            {g.prompt}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2 lg:max-w-[min(420px,46%)] lg:justify-end">
                         {g.status ? <Pill className={statusPillClass(g.status)}>{g.status}</Pill> : null}
                         {g.severity ? <Pill className={severityPillClass(g.severity)}>{g.severity}</Pill> : null}
-                        {g.section ? (
-                          <Pill className="border border-white/10 bg-black/25 text-white/75">Section · {g.section}</Pill>
-                        ) : null}
-                        {isEditing ? <span className="text-xs text-[color-mix(in_oklab,var(--metis-brass-soft)_90%,transparent)]">Editing</span> : null}
+                        {g.section ? <Pill className="border border-white/10 bg-black/20 text-white/75">Sec · {g.section}</Pill> : null}
+                        {g.stakeholder ? <Pill className="border border-white/10 bg-black/20 text-white/70">Stake · {g.stakeholder}</Pill> : null}
+                        {isEditing ? <Pill className="border border-white/10 bg-white/5 text-white/75">Editing</Pill> : null}
                       </div>
                     </div>
 
-                    {isEditing ? (
-                      <div className="mt-2 space-y-2">
-                        <textarea
-                          value={draftPromptById[g.id] ?? g.prompt}
-                          onChange={(e) =>
-                            setDraftPromptById((cur) => ({
-                              ...cur,
-                              [g.id]: e.target.value,
-                            }))
+                    <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-white/10 pt-3">
+                      <ActionButton
+                        className="border-white/8 bg-white/[0.02] text-white/65 hover:bg-white/[0.05]"
+                        disabled={!canEdit || busyGapId === g.id}
+                        onClick={() => beginEdit(g)}
+                      >
+                        <PencilLine size={14} />
+                        Edit
+                      </ActionButton>
+                      <ActionButton
+                        className="border-white/8 bg-white/[0.02] text-white/65 hover:bg-white/[0.05]"
+                        onClick={async () => {
+                          try {
+                            await navigator.clipboard.writeText(g.prompt);
+                          } catch {
+                            // best-effort
                           }
-                          className="min-h-[120px] w-full rounded-[0.95rem] border border-white/10 bg-white/[0.04] px-3 py-3 text-sm leading-6 text-white/90 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
-                        />
-                        <div className="flex flex-wrap items-center gap-2">
-                          <ActionButton
-                            tone="primary"
-                            disabled={busyGapId === g.id || draftPrompt.trim().length === 0}
-                            onClick={async () => {
-                              setBusyGapId(g.id);
-                              setErrorById((cur) => ({ ...cur, [g.id]: "" }));
-                              try {
-                                await patchGap(g.id, { prompt: draftPrompt.trim() });
-                                setEditingId(null);
-                                router.refresh();
-                              } catch (e) {
-                                setErrorById((cur) => ({
-                                  ...cur,
-                                  [g.id]: e instanceof Error ? e.message : "Unknown error",
-                                }));
-                              } finally {
-                                setBusyGapId(null);
-                              }
-                            }}
-                          >
-                            <Save size={14} />
-                            Save
-                          </ActionButton>
-                          <ActionButton
-                            disabled={busyGapId === g.id}
-                            onClick={() => {
-                              setEditingId(null);
-                              setDraftPromptById((cur) => {
-                                const next = { ...cur };
-                                delete next[g.id];
-                                return next;
-                              });
-                            }}
-                          >
-                            <X size={14} />
-                            Cancel
-                          </ActionButton>
-                        </div>
-                      </div>
-                    ) : (
-                      <p className="mt-2 whitespace-pre-wrap text-[1.02rem] font-medium leading-7 text-[--metis-paper]">
-                        {g.prompt}
-                      </p>
-                    )}
+                        }}
+                        disabled={busyGapId === g.id}
+                      >
+                        <Copy size={14} />
+                        Copy
+                      </ActionButton>
+                      {isResolved ? (
+                        <ActionButton
+                          className="border-white/8 bg-white/[0.02] text-white/65 hover:bg-white/[0.05]"
+                          disabled={busyGapId === g.id}
+                          onClick={async () => {
+                            setBusyGapId(g.id);
+                            setErrorById((cur) => ({ ...cur, [g.id]: "" }));
+                            try {
+                              await patchGap(g.id, { status: "Open" });
+                              router.refresh();
+                            } catch (e) {
+                              setErrorById((cur) => ({
+                                ...cur,
+                                [g.id]: e instanceof Error ? e.message : "Unknown error",
+                              }));
+                            } finally {
+                              setBusyGapId(null);
+                            }
+                          }}
+                        >
+                          <RotateCcw size={14} />
+                          Reopen
+                        </ActionButton>
+                      ) : null}
+                      <TertiaryActionLink href={`/issues/${issueId}/gaps#${g.id}`}>
+                        Advanced view
+                      </TertiaryActionLink>
+                    </div>
                   </div>
 
-                  {g.whyItMatters ? (
-                    <div className="rounded-[1.05rem] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(0,0,0,0.10))] px-3 py-3">
-                      <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-white/40">Context</p>
-                      <p className="mt-1 text-xs text-white/50">Why it matters</p>
-                      <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-white/70">{g.whyItMatters}</p>
+                  {/* Zone 2 — context (read-only) */}
+                  {hasWhy ? (
+                    <div className="rounded-[1.05rem] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(0,0,0,0.10))] px-3 py-2.5">
+                      <p className="whitespace-pre-wrap text-sm leading-6 text-white/70">{whyDisplay}</p>
+                      {whyLong ? (
+                        <button
+                          type="button"
+                          onClick={() => setWhyExpandedById((cur) => ({ ...cur, [g.id]: !whyExpanded }))}
+                          className="mt-2 text-xs font-medium text-[--metis-brass-soft] underline decoration-white/10 underline-offset-4 hover:decoration-white/25"
+                        >
+                          {whyExpanded ? "Show less" : "Show more"}
+                        </button>
+                      ) : null}
                     </div>
                   ) : null}
 
+                  {/* Zone 3 — resolution (interactive) */}
                   <div className="rounded-[1.05rem] border border-white/8 bg-[linear-gradient(135deg,rgba(62,92,112,0.10),rgba(0,0,0,0.20))] px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-                    <div className="flex flex-wrap items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-sky-100/40">Action</p>
-                        <p className="mt-1 text-sm font-medium text-white/85">Resolve this gap</p>
-                        {g.stakeholder ? (
-                          <p className="mt-1 text-xs text-white/50">
-                            Stakeholder: <span className="text-white/70">{g.stakeholder}</span>
-                          </p>
-                        ) : null}
-                      </div>
-                    </div>
-
                     {isResolved ? (
-                      <p className="mt-3 text-sm leading-6 text-emerald-100/80">
+                      <p className="text-sm leading-6 text-emerald-100/80">
                         Resolved by: <span className="text-emerald-50/95">{resolvedByLabel ?? "—"}</span>
                       </p>
                     ) : (
-                      <div className="mt-3 space-y-3">
-                        <div className="rounded-[0.95rem] border border-white/10 bg-black/18 px-3 py-3">
-                          <p className="text-xs text-white/55">Use an existing observation</p>
-                          <p className="mt-1 text-sm text-white/70">Select a record, then mark resolved.</p>
+                      <div className="grid gap-3 md:grid-cols-2">
+                        <div className="md:pr-3 md:border-r md:border-white/10">
+                          <p className="text-xs text-white/55">Existing observation</p>
+                          <p className="mt-1 text-sm text-white/70">Select, then mark resolved.</p>
                           <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
                             <select
                               value={resolveSelectionById[g.id] ?? ""}
@@ -479,7 +538,7 @@ export function WorkspaceGapCards({
                                   [g.id]: e.target.value,
                                 }))
                               }
-                              className="h-10 w-full rounded-full border border-white/10 bg-white/[0.04] px-4 text-sm text-white/85 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
+                              className="h-10 w-full rounded-full border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-white/85 shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
                             >
                               <option value="">Select an observation…</option>
                               {internalInputs.map((i) => (
@@ -521,13 +580,12 @@ export function WorkspaceGapCards({
                           </div>
                         </div>
 
-                        <div className="rounded-[0.95rem] border border-white/10 bg-black/18 px-3 py-3">
-                          <p className="text-xs text-white/55">Add a new observation</p>
-                          <p className="mt-1 text-sm text-white/70">
-                            Add an attributable observation that answers this question.
-                          </p>
+                        <div className="md:pl-1">
+                          <p className="text-xs text-white/55">New observation</p>
+                          <p className="mt-1 text-sm text-white/70">Add an attributable observation that answers this question.</p>
+
                           <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                            <p className="text-xs text-white/50">Create and save, then mark resolved above.</p>
+                            <p className="text-xs text-white/50">Save, then select it above and mark resolved.</p>
                             <ActionButton
                               className="border-white/8 bg-white/[0.04] text-white/75 hover:bg-white/[0.08]"
                               onClick={() =>
@@ -565,7 +623,7 @@ export function WorkspaceGapCards({
                                         [g.id]: { ...obsDraft, role: e.target.value },
                                       }))
                                     }
-                                    className="h-10 w-full rounded-full border border-white/10 bg-white/[0.04] px-4 text-sm text-white/85 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
+                                    className="h-10 w-full rounded-full border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-white/85 shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
                                     placeholder="e.g., On-call"
                                   />
                                 </label>
@@ -579,7 +637,7 @@ export function WorkspaceGapCards({
                                         [g.id]: { ...obsDraft, name: e.target.value },
                                       }))
                                     }
-                                    className="h-10 w-full rounded-full border border-white/10 bg-white/[0.04] px-4 text-sm text-white/85 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
+                                    className="h-10 w-full rounded-full border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-white/85 shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
                                     placeholder="Attributable name"
                                   />
                                 </label>
@@ -596,7 +654,7 @@ export function WorkspaceGapCards({
                                     }))
                                   }
                                   rows={4}
-                                  className="w-full rounded-[0.95rem] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm leading-6 text-white/85 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
+                                  className="w-full rounded-[0.95rem] border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 py-3 text-sm leading-6 text-white/85 shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
                                   placeholder="Attributable observation that answers the gap"
                                 />
                               </label>
@@ -615,7 +673,7 @@ export function WorkspaceGapCards({
                                         },
                                       }))
                                     }
-                                    className="h-10 w-full rounded-full border border-white/10 bg-white/[0.04] px-4 text-sm text-white/85 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
+                                    className="h-10 w-full rounded-full border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-white/85 shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
                                   >
                                     <option value="Confirmed">Confirmed</option>
                                     <option value="Likely">Likely</option>
@@ -645,61 +703,6 @@ export function WorkspaceGapCards({
                       </div>
                     )}
                     {errorById[g.id] ? <p className="mt-2 text-sm text-rose-200">{errorById[g.id]}</p> : null}
-                  </div>
-
-                  <div className="rounded-[1.05rem] border border-white/8 bg-white/[0.02] px-3 py-3">
-                    <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-white/35">More</p>
-                    <div className="mt-2 flex flex-wrap items-center gap-2">
-                      <ActionButton
-                        className="border-white/8 bg-white/[0.02] text-white/65 hover:bg-white/[0.05]"
-                        disabled={!canEdit || busyGapId === g.id}
-                        onClick={() => beginEdit(g)}
-                      >
-                        <PencilLine size={14} />
-                        Edit question
-                      </ActionButton>
-                      <ActionButton
-                        className="border-white/8 bg-white/[0.02] text-white/65 hover:bg-white/[0.05]"
-                        onClick={async () => {
-                          try {
-                            await navigator.clipboard.writeText(g.prompt);
-                          } catch {
-                            // best-effort
-                          }
-                        }}
-                        disabled={busyGapId === g.id}
-                      >
-                        <Copy size={14} />
-                        Copy question
-                      </ActionButton>
-                      {isResolved ? (
-                        <ActionButton
-                          className="border-white/8 bg-white/[0.02] text-white/65 hover:bg-white/[0.05]"
-                          disabled={busyGapId === g.id}
-                          onClick={async () => {
-                            setBusyGapId(g.id);
-                            setErrorById((cur) => ({ ...cur, [g.id]: "" }));
-                            try {
-                              await patchGap(g.id, { status: "Open" });
-                              router.refresh();
-                            } catch (e) {
-                              setErrorById((cur) => ({
-                                ...cur,
-                                [g.id]: e instanceof Error ? e.message : "Unknown error",
-                              }));
-                            } finally {
-                              setBusyGapId(null);
-                            }
-                          }}
-                        >
-                          <RotateCcw size={14} />
-                          Reopen
-                        </ActionButton>
-                      ) : null}
-                      <TertiaryActionLink href={`/issues/${issueId}/gaps#${g.id}`}>
-                        Advanced view
-                      </TertiaryActionLink>
-                    </div>
                   </div>
                 </div>
               }
