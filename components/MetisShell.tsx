@@ -130,8 +130,7 @@ function MetricCard({ label, value, detail }: { label: string; value: string; de
   );
 }
 
-const globalNavGroupOrder = ["Work", "Settings", "All issues tools"] as const;
-type GlobalNavGroup = (typeof globalNavGroupOrder)[number];
+type GlobalNavGroup = "Work" | "Settings" | "All issues tools";
 
 const workNav = [
   { id: "dashboard", group: "Work" as GlobalNavGroup, path: "/", shortLabel: "Dashboard" },
@@ -231,6 +230,97 @@ export function MetisShell({
     { label: "Average time to first draft", value: "18 min", detail: "Target under 20" },
   ];
 
+  function renderGlobalNavGroup(group: GlobalNavGroup) {
+    const items = primaryNav.filter((item) => item.group === group).filter(globalNavItemVisible);
+    if (items.length === 0) return null;
+    const groupIsActive = items.some((item) => item.path === activePath);
+    const isDemotedTools = group === "All issues tools";
+
+    return (
+      <div
+        key={group}
+        className={cn(
+          "space-y-2 rounded-[1.55rem] border px-3 py-3 transition duration-300",
+          groupIsActive
+            ? "border-[rgba(224,183,111,0.24)] bg-[linear-gradient(180deg,rgba(224,183,111,0.09),rgba(224,183,111,0.018))] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+            : isDemotedTools
+              ? "border-white/5 bg-[rgba(0,0,0,0.1)]"
+              : "border-white/6 bg-[rgba(255,255,255,0.015)]",
+        )}
+      >
+        <div className="flex items-center justify-between gap-3 px-1">
+          <p
+            className={cn(
+              "text-[0.62rem] uppercase tracking-[0.28em] text-[--metis-ink-soft]",
+              groupIsActive && "text-[--metis-brass-soft]",
+              isDemotedTools && "text-[rgba(176,171,160,0.7)]",
+            )}
+          >
+            {group}
+          </p>
+          {activeGroup && group === activeGroup ? (
+            <span className="rounded-full border border-[--metis-brass]/20 bg-[--metis-brass]/10 px-2 py-0.5 text-[0.52rem] uppercase tracking-[0.26em] text-[--metis-brass-soft]">
+              Active
+            </span>
+          ) : null}
+        </div>
+        <div className={cn("space-y-2", isDemotedTools && "space-y-1.5")}>
+          {items.map((item) => {
+            const isActive = item.path === activePath;
+            const isCompact = isDemotedTools;
+            return (
+              <Link
+                key={item.id}
+                href={navHrefForItem(item)}
+                className={cn(
+                  "group relative flex items-start gap-2.5 overflow-hidden rounded-[1.2rem] border transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60",
+                  isCompact ? "px-3 py-2" : "px-4 py-3",
+                  isActive
+                    ? "border-[rgba(224,183,111,0.48)] bg-[linear-gradient(135deg,rgba(224,183,111,0.28),rgba(78,55,20,0.76))] ring-1 ring-[rgba(224,183,111,0.3)] shadow-[0_28px_72px_rgba(0,0,0,0.42),inset_0_1px_0_rgba(255,255,255,0.1)]"
+                    : isCompact
+                      ? "border-white/5 bg-[rgba(0,0,0,0.14)] hover:border-white/9 hover:bg-[rgba(255,255,255,0.04)]"
+                      : "border-white/5 bg-[rgba(0,0,0,0.18)] hover:border-white/10 hover:bg-[rgba(255,255,255,0.045)]",
+                )}
+              >
+                <span
+                  className={cn(
+                    "absolute inset-y-2 left-1 w-[5px] rounded-full bg-transparent transition duration-300",
+                    isActive && "bg-[--metis-brass-soft] shadow-[0_0_24px_rgba(224,183,111,0.5)]",
+                  )}
+                />
+                <span
+                  className={cn(
+                    "mt-0.5 h-2 w-2 shrink-0 rounded-full border border-white/10 bg-white/10 shadow-[0_0_0_3px_rgba(255,255,255,0.02)]",
+                    isActive && "border-[--metis-brass-soft]/70 bg-[--metis-brass-soft] shadow-[0_0_0_4px_rgba(224,183,111,0.16)]",
+                  )}
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <span
+                      className={cn(
+                        "font-medium text-[--metis-paper]",
+                        isCompact ? "text-[0.78rem] leading-snug" : "text-sm",
+                        isActive && "text-white",
+                      )}
+                    >
+                      {item.shortLabel}
+                    </span>
+                    <ChevronRight
+                      className={cn(
+                        "h-3.5 w-3.5 shrink-0 text-[--metis-ink-soft] transition duration-300",
+                        isActive ? "translate-x-0 text-[--metis-brass-soft]" : "group-hover:translate-x-0.5",
+                      )}
+                    />
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[--background] text-[--foreground]">
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top_left,rgba(164,132,82,0.08),transparent_28%),radial-gradient(circle_at_top_right,rgba(56,84,103,0.06),transparent_18%),radial-gradient(circle_at_bottom_right,rgba(27,59,55,0.09),transparent_24%)]" />
@@ -250,6 +340,8 @@ export function MetisShell({
             </div>
 
             <nav className="space-y-5">
+              {renderGlobalNavGroup("Work")}
+
               {issueRoutePrefix ? (
                 <div className="space-y-2 rounded-[1.55rem] border border-[rgba(224,183,111,0.18)] bg-[linear-gradient(180deg,rgba(224,183,111,0.05),rgba(0,0,0,0.12))] px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
                   <div className="flex items-center justify-between gap-3 px-1">
@@ -339,100 +431,8 @@ export function MetisShell({
                 </div>
               ) : null}
 
-              {globalNavGroupOrder.map((group) => {
-                const items = primaryNav.filter((item) => item.group === group).filter(globalNavItemVisible);
-                if (items.length === 0) return null;
-                const groupIsActive = items.some((item) => item.path === activePath);
-                const isDemotedTools = group === "All issues tools";
-
-                return (
-                  <div
-                    key={group}
-                    className={cn(
-                      "space-y-2 rounded-[1.55rem] border px-3 py-3 transition duration-300",
-                      groupIsActive
-                        ? "border-[rgba(224,183,111,0.24)] bg-[linear-gradient(180deg,rgba(224,183,111,0.09),rgba(224,183,111,0.018))] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
-                        : isDemotedTools
-                          ? "border-white/5 bg-[rgba(0,0,0,0.1)]"
-                          : "border-white/6 bg-[rgba(255,255,255,0.015)]",
-                    )}
-                  >
-                    <div className="flex items-center justify-between gap-3 px-1">
-                      <p
-                        className={cn(
-                          "text-[0.62rem] uppercase tracking-[0.28em] text-[--metis-ink-soft]",
-                          groupIsActive && "text-[--metis-brass-soft]",
-                          isDemotedTools && "text-[rgba(176,171,160,0.7)]",
-                        )}
-                      >
-                        {group}
-                      </p>
-                      {activeGroup && group === activeGroup ? (
-                        <span className="rounded-full border border-[--metis-brass]/20 bg-[--metis-brass]/10 px-2 py-0.5 text-[0.52rem] uppercase tracking-[0.26em] text-[--metis-brass-soft]">
-                          Active
-                        </span>
-                      ) : null}
-                    </div>
-                    <div className={cn("space-y-2", isDemotedTools && "space-y-1.5")}>
-                      {(() => {
-                        const renderNavLink = (item: (typeof primaryNav)[number], href: string, isCompact: boolean) => {
-                          const isActive = item.path === activePath;
-                          return (
-                            <Link
-                              key={item.id}
-                              href={href}
-                              className={cn(
-                                "group relative flex items-start gap-2.5 overflow-hidden rounded-[1.2rem] border transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60",
-                                isCompact ? "px-3 py-2" : "px-4 py-3",
-                                isActive
-                                  ? "border-[rgba(224,183,111,0.48)] bg-[linear-gradient(135deg,rgba(224,183,111,0.28),rgba(78,55,20,0.76))] ring-1 ring-[rgba(224,183,111,0.3)] shadow-[0_28px_72px_rgba(0,0,0,0.42),inset_0_1px_0_rgba(255,255,255,0.1)]"
-                                  : isCompact
-                                    ? "border-white/5 bg-[rgba(0,0,0,0.14)] hover:border-white/9 hover:bg-[rgba(255,255,255,0.04)]"
-                                    : "border-white/5 bg-[rgba(0,0,0,0.18)] hover:border-white/10 hover:bg-[rgba(255,255,255,0.045)]",
-                              )}
-                            >
-                              <span
-                                className={cn(
-                                  "absolute inset-y-2 left-1 w-[5px] rounded-full bg-transparent transition duration-300",
-                                  isActive && "bg-[--metis-brass-soft] shadow-[0_0_24px_rgba(224,183,111,0.5)]",
-                                )}
-                              />
-                              <span
-                                className={cn(
-                                  "mt-0.5 h-2 w-2 shrink-0 rounded-full border border-white/10 bg-white/10 shadow-[0_0_0_3px_rgba(255,255,255,0.02)]",
-                                  isActive &&
-                                    "border-[--metis-brass-soft]/70 bg-[--metis-brass-soft] shadow-[0_0_0_4px_rgba(224,183,111,0.16)]",
-                                )}
-                              />
-                              <div className="min-w-0 flex-1">
-                                <div className="flex items-center justify-between gap-2">
-                                  <span
-                                    className={cn(
-                                      "font-medium text-[--metis-paper]",
-                                      isCompact ? "text-[0.78rem] leading-snug" : "text-sm",
-                                      isActive && "text-white",
-                                    )}
-                                  >
-                                    {item.shortLabel}
-                                  </span>
-                                  <ChevronRight
-                                    className={cn(
-                                      "h-3.5 w-3.5 shrink-0 text-[--metis-ink-soft] transition duration-300",
-                                      isActive ? "translate-x-0 text-[--metis-brass-soft]" : "group-hover:translate-x-0.5",
-                                    )}
-                                  />
-                                </div>
-                              </div>
-                            </Link>
-                          );
-                        };
-
-                        return items.map((item) => renderNavLink(item, navHrefForItem(item), isDemotedTools));
-                      })()}
-                    </div>
-                  </div>
-                );
-              })}
+              {renderGlobalNavGroup("Settings")}
+              {renderGlobalNavGroup("All issues tools")}
             </nav>
           </div>
 

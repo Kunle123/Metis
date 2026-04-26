@@ -52,7 +52,7 @@ const templateCards = [
   },
 ] as const;
 
-const dashboardQuickLinksBase = [{ label: "All issues: brief (browse)", href: "/brief" }] as const;
+const dashboardQuickLinksBase = [{ label: "All issues · Browse brief", href: "/brief" }] as const;
 
 export default async function DashboardPage() {
   const issues = await prisma.issue.findMany({
@@ -63,9 +63,9 @@ export default async function DashboardPage() {
   const firstIssue = issues[0] ?? null;
   const quickLinks = firstIssue
     ? [
-        { label: "Open workspace" as const, href: `/issues/${firstIssue.id}` },
-        { label: "Brief (review)" as const, href: `/issues/${firstIssue.id}/brief?mode=full` },
-        { label: "Prepare output" as const, href: `/issues/${firstIssue.id}/export` },
+        { label: "Issue · Workspace" as const, href: `/issues/${firstIssue.id}` },
+        { label: "Issue · Full brief" as const, href: `/issues/${firstIssue.id}/brief?mode=full` },
+        { label: "Issue · Prepare output" as const, href: `/issues/${firstIssue.id}/export` },
       ]
     : [...dashboardQuickLinksBase];
 
@@ -74,7 +74,7 @@ export default async function DashboardPage() {
       <div className="space-y-8">
         <div className="flex flex-wrap justify-end gap-3">
           <Button asChild className="rounded-full bg-[--metis-brass] px-5 text-[--metis-dark] hover:bg-[--metis-brass-soft]">
-            <Link href="/setup">New issue brief</Link>
+            <Link href="/setup">New issue</Link>
           </Button>
           <Button variant="outline" className="rounded-full border-white/10 bg-white/[0.03] text-[--metis-paper] hover:bg-white/[0.08]">
             Templates

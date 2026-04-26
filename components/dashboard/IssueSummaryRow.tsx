@@ -57,7 +57,7 @@ export function IssueSummaryRow({ issue, workspaceHref }: { issue: DashboardIssu
           href={workspaceHref}
           className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-[--metis-brass-soft] transition group-hover:text-white"
         >
-          Open workspace
+          Issue · Open workspace
           <ArrowRight className="h-4 w-4" />
         </Link>
       </div>
