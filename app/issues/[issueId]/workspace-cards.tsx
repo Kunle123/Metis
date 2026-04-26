@@ -3,7 +3,18 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, ChevronDown, ChevronRight, Copy, ExternalLink, PencilLine, RotateCcw, Save, X } from "lucide-react";
+import {
+  CheckCircle2,
+  ChevronDown,
+  ChevronRight,
+  Copy,
+  ExternalLink,
+  PencilLine,
+  Plus,
+  RotateCcw,
+  Save,
+  X,
+} from "lucide-react";
 
 type GapCardData = {
   id: string;
@@ -147,6 +158,20 @@ export function WorkspaceGapCards({
   const [resolveSelectionById, setResolveSelectionById] = useState<Record<string, string>>({});
   const [busyGapId, setBusyGapId] = useState<string | null>(null);
   const [errorById, setErrorById] = useState<Record<string, string>>({});
+  const [addObsOpenById, setAddObsOpenById] = useState<Record<string, boolean>>({});
+  const [obsDraftByGapId, setObsDraftByGapId] = useState<
+    Record<
+      string,
+      {
+        role: string;
+        name: string;
+        response: string;
+        confidence: "Confirmed" | "Likely" | "Unclear" | "Needs validation";
+      }
+    >
+  >({});
+  const [obsSavingGapId, setObsSavingGapId] = useState<string | null>(null);
+  const [obsErrorById, setObsErrorById] = useState<Record<string, string>>({});
 
   const inputLabelById = useMemo(() => {
     const m = new Map<string, string>();
@@ -181,6 +206,74 @@ export function WorkspaceGapCards({
     return res.json();
   }
 
+  async function createObservationForGap(gap: GapCardData) {
+    const draft = obsDraftByGapId[gap.id] ?? {
+      role: "",
+      name: "",
+      response: "",
+      confidence: "Likely" as const,
+    };
+
+    const role = draft.role.trim();
+    const name = draft.name.trim();
+    const response = draft.response.trim();
+
+    if (!role || !name || !response) {
+      setObsErrorById((cur) => ({ ...cur, [gap.id]: "Complete role, name, and response before saving." }));
+      return;
+    }
+
+    setObsSavingGapId(gap.id);
+    setObsErrorById((cur) => ({ ...cur, [gap.id]: "" }));
+
+    try {
+      const res = await fetch(`/api/issues/${issueId}/internal-inputs`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          role,
+          name,
+          response,
+          confidence: draft.confidence,
+          linkedSection: gap.section ?? null,
+          visibility: null,
+          timestampLabel: null,
+        }),
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || `Request failed (${res.status})`);
+      }
+
+      const created = (await res.json()) as { id?: string };
+      const createdId = typeof created?.id === "string" ? created.id : null;
+      if (!createdId) throw new Error("Created observation missing id.");
+
+      // Auto-select the new observation for this gap's resolve dropdown.
+      setResolveSelectionById((cur) => ({ ...cur, [gap.id]: createdId }));
+
+      // Reset mini-form state and collapse it.
+      setObsDraftByGapId((cur) => {
+        const next = { ...cur };
+        delete next[gap.id];
+        return next;
+      });
+      setAddObsOpenById((cur) => ({ ...cur, [gap.id]: false }));
+
+      // Refresh to ensure the new observation appears in the selector list.
+      router.refresh();
+    } catch (e) {
+      setObsErrorById((cur) => ({
+        ...cur,
+        [gap.id]: e instanceof Error ? e.message : "Unknown error",
+      }));
+    } finally {
+      setObsSavingGapId(null);
+    }
+  }
+
   return (
     <div className="space-y-3">
       {gaps.map((g) => {
@@ -193,6 +286,14 @@ export function WorkspaceGapCards({
         const resolvedByLabel = g.resolvedByInternalInputId
           ? inputLabelById.get(g.resolvedByInternalInputId) ?? g.resolvedByInternalInputId
           : null;
+        const addObsOpen = addObsOpenById[g.id] ?? false;
+        const obsDraft = obsDraftByGapId[g.id] ?? {
+          role: "",
+          name: "",
+          response: "",
+          confidence: "Likely" as const,
+        };
+        const obsMissingRequired = !obsDraft.role.trim() || !obsDraft.name.trim() || !obsDraft.response.trim();
 
         return (
           <div key={g.id}>
@@ -299,6 +400,124 @@ export function WorkspaceGapCards({
                         <p className="mt-2 text-sm text-white/70">
                           Select an observation record to mark this gap resolved.
                         </p>
+
+                        <div className="mt-3 rounded-[0.95rem] border border-white/10 bg-white/[0.03] px-3 py-3">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <p className="text-xs text-white/55">Add observation to resolve</p>
+                            <ActionButton
+                              onClick={() =>
+                                setAddObsOpenById((cur) => ({
+                                  ...cur,
+                                  [g.id]: !addObsOpen,
+                                }))
+                              }
+                              disabled={obsSavingGapId === g.id || busyGapId === g.id}
+                            >
+                              {addObsOpen ? (
+                                <>
+                                  <X size={14} />
+                                  Hide
+                                </>
+                              ) : (
+                                <>
+                                  <Plus size={14} />
+                                  Add
+                                </>
+                              )}
+                            </ActionButton>
+                          </div>
+
+                          {addObsOpen ? (
+                            <div className="mt-3 space-y-3">
+                              <div className="grid gap-2 sm:grid-cols-2">
+                                <label className="space-y-1">
+                                  <span className="text-xs text-white/55">Role</span>
+                                  <input
+                                    value={obsDraft.role}
+                                    onChange={(e) =>
+                                      setObsDraftByGapId((cur) => ({
+                                        ...cur,
+                                        [g.id]: { ...obsDraft, role: e.target.value },
+                                      }))
+                                    }
+                                    className="h-10 w-full rounded-full border border-white/10 bg-white/[0.04] px-4 text-sm text-white/85 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
+                                    placeholder="e.g., On-call"
+                                  />
+                                </label>
+                                <label className="space-y-1">
+                                  <span className="text-xs text-white/55">Name</span>
+                                  <input
+                                    value={obsDraft.name}
+                                    onChange={(e) =>
+                                      setObsDraftByGapId((cur) => ({
+                                        ...cur,
+                                        [g.id]: { ...obsDraft, name: e.target.value },
+                                      }))
+                                    }
+                                    className="h-10 w-full rounded-full border border-white/10 bg-white/[0.04] px-4 text-sm text-white/85 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
+                                    placeholder="Attributable name"
+                                  />
+                                </label>
+                              </div>
+
+                              <label className="space-y-1">
+                                <span className="text-xs text-white/55">Response</span>
+                                <textarea
+                                  value={obsDraft.response}
+                                  onChange={(e) =>
+                                    setObsDraftByGapId((cur) => ({
+                                      ...cur,
+                                      [g.id]: { ...obsDraft, response: e.target.value },
+                                    }))
+                                  }
+                                  rows={4}
+                                  className="w-full rounded-[0.95rem] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm leading-6 text-white/85 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
+                                  placeholder="Attributable observation that answers the gap"
+                                />
+                              </label>
+
+                              <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+                                <label className="space-y-1">
+                                  <span className="text-xs text-white/55">Confidence</span>
+                                  <select
+                                    value={obsDraft.confidence}
+                                    onChange={(e) =>
+                                      setObsDraftByGapId((cur) => ({
+                                        ...cur,
+                                        [g.id]: {
+                                          ...obsDraft,
+                                          confidence: e.target.value as typeof obsDraft.confidence,
+                                        },
+                                      }))
+                                    }
+                                    className="h-10 w-full rounded-full border border-white/10 bg-white/[0.04] px-4 text-sm text-white/85 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
+                                  >
+                                    <option value="Confirmed">Confirmed</option>
+                                    <option value="Likely">Likely</option>
+                                    <option value="Unclear">Unclear</option>
+                                    <option value="Needs validation">Needs validation</option>
+                                  </select>
+                                </label>
+                                <div className="flex justify-end">
+                                  <ActionButton
+                                    tone="primary"
+                                    disabled={obsSavingGapId === g.id || obsMissingRequired}
+                                    onClick={() => void createObservationForGap(g)}
+                                  >
+                                    <Save size={14} />
+                                    {obsSavingGapId === g.id ? "Saving…" : "Save observation"}
+                                  </ActionButton>
+                                </div>
+                              </div>
+
+                              {obsMissingRequired ? (
+                                <p className="text-xs text-white/55">Complete role, name, and response to save.</p>
+                              ) : null}
+                              {obsErrorById[g.id] ? <p className="text-sm text-rose-200">{obsErrorById[g.id]}</p> : null}
+                            </div>
+                          ) : null}
+                        </div>
+
                         <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
                           <select
                             value={resolveSelectionById[g.id] ?? ""}
