@@ -15,6 +15,7 @@ import {
   Save,
   X,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type GapCardData = {
   id: string;
@@ -63,16 +64,39 @@ function MetaLine({ parts }: { parts: Array<string | null | undefined> }) {
   return <p className="text-xs text-white/50">{text}</p>;
 }
 
+function statusPillClass(status: string) {
+  if (status === "Open") return "border-0 bg-[rgba(124,78,18,0.6)] text-amber-50";
+  if (status === "Resolved") return "border-0 bg-[rgba(18,84,58,0.62)] text-emerald-50";
+  return "border border-white/10 bg-white/6 text-white/80";
+}
+
+function severityPillClass(severity: string) {
+  if (severity === "Critical") return "border-0 bg-[rgba(132,26,42,0.62)] text-rose-50";
+  if (severity === "Important") return "border-0 bg-[rgba(128,82,18,0.58)] text-amber-50";
+  if (severity === "Watch") return "border border-white/12 bg-[rgba(52,60,69,0.56)] text-slate-100";
+  return "border border-white/10 bg-white/6 text-white/80";
+}
+
+function Pill({ children, className }: { children: React.ReactNode; className?: string }) {
+  return (
+    <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-[0.7rem] font-medium", className)}>
+      {children}
+    </span>
+  );
+}
+
 function ActionButton({
   onClick,
   children,
   disabled,
   tone = "neutral",
+  className,
 }: {
   onClick?: () => void;
   children: React.ReactNode;
   disabled?: boolean;
   tone?: "neutral" | "primary" | "danger";
+  className?: string;
 }) {
   const toneClass =
     tone === "primary"
@@ -85,7 +109,11 @@ function ActionButton({
       type="button"
       disabled={disabled}
       onClick={onClick}
-      className={`inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-1.5 text-xs disabled:cursor-not-allowed disabled:opacity-50 ${toneClass}`}
+      className={cn(
+        "inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-1.5 text-xs disabled:cursor-not-allowed disabled:opacity-50",
+        toneClass,
+        className,
+      )}
     >
       {children}
     </button>
@@ -106,6 +134,26 @@ function ActionLink({
       href={href}
       target={target}
       className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/80 hover:bg-white/10"
+    >
+      {children}
+    </Link>
+  );
+}
+
+function TertiaryActionLink({
+  href,
+  children,
+  target,
+}: {
+  href: string;
+  children: React.ReactNode;
+  target?: string;
+}) {
+  return (
+    <Link
+      href={href}
+      target={target}
+      className="inline-flex items-center gap-2 rounded-full border border-white/8 bg-white/[0.02] px-3 py-1.5 text-xs text-white/60 hover:border-white/12 hover:bg-white/[0.04] hover:text-white/80"
     >
       {children}
     </Link>
@@ -317,10 +365,20 @@ export function WorkspaceGapCards({
               }
               details={
                 <div className="space-y-3">
-                  <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-2">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <p className="text-xs text-white/50">Drafted question</p>
-                      {isEditing ? <span className="text-xs text-[--metis-brass-soft]">Editing</span> : null}
+                  <div className="relative overflow-hidden rounded-[1.05rem] border border-[color-mix(in_oklab,var(--metis-brass)_26%,rgba(255,255,255,0.12))] bg-[linear-gradient(135deg,rgba(164,132,82,0.16),rgba(255,255,255,0.03))] pl-4 pr-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 w-[3px] bg-[color-mix(in_oklab,var(--metis-brass)_70%,transparent)]" />
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <p className="text-[0.62rem] font-medium uppercase tracking-[0.22em] text-[color-mix(in_oklab,var(--metis-brass-soft)_86%,transparent)]">
+                        Open question
+                      </p>
+                      <div className="flex flex-wrap items-center justify-end gap-2">
+                        {g.status ? <Pill className={statusPillClass(g.status)}>{g.status}</Pill> : null}
+                        {g.severity ? <Pill className={severityPillClass(g.severity)}>{g.severity}</Pill> : null}
+                        {g.section ? (
+                          <Pill className="border border-white/10 bg-black/25 text-white/75">Section · {g.section}</Pill>
+                        ) : null}
+                        {isEditing ? <span className="text-xs text-[color-mix(in_oklab,var(--metis-brass-soft)_90%,transparent)]">Editing</span> : null}
+                      </div>
                     </div>
 
                     {isEditing ? (
@@ -376,35 +434,102 @@ export function WorkspaceGapCards({
                         </div>
                       </div>
                     ) : (
-                      <p className="mt-2 whitespace-pre-wrap text-sm text-white/85">{g.prompt}</p>
+                      <p className="mt-2 whitespace-pre-wrap text-[1.02rem] font-medium leading-7 text-[--metis-paper]">
+                        {g.prompt}
+                      </p>
                     )}
                   </div>
 
                   {g.whyItMatters ? (
-                    <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-2">
-                      <p className="text-xs text-white/50">Why it matters</p>
-                      <p className="mt-1 whitespace-pre-wrap text-sm text-white/80">
-                        {g.whyItMatters}
-                      </p>
+                    <div className="rounded-[1.05rem] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(0,0,0,0.10))] px-3 py-3">
+                      <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-white/40">Context</p>
+                      <p className="mt-1 text-xs text-white/50">Why it matters</p>
+                      <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-white/70">{g.whyItMatters}</p>
                     </div>
                   ) : null}
 
-                  <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-2">
-                    <p className="text-xs text-white/50">Resolution</p>
+                  <div className="rounded-[1.05rem] border border-white/8 bg-[linear-gradient(135deg,rgba(62,92,112,0.10),rgba(0,0,0,0.20))] px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-sky-100/40">Action</p>
+                        <p className="mt-1 text-sm font-medium text-white/85">Resolve this gap</p>
+                        {g.stakeholder ? (
+                          <p className="mt-1 text-xs text-white/50">
+                            Stakeholder: <span className="text-white/70">{g.stakeholder}</span>
+                          </p>
+                        ) : null}
+                      </div>
+                    </div>
+
                     {isResolved ? (
-                      <p className="mt-2 text-sm text-white/80">
-                        Resolved by: <span className="text-white/90">{resolvedByLabel ?? "—"}</span>
+                      <p className="mt-3 text-sm leading-6 text-emerald-100/80">
+                        Resolved by: <span className="text-emerald-50/95">{resolvedByLabel ?? "—"}</span>
                       </p>
                     ) : (
-                      <>
-                        <p className="mt-2 text-sm text-white/70">
-                          Select an observation record to mark this gap resolved.
-                        </p>
-
-                        <div className="mt-3 rounded-[0.95rem] border border-white/10 bg-white/[0.03] px-3 py-3">
-                          <div className="flex flex-wrap items-center justify-between gap-2">
-                            <p className="text-xs text-white/55">Add observation to resolve</p>
+                      <div className="mt-3 space-y-3">
+                        <div className="rounded-[0.95rem] border border-white/10 bg-black/18 px-3 py-3">
+                          <p className="text-xs text-white/55">Use an existing observation</p>
+                          <p className="mt-1 text-sm text-white/70">Select a record, then mark resolved.</p>
+                          <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
+                            <select
+                              value={resolveSelectionById[g.id] ?? ""}
+                              onChange={(e) =>
+                                setResolveSelectionById((cur) => ({
+                                  ...cur,
+                                  [g.id]: e.target.value,
+                                }))
+                              }
+                              className="h-10 w-full rounded-full border border-white/10 bg-white/[0.04] px-4 text-sm text-white/85 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
+                            >
+                              <option value="">Select an observation…</option>
+                              {internalInputs.map((i) => (
+                                <option key={i.id} value={i.id}>
+                                  {inputLabelById.get(i.id) ?? i.id}
+                                </option>
+                              ))}
+                            </select>
                             <ActionButton
+                              tone="primary"
+                              disabled={busyGapId === g.id || internalInputs.length === 0}
+                              onClick={async () => {
+                                const selected = (resolveSelectionById[g.id] ?? "").trim();
+                                if (!selected) {
+                                  setErrorById((cur) => ({
+                                    ...cur,
+                                    [g.id]: "Select an observation before marking resolved.",
+                                  }));
+                                  return;
+                                }
+                                setBusyGapId(g.id);
+                                setErrorById((cur) => ({ ...cur, [g.id]: "" }));
+                                try {
+                                  await patchGap(g.id, { status: "Resolved", resolvedByInternalInputId: selected });
+                                  router.refresh();
+                                } catch (e) {
+                                  setErrorById((cur) => ({
+                                    ...cur,
+                                    [g.id]: e instanceof Error ? e.message : "Unknown error",
+                                  }));
+                                } finally {
+                                  setBusyGapId(null);
+                                }
+                              }}
+                            >
+                              <CheckCircle2 size={14} />
+                              Mark resolved
+                            </ActionButton>
+                          </div>
+                        </div>
+
+                        <div className="rounded-[0.95rem] border border-white/10 bg-black/18 px-3 py-3">
+                          <p className="text-xs text-white/55">Add a new observation</p>
+                          <p className="mt-1 text-sm text-white/70">
+                            Add an attributable observation that answers this question.
+                          </p>
+                          <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                            <p className="text-xs text-white/50">Create and save, then mark resolved above.</p>
+                            <ActionButton
+                              className="border-white/8 bg-white/[0.04] text-white/75 hover:bg-white/[0.08]"
                               onClick={() =>
                                 setAddObsOpenById((cur) => ({
                                   ...cur,
@@ -517,108 +642,64 @@ export function WorkspaceGapCards({
                             </div>
                           ) : null}
                         </div>
-
-                        <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
-                          <select
-                            value={resolveSelectionById[g.id] ?? ""}
-                            onChange={(e) =>
-                              setResolveSelectionById((cur) => ({
-                                ...cur,
-                                [g.id]: e.target.value,
-                              }))
-                            }
-                            className="h-10 w-full rounded-full border border-white/10 bg-white/[0.04] px-4 text-sm text-white/85 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
-                          >
-                            <option value="">Select an observation…</option>
-                            {internalInputs.map((i) => (
-                              <option key={i.id} value={i.id}>
-                                {inputLabelById.get(i.id) ?? i.id}
-                              </option>
-                            ))}
-                          </select>
-                          <ActionButton
-                            tone="primary"
-                            disabled={busyGapId === g.id || internalInputs.length === 0}
-                            onClick={async () => {
-                              const selected = (resolveSelectionById[g.id] ?? "").trim();
-                              if (!selected) {
-                                setErrorById((cur) => ({
-                                  ...cur,
-                                  [g.id]: "Select an observation before marking resolved.",
-                                }));
-                                return;
-                              }
-                              setBusyGapId(g.id);
-                              setErrorById((cur) => ({ ...cur, [g.id]: "" }));
-                              try {
-                                await patchGap(g.id, { status: "Resolved", resolvedByInternalInputId: selected });
-                                router.refresh();
-                              } catch (e) {
-                                setErrorById((cur) => ({
-                                  ...cur,
-                                  [g.id]: e instanceof Error ? e.message : "Unknown error",
-                                }));
-                              } finally {
-                                setBusyGapId(null);
-                              }
-                            }}
-                          >
-                            <CheckCircle2 size={14} />
-                            Mark resolved
-                          </ActionButton>
-                        </div>
-                      </>
+                      </div>
                     )}
                     {errorById[g.id] ? <p className="mt-2 text-sm text-rose-200">{errorById[g.id]}</p> : null}
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-2">
-                    <ActionButton
-                      disabled={!canEdit || busyGapId === g.id}
-                      onClick={() => beginEdit(g)}
-                    >
-                      <PencilLine size={14} />
-                      Edit question
-                    </ActionButton>
-                    <ActionButton
-                      onClick={async () => {
-                        try {
-                          await navigator.clipboard.writeText(g.prompt);
-                        } catch {
-                          // best-effort
-                        }
-                      }}
-                      disabled={busyGapId === g.id}
-                    >
-                      <Copy size={14} />
-                      Copy question
-                    </ActionButton>
-                    {isResolved ? (
+                  <div className="rounded-[1.05rem] border border-white/8 bg-white/[0.02] px-3 py-3">
+                    <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-white/35">More</p>
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
                       <ActionButton
-                        disabled={busyGapId === g.id}
+                        className="border-white/8 bg-white/[0.02] text-white/65 hover:bg-white/[0.05]"
+                        disabled={!canEdit || busyGapId === g.id}
+                        onClick={() => beginEdit(g)}
+                      >
+                        <PencilLine size={14} />
+                        Edit question
+                      </ActionButton>
+                      <ActionButton
+                        className="border-white/8 bg-white/[0.02] text-white/65 hover:bg-white/[0.05]"
                         onClick={async () => {
-                          setBusyGapId(g.id);
-                          setErrorById((cur) => ({ ...cur, [g.id]: "" }));
                           try {
-                            await patchGap(g.id, { status: "Open" });
-                            router.refresh();
-                          } catch (e) {
-                            setErrorById((cur) => ({
-                              ...cur,
-                              [g.id]: e instanceof Error ? e.message : "Unknown error",
-                            }));
-                          } finally {
-                            setBusyGapId(null);
+                            await navigator.clipboard.writeText(g.prompt);
+                          } catch {
+                            // best-effort
                           }
                         }}
+                        disabled={busyGapId === g.id}
                       >
-                        <RotateCcw size={14} />
-                        Reopen
+                        <Copy size={14} />
+                        Copy question
                       </ActionButton>
-                    ) : null}
-                    <ActionLink href={`/issues/${issueId}/gaps#${g.id}`}>
-                      Advanced view
-                    </ActionLink>
+                      {isResolved ? (
+                        <ActionButton
+                          className="border-white/8 bg-white/[0.02] text-white/65 hover:bg-white/[0.05]"
+                          disabled={busyGapId === g.id}
+                          onClick={async () => {
+                            setBusyGapId(g.id);
+                            setErrorById((cur) => ({ ...cur, [g.id]: "" }));
+                            try {
+                              await patchGap(g.id, { status: "Open" });
+                              router.refresh();
+                            } catch (e) {
+                              setErrorById((cur) => ({
+                                ...cur,
+                                [g.id]: e instanceof Error ? e.message : "Unknown error",
+                              }));
+                            } finally {
+                              setBusyGapId(null);
+                            }
+                          }}
+                        >
+                          <RotateCcw size={14} />
+                          Reopen
+                        </ActionButton>
+                      ) : null}
+                      <TertiaryActionLink href={`/issues/${issueId}/gaps#${g.id}`}>
+                        Advanced view
+                      </TertiaryActionLink>
+                    </div>
                   </div>
                 </div>
               }
