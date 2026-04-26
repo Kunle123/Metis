@@ -148,8 +148,8 @@ export function StakeholderLibrary({ initialGroups }: { initialGroups: Group[] }
       <div className="rounded-[1.25rem] border border-white/10 bg-[rgba(255,255,255,0.03)] px-5 py-5">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="text-[0.68rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Add stakeholder group</p>
-            <p className="mt-1 text-sm text-[--metis-paper-muted]">Groups, not people. Keep it light.</p>
+            <p className="text-[0.68rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Add audience group</p>
+            <p className="mt-1 text-sm text-[--metis-paper-muted]">Groups, not people. Used later as an audience/message lens.</p>
           </div>
           <Button
             onClick={() => void createGroup()}

@@ -15,9 +15,11 @@ export default async function StakeholdersPage() {
       <SurfaceCard>
         <div className="border-b border-white/8 bg-[rgba(255,255,255,0.025)] px-6 py-5 sm:px-7">
           <div className="space-y-2">
-            <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper]">Stakeholders</h2>
+            <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper]">
+              Stakeholder library
+            </h2>
             <p className="text-sm leading-6 text-[--metis-paper-muted]">
-              Manage your standing stakeholder groups. Issues can select a subset and add issue-specific guidance.
+              Standing audience groups used as an audience/message lens later. Issues can select a subset and add output guidance without changing the truth layer.
             </p>
           </div>
         </div>

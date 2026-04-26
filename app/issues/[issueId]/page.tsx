@@ -82,11 +82,11 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
             <div className="mt-5 flex flex-wrap gap-3">
               {[
                 ["summary", "Issue summary"],
-                ["stakeholders", "Stakeholders"],
                 ["facts", "Confirmed vs unclear"],
                 ["sources", "Sources"],
                 ["gaps", "Gaps"],
                   ["input", "Observations"],
+                ["stakeholders", "Audience lens"],
               ].map(([id, label]) => sectionNavItem(id, label))}
             </div>
           </div>
@@ -98,54 +98,6 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
                 <h3 className="text-[1.35rem] font-medium leading-8 text-[--metis-paper]">{issue.title}</h3>
                 <p className="max-w-4xl text-base leading-8 text-[--metis-paper] whitespace-pre-wrap">{issue.summary}</p>
               </div>
-            </section>
-
-            <section id="stakeholders" className="space-y-6 border-t border-white/8 pt-10">
-              <WorkspaceSection
-                title="Stakeholders"
-                description="Select stakeholder groups for this issue and capture audience-aware guidance."
-                addLabel="Add stakeholder"
-                advancedHref="/stakeholders"
-                form={
-                  <div className="text-sm text-[--metis-paper-muted]">
-                    Use the selector above to add a stakeholder group. Edit details inside each card.
-                  </div>
-                }
-              >
-                <WorkspaceStakeholders
-                  issueId={issue.id}
-                  allGroups={stakeholderGroups.map((g) => ({
-                    id: g.id,
-                    name: g.name,
-                    description: g.description ?? null,
-                    defaultSensitivity: g.defaultSensitivity ?? null,
-                    defaultChannels: g.defaultChannels ?? null,
-                    defaultToneGuidance: g.defaultToneGuidance ?? null,
-                    displayOrder: g.displayOrder,
-                    isActive: g.isActive,
-                  }))}
-                  selected={issueStakeholders.map((s) => ({
-                    id: s.id,
-                    stakeholderGroupId: s.stakeholderGroupId,
-                    priority: (s.priority as any) ?? "Normal",
-                    needsToKnow: s.needsToKnow,
-                    issueRisk: s.issueRisk,
-                    channelGuidance: s.channelGuidance,
-                    toneAdjustment: s.toneAdjustment ?? null,
-                    notes: s.notes ?? null,
-                    group: {
-                      id: s.stakeholderGroup.id,
-                      name: s.stakeholderGroup.name,
-                      description: s.stakeholderGroup.description ?? null,
-                      defaultSensitivity: s.stakeholderGroup.defaultSensitivity ?? null,
-                      defaultChannels: s.stakeholderGroup.defaultChannels ?? null,
-                      defaultToneGuidance: s.stakeholderGroup.defaultToneGuidance ?? null,
-                      displayOrder: s.stakeholderGroup.displayOrder,
-                      isActive: s.stakeholderGroup.isActive,
-                    },
-                  }))}
-                />
-              </WorkspaceSection>
             </section>
 
             <section id="facts" className="space-y-6 border-t border-white/8 pt-10">
@@ -267,6 +219,54 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
                 ) : (
                   <p className="text-sm text-[--metis-paper-muted]">No observations yet.</p>
                 )}
+              </WorkspaceSection>
+            </section>
+
+            <section id="stakeholders" className="space-y-6 border-t border-white/8 pt-10">
+              <WorkspaceSection
+                title="Audience lens"
+                description="Plan outputs by audience group. Sources, gaps, and observations remain the stakeholder-agnostic truth layer."
+                addLabel="Add audience group"
+                advancedHref="/stakeholders"
+                form={
+                  <div className="text-sm text-[--metis-paper-muted]">
+                    Select an audience group below, then capture messaging notes inside each card. This does not change the underlying issue record.
+                  </div>
+                }
+              >
+                <WorkspaceStakeholders
+                  issueId={issue.id}
+                  allGroups={stakeholderGroups.map((g) => ({
+                    id: g.id,
+                    name: g.name,
+                    description: g.description ?? null,
+                    defaultSensitivity: g.defaultSensitivity ?? null,
+                    defaultChannels: g.defaultChannels ?? null,
+                    defaultToneGuidance: g.defaultToneGuidance ?? null,
+                    displayOrder: g.displayOrder,
+                    isActive: g.isActive,
+                  }))}
+                  selected={issueStakeholders.map((s) => ({
+                    id: s.id,
+                    stakeholderGroupId: s.stakeholderGroupId,
+                    priority: (s.priority as any) ?? "Normal",
+                    needsToKnow: s.needsToKnow,
+                    issueRisk: s.issueRisk,
+                    channelGuidance: s.channelGuidance,
+                    toneAdjustment: s.toneAdjustment ?? null,
+                    notes: s.notes ?? null,
+                    group: {
+                      id: s.stakeholderGroup.id,
+                      name: s.stakeholderGroup.name,
+                      description: s.stakeholderGroup.description ?? null,
+                      defaultSensitivity: s.stakeholderGroup.defaultSensitivity ?? null,
+                      defaultChannels: s.stakeholderGroup.defaultChannels ?? null,
+                      defaultToneGuidance: s.stakeholderGroup.defaultToneGuidance ?? null,
+                      displayOrder: s.stakeholderGroup.displayOrder,
+                      isActive: s.stakeholderGroup.isActive,
+                    },
+                  }))}
+                />
               </WorkspaceSection>
             </section>
           </div>

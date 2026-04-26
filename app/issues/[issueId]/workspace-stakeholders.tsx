@@ -158,7 +158,7 @@ export function WorkspaceStakeholders({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
           <p className="text-sm text-[--metis-paper-muted]">
-            Select stakeholder groups for this issue and capture what each needs to know, risk, and channel guidance.
+            Use audience groups to plan messaging and outputs. This layer does not change the underlying sources, gaps, or observations.
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -167,7 +167,7 @@ export function WorkspaceStakeholders({
             onChange={(e) => setAddGroupId(e.target.value)}
             className="h-10 w-full rounded-full border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60 sm:w-[320px]"
           >
-            <option value="">{availableGroups.length ? "Select a stakeholder group…" : "No available stakeholder groups"}</option>
+            <option value="">{availableGroups.length ? "Select an audience group…" : "No available audience groups"}</option>
             {availableGroups.map((g) => (
               <option key={g.id} value={g.id}>
                 {g.name}
@@ -365,7 +365,7 @@ export function WorkspaceStakeholders({
           })}
         </div>
       ) : (
-        <p className="text-sm text-[--metis-paper-muted]">No stakeholders selected for this issue yet.</p>
+        <p className="text-sm text-[--metis-paper-muted]">No audience groups selected for this issue yet.</p>
       )}
     </div>
   );
