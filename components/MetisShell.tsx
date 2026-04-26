@@ -135,6 +135,7 @@ const navGroups = ["Overview & intake", "Issue workspace", "Review & circulation
 const primaryNav = [
   { id: "dashboard", group: navGroups[0], path: "/", shortLabel: "Dashboard" },
   { id: "setup", group: navGroups[0], path: "/setup", shortLabel: "New issue" },
+  { id: "stakeholders", group: navGroups[0], path: "/stakeholders", shortLabel: "Stakeholders" },
   { id: "brief", group: navGroups[1], path: "/brief", shortLabel: "Brief" },
   { id: "sources", group: navGroups[1], path: "/sources", shortLabel: "Sources" },
   { id: "gaps", group: navGroups[1], path: "/gaps", shortLabel: "Clarification gaps" },

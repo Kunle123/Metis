@@ -43,9 +43,50 @@ model Issue {
   sources       Source[]
   gaps          Gap[]
   internalInputs InternalInput[]
+  issueStakeholders IssueStakeholder[]
 
   @@index([updatedAt])
   @@index([lastActivityAt])
+}
+
+model StakeholderGroup {
+  id                 String   @id @default(uuid())
+  name               String   @unique
+  description        String?
+  defaultSensitivity String?
+  defaultChannels    String?
+  defaultToneGuidance String?
+  displayOrder       Int      @default(0)
+  isActive           Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  issueStakeholders IssueStakeholder[]
+
+  @@index([displayOrder])
+  @@index([isActive, displayOrder])
+}
+
+model IssueStakeholder {
+  id                 String   @id @default(uuid())
+  issueId             String
+  stakeholderGroupId  String
+  priority            String   @default("Normal")
+  needsToKnow         String   @default("")
+  issueRisk           String   @default("")
+  channelGuidance     String   @default("")
+  toneAdjustment      String?
+  notes               String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  issue Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  stakeholderGroup StakeholderGroup @relation(fields: [stakeholderGroupId], references: [id], onDelete: Cascade)
+
+  @@unique([issueId, stakeholderGroupId])
+  @@index([issueId, createdAt])
+  @@index([stakeholderGroupId])
+  @@index([issueId, priority])
 }
 
 model BriefVersion {

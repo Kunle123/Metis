@@ -8,4 +8,5 @@ export * from "./export";
 export * from "./circulation";
 export * from "./activity";
 export * from "./auth";
+export * from "./stakeholder";
 

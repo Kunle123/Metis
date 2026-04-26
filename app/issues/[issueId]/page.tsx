@@ -7,6 +7,7 @@ import { SourceEntryForm } from "./sources/source-entry-form";
 import { GapCreateForm } from "./gaps/gap-create-form";
 import { InternalInputCreateForm } from "./input/input-create-form";
 import { WorkspaceGapCards, WorkspaceSourceCards } from "./workspace-cards";
+import { WorkspaceStakeholders } from "./workspace-stakeholders";
 import { WorkspaceSection } from "./workspace-section";
 
 export const dynamic = "force-dynamic";
@@ -36,10 +37,16 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
     );
   }
 
-  const [sources, gaps, inputs] = await Promise.all([
+  const [sources, gaps, inputs, stakeholderGroups, issueStakeholders] = await Promise.all([
     prisma.source.findMany({ where: { issueId: issue.id }, orderBy: [{ createdAt: "desc" }] }),
     prisma.gap.findMany({ where: { issueId: issue.id }, orderBy: [{ createdAt: "desc" }] }),
     prisma.internalInput.findMany({ where: { issueId: issue.id }, orderBy: [{ createdAt: "desc" }] }),
+    prisma.stakeholderGroup.findMany({ orderBy: [{ isActive: "desc" }, { displayOrder: "asc" }, { name: "asc" }] }),
+    prisma.issueStakeholder.findMany({
+      where: { issueId: issue.id },
+      include: { stakeholderGroup: true },
+      orderBy: [{ createdAt: "desc" }],
+    }),
   ]);
 
   return (
@@ -75,6 +82,7 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
             <div className="mt-5 flex flex-wrap gap-3">
               {[
                 ["summary", "Issue summary"],
+                ["stakeholders", "Stakeholders"],
                 ["facts", "Confirmed vs unclear"],
                 ["sources", "Sources"],
                 ["gaps", "Gaps"],
@@ -90,6 +98,54 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
                 <h3 className="text-[1.35rem] font-medium leading-8 text-[--metis-paper]">{issue.title}</h3>
                 <p className="max-w-4xl text-base leading-8 text-[--metis-paper] whitespace-pre-wrap">{issue.summary}</p>
               </div>
+            </section>
+
+            <section id="stakeholders" className="space-y-6 border-t border-white/8 pt-10">
+              <WorkspaceSection
+                title="Stakeholders"
+                description="Select stakeholder groups for this issue and capture audience-aware guidance."
+                addLabel="Add stakeholder"
+                advancedHref="/stakeholders"
+                form={
+                  <div className="text-sm text-[--metis-paper-muted]">
+                    Use the selector above to add a stakeholder group. Edit details inside each card.
+                  </div>
+                }
+              >
+                <WorkspaceStakeholders
+                  issueId={issue.id}
+                  allGroups={stakeholderGroups.map((g) => ({
+                    id: g.id,
+                    name: g.name,
+                    description: g.description ?? null,
+                    defaultSensitivity: g.defaultSensitivity ?? null,
+                    defaultChannels: g.defaultChannels ?? null,
+                    defaultToneGuidance: g.defaultToneGuidance ?? null,
+                    displayOrder: g.displayOrder,
+                    isActive: g.isActive,
+                  }))}
+                  selected={issueStakeholders.map((s) => ({
+                    id: s.id,
+                    stakeholderGroupId: s.stakeholderGroupId,
+                    priority: (s.priority as any) ?? "Normal",
+                    needsToKnow: s.needsToKnow,
+                    issueRisk: s.issueRisk,
+                    channelGuidance: s.channelGuidance,
+                    toneAdjustment: s.toneAdjustment ?? null,
+                    notes: s.notes ?? null,
+                    group: {
+                      id: s.stakeholderGroup.id,
+                      name: s.stakeholderGroup.name,
+                      description: s.stakeholderGroup.description ?? null,
+                      defaultSensitivity: s.stakeholderGroup.defaultSensitivity ?? null,
+                      defaultChannels: s.stakeholderGroup.defaultChannels ?? null,
+                      defaultToneGuidance: s.stakeholderGroup.defaultToneGuidance ?? null,
+                      displayOrder: s.stakeholderGroup.displayOrder,
+                      isActive: s.stakeholderGroup.isActive,
+                    },
+                  }))}
+                />
+              </WorkspaceSection>
             </section>
 
             <section id="facts" className="space-y-6 border-t border-white/8 pt-10">
