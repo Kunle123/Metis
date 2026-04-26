@@ -22,6 +22,17 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const issue = await prisma.issue.findUnique({ where: { id: issueId } });
   if (!issue) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
+  const [sources, gaps, internalInputs, issueStakeholders] = await Promise.all([
+    prisma.source.findMany({ where: { issueId }, orderBy: [{ createdAt: "desc" }] }),
+    prisma.gap.findMany({ where: { issueId }, orderBy: [{ updatedAt: "desc" }] }),
+    prisma.internalInput.findMany({ where: { issueId }, orderBy: [{ createdAt: "desc" }] }),
+    prisma.issueStakeholder.findMany({
+      where: { issueId },
+      include: { stakeholderGroup: true },
+      orderBy: [{ createdAt: "desc" }],
+    }),
+  ]);
+
   const latest = await prisma.briefVersion.findFirst({
     where: { issueId, mode: parsed.data.mode },
     orderBy: { createdAt: "desc" },
@@ -36,7 +47,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   }
 
   const versionNumber = (latest?.versionNumber ?? 0) + 1;
-  const artifact = generateBriefFromIssue(issue, parsed.data.mode);
+  const artifact = generateBriefFromIssue(
+    { issue, sources, gaps, internalInputs, issueStakeholders },
+    parsed.data.mode,
+  );
 
   const created = await prisma.$transaction(async (tx) => {
     const briefVersion = await tx.briefVersion.create({

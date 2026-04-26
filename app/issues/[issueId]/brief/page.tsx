@@ -227,12 +227,39 @@ export default async function IssueBriefPage({
               </article>
             ) : (
               <article className="space-y-8 px-6 py-6 sm:px-7 sm:py-7">
-                <header className="space-y-4 border-b border-white/8 pb-8">
+                <header className="space-y-5 border-b border-white/8 pb-8">
                   <p className="text-[0.68rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">
-                    {artifact.metadata.audience ?? "Internal"}
+                    {artifact.metadata.audience ? `Audience (intake): ${artifact.metadata.audience}` : "Audience not set in issue record"}
                   </p>
+                  <h2 className="font-[Cormorant_Garamond] text-[2.15rem] leading-none text-[--metis-paper]">{issue.title}</h2>
                   <p className="max-w-4xl text-lg leading-8 text-[--metis-paper]">{artifact.lede}</p>
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[0.62rem] uppercase tracking-[0.14em] text-[rgba(176,171,160,0.56)]">
+                    {artifactMetadata.map((item) => (
+                      <div key={item.label} className="flex items-center gap-1.5">
+                        <span>{item.label}</span>
+                        <span className="text-[rgba(244,238,228,0.88)]">{item.value}</span>
+                      </div>
+                    ))}
+                  </div>
                 </header>
+
+                <div className="space-y-8">
+                  {artifact.executive.blocks.map((block, index) => (
+                    <section key={`${block.label}-${index}`} className={index === 0 ? "space-y-3" : "space-y-3 border-t border-white/8 pt-8"}>
+                      <h3 className="font-[Cormorant_Garamond] text-[1.65rem] leading-tight text-[--metis-paper]">{block.label}</h3>
+                      <p className="max-w-4xl whitespace-pre-line text-base leading-8 text-[--metis-paper]">{block.body}</p>
+                    </section>
+                  ))}
+                </div>
+
+                <section className="space-y-4 border-t border-white/8 pt-8">
+                  <h3 className="text-[0.78rem] font-medium uppercase tracking-[0.2em] text-[rgba(176,171,160,0.68)]">Immediate actions</h3>
+                  <ul className="list-disc space-y-2 pl-5 text-base leading-7 text-[--metis-paper]">
+                    {artifact.executive.immediateActions.map((line, i) => (
+                      <li key={`${i}-${line.slice(0, 32)}`}>{line}</li>
+                    ))}
+                  </ul>
+                </section>
               </article>
             )
           ) : (
@@ -241,8 +268,8 @@ export default async function IssueBriefPage({
                 <h2 className="font-[Cormorant_Garamond] text-[2.15rem] leading-none text-[--metis-paper]">No brief version yet</h2>
                 <p className="max-w-3xl text-sm leading-7 text-[--metis-paper-muted]">
                   {fromSetup === "setup"
-                    ? "This issue record has been created. Generate a first-pass brief from the issue record (and later: sources, gaps, and internal input)."
-                    : "Generate a first-pass brief from the current issue record. This will create a stored brief version for this mode."}
+                    ? "This issue record has been created. Generate a brief from the issue record plus linked sources, gaps, observations, and audience lens."
+                    : "Generate a deterministic brief from the issue record, sources, gaps, observations, and audience lens. This will create a stored brief version for this mode."}
                 </p>
               </header>
               <div className="flex flex-wrap items-center justify-between gap-3">
