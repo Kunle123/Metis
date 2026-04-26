@@ -98,8 +98,12 @@ export default async function IssueBriefPage({
     : ([] as const);
 
   const sections = artifact?.full.sections ?? [];
-  const changeSummary = sections.slice(0, 3).map((s) => displayTitles(s.id, s.title));
-  const blockers = sections
+  const changeSummary =
+    mode === "executive" && artifact
+      ? artifact.executive.blocks.map((b) => b.label).slice(0, 6)
+      : sections.slice(0, 3).map((s) => displayTitles(s.id, s.title));
+
+  const fullSectionBlockers = sections
     .filter((s) => s.confidence === "Needs validation" || s.confidence === "Unclear")
     .slice(0, 3)
     .map((s) => ({
@@ -107,6 +111,27 @@ export default async function IssueBriefPage({
       owner: "—",
       confidence: s.confidence,
     }));
+
+  const executiveRailBlockers: { title: string; owner: string; confidence: BriefConfidence }[] = (() => {
+    if (mode !== "executive" || !artifact) return [];
+    const out: { title: string; owner: string; confidence: BriefConfidence }[] = [];
+    const hasConfirmed = Boolean(String(issue.confirmedFacts ?? "").trim());
+    if (!hasConfirmed) {
+      out.push({ title: "No client-confirmed facts on file in intake", owner: "—", confidence: "Unclear" });
+    }
+    if (issue.openGapsCount > 0) {
+      out.push({ title: "Unresolved clarification needs remain in play", owner: "—", confidence: "Unclear" });
+    }
+    if (linkedSources.length === 0) {
+      out.push({ title: "Narrative is not yet supported by linked sources", owner: "—", confidence: "Needs validation" });
+    }
+    if (issue.status.toLowerCase().includes("validation")) {
+      out.push({ title: "Record status still signals validation in flight", owner: "—", confidence: "Needs validation" });
+    }
+    return out.slice(0, 3);
+  })();
+
+  const blockers = mode === "executive" && artifact ? executiveRailBlockers : fullSectionBlockers;
 
   const evidenceItems = linkedSources.slice(0, 12);
 

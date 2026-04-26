@@ -115,6 +115,34 @@ function formatGapsForExecutive(open: Gap[], cap: number) {
   return lines.join("\n");
 }
 
+function formatGapsKeyUnknownsLeadership(open: Gap[], cap: number) {
+  if (!open.length) return "No open clarification items remain on the current list.";
+  const slice = open.slice(0, cap);
+  const sev = (g: Gap) => (g.severity ? `${g.severity}: ` : "");
+  const lines = slice.map(
+    (g) => `• ${sev(g)}${(g.prompt.trim() || g.title).replace(/\n/g, " ")}${g.linkedSection ? ` — ${g.linkedSection}` : ""}`,
+  );
+  if (open.length > cap) {
+    return `${lines.join("\n")}\n\n…${open.length - cap} more item(s) on the list.`;
+  }
+  return lines.join("\n");
+}
+
+function gapToLeadershipDecision(g: Gap): string {
+  const label = (g.prompt || g.title).trim();
+  const topic = label || "the outstanding clarification";
+  const stake = g.stakeholder ? ` Align with ${g.stakeholder} when their position must be explicit.` : "";
+  const section = g.linkedSection ? ` (Connected topic: ${g.linkedSection}.)` : "";
+  const s = (g.severity || "").toLowerCase();
+  if (s === "high" || s === "critical") {
+    return `Decide and assign ownership to close ${topic} before locking downstream commitments, pricing, or external narrative.${stake}${section}`;
+  }
+  if (s === "medium" || s === "moderate" || s === "med") {
+    return `Set a time-bound decision on ${topic}, or document an explicit hold and the risk accepted in the meantime.${stake}${section}`;
+  }
+  return `Name who closes ${topic} and by when, or record that the item is deprioritised and why.${stake}${section}`;
+}
+
 function formatGapsForFull(gaps: Gap[], cap: number) {
   if (!gaps.length) return "No clarification gaps recorded yet.";
   const slice = gaps.slice(0, cap);
@@ -128,14 +156,15 @@ function formatGapsForFull(gaps: Gap[], cap: number) {
   return lines.join("\n");
 }
 
-function formatObsForExecutive(inputs: InternalInput[], cap: number) {
+function formatObsForExecutive(inputs: InternalInput[], cap: number, options?: { leadership?: boolean }) {
   if (!inputs.length) return "No internal observations recorded yet.";
+  const leadership = options?.leadership ?? false;
   const slice = inputs.slice(0, cap);
   const lines = slice.map(
     (i) => `• ${i.role} · ${i.name} (${i.confidence}): ${i.response.slice(0, 200)}${i.response.length > 200 ? "…" : ""}`,
   );
   if (inputs.length > cap) {
-    return `${lines.join("\n")}\n\n…${inputs.length - cap} more observation(s). See the observations list for the full set.`;
+    return `${lines.join("\n")}\n\n…${inputs.length - cap} more observation(s). ${leadership ? "See the Observations block in this brief for the full set." : "See the observations list for the full set."}`;
   }
   return lines.join("\n");
 }
@@ -157,10 +186,11 @@ function formatAudienceImplications(
   issueAudience: string | null,
   rows: (IssueStakeholder & { stakeholderGroup: StakeholderGroup })[],
   cap: number,
-  options?: { issueAudienceInBriefHeader: boolean },
+  options?: { issueAudienceInBriefHeader: boolean; leadershipVoice?: boolean },
 ) {
   const fromIssue = cleanText(issueAudience ?? "");
   const headerAudience = options?.issueAudienceInBriefHeader ?? false;
+  const leadership = options?.leadershipVoice ?? false;
   const parts: string[] = [];
 
   if (fromIssue && !headerAudience) {
@@ -183,7 +213,11 @@ function formatAudienceImplications(
       parts.push(`…${rows.length - cap} additional audience group(s) on this issue.`);
     }
   } else if (fromIssue && headerAudience) {
-    parts.push("The issue audience is in the record header. No per-group audience notes are added yet; use the audience tool when you have lens-specific risks or needs.");
+    parts.push(
+      leadership
+        ? "The intended audience is in the record header. Add group-level lens and channel notes when the narrative must vary by stakeholder."
+        : "The issue audience is in the record header. No per-group audience notes are added yet; use the audience tool when you have lens-specific risks or needs.",
+    );
   } else if (!fromIssue) {
     parts.push("No audience-lens group selections and no issue-level audience note recorded yet.");
   }
@@ -204,6 +238,19 @@ function evidenceBaseExecutive(sources: Source[], total: number) {
   return out.join("\n");
 }
 
+function evidenceBaseLeadership(sources: Source[], total: number) {
+  if (!total) {
+    return "No linked source material is on file yet. Add sources so leadership points can be traced to an evidence line.";
+  }
+  const lines = sources.slice(0, CAP_EX_SOURCES).map((s) => formatSourceForExecutive(s));
+  const out = [`${total} source(s) on file.`, "", ...lines];
+  if (total > CAP_EX_SOURCES) {
+    out.push("");
+    out.push(`…and ${total - CAP_EX_SOURCES} more; review the full register when the narrative is sensitive.`);
+  }
+  return out.join("\n");
+}
+
 function sourcesNarrativeFull(sources: Source[], total: number) {
   if (!total) return "No sources linked in Metis yet. Evidence should be added before broad external lines are taken as settled.";
   const slice = sources.slice(0, CAP_FULL_SOURCES_NARRATIVE);
@@ -216,9 +263,9 @@ function sourcesNarrativeFull(sources: Source[], total: number) {
   return lines.join("\n");
 }
 
-export function generateBriefFromIssue(input: BriefGenerationInput, _mode: BriefMode): BriefArtifact {
+export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefMode): BriefArtifact {
   const { issue, sources, gaps, internalInputs, issueStakeholders } = input;
-  void _mode;
+  const isExecutive = mode === "executive";
   const updatedAtLabel = nowLabel();
   const confidence = confidenceFromStatus(issue.status);
 
@@ -247,7 +294,7 @@ export function generateBriefFromIssue(input: BriefGenerationInput, _mode: Brief
     return [a, b].filter(Boolean).join("\n\n");
   })();
 
-  const recommendedActions: string[] = (() => {
+  const recommendedActionsForFull: string[] = (() => {
     const out: string[] = [];
     const oqItems = splitIntakeOpenQuestions(openQuestions);
     for (const g of openG.slice(0, 2)) {
@@ -283,7 +330,43 @@ export function generateBriefFromIssue(input: BriefGenerationInput, _mode: Brief
     return out.slice(0, 5);
   })();
 
-  const recommendedBody = recommendedActions.map((x, i) => `${i + 1}) ${x}`).join("\n");
+  const recommendedBodyForFull = recommendedActionsForFull.map((x, i) => `${i + 1}) ${x}`).join("\n");
+
+  const recommendedActionsForLeadership: string[] = (() => {
+    const out: string[] = [];
+    const oqItems = splitIntakeOpenQuestions(openQuestions);
+    for (const g of openG.slice(0, 2)) {
+      const line = (g.prompt || g.title).trim();
+      if (line) {
+        out.push(gapToLeadershipDecision(g));
+      }
+    }
+    if (sources.length) {
+      const top = sources.slice(0, 2).map((s) => `${s.title} (${s.tier})`);
+      out.push(
+        `Ground any board- or client-facing line in the evidence on file (${sources.length} item(s)); review first: ${top.join("; ")}${sources.length > 2 ? " …" : "."}`,
+      );
+    } else {
+      out.push("Establish at least one linked source so the narrative can be traced to verifiable material.");
+    }
+    if (cleanText(issue.ownerName ?? "")) {
+      out.push(`Hold ${issue.ownerName} as the accountable owner for the next material update and for sign-off on sensitive lines.`);
+    } else {
+      out.push("Assign a named owner for the next material update and for sign-off on sensitive lines.");
+    }
+    if (cleanText(issue.audience ?? "") && out.length < 5) {
+      out.push(`Stress-test the line against the intended audience: ${issue.audience?.trim()}.`);
+    }
+    if (out.length < 3 && oqItems.length) {
+      out.push("Work through the open questions in this brief before making firm external commitments.");
+    }
+    if (out.length < 2) {
+      out.push("Validate what is still in motion before broad circulation.");
+    }
+    return out.slice(0, 5);
+  })();
+
+  const recommendedBodyForLeadership = recommendedActionsForLeadership.map((x, i) => `${i + 1}) ${x}`).join("\n");
 
   const guardrails = [
     "Do not state causes, scope, or customer impact that are not supported by the confirmed facts, linked sources, or agreed observations above.",
@@ -293,11 +376,26 @@ export function generateBriefFromIssue(input: BriefGenerationInput, _mode: Brief
     "Avoid speculative or inflammatory exposure language; align any external line with the audience notes and validation status.",
   ].join("\n\n");
 
+  const guardrailsLeadership = [
+    "Do not state causes, scope, or customer impact that are not supported by confirmed facts, linked sources, or clear observations above.",
+    openG.length
+      ? `There are ${openG.length} open clarification item(s) on the list; treat them as open until an attributable observation or a confirmed intake update closes them.`
+      : "If new material unknowns appear, record them in intake or as a formal clarification need before treating them as settled for external or board use.",
+    "Avoid speculative or inflammatory exposure language; align any external line with the audience notes and the issue’s validation posture.",
+  ].join("\n\n");
+
   const situationBody = (() => {
     if (context.length) {
       return `Context from intake (the title and working line are in the brief header above):\n${capLines(context, 8)}`;
     }
     return "Title and working line are in the header. Add background in the issue’s context field when you need a stable narrative that does not fit in the working line alone.";
+  })();
+
+  const situationBodyLeadership = (() => {
+    if (context.length) {
+      return `Context for leadership (intake). The lede in the header remains the working line for fast-moving and external use:\n${capLines(context, 8)}`;
+    }
+    return "The title and lede in the header set the public working line. A fuller strategic or operational backdrop is not on record in intake; add it when decisions cannot rest on the lede alone.";
   })();
 
   const currentAssessment = [
@@ -309,30 +407,82 @@ export function generateBriefFromIssue(input: BriefGenerationInput, _mode: Brief
     cleanText(issue.ownerName ?? "") ? `Owner: ${issue.ownerName}` : "Owner: not recorded yet.",
   ].join("\n");
 
+  const currentAssessmentLeadership = [
+    `Status: ${issue.status}`,
+    `Severity: ${issue.severity}`,
+    `Urgency / priority: ${issue.priority}`,
+    `Operator posture: ${issue.operatorPosture}`,
+    `Clarification load: ${issue.openGapsCount} on the issue record · ${openG.length} not yet closed on the list`,
+    cleanText(issue.ownerName ?? "") ? `Owner: ${issue.ownerName}` : "Owner: not recorded yet.",
+  ].join("\n");
+
+  const keyUnknownsLeadership = (() => {
+    const a = cleanText(unknownsFromIntake) ? `From intake (open questions)\n${capLines(unknownsFromIntake, 14)}` : "";
+    const b = openG.length
+      ? `Unresolved needs (clarification list)\n${formatGapsKeyUnknownsLeadership(openG, CAP_EX_OPEN_GAPS)}`
+      : "No open clarification items remain on the current list.";
+    return [a, b].filter(Boolean).join("\n\n");
+  })();
+
+  const confirmedFactsBlockExecutive = (() => {
+    if (cleanText(confirmedFacts)) {
+      return confirmedBlock;
+    }
+    if (internalInputs.length) {
+      return "No client-confirmed facts are on record in intake for this version.\n\nThe Observations block below contains internal and team-sourced input; it is not interchangeable with firm intake facts. Use it for working context, not for settled external lines without separate validation.";
+    }
+    return "No confirmed facts are recorded in intake yet.";
+  })();
+
   const audienceBlock = formatAudienceImplications(issue.audience, issueStakeholders, CAP_EX_AUDIENCE, {
     issueAudienceInBriefHeader: true,
   });
+  const audienceBlockLeadership = formatAudienceImplications(issue.audience, issueStakeholders, CAP_EX_AUDIENCE, {
+    issueAudienceInBriefHeader: true,
+    leadershipVoice: true,
+  });
 
-  const executiveBlocks: { label: string; body: string }[] = [
-    { label: "Situation", body: situationBody },
-    { label: "Current assessment", body: currentAssessment },
-    { label: "Confirmed facts", body: confirmedBlock },
-    { label: "Key unknowns / open gaps", body: keyUnknownsCombined },
-    { label: "Evidence base", body: evidenceBaseExecutive(sources, sources.length) },
-    { label: "Observations", body: formatObsForExecutive(internalInputs, CAP_EX_OBS) },
-    { label: "Audience implications", body: audienceBlock },
-    { label: "Recommended decisions / next actions", body: recommendedBody },
-    { label: "What not to say yet / uncertainty guardrails", body: guardrails },
-  ];
+  const executiveBlocks: { label: string; body: string }[] = isExecutive
+    ? [
+        { label: "Situation", body: situationBodyLeadership },
+        { label: "Current assessment", body: currentAssessmentLeadership },
+        { label: "Confirmed facts", body: confirmedFactsBlockExecutive },
+        { label: "Open questions and unresolved needs", body: keyUnknownsLeadership },
+        { label: "Evidence base", body: evidenceBaseLeadership(sources, sources.length) },
+        { label: "Observations", body: formatObsForExecutive(internalInputs, CAP_EX_OBS, { leadership: true }) },
+        { label: "Audience implications", body: audienceBlockLeadership },
+        { label: "Recommended decisions / next actions", body: recommendedBodyForLeadership },
+        { label: "What not to say yet / uncertainty guardrails", body: guardrailsLeadership },
+      ]
+    : [
+        { label: "Situation", body: situationBody },
+        { label: "Current assessment", body: currentAssessment },
+        { label: "Confirmed facts", body: confirmedBlock },
+        { label: "Key unknowns / open gaps", body: keyUnknownsCombined },
+        { label: "Evidence base", body: evidenceBaseExecutive(sources, sources.length) },
+        { label: "Observations", body: formatObsForExecutive(internalInputs, CAP_EX_OBS) },
+        { label: "Audience implications", body: audienceBlock },
+        { label: "Recommended decisions / next actions", body: recommendedBodyForFull },
+        { label: "What not to say yet / uncertainty guardrails", body: guardrails },
+      ];
 
-  const immediateActions = [
-    "Check that the lede in the header still matches the issue record’s working line after the latest edits (or regenerate the brief if the record moved on).",
-    `Gap counts: ${issue.openGapsCount} in the issue, ${openG.length} open in the tracker—resolve any mismatch in the gap view before a hard send.`,
-    sources.length
-      ? "If this brief is used for external or board use, re-open the two highest-signal sources (by tier and recency) for conflicts with the lede."
-      : "If you plan to use this for external or board use, the evidence register is empty at generation time; add and review sources first.",
-    `Observations: ${internalInputs.length} on file; skim the latest 1–2 for contradictions to the lede if time allows.`,
-  ];
+  const immediateActions = isExecutive
+    ? [
+        "Confirm the lede in the header still matches the current issue record; if the situation has moved materially, update the record first, then produce a fresh version of this brief.",
+        `Clarification load: ${issue.openGapsCount} on the issue and ${openG.length} on the list—treat a wide spread as a red flag for alignment before a hard send.`,
+        sources.length
+          ? "For external or board use, re-read the two most salient sources (by tier and recency) for tension with the lede."
+          : "For external or board use, the evidence list is still empty; add and review source material first.",
+        `Observations: ${internalInputs.length} on file; if time is short, scan the most recent 1–2 for tension with the lede.`,
+      ]
+    : [
+        "Check that the lede in the header still matches the issue record’s working line after the latest edits (or regenerate the brief if the record moved on).",
+        `Gap counts: ${issue.openGapsCount} in the issue, ${openG.length} open in the tracker—resolve any mismatch in the gap view before a hard send.`,
+        sources.length
+          ? "If this brief is used for external or board use, re-open the two highest-signal sources (by tier and recency) for conflicts with the lede."
+          : "If you plan to use this for external or board use, the evidence register is empty at generation time; add and review sources first.",
+        `Observations: ${internalInputs.length} on file; skim the latest 1–2 for contradictions to the lede if time allows.`,
+      ];
 
   const timelineBody =
     context.toLowerCase().includes("timeline") || openQuestions.toLowerCase().includes("when")
@@ -417,7 +567,7 @@ export function generateBriefFromIssue(input: BriefGenerationInput, _mode: Brief
         {
           id: "recommended-actions",
           title: "Recommended actions",
-          body: recommendedBody,
+          body: recommendedBodyForFull,
           confidence: "Likely",
           updatedAtLabel,
           evidenceRefs: [],
