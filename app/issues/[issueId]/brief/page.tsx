@@ -228,9 +228,6 @@ export default async function IssueBriefPage({
             ) : (
               <article className="space-y-8 px-6 py-6 sm:px-7 sm:py-7">
                 <header className="space-y-5 border-b border-white/8 pb-8">
-                  <p className="text-[0.68rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">
-                    {artifact.metadata.audience ? `Audience (intake): ${artifact.metadata.audience}` : "Audience not set in issue record"}
-                  </p>
                   <h2 className="font-[Cormorant_Garamond] text-[2.15rem] leading-none text-[--metis-paper]">{issue.title}</h2>
                   <p className="max-w-4xl text-lg leading-8 text-[--metis-paper]">{artifact.lede}</p>
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[0.62rem] uppercase tracking-[0.14em] text-[rgba(176,171,160,0.56)]">
@@ -253,7 +250,7 @@ export default async function IssueBriefPage({
                 </div>
 
                 <section className="space-y-4 border-t border-white/8 pt-8">
-                  <h3 className="text-[0.78rem] font-medium uppercase tracking-[0.2em] text-[rgba(176,171,160,0.68)]">Immediate actions</h3>
+                  <h3 className="text-[0.78rem] font-medium uppercase tracking-[0.2em] text-[rgba(176,171,160,0.68)]">Pre-flight checks</h3>
                   <ul className="list-disc space-y-2 pl-5 text-base leading-7 text-[--metis-paper]">
                     {artifact.executive.immediateActions.map((line, i) => (
                       <li key={`${i}-${line.slice(0, 32)}`}>{line}</li>

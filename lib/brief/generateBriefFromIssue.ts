@@ -43,6 +43,42 @@ function bulletsFromMultiline(text: string) {
   return lines.map((l) => `- ${l.replace(/^-+\s*/, "")}`).join("\n");
 }
 
+/**
+ * Splits a single block of "open questions" into discrete items for readability.
+ * Conservative: if nothing clearly separates items, the original string is kept as one.
+ */
+function splitIntakeOpenQuestions(text: string): string[] {
+  const t = text.trim();
+  if (!t) return [];
+  if (t.includes("\n")) {
+    return t.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  }
+  if (t.includes(";")) {
+    const parts = t.split(";").map((s) => s.trim()).filter(Boolean);
+    if (parts.length > 1) return parts;
+  }
+  if (t.includes("? ")) {
+    return t
+      .split(/\?\s+/)
+      .map((p, i, arr) => {
+        const piece = p.trim();
+        if (!piece.length) return "";
+        if (i < arr.length - 1) return piece.endsWith("?") ? piece : `${piece}?`;
+        return piece;
+      })
+      .filter(Boolean);
+  }
+  return [t];
+}
+
+function intakeOpenQuestionsAsBulletLines(text: string): string {
+  const t = cleanText(text);
+  if (!t) return "";
+  const parts = splitIntakeOpenQuestions(t);
+  if (parts.length <= 1) return parts[0] ?? "";
+  return parts.map((l) => `- ${l.replace(/^-+\s*/, "")}`).join("\n");
+}
+
 function capLines(s: string, maxLines: number) {
   const lines = s.split(/\r?\n/).filter((l) => l.trim().length);
   if (lines.length <= maxLines) return s.trim();
@@ -121,12 +157,20 @@ function formatAudienceImplications(
   issueAudience: string | null,
   rows: (IssueStakeholder & { stakeholderGroup: StakeholderGroup })[],
   cap: number,
+  options?: { issueAudienceInBriefHeader: boolean },
 ) {
   const fromIssue = cleanText(issueAudience ?? "");
+  const headerAudience = options?.issueAudienceInBriefHeader ?? false;
   const parts: string[] = [];
-  if (fromIssue) parts.push(`Issue-level audience note (intake): ${fromIssue}`);
+
+  if (fromIssue && !headerAudience) {
+    parts.push(`Issue-level audience note (intake): ${fromIssue}`);
+  }
 
   if (rows.length) {
+    if (fromIssue && headerAudience) {
+      parts.push("Stakeholder lens (the issue audience is listed in the brief header; detail by group):");
+    }
     const slice = rows.slice(0, cap);
     for (const r of slice) {
       const g = r.stakeholderGroup.name;
@@ -138,6 +182,8 @@ function formatAudienceImplications(
     if (rows.length > cap) {
       parts.push(`…${rows.length - cap} additional audience group(s) on this issue.`);
     }
+  } else if (fromIssue && headerAudience) {
+    parts.push("The issue audience is in the record header. No per-group audience notes are added yet; use the audience tool when you have lens-specific risks or needs.");
   } else if (!fromIssue) {
     parts.push("No audience-lens group selections and no issue-level audience note recorded yet.");
   }
@@ -190,27 +236,52 @@ export function generateBriefFromIssue(input: BriefGenerationInput, _mode: Brief
     bulletsFromMultiline(confirmedFacts),
     "No confirmed facts recorded yet.",
   );
-  const unknownsFromIntake = paragraphOrFallback(
-    bulletsFromMultiline(openQuestions),
-    "",
-  );
+  const unknownsFromIntake = paragraphOrFallback(intakeOpenQuestionsAsBulletLines(openQuestions), "");
 
   const openG = openGaps(gaps);
   const keyUnknownsCombined = (() => {
-    const a = cleanText(unknownsFromIntake) ? `From intake (open questions)\n${capLines(unknownsFromIntake, 10)}` : "";
+    const a = cleanText(unknownsFromIntake) ? `From intake (open questions)\n${capLines(unknownsFromIntake, 14)}` : "";
     const b = openG.length
       ? `From clarification gap tracker (open)\n${formatGapsForExecutive(openG, CAP_EX_OPEN_GAPS)}`
       : "From clarification gap tracker: no open gaps recorded.";
     return [a, b].filter(Boolean).join("\n\n");
   })();
 
-  const recommendedActions = [
-    openQuestions.length || openG.length ? "Triage unknowns: resolve intake questions and open gaps with owners before leadership commitments." : null,
-    sources.length < 1 ? "Link and review sources so leadership lines can cite an evidence base." : null,
-    "Confirm what is known vs still under validation before external or broad circulation.",
-    cleanText(issue.ownerName ?? "") ? `Named owner: ${issue.ownerName} — set the next check-in.` : "Assign a named owner and set the next update cadence.",
-  ]
-    .filter(Boolean) as string[];
+  const recommendedActions: string[] = (() => {
+    const out: string[] = [];
+    const oqItems = splitIntakeOpenQuestions(openQuestions);
+    for (const g of openG.slice(0, 2)) {
+      const label = (g.prompt || g.title).trim();
+      if (label) {
+        out.push(
+          `Address open gap [${g.severity}] “${label}”${g.stakeholder ? ` (stakeholder: ${g.stakeholder})` : ""}${g.linkedSection ? ` — section: ${g.linkedSection}` : ""}.`,
+        );
+      }
+    }
+    if (sources.length) {
+      const top = sources.slice(0, 2).map((s) => `${s.title} (${s.tier})`);
+      out.push(
+        `Cite the evidence base (${sources.length} on file), starting with: ${top.join("; ")}${sources.length > 2 ? " …" : "."}`,
+      );
+    } else {
+      out.push("Link at least one source in Metis so leadership lines can be traced to an evidence item.");
+    }
+    if (cleanText(issue.ownerName ?? "")) {
+      out.push(`Route the next update through the named owner: ${issue.ownerName}.`);
+    } else {
+      out.push("Assign a named issue owner in the record for cadence and sign-off.");
+    }
+    if (cleanText(issue.audience ?? "") && out.length < 5) {
+      out.push(`Calibrate the line for the recorded audience: ${issue.audience?.trim()}.`);
+    }
+    if (out.length < 3 && oqItems.length) {
+      out.push("Work through the open intake questions listed under Key unknowns before making firm external commitments.");
+    }
+    if (out.length < 2) {
+      out.push("Confirm what is still under validation before broad or external circulation.");
+    }
+    return out.slice(0, 5);
+  })();
 
   const recommendedBody = recommendedActions.map((x, i) => `${i + 1}) ${x}`).join("\n");
 
@@ -222,13 +293,12 @@ export function generateBriefFromIssue(input: BriefGenerationInput, _mode: Brief
     "Avoid speculative or inflammatory exposure language; align any external line with the audience notes and validation status.",
   ].join("\n\n");
 
-  const situationBody = [
-    titleLine ? `Title: ${titleLine}` : null,
-    "",
-    paragraphOrFallback(summary, "No working line recorded yet."),
-  ]
-    .filter((x) => x !== null && x !== "")
-    .join("\n");
+  const situationBody = (() => {
+    if (context.length) {
+      return `Context from intake (the title and working line are in the brief header above):\n${capLines(context, 8)}`;
+    }
+    return "Title and working line are in the header. Add background in the issue’s context field when you need a stable narrative that does not fit in the working line alone.";
+  })();
 
   const currentAssessment = [
     `Status: ${issue.status}`,
@@ -239,7 +309,9 @@ export function generateBriefFromIssue(input: BriefGenerationInput, _mode: Brief
     cleanText(issue.ownerName ?? "") ? `Owner: ${issue.ownerName}` : "Owner: not recorded yet.",
   ].join("\n");
 
-  const audienceBlock = formatAudienceImplications(issue.audience, issueStakeholders, CAP_EX_AUDIENCE);
+  const audienceBlock = formatAudienceImplications(issue.audience, issueStakeholders, CAP_EX_AUDIENCE, {
+    issueAudienceInBriefHeader: true,
+  });
 
   const executiveBlocks: { label: string; body: string }[] = [
     { label: "Situation", body: situationBody },
@@ -254,9 +326,12 @@ export function generateBriefFromIssue(input: BriefGenerationInput, _mode: Brief
   ];
 
   const immediateActions = [
-    "Validate the situation line against confirmed facts and linked sources before board or external use.",
-    openG.length ? `Address the ${openG.length} open gap(s) in the tracker with clear owners.` : "Confirm there are no hidden unknowns before locking messaging.",
-    sources.length < 1 ? "Add at least one reviewed source to support the narrative." : "Re-read linked sources for conflicts before circulation.",
+    "Check that the lede in the header still matches the issue record’s working line after the latest edits (or regenerate the brief if the record moved on).",
+    `Gap counts: ${issue.openGapsCount} in the issue, ${openG.length} open in the tracker—resolve any mismatch in the gap view before a hard send.`,
+    sources.length
+      ? "If this brief is used for external or board use, re-open the two highest-signal sources (by tier and recency) for conflicts with the lede."
+      : "If you plan to use this for external or board use, the evidence register is empty at generation time; add and review sources first.",
+    `Observations: ${internalInputs.length} on file; skim the latest 1–2 for contradictions to the lede if time allows.`,
   ];
 
   const timelineBody =
@@ -264,13 +339,15 @@ export function generateBriefFromIssue(input: BriefGenerationInput, _mode: Brief
       ? "No structured chronology is recorded in Metis. Pull key times from the issue context, open questions, and sources, and add a dated line when they are agreed."
       : "No separate chronology section is in the issue record. When timing matters for leadership, add key timestamps to context and sources as they are confirmed.";
 
-  const confirmedVsBody = `Confirmed (from intake)\n${confirmedBlock}\n\nUnclear / needs confirmation (from intake)\n${unknownsFromIntake || "No open questions recorded yet."}\n\nClarification gaps (from tracker)\n${formatGapsForFull(gaps, CAP_FULL_GAPS)}`;
+  const confirmedVsBody = `Confirmed (from intake)\n${confirmedBlock}\n\nUnclear / needs confirmation (from intake)\n${
+    unknownsFromIntake || "No open questions recorded yet."
+  }\n\nClarification gaps (from tracker)\n${formatGapsForFull(gaps, CAP_FULL_GAPS)}`;
 
   const narrativeBody = (() => {
     const a = context.length
       ? `Intake context\n${context}\n\nNarrative discipline (Metis)\n- Anchor updates on confirmed facts and linked sources.\n- Name unknowns; do not imply closure where gaps are open.`
       : "No intake context paragraph recorded yet.\n\nNarrative discipline (Metis)\n- Anchor updates on confirmed facts and linked sources.\n- Name unknowns; do not imply closure where gaps are open.";
-    const b = formatAudienceImplications(issue.audience, issueStakeholders, 12);
+    const b = formatAudienceImplications(issue.audience, issueStakeholders, 12, { issueAudienceInBriefHeader: true });
     const obsExcerpt = formatObsForFull(internalInputs, CAP_FULL_OBS);
     return `${a}\n\nAudience & lens (from issue and audience tool)\n${b}\n\n---\nAttributable observations (excerpt; ${internalInputs.length} on file)\n${obsExcerpt}\n\n---\nSources register (summary)\n${sourcesNarrativeFull(sources, sources.length)}`;
   })();
