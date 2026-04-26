@@ -71,6 +71,17 @@ export default async function IssueBriefPage({
 
   const briefVersion = await getLatestBriefVersion(issue.id, mode);
   const artifact = (briefVersion?.artifact ?? null) as BriefArtifact | null;
+  const hasBriefForMode = Boolean(artifact);
+  const briefSyncHint = (() => {
+    if (!hasBriefForMode) {
+      return "No stored brief for this mode.";
+    }
+    if (!briefVersion) return null;
+    const inSync = issue.updatedAt.getTime() === briefVersion.generatedFromIssueUpdatedAt.getTime();
+    return inSync
+      ? "Matches the current issue record."
+      : "Issue or linked data changed since this was generated; regenerate to refresh.";
+  })();
   const linkedSources = await prisma.source.findMany({
     where: { issueId: issue.id },
     orderBy: [{ createdAt: "desc" }],
@@ -149,6 +160,12 @@ export default async function IssueBriefPage({
                   </Link>
                   </div>
                 </div>
+                <GenerateBriefButton
+                  issueId={issue.id}
+                  mode={mode}
+                  label={hasBriefForMode ? "Regenerate brief" : "Generate brief"}
+                  syncHint={briefSyncHint}
+                />
                 <Button asChild className="rounded-full">
                   <Link href={`/issues/${issue.id}/export?mode=${mode}`}>
                     <FileOutput className="mr-2 h-4 w-4" />
@@ -265,15 +282,12 @@ export default async function IssueBriefPage({
                 <h2 className="font-[Cormorant_Garamond] text-[2.15rem] leading-none text-[--metis-paper]">No brief version yet</h2>
                 <p className="max-w-3xl text-sm leading-7 text-[--metis-paper-muted]">
                   {fromSetup === "setup"
-                    ? "This issue record has been created. Generate a brief from the issue record plus linked sources, gaps, observations, and audience lens."
-                    : "Generate a deterministic brief from the issue record, sources, gaps, observations, and audience lens. This will create a stored brief version for this mode."}
+                    ? "This issue record has been created. Use Generate brief in the control bar above to build from the issue record, sources, gaps, observations, and audience lens."
+                    : "Use Generate brief in the control bar above. Metis will create a stored brief for this mode from the issue record, sources, gaps, observations, and audience lens."}
                 </p>
               </header>
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="text-[0.68rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">
-                  Mode · <span className="text-[--metis-paper]">{mode === "full" ? "Full issue brief" : "Executive brief"}</span>
-                </div>
-                <GenerateBriefButton issueId={issue.id} mode={mode} />
+              <div className="text-[0.68rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">
+                Mode · <span className="text-[--metis-paper]">{mode === "full" ? "Full issue brief" : "Executive brief"}</span>
               </div>
             </article>
           )}

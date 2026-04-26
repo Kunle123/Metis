@@ -6,31 +6,47 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import type { BriefMode } from "@metis/shared/briefVersion";
 
-export function GenerateBriefButton({ issueId, mode }: { issueId: string; mode: BriefMode }) {
+type GenerateBriefButtonProps = {
+  issueId: string;
+  mode: BriefMode;
+  /** Shown when not loading. Defaults to “Generate brief”. */
+  label?: string;
+  /** One line of status (e.g. in sync with issue vs. stale). */
+  syncHint?: string | null;
+};
+
+export function GenerateBriefButton({
+  issueId,
+  mode,
+  label = "Generate brief",
+  syncHint = null,
+}: GenerateBriefButtonProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
   return (
-    <Button
-      className="rounded-full px-5"
-      disabled={isLoading}
-      onClick={async () => {
-        setIsLoading(true);
-        try {
-          await fetch(`/api/issues/${issueId}/brief-versions`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({ mode }),
-          });
-        } finally {
-          setIsLoading(false);
-          router.refresh();
-        }
-      }}
-    >
-      {isLoading ? "Generating…" : "Generate brief"}
-    </Button>
+    <div className="flex max-w-[min(100%,18rem)] flex-col items-end gap-1 sm:max-w-[20rem]">
+      {syncHint ? <p className="text-right text-[0.65rem] leading-snug text-[--metis-paper-muted]">{syncHint}</p> : null}
+      <Button
+        className="rounded-full px-5"
+        disabled={isLoading}
+        onClick={async () => {
+          setIsLoading(true);
+          try {
+            await fetch(`/api/issues/${issueId}/brief-versions`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              credentials: "include",
+              body: JSON.stringify({ mode }),
+            });
+          } finally {
+            setIsLoading(false);
+            router.refresh();
+          }
+        }}
+      >
+        {isLoading ? "Generating…" : label}
+      </Button>
+    </div>
   );
 }
-
