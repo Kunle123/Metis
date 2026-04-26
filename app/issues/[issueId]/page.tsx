@@ -29,7 +29,7 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
   const issue = await getIssueById(issueId);
   if (!issue) {
     return (
-      <MetisShell activePath="/brief" pageTitle="Issue workspace" issueRoutePrefix={`/issues/${issueId}`}>
+      <MetisShell activePath="/workspace" pageTitle="Issue workspace" issueRoutePrefix={`/issues/${issueId}`}>
         <SurfaceCard>
           <div className="px-6 py-6 text-[--metis-paper]">Issue not found.</div>
         </SurfaceCard>
@@ -51,7 +51,7 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
 
   return (
     <MetisShell
-      activePath="/"
+      activePath="/workspace"
       pageTitle="Issue workspace"
       issueRoutePrefix={`/issues/${issue.id}`}
       activeIssue={{
