@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import type { Gap } from "@metis/shared/gap";
 
 import { GapCreateForm } from "./gap-create-form";
+import { CollapsibleFormPanel } from "../collapsible-form-panel";
 
 type InternalInputListItem = {
   id: string;
@@ -200,8 +201,10 @@ export function GapLedger({
         <div className="border-b border-white/8 bg-[rgba(255,255,255,0.025)] px-6 py-5 sm:px-7">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="space-y-1">
-              <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper]">Clarification gaps</h2>
-              <p className="text-sm leading-6 text-[--metis-paper-muted]">Track open questions that need clarification before the brief.</p>
+              <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper]">Gap ledger</h2>
+              <p className="text-sm leading-6 text-[--metis-paper-muted]">
+                Full list of open and resolved questions. Use the workspace for day-to-day review; this page is for deeper ledger work.
+              </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <Badge className="border-0 bg-[rgba(124,78,18,0.6)] text-amber-50">{openCount} open</Badge>
@@ -212,28 +215,44 @@ export function GapLedger({
               ) : null}
             </div>
           </div>
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+            <Button
+              asChild
+              variant="outline"
+              className="h-10 rounded-full border-white/10 bg-white/[0.03] px-4 text-[--metis-paper] hover:bg-white/[0.08]"
+            >
+              <Link href={`/issues/${issueId}`}>Back to workspace</Link>
+            </Button>
+          </div>
         </div>
 
-        <div className="space-y-4 px-6 py-6 sm:px-7 sm:py-7">
-          <GapCreateForm issueId={issueId} />
-          {error ? <p className="text-sm text-rose-200">{error}</p> : null}
-        </div>
+        <div className="px-6 py-6 sm:px-7 sm:py-7">
+          <CollapsibleFormPanel
+            title="Gaps ledger"
+            description="Review and resolve the full list. Add new gaps only when needed."
+            addLabel="Add gap"
+            form={<GapCreateForm issueId={issueId} />}
+            secondaryAction={
+              <Button asChild variant="outline" className="h-10 rounded-full px-4">
+                <Link href={`/issues/${issueId}`}>Workspace</Link>
+              </Button>
+            }
+          >
+            {error ? <p className="text-sm text-rose-200">{error}</p> : null}
+            <div className="space-y-4">
+              {gaps.map((gap) => {
+                const isEditing = editingId === gap.id;
+                const questionValue = draftQuestions[gap.id] ?? gap.prompt;
 
-        <div className="px-6 pb-6 sm:px-7 sm:pb-7">
-          <div className="space-y-4">
-            {gaps.map((gap) => {
-              const isEditing = editingId === gap.id;
-              const questionValue = draftQuestions[gap.id] ?? gap.prompt;
-
-              return (
-                <article
-                  id={gap.id}
-                  key={gap.id}
-                  className={cn(
-                    "rounded-[1.55rem] border px-5 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]",
-                    rowTone[gap.status],
-                  )}
-                >
+                return (
+                  <article
+                    id={gap.id}
+                    key={gap.id}
+                    className={cn(
+                      "rounded-[1.55rem] border px-5 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]",
+                      rowTone[gap.status],
+                    )}
+                  >
                   <div className="flex flex-col gap-5 xl:grid xl:grid-cols-[minmax(0,1fr)_252px] xl:gap-6">
                     <div className="space-y-5">
                       <div className="flex flex-wrap items-center gap-2">
@@ -382,9 +401,10 @@ export function GapLedger({
                     </div>
                   </div>
                 </article>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          </CollapsibleFormPanel>
         </div>
       </SurfaceCard>
 

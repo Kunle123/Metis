@@ -130,7 +130,7 @@ function MetricCard({ label, value, detail }: { label: string; value: string; de
   );
 }
 
-const navGroups = ["Overview & intake", "Issue workspace", "Review & circulation"] as const;
+const navGroups = ["Overview & intake", "Tools (all issues)", "Review & circulation"] as const;
 
 const primaryNav = [
   { id: "dashboard", group: navGroups[0], path: "/", shortLabel: "Dashboard" },

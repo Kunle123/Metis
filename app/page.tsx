@@ -52,11 +52,7 @@ const templateCards = [
   },
 ] as const;
 
-const dashboardQuickLinksBase = [
-  { label: "Open brief", href: "/brief" },
-  { label: "Review sources", href: "/sources" },
-  { label: "Review gaps", href: "/gaps" },
-] as const;
+const dashboardQuickLinksBase = [{ label: "Open brief", href: "/brief" }] as const;
 
 export default async function DashboardPage() {
   const issues = await prisma.issue.findMany({
@@ -67,7 +63,8 @@ export default async function DashboardPage() {
   const firstIssue = issues[0] ?? null;
   const quickLinks = firstIssue
     ? [
-        ...dashboardQuickLinksBase,
+        { label: "Open workspace" as const, href: `/issues/${firstIssue.id}` },
+        { label: "Brief (review)" as const, href: `/issues/${firstIssue.id}/brief?mode=full` },
         { label: "Prepare output" as const, href: `/issues/${firstIssue.id}/export` },
       ]
     : [...dashboardQuickLinksBase];

@@ -8,6 +8,7 @@ import { prisma } from "@/lib/db/prisma";
 import { getIssueById } from "@/lib/issues/getIssueContext";
 import type { SourceTier } from "@metis/shared/source";
 import { SourceEntryForm } from "./source-entry-form";
+import { CollapsibleFormPanel } from "@/app/issues/[issueId]/collapsible-form-panel";
 
 export const dynamic = "force-dynamic";
 
@@ -92,8 +93,10 @@ export default async function IssueSourcesPage({ params }: { params: Promise<{ i
           <div className="border-b border-white/8 bg-[rgba(255,255,255,0.025)] px-6 py-5 sm:px-7">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="space-y-1">
-                <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper]">Sources</h2>
-                <p className="text-sm leading-6 text-[--metis-paper-muted]">Add evidence to support the issue.</p>
+                <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper]">Evidence library</h2>
+                <p className="text-sm leading-6 text-[--metis-paper-muted]">
+                  Full list of sources for this issue. Add new evidence when needed; day-to-day work stays in the workspace.
+                </p>
               </div>
               <div className="flex flex-wrap items-center justify-end gap-2">
                 {tierCounts.map((item) => (
@@ -103,11 +106,14 @@ export default async function IssueSourcesPage({ params }: { params: Promise<{ i
                 ))}
               </div>
             </div>
+            <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+              <Button asChild variant="outline" className="h-10 rounded-full border-white/10 bg-white/[0.03] px-4 text-[--metis-paper] hover:bg-white/[0.08]">
+                <Link href={`/issues/${issue.id}`}>Back to workspace</Link>
+              </Button>
+            </div>
           </div>
 
           <div className="space-y-6 px-6 py-6 sm:px-7 sm:py-7">
-            <SourceEntryForm issueId={issue.id} />
-
             <div className="space-y-4">
               {sources.map((item) => {
                 const usageLabel = item.tier === "Major media" || item.tier === "Market signal" ? "Signal" : "In brief";
@@ -166,6 +172,22 @@ export default async function IssueSourcesPage({ params }: { params: Promise<{ i
                   </article>
                 );
               })}
+            </div>
+
+            <div className="pt-2">
+              <CollapsibleFormPanel
+                title="Add source"
+                description="Capture evidence and artifacts for the issue. Sources should be reviewable items, not questions."
+                addLabel="Add source"
+                form={<SourceEntryForm issueId={issue.id} />}
+                secondaryAction={
+                  <Button asChild variant="outline" className="h-10 rounded-full px-4">
+                    <Link href={`/issues/${issue.id}`}>Workspace</Link>
+                  </Button>
+                }
+              >
+                <div />
+              </CollapsibleFormPanel>
             </div>
           </div>
         </SurfaceCard>
