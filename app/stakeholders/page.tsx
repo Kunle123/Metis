@@ -11,7 +11,7 @@ export default async function StakeholdersPage() {
   });
 
   return (
-    <MetisShell activePath="/stakeholders" pageTitle="Stakeholder library">
+    <MetisShell activePath="/stakeholders" pageMeta="Settings" pageTitle="Stakeholder library">
       <SurfaceCard>
         <div className="border-b border-white/8 bg-[rgba(255,255,255,0.025)] px-6 py-5 sm:px-7">
           <div className="space-y-2">

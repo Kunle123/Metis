@@ -52,7 +52,7 @@ const templateCards = [
   },
 ] as const;
 
-const dashboardQuickLinksBase = [{ label: "Open brief", href: "/brief" }] as const;
+const dashboardQuickLinksBase = [{ label: "All issues: brief (browse)", href: "/brief" }] as const;
 
 export default async function DashboardPage() {
   const issues = await prisma.issue.findMany({

@@ -130,35 +130,56 @@ function MetricCard({ label, value, detail }: { label: string; value: string; de
   );
 }
 
-const navGroups = ["Overview & intake", "Tools (all issues)", "Review & circulation"] as const;
+const globalNavGroupOrder = ["Work", "Settings", "All issues tools"] as const;
+type GlobalNavGroup = (typeof globalNavGroupOrder)[number];
 
-const primaryNav = [
-  { id: "dashboard", group: navGroups[0], path: "/", shortLabel: "Dashboard" },
-  { id: "setup", group: navGroups[0], path: "/setup", shortLabel: "New issue" },
-  { id: "stakeholders", group: navGroups[0], path: "/stakeholders", shortLabel: "Audience groups" },
-  // Global pages (non issue-scoped)
-  { id: "brief", group: navGroups[1], path: "/brief", shortLabel: "Brief" },
-  { id: "sources", group: navGroups[1], path: "/sources", shortLabel: "Sources" },
-  { id: "gaps", group: navGroups[1], path: "/gaps", shortLabel: "Clarification gaps" },
-  { id: "input", group: navGroups[1], path: "/input", shortLabel: "Internal input" },
-  { id: "compare", group: navGroups[2], path: "/compare", shortLabel: "Compare" },
-  { id: "export", group: navGroups[2], path: "/export", shortLabel: "Export" },
+const workNav = [
+  { id: "dashboard", group: "Work" as GlobalNavGroup, path: "/", shortLabel: "Dashboard" },
+  { id: "setup", group: "Work" as GlobalNavGroup, path: "/setup", shortLabel: "New issue" },
 ] as const;
 
-const issueWorkspacePrimaryNav = [{ id: "workspace", group: navGroups[1], path: "/workspace", shortLabel: "Workspace" }] as const;
-
-const issueToolsNav = [
-  { id: "brief", group: navGroups[1], path: "/brief", shortLabel: "Brief (review)" },
-  { id: "compare", group: navGroups[2], path: "/compare", shortLabel: "Compare" },
-  { id: "export", group: navGroups[2], path: "/export", shortLabel: "Export" },
-  { id: "activity", group: navGroups[1], path: "/activity", shortLabel: "Activity" },
-  { id: "sources", group: navGroups[1], path: "/sources", shortLabel: "Full sources" },
-  { id: "gaps", group: navGroups[1], path: "/gaps", shortLabel: "Full gaps" },
-  { id: "input", group: navGroups[1], path: "/input", shortLabel: "Full observations" },
+const settingsNav = [
+  { id: "stakeholders", group: "Settings" as GlobalNavGroup, path: "/stakeholders", shortLabel: "Audience groups" },
 ] as const;
+
+const allIssuesToolsNav = [
+  { id: "brief", group: "All issues tools" as GlobalNavGroup, path: "/brief", shortLabel: "Brief" },
+  { id: "sources", group: "All issues tools" as GlobalNavGroup, path: "/sources", shortLabel: "Sources" },
+  { id: "gaps", group: "All issues tools" as GlobalNavGroup, path: "/gaps", shortLabel: "Clarification gaps" },
+  { id: "input", group: "All issues tools" as GlobalNavGroup, path: "/input", shortLabel: "Internal input" },
+  { id: "compare", group: "All issues tools" as GlobalNavGroup, path: "/compare", shortLabel: "Compare" },
+  { id: "export", group: "All issues tools" as GlobalNavGroup, path: "/export", shortLabel: "Export" },
+] as const;
+
+const primaryNav = [...workNav, ...settingsNav, ...allIssuesToolsNav] as const;
+
+const issueWorkspacePrimaryNav = [{ id: "workspace" as const, path: "/workspace" as const, shortLabel: "Workspace" }] as const;
+
+const issueOutputToolsNav = [
+  { id: "brief" as const, path: "/brief" as const, shortLabel: "Brief" },
+  { id: "compare" as const, path: "/compare" as const, shortLabel: "Compare" },
+  { id: "export" as const, path: "/export" as const, shortLabel: "Export" },
+  { id: "activity" as const, path: "/activity" as const, shortLabel: "Activity" },
+] as const;
+
+const issueRecordToolsNav = [
+  { id: "sources" as const, path: "/sources" as const, shortLabel: "Sources" },
+  { id: "gaps" as const, path: "/gaps" as const, shortLabel: "Gaps" },
+  { id: "input" as const, path: "/input" as const, shortLabel: "Observations" },
+] as const;
+
+const issueToolsNav = [...issueOutputToolsNav, ...issueRecordToolsNav] as const;
 
 type IssueScopedNavItem = (typeof issueWorkspacePrimaryNav)[number] | (typeof issueToolsNav)[number];
-const issueToolIds = new Set<IssueScopedNavItem["id"]>(issueToolsNav.map((i) => i.id));
+const issueToolIds = new Set<string>(issueToolsNav.map((i) => i.id));
+
+function filterGlobalNavItems(issueRoutePrefix: string | undefined) {
+  return (item: (typeof primaryNav)[number]) => {
+    if (!issueRoutePrefix) return true;
+    if (issueToolIds.has(item.id)) return false;
+    return true;
+  };
+}
 
 export function MetisShell({
   activePath,
@@ -188,6 +209,9 @@ export function MetisShell({
   };
 }) {
   const shouldShowOperationalSnapshot = showOperationalSnapshot ?? activePath === "/";
+  const globalNavItemVisible = filterGlobalNavItems(issueRoutePrefix);
+  const activeGroup =
+    primaryNav.find((item) => item.path === activePath && globalNavItemVisible(item))?.group ?? null;
 
   function issueHrefForItem(item: IssueScopedNavItem) {
     if (!issueRoutePrefix) return item.path;
@@ -206,9 +230,6 @@ export function MetisShell({
     { label: "Open clarification gaps", value: "17", detail: "7 critical across all issues" },
     { label: "Average time to first draft", value: "18 min", detail: "Target under 20" },
   ];
-
-  const activeNavItem = primaryNav.find((item) => item.path === activePath) ?? primaryNav[0];
-  const activeGroup = activeNavItem.group;
 
   return (
     <div className="min-h-screen bg-[--background] text-[--foreground]">
@@ -296,11 +317,20 @@ export function MetisShell({
                         {renderIssueLink(issueWorkspacePrimaryNav[0], "primary")}
 
                         <div className="pt-1">
-                          <p className="px-1 text-[0.56rem] font-medium uppercase tracking-[0.22em] text-[rgba(176,171,160,0.62)]">
-                            Issue tools
-                          </p>
-                          <div className="mt-2 space-y-2 border-l border-white/8 pl-2">
-                            {issueToolsNav.map((item) => renderIssueLink(item, "tool"))}
+                          <p className="px-1 text-[0.56rem] font-medium uppercase tracking-[0.22em] text-[rgba(176,171,160,0.62)]">Issue tools</p>
+
+                          <div className="mt-2">
+                            <p className="px-1 pb-1.5 text-[0.5rem] font-medium uppercase tracking-[0.2em] text-[rgba(176,171,160,0.5)]">Review &amp; output</p>
+                            <div className="space-y-1.5 border-l border-white/8 pl-2">
+                              {issueOutputToolsNav.map((item) => renderIssueLink(item, "tool"))}
+                            </div>
+                          </div>
+
+                          <div className="mt-2.5">
+                            <p className="px-1 pb-1.5 text-[0.5rem] font-medium uppercase tracking-[0.2em] text-[rgba(176,171,160,0.5)]">Record pages</p>
+                            <div className="space-y-1.5 border-l border-white/8 pl-2">
+                              {issueRecordToolsNav.map((item) => renderIssueLink(item, "tool"))}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -309,9 +339,11 @@ export function MetisShell({
                 </div>
               ) : null}
 
-              {navGroups.map((group) => {
-                const items = primaryNav.filter((item) => item.group === group);
+              {globalNavGroupOrder.map((group) => {
+                const items = primaryNav.filter((item) => item.group === group).filter(globalNavItemVisible);
+                if (items.length === 0) return null;
                 const groupIsActive = items.some((item) => item.path === activePath);
+                const isDemotedTools = group === "All issues tools";
 
                 return (
                   <div
@@ -320,7 +352,9 @@ export function MetisShell({
                       "space-y-2 rounded-[1.55rem] border px-3 py-3 transition duration-300",
                       groupIsActive
                         ? "border-[rgba(224,183,111,0.24)] bg-[linear-gradient(180deg,rgba(224,183,111,0.09),rgba(224,183,111,0.018))] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
-                        : "border-white/6 bg-[rgba(255,255,255,0.015)]",
+                        : isDemotedTools
+                          ? "border-white/5 bg-[rgba(0,0,0,0.1)]"
+                          : "border-white/6 bg-[rgba(255,255,255,0.015)]",
                     )}
                   >
                     <div className="flex items-center justify-between gap-3 px-1">
@@ -328,57 +362,62 @@ export function MetisShell({
                         className={cn(
                           "text-[0.62rem] uppercase tracking-[0.28em] text-[--metis-ink-soft]",
                           groupIsActive && "text-[--metis-brass-soft]",
+                          isDemotedTools && "text-[rgba(176,171,160,0.7)]",
                         )}
                       >
                         {group}
                       </p>
-                      {group === activeGroup ? (
+                      {activeGroup && group === activeGroup ? (
                         <span className="rounded-full border border-[--metis-brass]/20 bg-[--metis-brass]/10 px-2 py-0.5 text-[0.52rem] uppercase tracking-[0.26em] text-[--metis-brass-soft]">
                           Active
                         </span>
                       ) : null}
                     </div>
-                    <div className="space-y-2">
+                    <div className={cn("space-y-2", isDemotedTools && "space-y-1.5")}>
                       {(() => {
-                        const renderNavLink = (
-                          item: (typeof primaryNav)[number],
-                          href: string,
-                          isIndented: boolean,
-                        ) => {
+                        const renderNavLink = (item: (typeof primaryNav)[number], href: string, isCompact: boolean) => {
                           const isActive = item.path === activePath;
                           return (
                             <Link
                               key={item.id}
                               href={href}
                               className={cn(
-                                "group relative flex items-start gap-3 overflow-hidden rounded-[1.3rem] border px-4 py-3 transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60",
-                                isIndented && "ml-2",
+                                "group relative flex items-start gap-2.5 overflow-hidden rounded-[1.2rem] border transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60",
+                                isCompact ? "px-3 py-2" : "px-4 py-3",
                                 isActive
                                   ? "border-[rgba(224,183,111,0.48)] bg-[linear-gradient(135deg,rgba(224,183,111,0.28),rgba(78,55,20,0.76))] ring-1 ring-[rgba(224,183,111,0.3)] shadow-[0_28px_72px_rgba(0,0,0,0.42),inset_0_1px_0_rgba(255,255,255,0.1)]"
-                                  : "border-white/5 bg-[rgba(0,0,0,0.18)] hover:border-white/10 hover:bg-[rgba(255,255,255,0.045)]",
+                                  : isCompact
+                                    ? "border-white/5 bg-[rgba(0,0,0,0.14)] hover:border-white/9 hover:bg-[rgba(255,255,255,0.04)]"
+                                    : "border-white/5 bg-[rgba(0,0,0,0.18)] hover:border-white/10 hover:bg-[rgba(255,255,255,0.045)]",
                               )}
                             >
                               <span
                                 className={cn(
-                                  "absolute inset-y-2 left-1 w-[6px] rounded-full bg-transparent transition duration-300",
-                                  isActive && "bg-[--metis-brass-soft] shadow-[0_0_28px_rgba(224,183,111,0.5)]",
+                                  "absolute inset-y-2 left-1 w-[5px] rounded-full bg-transparent transition duration-300",
+                                  isActive && "bg-[--metis-brass-soft] shadow-[0_0_24px_rgba(224,183,111,0.5)]",
                                 )}
                               />
                               <span
                                 className={cn(
-                                  "mt-1 h-2.5 w-2.5 rounded-full border border-white/10 bg-white/10 shadow-[0_0_0_4px_rgba(255,255,255,0.02)]",
+                                  "mt-0.5 h-2 w-2 shrink-0 rounded-full border border-white/10 bg-white/10 shadow-[0_0_0_3px_rgba(255,255,255,0.02)]",
                                   isActive &&
-                                    "border-[--metis-brass-soft]/70 bg-[--metis-brass-soft] shadow-[0_0_0_5px_rgba(224,183,111,0.16)]",
+                                    "border-[--metis-brass-soft]/70 bg-[--metis-brass-soft] shadow-[0_0_0_4px_rgba(224,183,111,0.16)]",
                                 )}
                               />
                               <div className="min-w-0 flex-1">
-                                <div className="flex items-center justify-between gap-4">
-                                  <span className={cn("text-sm font-medium text-[--metis-paper]", isActive && "text-white")}>
+                                <div className="flex items-center justify-between gap-2">
+                                  <span
+                                    className={cn(
+                                      "font-medium text-[--metis-paper]",
+                                      isCompact ? "text-[0.78rem] leading-snug" : "text-sm",
+                                      isActive && "text-white",
+                                    )}
+                                  >
                                     {item.shortLabel}
                                   </span>
                                   <ChevronRight
                                     className={cn(
-                                      "h-4 w-4 text-[--metis-ink-soft] transition duration-300",
+                                      "h-3.5 w-3.5 shrink-0 text-[--metis-ink-soft] transition duration-300",
                                       isActive ? "translate-x-0 text-[--metis-brass-soft]" : "group-hover:translate-x-0.5",
                                     )}
                                   />
@@ -388,13 +427,7 @@ export function MetisShell({
                           );
                         };
 
-                        return (
-                          <>
-                            {(issueRoutePrefix ? items.filter((item) => !issueToolIds.has(item.id as IssueScopedNavItem["id"])) : items).map((item) =>
-                              renderNavLink(item, navHrefForItem(item), false),
-                            )}
-                          </>
-                        );
+                        return items.map((item) => renderNavLink(item, navHrefForItem(item), isDemotedTools));
                       })()}
                     </div>
                   </div>
