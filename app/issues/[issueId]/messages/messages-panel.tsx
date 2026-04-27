@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Copy } from "lucide-react";
 
@@ -23,26 +23,36 @@ export function MessagesPanel({
   issueTitle,
   issueUpdatedAt,
   stakeholderOptions,
+  selectedStakeholderId,
+  selectedLensLabel,
   initialLatest,
 }: {
   issueId: string;
   issueTitle: string;
   issueUpdatedAt: string;
   stakeholderOptions: StakeholderOption[];
+  /** null = issue-level audience bucket (`?lens=issue`). */
+  selectedStakeholderId: string | null;
+  selectedLensLabel: string;
   initialLatest: LatestPayload;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [latest, setLatest] = useState<LatestPayload>(initialLatest);
-  const [stakeholderId, setStakeholderId] = useState<string>(() => {
-    if (initialLatest?.issueStakeholderId) return initialLatest.issueStakeholderId;
-    return "";
-  });
   const [loading, setLoading] = useState(false);
   const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
 
+  const selectValue = selectedStakeholderId === null ? "" : selectedStakeholderId;
+
   useEffect(() => {
     setLatest(initialLatest);
-  }, [initialLatest?.id, initialLatest?.versionNumber, initialLatest?.generatedFromIssueUpdatedAt]);
+  }, [
+    initialLatest?.id,
+    initialLatest?.versionNumber,
+    initialLatest?.generatedFromIssueUpdatedAt,
+    initialLatest?.issueStakeholderId,
+    selectedStakeholderId,
+  ]);
 
   const inSync = useMemo(() => {
     if (!latest) return false;
@@ -54,6 +64,11 @@ export function MessagesPanel({
     return renderMessageVariantMarkdown(issueTitle, latest.artifact);
   }, [latest, issueTitle]);
 
+  function navigateToLens(nextStakeholderId: string | null) {
+    const q = nextStakeholderId === null ? "issue" : nextStakeholderId;
+    router.push(`${pathname}?lens=${encodeURIComponent(q)}`);
+  }
+
   async function generate() {
     setLoading(true);
     try {
@@ -63,7 +78,7 @@ export function MessagesPanel({
         credentials: "include",
         body: JSON.stringify({
           templateId: "external_customer_resident_student",
-          issueStakeholderId: stakeholderId ? stakeholderId : null,
+          issueStakeholderId: selectedStakeholderId,
         }),
       });
       const data = (await res.json().catch(() => ({}))) as unknown;
@@ -109,17 +124,29 @@ export function MessagesPanel({
 
   return (
     <div className="space-y-8">
+      <div className="rounded-[1.15rem] border border-[--metis-brass]/25 bg-[rgba(164,132,82,0.08)] px-5 py-4 sm:px-6">
+        <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-brass-soft]">Showing message for</p>
+        <p className="mt-1 text-base font-medium text-[--metis-paper]">{selectedLensLabel}</p>
+        <p className="mt-2 text-sm leading-6 text-[--metis-paper-muted]">
+          Each audience lens keeps its own latest saved message. Change the lens above to view another audience&apos;s copy, then generate or
+          regenerate if none exists or the issue record has moved on.
+        </p>
+      </div>
+
       <div className="rounded-[1.2rem] border border-white/10 bg-[rgba(0,0,0,0.14)] px-5 py-5 sm:px-6">
         <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Audience lens</p>
         <p className="mt-2 text-sm leading-6 text-[--metis-paper-muted]">
-          Choose the linked audience for needs, risks, channel guidance, and tone. Leave as issue-level only if no stakeholder is linked.
+          Choose the linked audience for needs, risks, channel guidance, and tone. Use issue-level only when no stakeholder applies.
         </p>
         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <label className="block min-w-[min(100%,20rem)] flex-1 space-y-2">
             <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Primary audience</span>
             <select
-              value={stakeholderId}
-              onChange={(e) => setStakeholderId(e.target.value)}
+              value={selectValue}
+              onChange={(e) => {
+                const v = e.target.value;
+                navigateToLens(v === "" ? null : v);
+              }}
               className="h-11 w-full rounded-full border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
             >
               <option value="">Issue-level audience only</option>
@@ -189,9 +216,13 @@ export function MessagesPanel({
           </div>
         </div>
       ) : (
-        <p className="text-sm leading-7 text-[--metis-paper-muted]">
-          No external customer update has been generated yet. Choose an audience lens (optional) and click Generate.
-        </p>
+        <div className="rounded-[1.2rem] border border-white/10 bg-[rgba(0,0,0,0.1)] px-5 py-5 sm:px-6">
+          <p className="text-sm font-medium text-[--metis-paper]">No message generated for this audience yet.</p>
+          <p className="mt-2 text-sm leading-7 text-[--metis-paper-muted]">
+            Click &quot;Generate external update&quot; to create deterministic copy for <span className="text-[--metis-paper]">{selectedLensLabel}</span>{" "}
+            from the current issue record.
+          </p>
+        </div>
       )}
     </div>
   );

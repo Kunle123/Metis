@@ -46,3 +46,12 @@ export const CreateMessageVariantInputSchema = z.object({
   issueStakeholderId: z.string().uuid().nullable().optional(),
 });
 export type CreateMessageVariantInput = z.infer<typeof CreateMessageVariantInputSchema>;
+
+/** GET /message-variants: optional filter for latest/history scoped to one audience bucket (null = issue-level). */
+export const MessageVariantListQuerySchema = z.object({
+  templateId: MessageVariantTemplateIdSchema.optional(),
+  /** Omit or `"issue"` for issue-level audience (issueStakeholderId null on rows). */
+  lens: z.union([z.literal("issue"), z.string().uuid()]).optional(),
+  history: z.enum(["1"]).optional(),
+});
+export type MessageVariantListQuery = z.infer<typeof MessageVariantListQuerySchema>;
