@@ -113,13 +113,17 @@ export function GapCreateForm({ issueId }: { issueId: string }) {
             </select>
           </label>
           <label className="space-y-2">
-            <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Linked section (optional)</span>
+            <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Affects / relates to (optional)</span>
             <Input
               value={linkedSection}
               onChange={(e) => setLinkedSection(e.target.value)}
               className="h-11 rounded-full"
-              placeholder="e.g., Executive Summary"
+              placeholder="e.g., student comms, legal line, customer impact"
             />
+            <p className="text-xs leading-5 text-[--metis-paper-muted]">
+              The message, audience, or topic this unresolved question may affect — e.g. student comms, legal line, customer impact, chronology, executive
+              recommendation.
+            </p>
           </label>
         </div>
 

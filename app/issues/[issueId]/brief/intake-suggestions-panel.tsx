@@ -255,7 +255,7 @@ export function IntakeSuggestionsPanel({ issueId }: { issueId: string }) {
                           <p className="mt-1 text-xs text-[--metis-paper-muted]">
                             Severity: {draft.severity || gap.severity || "—"}
                             {draft.stakeholder ? ` · Stakeholder: ${draft.stakeholder}` : ""}
-                            {draft.linkedSection ? ` · Section: ${draft.linkedSection}` : ""}
+                            {draft.linkedSection ? ` · Relates to: ${draft.linkedSection}` : ""}
                           </p>
                           {draft.prompt ? <p className="mt-2 text-sm leading-6 text-[--metis-paper-muted] whitespace-pre-wrap">{draft.prompt}</p> : null}
                           {draft.whyItMatters ? (
@@ -336,13 +336,17 @@ export function IntakeSuggestionsPanel({ issueId }: { issueId: string }) {
                             />
                           </label>
                           <label className="space-y-1">
-                            <span className="text-[0.65rem] uppercase tracking-[0.18em] text-[--metis-ink-soft]">Linked section (optional)</span>
+                            <span className="text-[0.65rem] uppercase tracking-[0.18em] text-[--metis-ink-soft]">Affects / relates to (optional)</span>
                             <input
                               value={draft.linkedSection}
                               onChange={(e) => setGapDraftByIdx((m) => ({ ...m, [idx]: { ...draft, linkedSection: e.target.value } }))}
                               className="h-9 w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 text-sm text-[--metis-paper] outline-none focus:border-white/18"
-                              placeholder="Which brief section?"
+                              placeholder="e.g., student comms, legal line, customer impact"
                             />
+                            <p className="text-xs leading-5 text-[--metis-paper-muted]">
+                              The message, audience, or topic this unresolved question may affect — e.g. student comms, legal line, customer impact, chronology,
+                              executive recommendation.
+                            </p>
                           </label>
                         </div>
 

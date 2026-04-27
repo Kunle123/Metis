@@ -374,7 +374,7 @@ export function WorkspaceGapCards({
                       parts={[
                         g.status ? `Status: ${g.status}` : null,
                         g.severity ? `Severity: ${g.severity}` : null,
-                        g.section ? `Section: ${g.section}` : null,
+                        g.section ? `Relates to: ${g.section}` : null,
                         g.stakeholder ? `Stakeholder: ${g.stakeholder}` : null,
                       ]}
                     />
@@ -450,7 +450,7 @@ export function WorkspaceGapCards({
                       <div className="flex flex-wrap items-center gap-2 lg:max-w-[min(420px,46%)] lg:justify-end">
                         {g.status ? <Pill className={statusPillClass(g.status)}>{g.status}</Pill> : null}
                         {g.severity ? <Pill className={severityPillClass(g.severity)}>{g.severity}</Pill> : null}
-                        {g.section ? <Pill className="border border-white/10 bg-black/20 text-white/75">Sec · {g.section}</Pill> : null}
+                        {g.section ? <Pill className="border border-white/10 bg-black/20 text-white/75">Relates · {g.section}</Pill> : null}
                         {g.stakeholder ? <Pill className="border border-white/10 bg-black/20 text-white/70">Stake · {g.stakeholder}</Pill> : null}
                         {isEditing ? <Pill className="border border-white/10 bg-white/5 text-white/75">Editing</Pill> : null}
                       </div>
