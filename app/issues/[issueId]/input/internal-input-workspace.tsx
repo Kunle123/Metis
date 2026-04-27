@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowRight, Link2, Lock, PencilLine, PlusCircle } from "lucide-react";
+import { useMemo, useState } from "react";
 
 import { ConfidencePill, ReadinessPill, SurfaceCard } from "@/components/MetisShell";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +19,35 @@ const operatorRules = [
 ] as const;
 
 export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; inputs: InternalInput[] }) {
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [excludedById, setExcludedById] = useState<Record<string, boolean>>(() => {
+    const init: Record<string, boolean> = {};
+    for (const i of inputs) init[i.id] = Boolean((i as any).excludedFromBrief);
+    return init;
+  });
+
+  const excludedCount = useMemo(() => Object.values(excludedById).filter(Boolean).length, [excludedById]);
+
+  async function toggleExcluded(id: string, next: boolean) {
+    setBusyId(id);
+    try {
+      const res = await fetch(`/api/issues/${issueId}/internal-inputs/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ excludedFromBrief: next }),
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || `Request failed (${res.status})`);
+      }
+      const json = (await res.json()) as { excludedFromBrief?: boolean };
+      setExcludedById((cur) => ({ ...cur, [id]: Boolean(json.excludedFromBrief) }));
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <SurfaceCard>
@@ -51,7 +83,12 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
             <section className="space-y-4">
               <div className="flex items-center justify-between gap-3">
                 <h3 className="font-[Cormorant_Garamond] text-[1.75rem] leading-none text-[--metis-paper]">Observations</h3>
-                <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{inputs.length} records</Badge>
+                <div className="flex flex-wrap items-center gap-2">
+                  {excludedCount ? (
+                    <Badge className="border-0 bg-rose-900/25 text-rose-50">{excludedCount} excluded from briefs</Badge>
+                  ) : null}
+                  <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{inputs.length} records</Badge>
+                </div>
               </div>
               {inputs.length === 0 ? (
                 <p className="text-sm leading-6 text-[--metis-paper-muted]">No observations yet. Add one below or from the issue workspace.</p>
@@ -71,7 +108,21 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
                             {input.timestampLabel ?? "—"} · {input.linkedSection ?? "—"} · {input.visibility ?? "—"}
                           </p>
                         </div>
-                        <ConfidencePill level={input.confidence} />
+                        <div className="flex flex-wrap items-center gap-2">
+                          {excludedById[input.id] ? (
+                            <Badge className="border-0 bg-rose-900/25 text-rose-50">Excluded from brief output</Badge>
+                          ) : null}
+                          <ConfidencePill level={input.confidence} />
+                          <button
+                            type="button"
+                            disabled={busyId === input.id}
+                            onClick={() => void toggleExcluded(input.id, !excludedById[input.id])}
+                            className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/75 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
+                            title="Excluded notes are kept in the record but omitted from generated briefs."
+                          >
+                            {excludedById[input.id] ? "Include in briefs" : "Exclude from briefs"}
+                          </button>
+                        </div>
                       </div>
                       <p className="mt-3 text-sm leading-6 text-[--metis-paper-muted]">{input.response}</p>
                     </article>

@@ -14,6 +14,7 @@ function serializeInternalInput(input: {
   name: string;
   response: string;
   confidence: string;
+  excludedFromBrief: boolean;
   linkedSection: string | null;
   visibility: string | null;
   timestampLabel: string | null;
@@ -26,6 +27,7 @@ function serializeInternalInput(input: {
     name: input.name,
     response: input.response,
     confidence: InternalInputConfidenceSchema.parse(input.confidence),
+    excludedFromBrief: input.excludedFromBrief,
     linkedSection: input.linkedSection,
     visibility: input.visibility,
     timestampLabel: input.timestampLabel,
@@ -83,6 +85,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         name: nameTrimmed,
         response: responseTrimmed,
         confidence: confidenceParsed.data,
+        excludedFromBrief: parsed.data.excludedFromBrief ?? false,
         linkedSection: parsed.data.linkedSection ?? null,
         visibility: parsed.data.visibility ?? null,
         timestampLabel: parsed.data.timestampLabel ?? null,

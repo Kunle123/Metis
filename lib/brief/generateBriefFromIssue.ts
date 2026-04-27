@@ -316,6 +316,8 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
   const isExecutive = mode === "executive";
   const updatedAtLabel = nowLabel();
   const confidence = confidenceFromStatus(issue.status);
+  const excludedObsCount = internalInputs.filter((i: any) => Boolean((i as any).excludedFromBrief)).length;
+  const internalInputsForBrief = internalInputs.filter((i: any) => !Boolean((i as any).excludedFromBrief));
 
   const ledeBase = cleanText(issue.summary);
   const lede =
@@ -499,7 +501,12 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
         { label: "Confirmed facts", body: confirmedFactsBlockExecutive },
         { label: "Open questions and unresolved needs", body: keyUnknownsLeadership },
         { label: "Evidence base", body: evidenceBaseLeadership(sources, sources.length) },
-        { label: "Observations", body: formatObsForExecutive(internalInputs, CAP_EX_OBS, { leadership: true }) },
+        {
+          label: "Observations",
+          body:
+            formatObsForExecutive(internalInputsForBrief, CAP_EX_OBS, { leadership: true }) +
+            (excludedObsCount ? `\n\n${excludedObsCount} observation(s) are excluded from brief output.` : ""),
+        },
         { label: "Audience implications", body: audienceBlockLeadership },
         { label: "Recommended decisions / next actions", body: recommendedBodyForLeadership },
         { label: "What not to say yet / uncertainty guardrails", body: guardrailsLeadership },
@@ -510,7 +517,12 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
         { label: "Confirmed facts", body: confirmedBlock },
         { label: "Key unknowns / open gaps", body: keyUnknownsCombined },
         { label: "Evidence base", body: evidenceBaseExecutive(sources, sources.length) },
-        { label: "Observations", body: formatObsForExecutive(internalInputs, CAP_EX_OBS) },
+        {
+          label: "Observations",
+          body:
+            formatObsForExecutive(internalInputsForBrief, CAP_EX_OBS) +
+            (excludedObsCount ? `\n\n${excludedObsCount} observation(s) are excluded from brief output.` : ""),
+        },
         { label: "Audience implications", body: audienceBlock },
         { label: "Recommended decisions / next actions", body: recommendedBodyForFull },
         { label: "What not to say yet / uncertainty guardrails", body: guardrails },
@@ -556,7 +568,9 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
       ? `Context\n${context}\n\nNarrative discipline\n- Anchor updates on confirmed facts and linked sources.\n- Name unknowns; do not imply closure where gaps remain open.`
       : "No context paragraph recorded yet.\n\nNarrative discipline\n- Anchor updates on confirmed facts and linked sources.\n- Name unknowns; do not imply closure where gaps remain open.";
     const b = formatAudienceImplications(issue.audience, issueStakeholders, 12, { issueAudienceInBriefHeader: true });
-    const obsExcerpt = formatObsForFull(internalInputs, CAP_FULL_OBS);
+    const obsExcerpt =
+      formatObsForFull(internalInputsForBrief, CAP_FULL_OBS) +
+      (excludedObsCount ? `\n\n${excludedObsCount} observation(s) are excluded from brief output.` : "");
     return `${a}\n\nAudience & stakeholder lens\n${b}\n\n---\nAttributable observations (excerpt; ${internalInputs.length} on file)\n${obsExcerpt}\n\n---\nSources register (summary)\n${sourcesNarrativeFull(sources, sources.length)}`;
   })();
 

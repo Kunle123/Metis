@@ -44,7 +44,14 @@ type SourceCardData = {
 
 type ObservationCardData = {
   id: string;
-  note: string;
+  role: string;
+  name: string;
+  response: string;
+  confidence: string;
+  linkedSection: string | null;
+  timestampLabel: string | null;
+  visibility: string | null;
+  excludedFromBrief: boolean;
   createdAt: string;
 };
 
@@ -804,7 +811,34 @@ export function WorkspaceSourceCards({
   );
 }
 
-export function WorkspaceObservationCards({ observations }: { observations: ObservationCardData[] }) {
+export function WorkspaceObservationCards({ issueId, observations }: { issueId: string; observations: ObservationCardData[] }) {
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [excludedById, setExcludedById] = useState<Record<string, boolean>>(() => {
+    const init: Record<string, boolean> = {};
+    for (const o of observations) init[o.id] = o.excludedFromBrief;
+    return init;
+  });
+
+  async function toggleExcluded(id: string, next: boolean) {
+    setBusyId(id);
+    try {
+      const res = await fetch(`/api/issues/${issueId}/internal-inputs/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ excludedFromBrief: next }),
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || `Request failed (${res.status})`);
+      }
+      const json = (await res.json()) as { excludedFromBrief?: boolean };
+      setExcludedById((cur) => ({ ...cur, [id]: Boolean(json.excludedFromBrief) }));
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   return (
     <div className="space-y-3">
       {observations.map((o) => (
@@ -812,7 +846,34 @@ export function WorkspaceObservationCards({ observations }: { observations: Obse
           key={o.id}
           className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3"
         >
-          <p className="whitespace-pre-wrap text-sm text-white/85">{o.note}</p>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-white/90">{o.role} · {o.name}</p>
+              <p className="mt-1 text-xs text-white/50">
+                {[o.timestampLabel ?? "—", o.linkedSection ?? "—", o.visibility ?? "—"].join(" · ")}
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              {excludedById[o.id] ? (
+                <span className="rounded-full border border-rose-200/15 bg-rose-900/25 px-2.5 py-0.5 text-[0.7rem] font-medium text-rose-50">
+                  Excluded from brief
+                </span>
+              ) : null}
+              <button
+                type="button"
+                disabled={busyId === o.id}
+                onClick={() => void toggleExcluded(o.id, !excludedById[o.id])}
+                className={cn(
+                  "rounded-full border px-3 py-1.5 text-xs",
+                  busyId === o.id ? "cursor-not-allowed opacity-60" : "hover:bg-white/10",
+                  excludedById[o.id] ? "border-white/10 bg-white/5 text-white/75" : "border-white/10 bg-white/5 text-white/75",
+                )}
+              >
+                {excludedById[o.id] ? "Include in briefs" : "Exclude from briefs"}
+              </button>
+            </div>
+          </div>
+          <p className="mt-3 whitespace-pre-wrap text-sm text-white/85">{o.response}</p>
           <p className="mt-2 text-xs text-white/45">{new Date(o.createdAt).toLocaleString()}</p>
         </div>
       ))}

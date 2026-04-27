@@ -237,6 +237,7 @@ model InternalInput {
   name           String
   response       String
   confidence     String
+  excludedFromBrief Boolean @default(false)
   linkedSection  String?
   visibility     String?
   timestampLabel String?

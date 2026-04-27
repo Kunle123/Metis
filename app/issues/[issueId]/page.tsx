@@ -6,7 +6,7 @@ import { getIssueById } from "@/lib/issues/getIssueContext";
 import { SourceEntryForm } from "./sources/source-entry-form";
 import { GapCreateForm } from "./gaps/gap-create-form";
 import { InternalInputCreateForm } from "./input/input-create-form";
-import { WorkspaceGapCards, WorkspaceSourceCards } from "./workspace-cards";
+import { WorkspaceGapCards, WorkspaceSourceCards, WorkspaceObservationCards } from "./workspace-cards";
 import { WorkspaceStakeholders } from "./workspace-stakeholders";
 import { WorkspaceSection } from "./workspace-section";
 
@@ -200,22 +200,21 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
                   Observations are attributable internal statements. Sources are external or internal artifacts used as evidence.
                 </p>
                 {inputs.length ? (
-                  inputs.slice(0, 6).map((i) => (
-                    <article key={i.id} className="rounded-[1.25rem] border border-white/10 bg-[rgba(255,255,255,0.03)] px-5 py-5">
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium text-[--metis-paper]">
-                            {i.role} · {i.name}
-                          </p>
-                          <p className="mt-1 text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">
-                            {i.timestampLabel ?? "—"} · {i.linkedSection ?? "—"} · {i.visibility ?? "—"}
-                          </p>
-                          <p className="mt-3 text-sm leading-6 text-[--metis-paper-muted]">{i.response}</p>
-                        </div>
-                        <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{i.confidence}</Badge>
-                      </div>
-                    </article>
-                  ))
+                  <WorkspaceObservationCards
+                    issueId={issue.id}
+                    observations={inputs.slice(0, 6).map((i) => ({
+                      id: i.id,
+                      role: i.role,
+                      name: i.name,
+                      response: i.response,
+                      confidence: i.confidence,
+                      linkedSection: i.linkedSection ?? null,
+                      timestampLabel: i.timestampLabel ?? null,
+                      visibility: i.visibility ?? null,
+                      excludedFromBrief: (i as any).excludedFromBrief ?? false,
+                      createdAt: i.createdAt.toISOString(),
+                    }))}
+                  />
                 ) : (
                   <p className="text-sm text-[--metis-paper-muted]">No observations yet.</p>
                 )}
