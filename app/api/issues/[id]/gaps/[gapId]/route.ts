@@ -14,7 +14,7 @@ function serializeGap(gap: {
   title: string;
   whyItMatters: string;
   stakeholder: string;
-  linkedSection: string;
+  linkedSection: string | null;
   severity: string;
   status: string;
   prompt: string;

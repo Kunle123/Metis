@@ -69,7 +69,8 @@ export function GapLedger({
       Array.from(
         gaps
           .reduce((map, item) => {
-            const current = map.get(item.linkedSection) ?? { section: item.linkedSection, open: 0, resolved: 0 };
+            const key = item.linkedSection ?? "Unassigned";
+            const current = map.get(key) ?? { section: key, open: 0, resolved: 0 };
 
             if (item.status === "Resolved") {
               current.resolved += 1;
@@ -77,7 +78,7 @@ export function GapLedger({
               current.open += 1;
             }
 
-            map.set(item.linkedSection, current);
+            map.set(key, current);
             return map;
           }, new Map<string, { section: string; open: number; resolved: number }>())
           .values(),

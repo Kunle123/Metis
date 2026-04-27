@@ -338,9 +338,18 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
   const openG = openGaps(gaps);
   const keyUnknownsCombined = (() => {
     const a = cleanText(unknownsFromIntake) ? `From intake (open questions)\n${capLines(unknownsFromIntake, 14)}` : "";
+    const withSection = openG.filter((g) => cleanText((g as any).linkedSection));
+    const unassigned = openG.filter((g) => !cleanText((g as any).linkedSection));
     const b = openG.length
-      ? `From clarification gap tracker (open)\n${formatGapsForExecutive(openG, CAP_EX_OPEN_GAPS)}`
-      : "From clarification gap tracker: no open gaps recorded.";
+      ? [
+          withSection.length ? `Section-linked gaps\n${formatGapsForExecutive(withSection, CAP_EX_OPEN_GAPS)}` : "",
+          unassigned.length
+            ? `Unassigned clarification needs\n${formatGapsForExecutive(unassigned, CAP_EX_OPEN_GAPS)}`
+            : "",
+        ]
+          .filter(Boolean)
+          .join("\n\n")
+      : "No open clarification gaps recorded.";
     return [a, b].filter(Boolean).join("\n\n");
   })();
 
@@ -470,8 +479,19 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
 
   const keyUnknownsLeadership = (() => {
     const a = cleanText(unknownsFromIntake) ? `From intake (open questions)\n${capLines(unknownsFromIntake, 14)}` : "";
+    const withSection = openG.filter((g) => cleanText((g as any).linkedSection));
+    const unassigned = openG.filter((g) => !cleanText((g as any).linkedSection));
     const b = openG.length
-      ? `Unresolved needs (clarification list)\n${formatGapsKeyUnknownsLeadership(openG, CAP_EX_OPEN_GAPS)}`
+      ? [
+          withSection.length
+            ? `Section-linked needs\n${formatGapsKeyUnknownsLeadership(withSection, CAP_EX_OPEN_GAPS)}`
+            : "",
+          unassigned.length
+            ? `General / unassigned needs\n${formatGapsKeyUnknownsLeadership(unassigned, CAP_EX_OPEN_GAPS)}`
+            : "",
+        ]
+          .filter(Boolean)
+          .join("\n\n")
       : "No open clarification items remain on the current list.";
     return [a, b].filter(Boolean).join("\n\n");
   })();
@@ -555,7 +575,16 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
   const confirmedVsBody = (() => {
     const open = gaps.filter((g) => g.status === "Open");
     const resolved = gaps.filter((g) => g.status === "Resolved");
-    const openBody = open.length ? formatGapsForFull(open, CAP_FULL_GAPS) : "No open gaps recorded.";
+    const openWithSection = open.filter((g) => cleanText((g as any).linkedSection));
+    const openUnassigned = open.filter((g) => !cleanText((g as any).linkedSection));
+    const openBody = open.length
+      ? [
+          openWithSection.length ? `Section-linked\n${formatGapsForFull(openWithSection, CAP_FULL_GAPS)}` : "",
+          openUnassigned.length ? `Unassigned\n${formatGapsForFull(openUnassigned, CAP_FULL_GAPS)}` : "",
+        ]
+          .filter(Boolean)
+          .join("\n\n")
+      : "No open gaps recorded.";
     const resolvedBody = resolved.length ? formatGapsForFull(resolved, 8) : "No resolved gaps recorded.";
 
     return `Confirmed (from issue record)\n${confirmedBlock}\n\nUnclear / needs confirmation (from issue record)\n${

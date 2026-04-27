@@ -215,7 +215,7 @@ model Gap {
   title                       String
   whyItMatters                String
   stakeholder                 String
-  linkedSection               String
+  linkedSection               String?
   severity                    String
   status                      String
   prompt                      String

@@ -81,7 +81,6 @@ function missingGapFields(d: GapDraft) {
   if (!d.prompt.trim()) missing.push("prompt");
   if (!d.whyItMatters.trim()) missing.push("why it matters");
   if (!d.stakeholder.trim()) missing.push("stakeholder");
-  if (!d.linkedSection.trim()) missing.push("linked section");
   if (!d.severity) missing.push("severity");
   return missing;
 }
@@ -278,7 +277,7 @@ export function IntakeSuggestionsPanel({ issueId }: { issueId: string }) {
                                   title: draft.title,
                                   whyItMatters: draft.whyItMatters,
                                   stakeholder: draft.stakeholder,
-                                  linkedSection: draft.linkedSection,
+                                  linkedSection: draft.linkedSection.trim() ? draft.linkedSection : null,
                                   severity: draft.severity,
                                   prompt: draft.prompt,
                                 }),
@@ -337,7 +336,7 @@ export function IntakeSuggestionsPanel({ issueId }: { issueId: string }) {
                             />
                           </label>
                           <label className="space-y-1">
-                            <span className="text-[0.65rem] uppercase tracking-[0.18em] text-[--metis-ink-soft]">Linked section</span>
+                            <span className="text-[0.65rem] uppercase tracking-[0.18em] text-[--metis-ink-soft]">Linked section (optional)</span>
                             <input
                               value={draft.linkedSection}
                               onChange={(e) => setGapDraftByIdx((m) => ({ ...m, [idx]: { ...draft, linkedSection: e.target.value } }))}

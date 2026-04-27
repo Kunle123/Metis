@@ -14,7 +14,7 @@ function serializeGap(gap: {
   title: string;
   whyItMatters: string;
   stakeholder: string;
-  linkedSection: string;
+  linkedSection: string | null;
   severity: string;
   status: string;
   prompt: string;
@@ -87,10 +87,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const titleTrimmed = parsed.data.title.trim();
   const whyItMattersTrimmed = parsed.data.whyItMatters.trim();
   const stakeholderTrimmed = parsed.data.stakeholder.trim();
-  const linkedSectionTrimmed = parsed.data.linkedSection.trim();
+  const linkedSectionTrimmed = (parsed.data.linkedSection ?? "").trim();
   const promptTrimmed = parsed.data.prompt.trim();
 
-  if (!titleTrimmed.length || !whyItMattersTrimmed.length || !stakeholderTrimmed.length || !linkedSectionTrimmed.length || !promptTrimmed.length) {
+  if (!titleTrimmed.length || !whyItMattersTrimmed.length || !stakeholderTrimmed.length || !promptTrimmed.length) {
     return NextResponse.json({ error: "Missing required fields." }, { status: 400 });
   }
 
@@ -115,7 +115,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         title: titleTrimmed,
         whyItMatters: whyItMattersTrimmed,
         stakeholder: stakeholderTrimmed,
-        linkedSection: linkedSectionTrimmed,
+        linkedSection: linkedSectionTrimmed.length ? linkedSectionTrimmed : null,
         severity: severityParsed.data,
         status: statusParsed.data,
         prompt: promptTrimmed,

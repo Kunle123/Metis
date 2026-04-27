@@ -23,7 +23,7 @@ export function GapCreateForm({ issueId }: { issueId: string }) {
   const [error, setError] = useState<string | null>(null);
 
   const missingRequired =
-    !title.trim() || !whyItMatters.trim() || !stakeholder.trim() || !linkedSection.trim() || !prompt.trim();
+    !title.trim() || !whyItMatters.trim() || !stakeholder.trim() || !prompt.trim();
 
   const isDirty =
     title.trim().length > 0 ||
@@ -47,7 +47,7 @@ export function GapCreateForm({ issueId }: { issueId: string }) {
           title,
           whyItMatters,
           stakeholder,
-          linkedSection,
+          linkedSection: linkedSection.trim() ? linkedSection : null,
           severity,
           prompt,
         }),
@@ -88,7 +88,6 @@ export function GapCreateForm({ issueId }: { issueId: string }) {
               !title.trim() ||
               !whyItMatters.trim() ||
               !stakeholder.trim() ||
-              !linkedSection.trim() ||
               !prompt.trim()
             }
             onClick={onSubmit}
@@ -114,7 +113,7 @@ export function GapCreateForm({ issueId }: { issueId: string }) {
             </select>
           </label>
           <label className="space-y-2">
-            <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Affected section (free text)</span>
+            <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Linked section (optional)</span>
             <Input
               value={linkedSection}
               onChange={(e) => setLinkedSection(e.target.value)}
