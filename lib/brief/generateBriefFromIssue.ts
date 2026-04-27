@@ -344,7 +344,7 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
       ? [
           withSection.length ? `Tagged to an impact area\n${formatGapsForExecutive(withSection, CAP_EX_OPEN_GAPS)}` : "",
           unassigned.length
-            ? `Unassigned clarification needs\n${formatGapsForExecutive(unassigned, CAP_EX_OPEN_GAPS)}`
+            ? `Unassigned needs\n${formatGapsForExecutive(unassigned, CAP_EX_OPEN_GAPS)}`
             : "",
         ]
           .filter(Boolean)
@@ -487,7 +487,7 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
             ? `Tagged to an impact area\n${formatGapsKeyUnknownsLeadership(withSection, CAP_EX_OPEN_GAPS)}`
             : "",
           unassigned.length
-            ? `General / unassigned needs\n${formatGapsKeyUnknownsLeadership(unassigned, CAP_EX_OPEN_GAPS)}`
+            ? `Unassigned needs\n${formatGapsKeyUnknownsLeadership(unassigned, CAP_EX_OPEN_GAPS)}`
             : "",
         ]
           .filter(Boolean)
@@ -580,7 +580,7 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
     const openBody = open.length
       ? [
           openWithSection.length ? `Tagged to an impact area\n${formatGapsForFull(openWithSection, CAP_FULL_GAPS)}` : "",
-          openUnassigned.length ? `Unassigned\n${formatGapsForFull(openUnassigned, CAP_FULL_GAPS)}` : "",
+          openUnassigned.length ? `Unassigned needs\n${formatGapsForFull(openUnassigned, CAP_FULL_GAPS)}` : "",
         ]
           .filter(Boolean)
           .join("\n\n")

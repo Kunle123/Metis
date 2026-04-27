@@ -9,6 +9,7 @@ import { getIssueById } from "@/lib/issues/getIssueContext";
 import { BriefModeSchema, type BriefMode, type BriefConfidence, type BriefArtifact } from "@metis/shared/briefVersion";
 import { GenerateBriefButton } from "@/app/brief/generate-brief-button";
 import { IntakeSuggestionsPanel } from "@/app/issues/[issueId]/brief/intake-suggestions-panel";
+import { BriefModeToggle } from "@/app/issues/[issueId]/brief/brief-mode-toggle";
 
 export const dynamic = "force-dynamic";
 
@@ -154,37 +155,7 @@ export default async function IssueBriefPage({
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="text-sm leading-6 text-[--metis-paper-muted]">Produce the executive output for the issue.</p>
               <div className="flex flex-wrap items-center justify-end gap-3">
-                <div className="flex items-center gap-3">
-                  <span className="text-[0.58rem] font-medium uppercase tracking-[0.22em] text-[--metis-ink-soft]">Brief mode</span>
-                  <div
-                    role="group"
-                    aria-label="Brief mode"
-                    className="inline-flex overflow-hidden rounded-full border border-white/14 bg-[rgba(0,0,0,0.32)] p-0.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
-                  >
-                  <Link
-                    href={`/issues/${issue.id}/brief?mode=full`}
-                    aria-current={mode === "full" ? "page" : undefined}
-                    className={`inline-flex min-h-9 min-w-0 flex-1 items-center justify-center whitespace-nowrap px-3.5 py-1.5 text-[0.68rem] font-medium uppercase tracking-[0.18em] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/45 focus-visible:ring-offset-1 focus-visible:ring-offset-[#0a0e0f] ${
-                      mode === "full"
-                        ? "bg-[--metis-brass] font-semibold text-[--metis-dark]"
-                        : "bg-transparent text-[rgba(176,171,160,0.52)] hover:bg-white/[0.06] hover:text-[--metis-paper]"
-                    }`}
-                  >
-                    Full brief
-                  </Link>
-                  <Link
-                    href={`/issues/${issue.id}/brief?mode=executive`}
-                    aria-current={mode === "executive" ? "page" : undefined}
-                    className={`inline-flex min-h-9 min-w-0 flex-1 items-center justify-center whitespace-nowrap px-3.5 py-1.5 text-[0.68rem] font-medium uppercase tracking-[0.18em] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/45 focus-visible:ring-offset-1 focus-visible:ring-offset-[#0a0e0f] ${
-                      mode === "executive"
-                        ? "bg-[--metis-brass] font-semibold text-[--metis-dark]"
-                        : "bg-transparent text-[rgba(176,171,160,0.52)] hover:bg-white/[0.06] hover:text-[--metis-paper]"
-                    }`}
-                  >
-                    Executive brief
-                  </Link>
-                  </div>
-                </div>
+                <BriefModeToggle issueId={issue.id} mode={mode} />
                 <GenerateBriefButton
                   issueId={issue.id}
                   mode={mode}
