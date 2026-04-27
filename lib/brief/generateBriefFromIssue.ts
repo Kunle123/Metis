@@ -86,6 +86,16 @@ function capLines(s: string, maxLines: number) {
   return `${head.join("\n")}\n\n…${lines.length - maxLines} more line(s) in the record; see full issue fields for the complete list.`;
 }
 
+function stripTrailingPunctuation(s: string) {
+  return s.replace(/[.。…!?)\]]+$/u, "").trimEnd();
+}
+
+function sentence(s: string) {
+  const t = s.trim();
+  if (!t) return "";
+  return `${stripTrailingPunctuation(t)}.`;
+}
+
 export type BriefGenerationInput = {
   issue: Issue;
   sources: Source[];
@@ -131,16 +141,14 @@ function formatGapsKeyUnknownsLeadership(open: Gap[], cap: number) {
 function gapToLeadershipDecision(g: Gap): string {
   const label = (g.prompt || g.title).trim();
   const topic = label || "the outstanding clarification";
-  const stake = g.stakeholder ? ` Align with ${g.stakeholder} when their position must be explicit.` : "";
-  const section = g.linkedSection ? ` (Connected topic: ${g.linkedSection}.)` : "";
   const s = (g.severity || "").toLowerCase();
   if (s === "high" || s === "critical") {
-    return `Decide and assign ownership to close ${topic} before locking downstream commitments, pricing, or external narrative.${stake}${section}`;
+    return `Assign an owner and deadline to close “${stripTrailingPunctuation(topic)}” before any external line or irreversible commitment.`;
   }
   if (s === "medium" || s === "moderate" || s === "med") {
-    return `Set a time-bound decision on ${topic}, or document an explicit hold and the risk accepted in the meantime.${stake}${section}`;
+    return `Set a deadline to resolve “${stripTrailingPunctuation(topic)}”, or explicitly document the interim position and accepted risk.`;
   }
-  return `Name who closes ${topic} and by when, or record that the item is deprioritised and why.${stake}${section}`;
+  return `Confirm who owns “${stripTrailingPunctuation(topic)}” and by when, or explicitly deprioritise it and why.`;
 }
 
 function formatGapsForFull(gaps: Gap[], cap: number) {
@@ -159,14 +167,39 @@ function formatGapsForFull(gaps: Gap[], cap: number) {
 function formatObsForExecutive(inputs: InternalInput[], cap: number, options?: { leadership?: boolean }) {
   if (!inputs.length) return "No internal observations recorded yet.";
   const leadership = options?.leadership ?? false;
-  const slice = inputs.slice(0, cap);
-  const lines = slice.map(
-    (i) => `• ${i.role} · ${i.name} (${i.confidence}): ${i.response.slice(0, 200)}${i.response.length > 200 ? "…" : ""}`,
-  );
-  if (inputs.length > cap) {
-    return `${lines.join("\n")}\n\n…${inputs.length - cap} more observation(s). ${leadership ? "See the Observations block in this brief for the full set." : "See the observations list for the full set."}`;
+  const confidenceRank: Record<string, number> = { High: 3, Medium: 2, Low: 1 };
+  const rankOf = (c: unknown) => (typeof c === "string" && c in confidenceRank ? confidenceRank[c] : 0);
+
+  const sorted = [...inputs].sort((a, b) => rankOf(b.confidence) - rankOf(a.confidence));
+  const preferred = sorted.filter((i) => String(i.confidence) !== "Low");
+  const shown = (preferred.length ? preferred : sorted).slice(0, cap);
+
+  const preface = leadership
+    ? "Internal notes are unconfirmed and may be incomplete; treat them as context, not as confirmed facts."
+    : "";
+
+  const lines = shown.map((i) => {
+    const response = i.response.slice(0, 200);
+    const clipped = i.response.length > 200 ? "…" : "";
+    return `• ${i.role} · ${i.name} (${i.confidence}): ${response}${clipped}`;
+  });
+
+  const lowCount = inputs.filter((i) => String(i.confidence) === "Low").length;
+  const lowShownCount = shown.filter((i) => String(i.confidence) === "Low").length;
+  const lowOmitted = Math.max(0, lowCount - lowShownCount);
+
+  const tail: string[] = [];
+  if (sorted.length > shown.length) {
+    tail.push(`…${sorted.length - shown.length} more observation(s) not shown here.`);
   }
-  return lines.join("\n");
+  if (leadership && lowOmitted > 0) {
+    tail.push(`Low-confidence notes exist (${lowOmitted} not shown); review the full observations list before lifting them into leadership narrative.`);
+  }
+  if (tail.length) {
+    tail.push(leadership ? "See the full observations list for details." : "See the observations list for the full set.");
+  }
+
+  return [preface, lines.join("\n"), tail.length ? `\n\n${tail.join("\n")}` : ""].filter(Boolean).join("\n");
 }
 
 function formatObsForFull(inputs: InternalInput[], cap: number) {
@@ -393,9 +426,9 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
 
   const situationBodyLeadership = (() => {
     if (context.length) {
-      return `Context for leadership (intake). The lede in the header remains the working line for fast-moving and external use:\n${capLines(context, 8)}`;
+      return `Leadership context:\n${capLines(context, 8)}`;
     }
-    return "The title and lede in the header set the public working line. A fuller strategic or operational backdrop is not on record in intake; add it when decisions cannot rest on the lede alone.";
+    return "Leadership context is not recorded yet. Use the working line as the reference point; treat downstream implications as provisional until facts and sources catch up.";
   })();
 
   const currentAssessment = [
@@ -429,7 +462,7 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
       return confirmedBlock;
     }
     if (internalInputs.length) {
-      return "No client-confirmed facts are on record in intake for this version.\n\nThe Observations block below contains internal and team-sourced input; it is not interchangeable with firm intake facts. Use it for working context, not for settled external lines without separate validation.";
+      return "No confirmed facts are recorded for this version.\n\nInternal notes below are helpful context, but they are not a substitute for confirmed facts. Treat them as provisional until separately validated.";
     }
     return "No confirmed facts are recorded in intake yet.";
   })();
@@ -468,12 +501,13 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
 
   const immediateActions = isExecutive
     ? [
-        "Confirm the lede in the header still matches the current issue record; if the situation has moved materially, update the record first, then produce a fresh version of this brief.",
-        `Clarification load: ${issue.openGapsCount} on the issue and ${openG.length} on the list—treat a wide spread as a red flag for alignment before a hard send.`,
+        "Confirm the working line still matches the latest issue record before forwarding upward.",
+        "If the situation moved materially, update the record and refresh this brief before circulation.",
+        `Clarification load: ${issue.openGapsCount} on the issue and ${openG.length} on the list. If they diverge materially, pause for alignment before wide circulation.`,
         sources.length
-          ? "For external or board use, re-read the two most salient sources (by tier and recency) for tension with the lede."
-          : "For external or board use, the evidence list is still empty; add and review source material first.",
-        `Observations: ${internalInputs.length} on file; if time is short, scan the most recent 1–2 for tension with the lede.`,
+          ? "For external or board use, re-read the two most salient sources (by tier and recency) for tension with the working line."
+          : "For external or board use, no sources are linked yet; add and review source material first.",
+        `Internal notes: ${internalInputs.length} on file. If time is short, scan the most recent 1–2 for conflicts with the working line.`,
       ]
     : [
         "Check that the lede in the header still matches the issue record’s working line after the latest edits (or regenerate the brief if the record moved on).",
