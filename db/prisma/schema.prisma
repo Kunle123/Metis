@@ -44,6 +44,7 @@ model Issue {
   gaps          Gap[]
   internalInputs InternalInput[]
   issueStakeholders IssueStakeholder[]
+  messageVariants MessageVariant[]
 
   @@index([updatedAt])
   @@index([lastActivityAt])
@@ -82,11 +83,31 @@ model IssueStakeholder {
 
   issue Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
   stakeholderGroup StakeholderGroup @relation(fields: [stakeholderGroupId], references: [id], onDelete: Cascade)
+  messageVariants MessageVariant[]
 
   @@unique([issueId, stakeholderGroupId])
   @@index([issueId, createdAt])
   @@index([stakeholderGroupId])
   @@index([issueId, priority])
+}
+
+model MessageVariant {
+  id                           String   @id @default(uuid())
+  issueId                      String
+  templateId                   String
+  versionNumber                Int
+  generatedFromIssueUpdatedAt  DateTime
+  issueStakeholderId           String?
+  audienceSnapshot             Json
+  artifact                     Json
+  createdAt                    DateTime @default(now())
+
+  issue              Issue              @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  issueStakeholder   IssueStakeholder?  @relation(fields: [issueStakeholderId], references: [id], onDelete: SetNull)
+
+  @@unique([issueId, templateId, versionNumber])
+  @@index([issueId, templateId, createdAt])
+  @@index([issueStakeholderId])
 }
 
 model BriefVersion {

@@ -118,6 +118,15 @@ export default async function IssueExportPage({
             <Button asChild className="w-fit rounded-full px-5">
               <Link href={`/issues/${issue.id}/brief?mode=${mode}`}>Open brief</Link>
             </Button>
+            <div className="mt-8 rounded-[1.2rem] border border-white/10 bg-[rgba(0,0,0,0.12)] px-5 py-4 sm:px-6">
+              <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Message variants</p>
+              <p className="mt-2 text-sm leading-6 text-[--metis-paper-muted]">
+                You can still draft a reviewable external update from the issue record (no brief required).
+              </p>
+              <Button asChild variant="outline" className="mt-4 rounded-full">
+                <Link href={`/issues/${issue.id}/messages`}>Open Messages</Link>
+              </Button>
+            </div>
           </div>
         </SurfaceCard>
       </MetisShell>
@@ -169,6 +178,16 @@ export default async function IssueExportPage({
           </div>
 
           <div className="space-y-8 px-6 py-6 sm:px-7 sm:py-7">
+            <section className="rounded-[1.2rem] border border-white/10 bg-[rgba(0,0,0,0.12)] px-5 py-4 sm:px-6">
+              <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Message variants</p>
+              <p className="mt-2 text-sm leading-6 text-[--metis-paper-muted]">
+                Generate a reviewable external (customer / resident / student) update from the issue record and audience lens—separate from briefs.
+              </p>
+              <Button asChild className="mt-4 rounded-full">
+                <Link href={`/issues/${issue.id}/messages`}>Open Messages</Link>
+              </Button>
+            </section>
+
             <section className="space-y-4">
               <div className="space-y-4">
                 {packageOptions.map((item) => {

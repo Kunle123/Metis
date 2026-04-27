@@ -156,6 +156,7 @@ const issueWorkspacePrimaryNav = [{ id: "workspace" as const, path: "/workspace"
 
 const issueOutputToolsNav = [
   { id: "brief" as const, path: "/brief" as const, shortLabel: "Brief" },
+  { id: "messages" as const, path: "/messages" as const, shortLabel: "Messages" },
   { id: "compare" as const, path: "/compare" as const, shortLabel: "Compare" },
   { id: "export" as const, path: "/export" as const, shortLabel: "Export" },
   { id: "activity" as const, path: "/activity" as const, shortLabel: "Activity" },

@@ -10,5 +10,6 @@ export const IssueActivityKinds = {
   source_created: IssueActivityKindSchema.parse("source_created"),
   export_created: IssueActivityKindSchema.parse("export_created"),
   circulation_event_created: IssueActivityKindSchema.parse("circulation_event_created"),
+  message_variant_created: IssueActivityKindSchema.parse("message_variant_created"),
 } as const;
 

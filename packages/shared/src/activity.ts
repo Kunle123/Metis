@@ -16,6 +16,7 @@ export const IssueActivityKindSchema = z.union([
   z.literal("source_created"),
   z.literal("export_created"),
   z.literal("circulation_event_created"),
+  z.literal("message_variant_created"),
 ]);
 export type IssueActivityKind = z.infer<typeof IssueActivityKindSchema>;
 
