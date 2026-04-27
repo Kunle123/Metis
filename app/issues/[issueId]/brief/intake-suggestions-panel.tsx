@@ -55,6 +55,58 @@ function clearBundle(issueId: string) {
 
 type ItemState = { status: "idle" | "creating" | "created" | "error"; message?: string };
 
+type GapDraft = {
+  title: string;
+  whyItMatters: string;
+  stakeholder: string;
+  linkedSection: string;
+  prompt: string;
+  severity: "" | "Critical" | "Important" | "Watch";
+};
+
+function toGapDraft(g: SuggestedGap): GapDraft {
+  return {
+    title: (g.title ?? "").trim(),
+    whyItMatters: (g.whyItMatters ?? "").trim(),
+    stakeholder: (g.stakeholder ?? "").trim(),
+    linkedSection: (g.linkedSection ?? "").trim(),
+    prompt: (g.prompt ?? "").trim(),
+    severity: (g.severity ?? "") as GapDraft["severity"],
+  };
+}
+
+function missingGapFields(d: GapDraft) {
+  const missing: string[] = [];
+  if (!d.title.trim()) missing.push("title");
+  if (!d.prompt.trim()) missing.push("prompt");
+  if (!d.whyItMatters.trim()) missing.push("why it matters");
+  if (!d.stakeholder.trim()) missing.push("stakeholder");
+  if (!d.linkedSection.trim()) missing.push("linked section");
+  if (!d.severity) missing.push("severity");
+  return missing;
+}
+
+function formatApiError(data: unknown, fallback: string) {
+  if (data && typeof data === "object") {
+    const anyData = data as any;
+    const base = typeof anyData.error === "string" ? anyData.error : fallback;
+    const issues = Array.isArray(anyData.issues) ? anyData.issues : null;
+    if (issues && issues.length) {
+      const details = issues
+        .map((i: any) => {
+          const path = Array.isArray(i.path) ? i.path.join(".") : "";
+          const msg = typeof i.message === "string" ? i.message : "Invalid value";
+          return path ? `${path}: ${msg}` : msg;
+        })
+        .filter(Boolean)
+        .slice(0, 6);
+      return `${base}${details.length ? `\n${details.join("\n")}` : ""}`;
+    }
+    return base;
+  }
+  return fallback;
+}
+
 export function IntakeSuggestionsPanel({ issueId }: { issueId: string }) {
   const router = useRouter();
   const [bundle, setBundle] = useState<IntakeSuggestionBundle | null>(null);
@@ -62,9 +114,20 @@ export function IntakeSuggestionsPanel({ issueId }: { issueId: string }) {
 
   const [sourceState, setSourceState] = useState<Record<number, ItemState>>({});
   const [gapState, setGapState] = useState<Record<number, ItemState>>({});
+  const [gapDraftByIdx, setGapDraftByIdx] = useState<Record<number, GapDraft>>({});
 
   useEffect(() => {
-    setBundle(getBundle(issueId));
+    const next = getBundle(issueId);
+    setBundle(next);
+    if (next?.suggestedGaps?.length) {
+      setGapDraftByIdx((cur) => {
+        const out: Record<number, GapDraft> = { ...cur };
+        next.suggestedGaps.forEach((g, idx) => {
+          if (!out[idx]) out[idx] = toGapDraft(g);
+        });
+        return out;
+      });
+    }
   }, [issueId]);
 
   const hasAny = Boolean((bundle?.suggestedSources.length ?? 0) > 0 || (bundle?.suggestedGaps.length ?? 0) > 0);
@@ -182,32 +245,28 @@ export function IntakeSuggestionsPanel({ issueId }: { issueId: string }) {
               <div className="space-y-4">
                 {bundle.suggestedGaps.map((gap, idx) => {
                   const st = gapState[idx]?.status ?? "idle";
-                  const missing =
-                    !gap.title?.trim() ||
-                    !gap.whyItMatters?.trim() ||
-                    !gap.stakeholder?.trim() ||
-                    !gap.linkedSection?.trim() ||
-                    !gap.prompt?.trim() ||
-                    !gap.severity;
+                  const draft = gapDraftByIdx[idx] ?? toGapDraft(gap);
+                  const missing = missingGapFields(draft);
+                  const disabled = st === "creating" || st === "created" || missing.length > 0;
                   return (
                     <div key={`${gap.title ?? "gap"}-${idx}`} className="space-y-2 border-t border-white/8 pt-4 first:border-t-0 first:pt-0">
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <p className="text-sm font-medium text-[--metis-paper]">{gap.title ?? "Untitled gap"}</p>
+                          <p className="text-sm font-medium text-[--metis-paper]">{draft.title || gap.title || "Untitled gap"}</p>
                           <p className="mt-1 text-xs text-[--metis-paper-muted]">
-                            Severity: {gap.severity ?? "—"}
-                            {gap.stakeholder ? ` · Stakeholder: ${gap.stakeholder}` : ""}
-                            {gap.linkedSection ? ` · Section: ${gap.linkedSection}` : ""}
+                            Severity: {draft.severity || gap.severity || "—"}
+                            {draft.stakeholder ? ` · Stakeholder: ${draft.stakeholder}` : ""}
+                            {draft.linkedSection ? ` · Section: ${draft.linkedSection}` : ""}
                           </p>
-                          {gap.prompt ? <p className="mt-2 text-sm leading-6 text-[--metis-paper-muted] whitespace-pre-wrap">{gap.prompt}</p> : null}
-                          {gap.whyItMatters ? (
-                            <p className="mt-1 text-xs leading-6 text-[--metis-paper-muted] whitespace-pre-wrap">Why: {gap.whyItMatters}</p>
+                          {draft.prompt ? <p className="mt-2 text-sm leading-6 text-[--metis-paper-muted] whitespace-pre-wrap">{draft.prompt}</p> : null}
+                          {draft.whyItMatters ? (
+                            <p className="mt-1 text-xs leading-6 text-[--metis-paper-muted] whitespace-pre-wrap">Why: {draft.whyItMatters}</p>
                           ) : null}
                         </div>
                         <Button
                           type="button"
                           className="h-9 rounded-full px-4"
-                          disabled={st === "creating" || st === "created" || missing}
+                          disabled={disabled}
                           onClick={async () => {
                             setGapState((m) => ({ ...m, [idx]: { status: "creating" } }));
                             try {
@@ -216,16 +275,16 @@ export function IntakeSuggestionsPanel({ issueId }: { issueId: string }) {
                                 headers: { "content-type": "application/json" },
                                 credentials: "include",
                                 body: JSON.stringify({
-                                  title: gap.title,
-                                  whyItMatters: gap.whyItMatters,
-                                  stakeholder: gap.stakeholder,
-                                  linkedSection: gap.linkedSection,
-                                  severity: gap.severity,
-                                  prompt: gap.prompt,
+                                  title: draft.title,
+                                  whyItMatters: draft.whyItMatters,
+                                  stakeholder: draft.stakeholder,
+                                  linkedSection: draft.linkedSection,
+                                  severity: draft.severity,
+                                  prompt: draft.prompt,
                                 }),
                               });
-                              const data = (await res.json().catch(() => ({}))) as { error?: string };
-                              if (!res.ok) throw new Error(data?.error ?? `Request failed (${res.status})`);
+                              const data = (await res.json().catch(() => ({}))) as unknown;
+                              if (!res.ok) throw new Error(formatApiError(data, `Request failed (${res.status})`));
                               setGapState((m) => ({ ...m, [idx]: { status: "created" } }));
                               router.refresh();
                             } catch (e: unknown) {
@@ -236,10 +295,87 @@ export function IntakeSuggestionsPanel({ issueId }: { issueId: string }) {
                           {st === "created" ? "Created" : st === "creating" ? "Creating…" : "Create gap"}
                         </Button>
                       </div>
-                      {missing ? (
-                        <p className="text-xs text-[--metis-paper-muted]">Needs all required fields (including severity) before it can be created.</p>
+                      <div className="grid gap-2 rounded-[1.1rem] border border-white/8 bg-white/[0.02] px-3 py-3">
+                        <div className="grid gap-2 sm:grid-cols-2">
+                          <label className="space-y-1">
+                            <span className="text-[0.65rem] uppercase tracking-[0.18em] text-[--metis-ink-soft]">Title</span>
+                            <input
+                              value={draft.title}
+                              onChange={(e) => setGapDraftByIdx((m) => ({ ...m, [idx]: { ...draft, title: e.target.value } }))}
+                              className="h-9 w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 text-sm text-[--metis-paper] outline-none focus:border-white/18"
+                              placeholder="What is missing?"
+                            />
+                          </label>
+                          <label className="space-y-1">
+                            <span className="text-[0.65rem] uppercase tracking-[0.18em] text-[--metis-ink-soft]">Severity</span>
+                            <select
+                              value={draft.severity}
+                              onChange={(e) =>
+                                setGapDraftByIdx((m) => ({
+                                  ...m,
+                                  [idx]: { ...draft, severity: e.target.value as GapDraft["severity"] },
+                                }))
+                              }
+                              className="h-9 w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 text-sm text-[--metis-paper] outline-none focus:border-white/18"
+                            >
+                              <option value="">Select…</option>
+                              <option value="Critical">Critical</option>
+                              <option value="Important">Important</option>
+                              <option value="Watch">Watch</option>
+                            </select>
+                          </label>
+                        </div>
+
+                        <div className="grid gap-2 sm:grid-cols-2">
+                          <label className="space-y-1">
+                            <span className="text-[0.65rem] uppercase tracking-[0.18em] text-[--metis-ink-soft]">Stakeholder</span>
+                            <input
+                              value={draft.stakeholder}
+                              onChange={(e) => setGapDraftByIdx((m) => ({ ...m, [idx]: { ...draft, stakeholder: e.target.value } }))}
+                              className="h-9 w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 text-sm text-[--metis-paper] outline-none focus:border-white/18"
+                              placeholder="Who needs the answer?"
+                            />
+                          </label>
+                          <label className="space-y-1">
+                            <span className="text-[0.65rem] uppercase tracking-[0.18em] text-[--metis-ink-soft]">Linked section</span>
+                            <input
+                              value={draft.linkedSection}
+                              onChange={(e) => setGapDraftByIdx((m) => ({ ...m, [idx]: { ...draft, linkedSection: e.target.value } }))}
+                              className="h-9 w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 text-sm text-[--metis-paper] outline-none focus:border-white/18"
+                              placeholder="Which brief section?"
+                            />
+                          </label>
+                        </div>
+
+                        <label className="space-y-1">
+                          <span className="text-[0.65rem] uppercase tracking-[0.18em] text-[--metis-ink-soft]">Prompt</span>
+                          <textarea
+                            value={draft.prompt}
+                            onChange={(e) => setGapDraftByIdx((m) => ({ ...m, [idx]: { ...draft, prompt: e.target.value } }))}
+                            className="min-h-[64px] w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-[--metis-paper] outline-none focus:border-white/18"
+                            placeholder="Phrase as a question or verification task."
+                          />
+                        </label>
+
+                        <label className="space-y-1">
+                          <span className="text-[0.65rem] uppercase tracking-[0.18em] text-[--metis-ink-soft]">Why it matters</span>
+                          <textarea
+                            value={draft.whyItMatters}
+                            onChange={(e) => setGapDraftByIdx((m) => ({ ...m, [idx]: { ...draft, whyItMatters: e.target.value } }))}
+                            className="min-h-[56px] w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-[--metis-paper] outline-none focus:border-white/18"
+                            placeholder="What decision/risk does this affect?"
+                          />
+                        </label>
+                      </div>
+
+                      {missing.length ? (
+                        <p className="text-xs text-[--metis-paper-muted]">
+                          Missing: <span className="text-[--metis-paper]">{missing.join(", ")}</span>
+                        </p>
                       ) : null}
-                      {gapState[idx]?.status === "error" ? <p className="text-xs text-rose-100">{gapState[idx]?.message ?? "Failed."}</p> : null}
+                      {gapState[idx]?.status === "error" ? (
+                        <p className="text-xs whitespace-pre-wrap text-rose-100">{gapState[idx]?.message ?? "Failed."}</p>
+                      ) : null}
                     </div>
                   );
                 })}
