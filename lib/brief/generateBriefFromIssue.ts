@@ -264,7 +264,7 @@ function formatAudienceImplications(
     parts.push(
       leadership
         ? "The intended audience is in the record header. Add group-level lens and channel notes when the narrative must vary by stakeholder."
-        : "The issue audience is in the record header. No per-group audience notes are added yet; use the audience tool when you have lens-specific risks or needs.",
+        : "The issue audience is in the record header. No per-group notes are added yet. Add group-level lens and channel notes when the narrative must vary by stakeholder.",
     );
   } else if (!fromIssue) {
     parts.push("No audience-lens group selections and no issue-level audience note recorded yet.");
@@ -275,7 +275,7 @@ function formatAudienceImplications(
 
 function evidenceBaseExecutive(sources: Source[], total: number) {
   if (!total) {
-    return "No sources linked in Metis yet. Add sources to establish an evidence base.";
+    return "No sources are linked yet. Add sources to establish an evidence base.";
   }
   const lines = sources.slice(0, CAP_EX_SOURCES).map((s) => formatSourceForExecutive(s));
   const out = [`${total} source(s) on file.`, "", ...lines];
@@ -300,7 +300,7 @@ function evidenceBaseLeadership(sources: Source[], total: number) {
 }
 
 function sourcesNarrativeFull(sources: Source[], total: number) {
-  if (!total) return "No sources linked in Metis yet. Evidence should be added before broad external lines are taken as settled.";
+  if (!total) return "No sources are linked yet. Evidence should be added before broad external lines are taken as settled.";
   const slice = sources.slice(0, CAP_FULL_SOURCES_NARRATIVE);
   const lines = slice.map(
     (s) => `- ${s.sourceCode} — ${s.title} (${s.tier}${s.linkedSection ? `, ${s.linkedSection}` : ""})`,
@@ -348,8 +348,10 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
     for (const g of openG.slice(0, 2)) {
       const label = (g.prompt || g.title).trim();
       if (label) {
+        const topic = stripTrailingPunctuation(label);
+        const related = g.linkedSection ? ` Related: ${stripTrailingPunctuation(g.linkedSection)}.` : "";
         out.push(
-          `Resolve the open clarification: “${stripTrailingPunctuation(label)}”${g.linkedSection ? ` (Related: ${g.linkedSection})` : ""}.`,
+          `Assign an owner and deadline to close: “${topic}”.${related}`,
         );
       }
     }
