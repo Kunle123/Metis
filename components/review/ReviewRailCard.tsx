@@ -6,13 +6,13 @@ export type ReviewRailCardTone = "neutral" | "info";
 
 const toneStyles: Record<ReviewRailCardTone, { wrap: string; divider: string; title: string }> = {
   neutral: {
-    wrap: "border-white/10 bg-[rgba(0,0,0,0.16)]",
-    divider: "border-white/8",
+    wrap: "border-white/12 bg-[rgba(0,0,0,0.22)]",
+    divider: "border-white/10",
     title: "text-[--metis-ink-soft]",
   },
   info: {
     wrap: "border-[--metis-info-border] bg-[--metis-info-bg]",
-    divider: "border-white/8",
+    divider: "border-white/10",
     title: "text-[--metis-info-soft]",
   },
 };

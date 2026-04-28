@@ -22,15 +22,16 @@
    */
   --metis-info: oklch(0.78 0.085 232);
   --metis-info-soft: oklch(0.9 0.04 232);
-  --metis-info-bg: color-mix(in oklab, var(--metis-info) 12%, rgba(0, 0, 0, 0.16));
-  --metis-info-border: color-mix(in oklab, var(--metis-info) 34%, rgba(255, 255, 255, 0.1));
-  --metis-info-ring: color-mix(in oklab, var(--metis-info) 55%, transparent);
+  /* Tuned for clearer separation vs neutral panels. */
+  --metis-info-bg: color-mix(in oklab, var(--metis-info) 18%, rgba(0, 0, 0, 0.14));
+  --metis-info-border: color-mix(in oklab, var(--metis-info) 46%, rgba(255, 255, 255, 0.12));
+  --metis-info-ring: color-mix(in oklab, var(--metis-info) 66%, transparent);
   /* Neutral control layer: above quiet panels (~3–6% white) so fields/buttons read as operable. */
-  --metis-control-bg: rgb(255 255 255 / 0.14);
-  --metis-control-border: rgb(255 255 255 / 0.3);
+  --metis-control-bg: rgb(255 255 255 / 0.18);
+  --metis-control-border: rgb(255 255 255 / 0.34);
   --metis-control-inset: rgb(255 255 255 / 0.1);
-  --metis-control-bg-hover: rgb(255 255 255 / 0.2);
-  --metis-control-border-hover: rgb(255 255 255 / 0.38);
+  --metis-control-bg-hover: rgb(255 255 255 / 0.22);
+  --metis-control-border-hover: rgb(255 255 255 / 0.42);
   --metis-control-inset-hover: rgb(255 255 255 / 0.13);
   --metis-control-bg-disabled: rgb(255 255 255 / 0.09);
   --metis-control-border-disabled: rgb(255 255 255 / 0.2);
@@ -154,8 +155,8 @@
     overflow-x: clip;
     overflow-y: visible;
     backdrop-filter: blur(8px);
-    --metis-surface-bg: linear-gradient(180deg, rgba(32, 39, 41, 0.98), rgba(22, 28, 30, 0.985));
-    --metis-surface-border: rgba(255, 255, 255, 0.085);
+    --metis-surface-bg: linear-gradient(180deg, rgba(34, 42, 44, 0.985), rgba(20, 26, 28, 0.99));
+    --metis-surface-border: rgba(255, 255, 255, 0.1);
     --metis-surface-glow: rgba(255, 255, 255, 0.055);
     --metis-surface-tint: rgba(164, 132, 82, 0.07);
     background: var(--metis-surface-bg);
@@ -163,22 +164,22 @@
   }
 
   .metis-primary-surface {
-    --metis-surface-bg: linear-gradient(180deg, rgba(32, 39, 41, 0.98), rgba(22, 28, 30, 0.985));
-    --metis-surface-border: rgba(255, 255, 255, 0.09);
+    --metis-surface-bg: linear-gradient(180deg, rgba(36, 45, 47, 0.988), rgba(22, 29, 31, 0.992));
+    --metis-surface-border: rgba(255, 255, 255, 0.11);
     --metis-surface-glow: rgba(255, 255, 255, 0.055);
     --metis-surface-tint: rgba(164, 132, 82, 0.07);
   }
 
   .metis-support-surface {
-    --metis-surface-bg: linear-gradient(180deg, rgba(14, 19, 20, 0.97), rgba(9, 13, 14, 0.985));
-    --metis-surface-border: rgba(255, 255, 255, 0.065);
+    --metis-surface-bg: linear-gradient(180deg, rgba(12, 17, 18, 0.975), rgba(7, 10, 11, 0.99));
+    --metis-surface-border: rgba(255, 255, 255, 0.075);
     --metis-surface-glow: rgba(255, 255, 255, 0.03);
     --metis-surface-tint: rgba(76, 95, 114, 0.04);
   }
 
   .metis-passive-surface {
-    --metis-surface-bg: linear-gradient(180deg, rgba(10, 13, 14, 0.96), rgba(7, 10, 11, 0.985));
-    --metis-surface-border: rgba(255, 255, 255, 0.055);
+    --metis-surface-bg: linear-gradient(180deg, rgba(9, 12, 13, 0.965), rgba(6, 8, 9, 0.99));
+    --metis-surface-border: rgba(255, 255, 255, 0.065);
     --metis-surface-glow: rgba(255, 255, 255, 0.02);
     --metis-surface-tint: rgba(164, 132, 82, 0.03);
   }

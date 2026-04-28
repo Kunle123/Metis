@@ -12,6 +12,13 @@ export const dynamic = "force-static";
 type Token = { name: string; sample: "bg" | "border" | "text" };
 
 const tokens: Record<string, Token[]> = {
+  "Layer tokens (semantic)": [
+    { name: "--background", sample: "bg" },
+    { name: "--card", sample: "bg" },
+    { name: "--border", sample: "border" },
+    { name: "--metis-control-bg", sample: "bg" },
+    { name: "--metis-control-border", sample: "border" },
+  ],
   "Accent (brass)": [
     { name: "--metis-accent", sample: "bg" },
     { name: "--metis-accent-soft", sample: "bg" },
@@ -70,6 +77,44 @@ function TokenSwatch({ name, sample }: Token) {
   );
 }
 
+function LayerStackSample() {
+  return (
+    <div className="grid gap-4 lg:grid-cols-2">
+      <div className="rounded-[1.4rem] border border-white/10 bg-[--background] p-4">
+        <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Page frame</p>
+        <div className="mt-3 rounded-[1.4rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.015),transparent_12%)] p-4">
+          <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">App body</p>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <div className="metis-surface metis-primary-surface rounded-[1.4rem] border p-4">
+              <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Primary surface</p>
+              <div className="mt-3 rounded-[1.2rem] border border-white/10 bg-[rgba(0,0,0,0.14)] px-4 py-3">
+                <p className="text-xs text-[--metis-paper-muted]">Nested toolbar panel</p>
+              </div>
+            </div>
+            <div className="metis-surface metis-support-surface rounded-[1.4rem] border p-4">
+              <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Support surface</p>
+              <div className="mt-3 rounded-[1.2rem] border border-[--metis-info-border] bg-[--metis-info-bg] px-4 py-3">
+                <p className="text-xs text-[--metis-paper-muted]">Info panel sample</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="space-y-3 rounded-[1.4rem] border border-white/10 bg-black/10 p-4">
+        <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Operable controls</p>
+        <div className="grid gap-3">
+          <div className="rounded-[1.2rem] border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 py-3 shadow-[inset_0_1px_0_var(--metis-control-inset)]">
+            <p className="text-xs text-[--metis-paper]">Control background / border</p>
+            <p className="mt-1 text-xs text-[--metis-paper-muted]">Should read as distinct from panels/cards.</p>
+          </div>
+          <ReviewBanner tone="warning" title="Warning" body="Amber panel separation check." />
+          <ReviewBanner tone="info" title="Info" body="Blue panel separation check." />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function MetisUiDiagnosticsPage() {
   return (
     <MetisShell
@@ -103,6 +148,15 @@ export default function MetisUiDiagnosticsPage() {
           </div>
 
           <div className="space-y-6 px-6 py-6 sm:px-7 sm:py-7">
+            <DenseSection title="Layer stack samples">
+              <p className="text-sm leading-7 text-[--metis-paper-muted]">
+                Intended semantic layers: page frame → primary surface → nested panels/controls → rails/info panels.
+              </p>
+              <div className="mt-4">
+                <LayerStackSample />
+              </div>
+            </DenseSection>
+
             <DenseSection title="Colour tokens">
               <div className="grid gap-4 lg:grid-cols-2">
                 {Object.entries(tokens).map(([group, groupTokens]) => (
