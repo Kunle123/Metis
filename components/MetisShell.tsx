@@ -130,7 +130,7 @@ function MetricCard({ label, value, detail }: { label: string; value: string; de
   );
 }
 
-type GlobalNavGroup = "Work" | "Issue tools" | "Settings";
+type GlobalNavGroup = "Work" | "Current issue" | "Review & output" | "Records" | "Settings";
 
 const workNav = [
   { id: "dashboard", group: "Work" as GlobalNavGroup, path: "/", shortLabel: "Dashboard" },
@@ -161,16 +161,9 @@ const issueRecordToolsNav = [
 
 const issueToolsNav = [...issueOutputToolsNav, ...issueRecordToolsNav] as const;
 
-const stableIssueToolsNav = [
-  issueWorkspacePrimaryNav[0],
-  ...issueOutputToolsNav.slice(0, 2), // Brief, Messages
-  issueRecordToolsNav[0], // Sources
-  issueRecordToolsNav[1], // Gaps
-  issueRecordToolsNav[2], // Observations
-  issueOutputToolsNav[2], // Compare
-  issueOutputToolsNav[3], // Export
-  issueOutputToolsNav[4], // Activity
-] as const;
+const navCurrentIssue = [issueWorkspacePrimaryNav[0]];
+const navReviewOutput = issueOutputToolsNav;
+const navRecords = issueRecordToolsNav;
 
 type IssueScopedNavItem = (typeof issueWorkspacePrimaryNav)[number] | (typeof issueToolsNav)[number];
 const issueToolIds = new Set<string>(issueToolsNav.map((i) => i.id));
@@ -248,7 +241,7 @@ export function MetisShell({
     const inactive =
       "border-white/5 bg-[rgba(0,0,0,0.16)] hover:border-white/10 hover:bg-[rgba(255,255,255,0.04)]";
     const disabledCls =
-      "border-white/5 bg-[rgba(0,0,0,0.12)] text-[--metis-paper-muted] opacity-[0.85]";
+      "border-white/4 bg-[rgba(0,0,0,0.10)] text-[--metis-paper-muted] opacity-45";
 
     const Wrap: any = disabled ? "div" : Link;
     const wrapProps = disabled ? { role: "link", "aria-disabled": "true" as const } : { href };
@@ -270,6 +263,7 @@ export function MetisShell({
             isActive &&
               !disabled &&
               "border-[--metis-brass-soft]/70 bg-[--metis-brass-soft] shadow-[0_0_0_4px_rgba(224,183,111,0.16)]",
+            disabled && "border-white/6 bg-white/5 shadow-none opacity-40",
           )}
         />
         <div className="min-w-0 flex-1">
@@ -287,7 +281,7 @@ export function MetisShell({
               className={cn(
                 "h-3.5 w-3.5 shrink-0 text-[--metis-ink-soft] transition duration-300",
                 disabled
-                  ? "opacity-40"
+                  ? "opacity-15"
                   : isActive
                     ? "translate-x-0 text-[--metis-brass-soft]"
                     : "group-hover:translate-x-0.5",
@@ -333,7 +327,14 @@ export function MetisShell({
             {group}
           </p>
           {metaPill ? (
-            <span className="rounded-full border border-[--metis-brass]/20 bg-[--metis-brass]/10 px-2 py-0.5 text-[0.52rem] uppercase tracking-[0.26em] text-[--metis-brass-soft]">
+            <span
+              className={cn(
+                "rounded-full border px-2 py-0.5 text-[0.52rem] uppercase tracking-[0.26em]",
+                metaPill === "Select issue"
+                  ? "border-white/10 bg-white/5 text-[--metis-ink-soft]"
+                  : "border-[--metis-brass]/20 bg-[--metis-brass]/10 text-[--metis-brass-soft]",
+              )}
+            >
               {metaPill}
             </span>
           ) : activeGroupLabel && group === activeGroupLabel ? (
@@ -381,9 +382,33 @@ export function MetisShell({
               })}
 
               {renderNavGroup({
-                group: "Issue tools",
+                group: "Current issue",
                 metaPill: issueRoutePrefix ? "Active" : "Select issue",
-                items: stableIssueToolsNav.map((i) => ({
+                items: navCurrentIssue.map((i) => ({
+                  id: i.id,
+                  href: issueHrefForItem(i),
+                  label: i.shortLabel,
+                  isActive: Boolean(issueRoutePrefix) && i.path === activePath,
+                  disabled: !issueRoutePrefix,
+                })),
+              })}
+
+              {renderNavGroup({
+                group: "Review & output",
+                metaPill: issueRoutePrefix ? null : "Select issue",
+                items: navReviewOutput.map((i) => ({
+                  id: i.id,
+                  href: issueHrefForItem(i),
+                  label: i.shortLabel,
+                  isActive: Boolean(issueRoutePrefix) && i.path === activePath,
+                  disabled: !issueRoutePrefix,
+                })),
+              })}
+
+              {renderNavGroup({
+                group: "Records",
+                metaPill: issueRoutePrefix ? null : "Select issue",
+                items: navRecords.map((i) => ({
                   id: i.id,
                   href: issueHrefForItem(i),
                   label: i.shortLabel,
