@@ -130,7 +130,7 @@ function MetricCard({ label, value, detail }: { label: string; value: string; de
   );
 }
 
-type GlobalNavGroup = "Work" | "Settings" | "All issues tools";
+type GlobalNavGroup = "Work" | "Current issue" | "Settings" | "All issues tools";
 
 const workNav = [
   { id: "dashboard", group: "Work" as GlobalNavGroup, path: "/", shortLabel: "Dashboard" },
@@ -144,8 +144,8 @@ const settingsNav = [
 const allIssuesToolsNav = [
   { id: "brief", group: "All issues tools" as GlobalNavGroup, path: "/brief", shortLabel: "Brief" },
   { id: "sources", group: "All issues tools" as GlobalNavGroup, path: "/sources", shortLabel: "Sources" },
-  { id: "gaps", group: "All issues tools" as GlobalNavGroup, path: "/gaps", shortLabel: "Clarification gaps" },
-  { id: "input", group: "All issues tools" as GlobalNavGroup, path: "/input", shortLabel: "Internal input" },
+  { id: "gaps", group: "All issues tools" as GlobalNavGroup, path: "/gaps", shortLabel: "Gaps" },
+  { id: "input", group: "All issues tools" as GlobalNavGroup, path: "/input", shortLabel: "Observations" },
   { id: "compare", group: "All issues tools" as GlobalNavGroup, path: "/compare", shortLabel: "Compare" },
   { id: "export", group: "All issues tools" as GlobalNavGroup, path: "/export", shortLabel: "Export" },
 ] as const;
@@ -173,12 +173,10 @@ const issueToolsNav = [...issueOutputToolsNav, ...issueRecordToolsNav] as const;
 type IssueScopedNavItem = (typeof issueWorkspacePrimaryNav)[number] | (typeof issueToolsNav)[number];
 const issueToolIds = new Set<string>(issueToolsNav.map((i) => i.id));
 
-function filterGlobalNavItems(issueRoutePrefix: string | undefined) {
-  return (item: (typeof primaryNav)[number]) => {
-    if (!issueRoutePrefix) return true;
-    if (issueToolIds.has(item.id)) return false;
-    return true;
-  };
+function filterGlobalNavItems(_issueRoutePrefix: string | undefined) {
+  // Keep global navigation stable; issue-context tools are rendered as an additional group.
+  // Avoid hiding global "All issues tools" when an issue is active.
+  return (_item: (typeof primaryNav)[number]) => true;
 }
 
 export function MetisShell({
@@ -231,11 +229,63 @@ export function MetisShell({
     { label: "Average time to first draft", value: "18 min", detail: "Target under 20" },
   ];
 
-  function renderGlobalNavGroup(group: GlobalNavGroup) {
-    const items = primaryNav.filter((item) => item.group === group).filter(globalNavItemVisible);
+  function renderNavItem({
+    href,
+    label,
+    isActive,
+  }: {
+    href: string;
+    label: string;
+    isActive: boolean;
+  }) {
+    return (
+      <Link
+        href={href}
+        className={cn(
+          "group relative flex items-start gap-2.5 overflow-hidden rounded-[1.2rem] border px-4 py-2.5 transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60",
+          isActive
+            ? "border-[rgba(224,183,111,0.48)] bg-[linear-gradient(135deg,rgba(224,183,111,0.28),rgba(78,55,20,0.76))] ring-1 ring-[rgba(224,183,111,0.3)] shadow-[0_28px_72px_rgba(0,0,0,0.42),inset_0_1px_0_rgba(255,255,255,0.1)]"
+            : "border-white/5 bg-[rgba(0,0,0,0.16)] hover:border-white/10 hover:bg-[rgba(255,255,255,0.04)]",
+        )}
+      >
+        <span
+          className={cn(
+            "absolute inset-y-2 left-1 w-[5px] rounded-full bg-transparent transition duration-300",
+            isActive && "bg-[--metis-brass-soft] shadow-[0_0_24px_rgba(224,183,111,0.5)]",
+          )}
+        />
+        <span
+          className={cn(
+            "mt-0.5 h-2 w-2 shrink-0 rounded-full border border-white/10 bg-white/10 shadow-[0_0_0_3px_rgba(255,255,255,0.02)]",
+            isActive && "border-[--metis-brass-soft]/70 bg-[--metis-brass-soft] shadow-[0_0_0_4px_rgba(224,183,111,0.16)]",
+          )}
+        />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-2">
+            <span className={cn("text-sm font-medium text-[--metis-paper]", isActive && "text-white")}>{label}</span>
+            <ChevronRight
+              className={cn(
+                "h-3.5 w-3.5 shrink-0 text-[--metis-ink-soft] transition duration-300",
+                isActive ? "translate-x-0 text-[--metis-brass-soft]" : "group-hover:translate-x-0.5",
+              )}
+            />
+          </div>
+        </div>
+      </Link>
+    );
+  }
+
+  function renderNavGroup({
+    group,
+    items,
+    activeGroupLabel,
+  }: {
+    group: GlobalNavGroup;
+    items: Array<{ id: string; href: string; label: string; isActive: boolean }>;
+    activeGroupLabel?: string | null;
+  }) {
     if (items.length === 0) return null;
-    const groupIsActive = items.some((item) => item.path === activePath);
-    const isDemotedTools = group === "All issues tools";
+    const groupIsActive = items.some((i) => i.isActive);
 
     return (
       <div
@@ -244,9 +294,7 @@ export function MetisShell({
           "space-y-2 rounded-[1.55rem] border px-3 py-3 transition duration-300",
           groupIsActive
             ? "border-[rgba(224,183,111,0.24)] bg-[linear-gradient(180deg,rgba(224,183,111,0.09),rgba(224,183,111,0.018))] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
-            : isDemotedTools
-              ? "border-white/5 bg-[rgba(0,0,0,0.1)]"
-              : "border-white/6 bg-[rgba(255,255,255,0.015)]",
+            : "border-white/6 bg-[rgba(255,255,255,0.015)]",
         )}
       >
         <div className="flex items-center justify-between gap-3 px-1">
@@ -254,69 +302,20 @@ export function MetisShell({
             className={cn(
               "text-[0.62rem] uppercase tracking-[0.28em] text-[--metis-ink-soft]",
               groupIsActive && "text-[--metis-brass-soft]",
-              isDemotedTools && "text-[rgba(176,171,160,0.7)]",
             )}
           >
             {group}
           </p>
-          {activeGroup && group === activeGroup ? (
+          {activeGroupLabel && group === activeGroupLabel ? (
             <span className="rounded-full border border-[--metis-brass]/20 bg-[--metis-brass]/10 px-2 py-0.5 text-[0.52rem] uppercase tracking-[0.26em] text-[--metis-brass-soft]">
               Active
             </span>
           ) : null}
         </div>
-        <div className={cn("space-y-2", isDemotedTools && "space-y-1.5")}>
-          {items.map((item) => {
-            const isActive = item.path === activePath;
-            const isCompact = isDemotedTools;
-            return (
-              <Link
-                key={item.id}
-                href={navHrefForItem(item)}
-                className={cn(
-                  "group relative flex items-start gap-2.5 overflow-hidden rounded-[1.2rem] border transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60",
-                  isCompact ? "px-3 py-2" : "px-4 py-3",
-                  isActive
-                    ? "border-[rgba(224,183,111,0.48)] bg-[linear-gradient(135deg,rgba(224,183,111,0.28),rgba(78,55,20,0.76))] ring-1 ring-[rgba(224,183,111,0.3)] shadow-[0_28px_72px_rgba(0,0,0,0.42),inset_0_1px_0_rgba(255,255,255,0.1)]"
-                    : isCompact
-                      ? "border-white/5 bg-[rgba(0,0,0,0.14)] hover:border-white/9 hover:bg-[rgba(255,255,255,0.04)]"
-                      : "border-white/5 bg-[rgba(0,0,0,0.18)] hover:border-white/10 hover:bg-[rgba(255,255,255,0.045)]",
-                )}
-              >
-                <span
-                  className={cn(
-                    "absolute inset-y-2 left-1 w-[5px] rounded-full bg-transparent transition duration-300",
-                    isActive && "bg-[--metis-brass-soft] shadow-[0_0_24px_rgba(224,183,111,0.5)]",
-                  )}
-                />
-                <span
-                  className={cn(
-                    "mt-0.5 h-2 w-2 shrink-0 rounded-full border border-white/10 bg-white/10 shadow-[0_0_0_3px_rgba(255,255,255,0.02)]",
-                    isActive && "border-[--metis-brass-soft]/70 bg-[--metis-brass-soft] shadow-[0_0_0_4px_rgba(224,183,111,0.16)]",
-                  )}
-                />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <span
-                      className={cn(
-                        "font-medium text-[--metis-paper]",
-                        isCompact ? "text-[0.78rem] leading-snug" : "text-sm",
-                        isActive && "text-white",
-                      )}
-                    >
-                      {item.shortLabel}
-                    </span>
-                    <ChevronRight
-                      className={cn(
-                        "h-3.5 w-3.5 shrink-0 text-[--metis-ink-soft] transition duration-300",
-                        isActive ? "translate-x-0 text-[--metis-brass-soft]" : "group-hover:translate-x-0.5",
-                      )}
-                    />
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
+        <div className="space-y-2">
+          {items.map((item) => (
+            <div key={item.id}>{renderNavItem({ href: item.href, label: item.label, isActive: item.isActive })}</div>
+          ))}
         </div>
       </div>
     );
@@ -341,99 +340,39 @@ export function MetisShell({
             </div>
 
             <nav className="space-y-5">
-              {renderGlobalNavGroup("Work")}
+              {renderNavGroup({
+                group: "Work",
+                activeGroupLabel: activeGroup,
+                items: workNav
+                  .filter(globalNavItemVisible)
+                  .map((i) => ({ id: i.id, href: navHrefForItem(i), label: i.shortLabel, isActive: i.path === activePath })),
+              })}
 
-              {issueRoutePrefix ? (
-                <div className="space-y-2 rounded-[1.55rem] border border-[rgba(224,183,111,0.18)] bg-[linear-gradient(180deg,rgba(224,183,111,0.05),rgba(0,0,0,0.12))] px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-                  <div className="flex items-center justify-between gap-3 px-1">
-                    <p className="text-[0.62rem] uppercase tracking-[0.28em] text-[--metis-brass-soft]">Current issue</p>
-                    <span className="rounded-full border border-[--metis-brass]/20 bg-[--metis-brass]/10 px-2 py-0.5 text-[0.52rem] uppercase tracking-[0.26em] text-[--metis-brass-soft]">
-                      Workspace first
-                    </span>
-                  </div>
+              {issueRoutePrefix
+                ? renderNavGroup({
+                    group: "Current issue",
+                    items: [issueWorkspacePrimaryNav[0], ...issueToolsNav].map((i) => ({
+                      id: i.id,
+                      href: issueHrefForItem(i),
+                      label: i.shortLabel,
+                      isActive: i.path === activePath,
+                    })),
+                  })
+                : renderNavGroup({
+                    group: "All issues tools",
+                    activeGroupLabel: activeGroup,
+                    items: allIssuesToolsNav
+                      .filter(globalNavItemVisible)
+                      .map((i) => ({ id: i.id, href: navHrefForItem(i), label: i.shortLabel, isActive: i.path === activePath })),
+                  })}
 
-                  {(() => {
-                    const renderIssueLink = (item: IssueScopedNavItem, variant: "primary" | "tool") => {
-                      const href = issueHrefForItem(item);
-                      const isActive = item.path === activePath;
-
-                      const base =
-                        "group relative flex items-start gap-3 overflow-hidden rounded-[1.3rem] border px-4 py-3 transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60";
-                      const active =
-                        "border-[rgba(224,183,111,0.48)] bg-[linear-gradient(135deg,rgba(224,183,111,0.28),rgba(78,55,20,0.76))] ring-1 ring-[rgba(224,183,111,0.3)] shadow-[0_28px_72px_rgba(0,0,0,0.42),inset_0_1px_0_rgba(255,255,255,0.1)]";
-                      const inactivePrimary = "border-white/6 bg-[rgba(0,0,0,0.16)] hover:border-white/12 hover:bg-[rgba(255,255,255,0.045)]";
-                      const inactiveTool = "border-white/5 bg-[rgba(0,0,0,0.12)] hover:border-white/10 hover:bg-[rgba(255,255,255,0.04)]";
-
-                      return (
-                        <Link
-                          key={item.id}
-                          href={href}
-                          className={cn(base, isActive ? active : variant === "primary" ? inactivePrimary : inactiveTool)}
-                        >
-                          <span
-                            className={cn(
-                              "absolute inset-y-2 left-1 w-[6px] rounded-full bg-transparent transition duration-300",
-                              isActive && "bg-[--metis-brass-soft] shadow-[0_0_28px_rgba(224,183,111,0.5)]",
-                            )}
-                          />
-                          <span
-                            className={cn(
-                              "mt-1 h-2.5 w-2.5 rounded-full border border-white/10 bg-white/10 shadow-[0_0_0_4px_rgba(255,255,255,0.02)]",
-                              isActive &&
-                                "border-[--metis-brass-soft]/70 bg-[--metis-brass-soft] shadow-[0_0_0_5px_rgba(224,183,111,0.16)]",
-                            )}
-                          />
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center justify-between gap-4">
-                              <span
-                                className={cn(
-                                  variant === "primary" ? "text-sm font-medium text-[--metis-paper]" : "text-[0.82rem] font-medium text-[--metis-paper-muted]",
-                                  isActive && "text-white",
-                                )}
-                              >
-                                {item.shortLabel}
-                              </span>
-                              <ChevronRight
-                                className={cn(
-                                  "h-4 w-4 text-[--metis-ink-soft] transition duration-300",
-                                  isActive ? "translate-x-0 text-[--metis-brass-soft]" : "group-hover:translate-x-0.5",
-                                )}
-                              />
-                            </div>
-                          </div>
-                        </Link>
-                      );
-                    };
-
-                    return (
-                      <div className="space-y-3">
-                        {renderIssueLink(issueWorkspacePrimaryNav[0], "primary")}
-
-                        <div className="pt-1">
-                          <p className="px-1 text-[0.56rem] font-medium uppercase tracking-[0.22em] text-[rgba(176,171,160,0.62)]">Issue tools</p>
-
-                          <div className="mt-2">
-                            <p className="px-1 pb-1.5 text-[0.5rem] font-medium uppercase tracking-[0.2em] text-[rgba(176,171,160,0.5)]">Review &amp; output</p>
-                            <div className="space-y-1.5 border-l border-white/8 pl-2">
-                              {issueOutputToolsNav.map((item) => renderIssueLink(item, "tool"))}
-                            </div>
-                          </div>
-
-                          <div className="mt-2.5">
-                            <p className="px-1 pb-1.5 text-[0.5rem] font-medium uppercase tracking-[0.2em] text-[rgba(176,171,160,0.5)]">Record pages</p>
-                            <div className="space-y-1.5 border-l border-white/8 pl-2">
-                              {issueRecordToolsNav.map((item) => renderIssueLink(item, "tool"))}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })()}
-                </div>
-              ) : null}
-
-              {renderGlobalNavGroup("Settings")}
-              {renderGlobalNavGroup("All issues tools")}
+              {renderNavGroup({
+                group: "Settings",
+                activeGroupLabel: activeGroup,
+                items: settingsNav
+                  .filter(globalNavItemVisible)
+                  .map((i) => ({ id: i.id, href: navHrefForItem(i), label: i.shortLabel, isActive: i.path === activePath })),
+              })}
             </nav>
           </div>
 
@@ -451,7 +390,7 @@ export function MetisShell({
                 </div>
                 <div className="grid grid-cols-2 gap-3 text-xs text-[--metis-paper-muted]">
                   <div className="rounded-2xl border border-white/8 bg-[rgba(0,0,0,0.16)] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
-                    <div className="text-[0.68rem] uppercase tracking-[0.2em] text-[--metis-ink-soft]">Clarification gaps</div>
+                  <div className="text-[0.68rem] uppercase tracking-[0.2em] text-[--metis-ink-soft]">Gaps</div>
                     <div className="mt-2 text-xl text-[--metis-paper]">{activeIssue?.openGapsCount ?? "—"}</div>
                   </div>
                   <div className="rounded-2xl border border-white/8 bg-[rgba(0,0,0,0.16)] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
