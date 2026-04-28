@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const MessageVariantTemplateIdSchema = z.literal("external_customer_resident_student");
+export const MessageVariantTemplateIdSchema = z.enum(["external_customer_resident_student", "internal_staff_update"]);
 export type MessageVariantTemplateId = z.infer<typeof MessageVariantTemplateIdSchema>;
 
 export const MessageVariantSectionSchema = z.object({
@@ -10,32 +10,49 @@ export const MessageVariantSectionSchema = z.object({
 });
 export type MessageVariantSection = z.infer<typeof MessageVariantSectionSchema>;
 
-export const MessageVariantArtifactSchema = z.object({
-  templateId: MessageVariantTemplateIdSchema,
-  metadata: z.object({
-    publicHeadline: z.string(),
-    lastRevisionLabel: z.string(),
-    openGapsLabel: z.string(),
-    audienceLabel: z.string(),
-    lensSource: z.union([
-      z.literal("issue_stakeholder"),
-      z.literal("issue_audience_only"),
-      z.literal("stakeholder_group"),
-    ]),
-    issueLevelAudienceNote: z.string().nullable(),
-    /** Present when using an organisation audience group (new rows). */
-    stakeholderGroupId: z.string().uuid().nullable().optional(),
-    /** True when IssueStakeholder row supplied issue-specific lens fields used in copy. */
-    issueSpecificLensApplied: z.boolean().optional(),
-    /** e.g. defaults-only message when no IssueStakeholder row. */
-    lensEnrichmentNote: z.string().nullable().optional(),
+const CommonArtifactMetadataSchema = z.object({
+  publicHeadline: z.string(),
+  lastRevisionLabel: z.string(),
+  openGapsLabel: z.string(),
+  audienceLabel: z.string(),
+  lensSource: z.union([z.literal("issue_stakeholder"), z.literal("issue_audience_only"), z.literal("stakeholder_group")]),
+  issueLevelAudienceNote: z.string().nullable(),
+  /** Present when using an organisation audience group. */
+  stakeholderGroupId: z.string().uuid().nullable().optional(),
+  /** True when IssueStakeholder row supplied issue-specific lens fields used in copy. */
+  issueSpecificLensApplied: z.boolean().optional(),
+  /** e.g. defaults-only message when no IssueStakeholder row. */
+  lensEnrichmentNote: z.string().nullable().optional(),
+});
+
+const GuardrailsSchema = z.object({
+  mustAvoid: z.array(z.string()),
+  toneNotes: z.string(),
+});
+
+export const ExternalCustomerResidentStudentArtifactSchema = z.object({
+  templateId: z.literal("external_customer_resident_student"),
+  metadata: CommonArtifactMetadataSchema,
+  sections: z.array(MessageVariantSectionSchema),
+  guardrails: GuardrailsSchema,
+});
+export type ExternalCustomerResidentStudentArtifact = z.infer<typeof ExternalCustomerResidentStudentArtifactSchema>;
+
+export const InternalStaffUpdateArtifactSchema = z.object({
+  templateId: z.literal("internal_staff_update"),
+  metadata: CommonArtifactMetadataSchema.extend({
+    /** Explicit internal-only caution for observations/evidence. */
+    internalNotesLabel: z.string().optional(),
   }),
   sections: z.array(MessageVariantSectionSchema),
-  guardrails: z.object({
-    mustAvoid: z.array(z.string()),
-    toneNotes: z.string(),
-  }),
+  guardrails: GuardrailsSchema,
 });
+export type InternalStaffUpdateArtifact = z.infer<typeof InternalStaffUpdateArtifactSchema>;
+
+export const MessageVariantArtifactSchema = z.discriminatedUnion("templateId", [
+  ExternalCustomerResidentStudentArtifactSchema,
+  InternalStaffUpdateArtifactSchema,
+]);
 export type MessageVariantArtifact = z.infer<typeof MessageVariantArtifactSchema>;
 
 export const MessageVariantRecordSchema = z.object({

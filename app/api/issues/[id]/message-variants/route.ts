@@ -17,9 +17,11 @@ import {
   generateExternalCustomerResidentStudentArtifact,
   type ExternalAudienceInput,
 } from "@/lib/messages/generateExternalCustomerUpdate";
+import {
+  generateInternalStaffUpdateArtifact,
+  type AudienceInput as InternalAudienceInput,
+} from "@/lib/messages/generateInternalStaffUpdate";
 import { revalidatePath } from "next/cache";
-
-const TEMPLATE: MessageVariantTemplateId = "external_customer_resident_student";
 
 function serializeMessageVariant(row: {
   id: string;
@@ -56,7 +58,7 @@ function whereForLens(stakeholderGroupId: string | null): { stakeholderGroupId: 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id: issueId } = await params;
   const url = new URL(request.url);
-  const templateRaw = url.searchParams.get("templateId") ?? TEMPLATE;
+  const templateRaw = url.searchParams.get("templateId") ?? "external_customer_resident_student";
   const parsedTemplate = MessageVariantTemplateIdSchema.safeParse(templateRaw);
   if (!parsedTemplate.success) {
     return NextResponse.json({ error: "Invalid templateId", issues: parsedTemplate.error.issues }, { status: 400 });
@@ -125,16 +127,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: "Invalid request", issues: parsed.error.issues }, { status: 400 });
   }
 
-  if (parsed.data.templateId !== TEMPLATE) {
-    return NextResponse.json({ error: "Unsupported templateId" }, { status: 400 });
-  }
-
   const issue = await prisma.issue.findUnique({ where: { id: issueId } });
   if (!issue) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const stakeholderGroupId = parsed.data.stakeholderGroupId ?? null;
 
   let audience: ExternalAudienceInput;
+  let internalAudience: InternalAudienceInput;
   let issueLens: IssueStakeholder | null = null;
   let group: StakeholderGroup | null = null;
 
@@ -147,17 +146,20 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       where: { issueId, stakeholderGroupId: group.id },
     });
     audience = { kind: "group", group, issueLens };
+    internalAudience = { kind: "group", group, issueLens };
   } else {
     audience = { kind: "setup" };
+    internalAudience = { kind: "setup" };
   }
 
-  const [sources, gaps] = await Promise.all([
+  const [sources, gaps, internalInputs] = await Promise.all([
     prisma.source.findMany({ where: { issueId }, orderBy: [{ createdAt: "desc" }] }),
     prisma.gap.findMany({ where: { issueId }, orderBy: [{ updatedAt: "desc" }] }),
+    prisma.internalInput.findMany({ where: { issueId }, orderBy: [{ createdAt: "desc" }] }),
   ]);
 
   const latestForLens = await prisma.messageVariant.findFirst({
-    where: { issueId, templateId: TEMPLATE, ...whereForLens(stakeholderGroupId) },
+    where: { issueId, templateId: parsed.data.templateId, ...whereForLens(stakeholderGroupId) },
     orderBy: [{ versionNumber: "desc" }],
   });
 
@@ -170,24 +172,24 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   }
 
   const globalLatest = await prisma.messageVariant.findFirst({
-    where: { issueId, templateId: TEMPLATE },
+    where: { issueId, templateId: parsed.data.templateId },
     orderBy: [{ versionNumber: "desc" }],
   });
   const versionNumber = (globalLatest?.versionNumber ?? 0) + 1;
 
-  const artifact = generateExternalCustomerResidentStudentArtifact({
-    issue,
-    sources,
-    gaps,
-    audience,
-  });
+  const artifact = (() => {
+    if (parsed.data.templateId === "external_customer_resident_student") {
+      return generateExternalCustomerResidentStudentArtifact({ issue, sources, gaps, audience });
+    }
+    return generateInternalStaffUpdateArtifact({ issue, sources, gaps, internalInputs, audience: internalAudience });
+  })();
   const audienceSnapshot = buildAudienceSnapshot(issue, audience);
 
   const created = await prisma.$transaction(async (tx) => {
     const row = await tx.messageVariant.create({
       data: {
         issueId,
-        templateId: TEMPLATE,
+        templateId: parsed.data.templateId,
         versionNumber,
         generatedFromIssueUpdatedAt: issue.updatedAt,
         stakeholderGroupId,
@@ -200,7 +202,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     await writeIssueActivity(tx, {
       issueId,
       kind: IssueActivityKinds.message_variant_created,
-      summary: `Message variant ${row.versionNumber} (${TEMPLATE})`,
+      summary: `Message variant ${row.versionNumber} (${row.templateId})`,
       refType: "MessageVariant",
       refId: row.id,
     });

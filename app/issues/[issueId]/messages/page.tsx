@@ -4,13 +4,11 @@ import { redirect } from "next/navigation";
 import { MetisShell, SurfaceCard } from "@/components/MetisShell";
 import { prisma } from "@/lib/db/prisma";
 import { getIssueById } from "@/lib/issues/getIssueContext";
-import { MessageVariantArtifactSchema } from "@metis/shared/messageVariant";
+import { MessageVariantArtifactSchema, MessageVariantTemplateIdSchema } from "@metis/shared/messageVariant";
 
 import { MessagesPanel } from "./messages-panel";
 
 export const dynamic = "force-dynamic";
-
-const TEMPLATE = "external_customer_resident_student" as const;
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -29,6 +27,10 @@ export default async function IssueMessagesPage({
   const { issueId } = await params;
   const sp = (await searchParams) ?? {};
   const lensRaw = typeof sp.lens === "string" ? sp.lens : Array.isArray(sp.lens) ? sp.lens[0] : undefined;
+  const templateRaw =
+    typeof sp.template === "string" ? sp.template : Array.isArray(sp.template) ? sp.template[0] : undefined;
+  const parsedTemplate = MessageVariantTemplateIdSchema.safeParse(templateRaw ?? "external_customer_resident_student");
+  const templateId = parsedTemplate.success ? parsedTemplate.data : "external_customer_resident_student";
 
   const issue = await getIssueById(issueId);
   if (!issue) {
@@ -70,7 +72,7 @@ export default async function IssueMessagesPage({
   const latestRow = await prisma.messageVariant.findFirst({
     where: {
       issueId: issue.id,
-      templateId: TEMPLATE,
+      templateId,
       stakeholderGroupId: selectedStakeholderGroupId,
     },
     orderBy: [{ versionNumber: "desc" }],
@@ -119,15 +121,13 @@ export default async function IssueMessagesPage({
             This is not a leadership brief. External updates are deterministic copy derived from the issue record, sources, open gaps, and your
             audience lens. Internal observations are never quoted or paraphrased here.
           </p>
-          <p className="mt-2 text-[0.65rem] uppercase tracking-[0.18em] text-[--metis-ink-soft]">
-            Template · External / customer–resident–student update
-          </p>
         </div>
         <div className="px-6 py-6 sm:px-7 sm:py-7">
           <MessagesPanel
             issueId={issue.id}
             issueTitle={issue.title}
             issueUpdatedAt={issue.updatedAt.toISOString()}
+            selectedTemplateId={templateId}
             audienceGroupOptions={audienceGroupOptions}
             selectedStakeholderGroupId={selectedStakeholderGroupId}
             selectedLensLabel={selectedLensLabel}

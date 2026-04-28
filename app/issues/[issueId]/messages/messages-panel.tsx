@@ -5,8 +5,9 @@ import { useEffect, useMemo, useState } from "react";
 import { Copy } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import type { MessageVariantArtifact } from "@metis/shared/messageVariant";
+import type { MessageVariantArtifact, MessageVariantTemplateId } from "@metis/shared/messageVariant";
 import { renderMessageVariantMarkdown } from "@/lib/messages/generateExternalCustomerUpdate";
+import { renderInternalStaffUpdateMarkdown } from "@/lib/messages/generateInternalStaffUpdate";
 
 type AudienceGroupOption = { id: string; label: string };
 
@@ -23,6 +24,7 @@ export function MessagesPanel({
   issueId,
   issueTitle,
   issueUpdatedAt,
+  selectedTemplateId,
   audienceGroupOptions,
   selectedStakeholderGroupId,
   selectedLensLabel,
@@ -31,6 +33,7 @@ export function MessagesPanel({
   issueId: string;
   issueTitle: string;
   issueUpdatedAt: string;
+  selectedTemplateId: MessageVariantTemplateId;
   audienceGroupOptions: AudienceGroupOption[];
   /** null = setup audience note (`?lens=issue`). */
   selectedStakeholderGroupId: string | null;
@@ -54,6 +57,7 @@ export function MessagesPanel({
     initialLatest?.stakeholderGroupId,
     initialLatest?.issueStakeholderId,
     selectedStakeholderGroupId,
+    selectedTemplateId,
   ]);
 
   const inSync = useMemo(() => {
@@ -63,12 +67,20 @@ export function MessagesPanel({
 
   const markdown = useMemo(() => {
     if (!latest) return "";
+    if (latest.artifact.templateId === "internal_staff_update") {
+      return renderInternalStaffUpdateMarkdown(issueTitle, latest.artifact);
+    }
     return renderMessageVariantMarkdown(issueTitle, latest.artifact);
   }, [latest, issueTitle]);
 
   function navigateToLens(nextGroupId: string | null) {
     const q = nextGroupId === null ? "issue" : nextGroupId;
-    router.push(`${pathname}?lens=${encodeURIComponent(q)}`);
+    router.push(`${pathname}?template=${encodeURIComponent(selectedTemplateId)}&lens=${encodeURIComponent(q)}`);
+  }
+
+  function navigateToTemplate(nextTemplateId: MessageVariantTemplateId) {
+    const q = selectedStakeholderGroupId === null ? "issue" : selectedStakeholderGroupId;
+    router.push(`${pathname}?template=${encodeURIComponent(nextTemplateId)}&lens=${encodeURIComponent(q)}`);
   }
 
   async function generate() {
@@ -79,7 +91,7 @@ export function MessagesPanel({
         headers: { "content-type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
-          templateId: "external_customer_resident_student",
+          templateId: selectedTemplateId,
           stakeholderGroupId: selectedStakeholderGroupId,
         }),
       });
@@ -138,6 +150,26 @@ export function MessagesPanel({
       </div>
 
       <div className="rounded-[1.2rem] border border-white/10 bg-[rgba(0,0,0,0.14)] px-5 py-5 sm:px-6">
+        <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Template</p>
+        <p className="mt-2 text-sm leading-6 text-[--metis-paper-muted]">
+          Choose the message template. External updates avoid internal observations and source references; internal staff updates may include them.
+        </p>
+        <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <label className="block min-w-[min(100%,20rem)] flex-1 space-y-2">
+            <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Message template</span>
+            <select
+              value={selectedTemplateId}
+              onChange={(e) => navigateToTemplate(e.target.value as MessageVariantTemplateId)}
+              className="h-11 w-full rounded-full border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
+            >
+              <option value="external_customer_resident_student">External / customer–resident–student update</option>
+              <option value="internal_staff_update">Internal / staff update</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div className="rounded-[1.2rem] border border-white/10 bg-[rgba(0,0,0,0.14)] px-5 py-5 sm:px-6">
         <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Audience</p>
         <p className="mt-2 text-sm leading-6 text-[--metis-paper-muted]">
           Organisation audience groups come from settings. Optional per-issue lens notes enrich a group when present; otherwise library defaults
@@ -163,7 +195,15 @@ export function MessagesPanel({
             </select>
           </label>
           <Button type="button" className="h-11 rounded-full px-6" disabled={loading} onClick={() => void generate()}>
-            {loading ? "Generating…" : latest ? "Regenerate external update" : "Generate external update"}
+            {loading
+              ? "Generating…"
+              : latest
+                ? selectedTemplateId === "internal_staff_update"
+                  ? "Regenerate staff update"
+                  : "Regenerate external update"
+                : selectedTemplateId === "internal_staff_update"
+                  ? "Generate staff update"
+                  : "Generate external update"}
           </Button>
         </div>
       </div>
@@ -229,8 +269,8 @@ export function MessagesPanel({
         <div className="rounded-[1.2rem] border border-white/10 bg-[rgba(0,0,0,0.1)] px-5 py-5 sm:px-6">
           <p className="text-sm font-medium text-[--metis-paper]">No message generated for this audience yet.</p>
           <p className="mt-2 text-sm leading-7 text-[--metis-paper-muted]">
-            Click &quot;Generate external update&quot; to create deterministic copy for <span className="text-[--metis-paper]">{selectedLensLabel}</span>{" "}
-            from the current issue record.
+            Click &quot;Generate&quot; to create deterministic copy for <span className="text-[--metis-paper]">{selectedLensLabel}</span> from the
+            current issue record.
           </p>
         </div>
       )}
