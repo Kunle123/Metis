@@ -26,6 +26,12 @@ type LatestPayload = {
   artifact: MessageVariantArtifact;
 } | null;
 
+function normalizeBodyText(text: string) {
+  // Back-compat: older stored variants may contain literal "\n" sequences.
+  // Normalize so the review surface shows real line breaks.
+  return text.replaceAll("\\n", "\n");
+}
+
 export function MessagesPanel({
   issueId,
   issueTitle,
@@ -227,20 +233,12 @@ export function MessagesPanel({
                 <p className="font-[Cormorant_Garamond] text-2xl text-[--metis-paper]">{latest.artifact.metadata.publicHeadline}</p>
               </div>
 
-              <div className="grid gap-4 xl:grid-cols-2">
-                {latest.artifact.sections.map((s, idx) => {
-                  const bodyLen = (s.body ?? "").trim().length;
-                  const isLong = bodyLen > 520 || (s.body ?? "").includes("\n\n");
-                  return (
-                    <DenseSection
-                      key={s.id}
-                      title={s.title}
-                      className={idx === 0 ? `border-t-0 pt-0 ${isLong ? "xl:col-span-2" : ""}` : isLong ? "xl:col-span-2" : undefined}
-                    >
-                      <p className="whitespace-pre-line">{s.body}</p>
-                    </DenseSection>
-                  );
-                })}
+              <div className="space-y-4">
+                {latest.artifact.sections.map((s, idx) => (
+                  <DenseSection key={s.id} title={s.title} className={idx === 0 ? "border-t-0 pt-0" : undefined}>
+                    <p className="max-w-4xl whitespace-pre-line">{normalizeBodyText(s.body)}</p>
+                  </DenseSection>
+                ))}
               </div>
             </div>
           ) : (

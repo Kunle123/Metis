@@ -195,11 +195,9 @@ export default async function IssueBriefPage({
                   <p className="max-w-4xl text-base leading-7 text-[--metis-paper]">{artifact.lede}</p>
                 </header>
 
-                <div className="grid gap-4 xl:grid-cols-2">
+                <div className="space-y-5">
                   {artifact.full.sections.map((section, index) => {
                     const readiness = readinessFromConfidence(section.confidence);
-                    const bodyLen = (section.body ?? "").trim().length;
-                    const isLong = bodyLen > 520 || (section.body ?? "").includes("\n\n");
                     return (
                       <DenseSection
                         key={section.id}
@@ -218,9 +216,9 @@ export default async function IssueBriefPage({
                             </div>
                           </div>
                         }
-                        className={index === 0 ? `border-t-0 pt-0 ${isLong ? "xl:col-span-2" : ""}` : isLong ? "xl:col-span-2" : undefined}
+                        className={index === 0 ? "border-t-0 pt-0" : undefined}
                       >
-                        <p className="whitespace-pre-line">{section.body}</p>
+                        <p className="max-w-4xl whitespace-pre-line">{section.body}</p>
                       </DenseSection>
                     );
                   })}
@@ -233,20 +231,16 @@ export default async function IssueBriefPage({
                   <p className="max-w-4xl text-base leading-7 text-[--metis-paper]">{artifact.lede}</p>
                 </header>
 
-                <div className="grid gap-4 xl:grid-cols-2">
-                  {artifact.executive.blocks.map((block, index) => {
-                    const bodyLen = (block.body ?? "").trim().length;
-                    const isLong = bodyLen > 520 || (block.body ?? "").includes("\n\n");
-                    return (
-                      <DenseSection
-                        key={`${block.label}-${index}`}
-                        title={<span className="font-[Cormorant_Garamond] text-[1.45rem] leading-tight text-[--metis-paper]">{block.label}</span>}
-                        className={index === 0 ? `border-t-0 pt-0 ${isLong ? "xl:col-span-2" : ""}` : isLong ? "xl:col-span-2" : undefined}
-                      >
-                        <p className="whitespace-pre-line">{block.body}</p>
-                      </DenseSection>
-                    );
-                  })}
+                <div className="space-y-5">
+                  {artifact.executive.blocks.map((block, index) => (
+                    <DenseSection
+                      key={`${block.label}-${index}`}
+                      title={<span className="font-[Cormorant_Garamond] text-[1.45rem] leading-tight text-[--metis-paper]">{block.label}</span>}
+                      className={index === 0 ? "border-t-0 pt-0" : undefined}
+                    >
+                      <p className="max-w-4xl whitespace-pre-line">{block.body}</p>
+                    </DenseSection>
+                  ))}
                 </div>
               </article>
             )

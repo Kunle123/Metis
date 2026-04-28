@@ -61,7 +61,7 @@ function bulletsFromParagraph(text: string) {
     .map((l) => l.trim())
     .filter(Boolean);
   if (!lines.length) return "- (No bullet lines parsed.)";
-  return lines.map((l) => `- ${l.replace(/^-+\\s*/, "")}`).join("\\n");
+  return lines.map((l) => `- ${l.replace(/^-+\s*/, "")}`).join("\n");
 }
 
 function genericUnderReviewBullets(openCount: number) {
@@ -114,7 +114,7 @@ export function generateMediaHoldingLineArtifact(input: MediaHoldingLineGenerati
   const holdingLine = (() => {
     if (hasConfirmed) {
       return (
-        "We are aware of an incident and are actively working to address it.\\n\\n" +
+        "We are aware of an incident and are actively working to address it.\n\n" +
         "We will provide updates through our official channels as we confirm more information."
       ).trim();
     }
@@ -122,23 +122,23 @@ export function generateMediaHoldingLineArtifact(input: MediaHoldingLineGenerati
     const lead = summary
       ? `We are aware of a reported issue related to: ${summary.replace(/\\s+/g, " ").trim()}.`
       : "We are aware of a reported issue and are investigating.";
-    return `${lead}\\n\\nWe will share more once we have confirmed information.`.trim();
+    return `${lead}\n\nWe will share more once we have confirmed information.`.trim();
   })();
 
   const confirmBlock = hasConfirmed
-    ? `What we can confirm:\\n${bulletsFromParagraph(confirmed)}`
-    : "What we can confirm:\\n- No confirmed facts are recorded yet.";
+    ? `What we can confirm:\n${bulletsFromParagraph(confirmed)}`
+    : "What we can confirm:\n- No confirmed facts are recorded yet.";
 
   const underReviewLines = genericUnderReviewBullets(open.length);
   const underReviewBlock = underReviewLines.length
-    ? `What is under review:\\n${underReviewLines.join("\\n")}`
-    : "What is under review:\\n- There are no open review items recorded yet.";
+    ? `What is under review:\n${underReviewLines.join("\n")}`
+    : "What is under review:\n- There are no open review items recorded yet.";
 
   const ifPressed =
-    "If pressed:\\n- We are actively investigating and will share updates once details are confirmed.\\n- We are prioritising service stability and accurate information over speculation.";
+    "If pressed:\n- We are actively investigating and will share updates once details are confirmed.\n- We are prioritising service stability and accurate information over speculation.";
 
   const linesToAvoid =
-    "Lines to avoid:\\n- Speculating on cause, blame, or timelines.\\n- Sharing unverified claims.\\n- Referencing internal evidence, logs, or source codes.\\n- Quoting internal notes or observations.";
+    "Lines to avoid:\n- Speculating on cause, blame, or timelines.\n- Sharing unverified claims.\n- Referencing internal evidence, logs, or source codes.\n- Quoting internal notes or observations.";
 
   const mustAvoid: string[] = [
     "Do not quote or paraphrase internal observations in external channels.",
