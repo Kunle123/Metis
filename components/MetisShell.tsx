@@ -174,6 +174,16 @@ function filterGlobalNavItems(_issueRoutePrefix: string | undefined) {
   return (_item: (typeof primaryNav)[number]) => true;
 }
 
+function formatLondonDateTime(value: Date | null | undefined) {
+  if (!value) return "—";
+  // Deterministic SSR/CSR formatting to avoid hydration mismatches from locale/timezone differences.
+  return new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/London",
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(value);
+}
+
 export function MetisShell({
   activePath,
   pageTitle,
@@ -447,7 +457,7 @@ export function MetisShell({
                   <div className="rounded-2xl border border-white/8 bg-[rgba(0,0,0,0.16)] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
                     <div className="text-[0.68rem] uppercase tracking-[0.2em] text-[--metis-ink-soft]">Updated</div>
                     <div className="mt-2 text-sm text-[--metis-paper]">
-                      {activeIssue?.updatedAt ? activeIssue.updatedAt.toLocaleString() : "—"}
+                      {formatLondonDateTime(activeIssue?.updatedAt)}
                     </div>
                   </div>
                 </div>
