@@ -134,6 +134,7 @@ export default async function IssueExportPage({
             </Button>
             <ReviewRailCard
               title="Message variants"
+              tone="info"
               meta={
                 <p className="text-sm leading-6 text-[--metis-paper-muted]">
                   You can still draft a reviewable external update from the issue record (no brief required).
@@ -209,6 +210,7 @@ export default async function IssueExportPage({
           <div className="space-y-6 px-6 py-6 sm:px-7 sm:py-7">
             <ReviewRailCard
               title="Message variants"
+              tone="info"
               meta={
                 <p className="text-sm leading-6 text-[--metis-paper-muted]">
                   Draft a reviewable external update from the issue record and audience lens—separate from briefs.
@@ -342,7 +344,7 @@ export default async function IssueExportPage({
 
         <SurfaceCard className="metis-support-surface overflow-hidden">
           <div className="space-y-4 px-5 py-5">
-            <ReviewRailCard title="Preview" meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Quick check before exporting.</p>}>
+            <ReviewRailCard title="Preview" tone="info" meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Quick check before exporting.</p>}>
               <div className="rounded-[1.6rem] border border-[--metis-brass]/20 bg-[linear-gradient(180deg,rgba(255,251,242,0.98),rgba(250,246,237,0.96))] p-5 text-[--metis-dark] shadow-[0_20px_60px_rgba(0,0,0,0.18)]">
                 <div className="flex items-center justify-between gap-4 border-b border-[rgba(36,31,23,0.08)] pb-4">
                   <div>
@@ -363,6 +365,7 @@ export default async function IssueExportPage({
 
             <CollapsibleSection
               defaultOpen={false}
+              className="border-[--metis-info-border] bg-[--metis-info-bg]"
               summary={
                 <div className="min-w-0">
                   <p className="text-[0.58rem] uppercase tracking-[0.16em] text-[rgba(176,171,160,0.58)]">Recent circulation record</p>
@@ -401,6 +404,7 @@ export default async function IssueExportPage({
 
             <CollapsibleSection
               defaultOpen={false}
+              className="border-[--metis-info-border] bg-[--metis-info-bg]"
               summary={
                 <div className="min-w-0">
                   <p className="text-[0.58rem] uppercase tracking-[0.16em] text-[rgba(176,171,160,0.58)]">Circulation checks</p>
@@ -425,7 +429,7 @@ export default async function IssueExportPage({
               </div>
             </CollapsibleSection>
 
-            <ReviewRailCard title="Links" meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Jump back to generation and change tracking.</p>}>
+            <ReviewRailCard title="Links" tone="info" meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Jump back to generation and change tracking.</p>}>
               <div className="grid gap-3">
                 <Button asChild variant="outline" className="w-full rounded-full">
                   <Link href={`/issues/${issue.id}/brief?mode=${mode}`}>

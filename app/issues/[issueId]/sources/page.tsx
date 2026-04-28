@@ -134,7 +134,7 @@ export default async function IssueSourcesPage({ params }: { params: Promise<{ i
           </div>
 
           <div className="space-y-6 px-6 py-6 sm:px-7 sm:py-7">
-            <div className="rounded-[1.25rem] border border-white/10 bg-[rgba(255,255,255,0.035)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+            <div className="rounded-[1.25rem] border border-[--metis-info-border] bg-[rgba(255,255,255,0.03)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
               {sources.map((item) => {
                 const usageLabel = item.tier === "Major media" || item.tier === "Market signal" ? "Signal" : "In brief";
                 const tier = item.tier as SourceTier;
@@ -201,7 +201,7 @@ export default async function IssueSourcesPage({ params }: { params: Promise<{ i
                         <div className="pt-1">
                           <CollapsibleSection
                             defaultOpen={false}
-                            className="bg-[rgba(0,0,0,0.14)] px-4 py-3"
+                            className="border-[--metis-info-border] bg-[--metis-info-bg] px-4 py-3"
                             summary={
                               <div className="flex items-center justify-between gap-3">
                                 <div className="min-w-0">
@@ -265,6 +265,7 @@ export default async function IssueSourcesPage({ params }: { params: Promise<{ i
           <div className="space-y-4 px-5 py-5">
             <ReviewRailCard
               title="Review posture"
+              tone="info"
               meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Quick status signals for the brief sections.</p>}
             >
               <div className="space-y-3">
@@ -284,6 +285,7 @@ export default async function IssueSourcesPage({ params }: { params: Promise<{ i
 
             <ReviewRailCard
               title="Conflicts"
+              tone="info"
               meta={
                 <div className="flex items-center gap-2 text-[--metis-paper]">
                   <ShieldCheck className="h-4 w-4 text-[--metis-brass]" />
@@ -294,7 +296,7 @@ export default async function IssueSourcesPage({ params }: { params: Promise<{ i
               <div />
             </ReviewRailCard>
 
-            <ReviewRailCard title="Next" meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Jump to the full brief for output prep.</p>}>
+            <ReviewRailCard title="Next" tone="info" meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Jump to the full brief for output prep.</p>}>
               <div className="grid gap-3">
                 <Button asChild variant="outline" className="w-full rounded-full">
                   <Link href={`/issues/${issue.id}/brief?mode=full`}>
