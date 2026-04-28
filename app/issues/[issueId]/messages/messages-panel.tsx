@@ -9,6 +9,11 @@ import type { MessageVariantArtifact, MessageVariantTemplateId } from "@metis/sh
 import { renderMessageVariantMarkdown } from "@/lib/messages/generateExternalCustomerUpdate";
 import { renderInternalStaffUpdateMarkdown } from "@/lib/messages/generateInternalStaffUpdate";
 import { renderMediaHoldingLineMarkdown } from "@/lib/messages/generateMediaHoldingLine";
+import { CollapsibleSection } from "@/components/review/CollapsibleSection";
+import { DenseSection } from "@/components/review/DenseSection";
+import { ReviewBanner } from "@/components/review/ReviewBanner";
+import { ReviewRailCard } from "@/components/review/ReviewRailCard";
+import { ReviewToolbar } from "@/components/review/ReviewToolbar";
 
 type AudienceGroupOption = { id: string; label: string };
 
@@ -151,18 +156,9 @@ export function MessagesPanel({
 
   return (
     <div className="space-y-5">
-      <div className="rounded-[1.2rem] border border-white/10 bg-[rgba(0,0,0,0.14)] px-4 py-4 sm:px-5">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div className="min-w-0 flex-1 space-y-3">
-            <div className="rounded-full border border-amber-400/25 bg-amber-950/15 px-4 py-2 text-xs leading-5 text-amber-50/90">
-              <span className="font-medium uppercase tracking-[0.16em] text-amber-200/90">Draft for review</span>
-              <span className="text-amber-50/90">
-                {" "}
-                · Not approved for circulation. Check for sensitive, legal, personal, security, or unverified claims before using this draft in any
-                channel.
-              </span>
-            </div>
-
+      <ReviewToolbar
+        left={
+          <div className="space-y-3">
             <div className="grid gap-3 lg:grid-cols-2">
               <label className="space-y-1.5">
                 <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Template</span>
@@ -201,112 +197,139 @@ export function MessagesPanel({
               </label>
             </div>
           </div>
+        }
+        right={
+          <div className="flex flex-wrap items-center gap-2 lg:justify-end">
+            <Button type="button" className="h-10 rounded-full px-5" disabled={loading} onClick={() => void generate()}>
+              {loading
+                ? "Generating…"
+                : latest
+                  ? selectedTemplateId === "internal_staff_update"
+                    ? "Regenerate staff update"
+                    : selectedTemplateId === "media_holding_line"
+                      ? "Regenerate holding line"
+                      : "Regenerate external update"
+                  : selectedTemplateId === "internal_staff_update"
+                    ? "Generate staff update"
+                    : selectedTemplateId === "media_holding_line"
+                      ? "Generate holding line"
+                      : "Generate external update"}
+            </Button>
+          </div>
+        }
+      />
 
-          <div className="flex shrink-0 flex-col gap-3 lg:items-end">
-            <div className="flex flex-wrap items-center gap-2">
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="min-w-0">
+          {latest ? (
+            <div className="space-y-4">
+              <div className="rounded-[1.2rem] border border-white/10 bg-[rgba(0,0,0,0.12)] px-4 py-4 sm:px-5">
+                <p className="font-[Cormorant_Garamond] text-2xl text-[--metis-paper]">{latest.artifact.metadata.publicHeadline}</p>
+              </div>
+
+              <div className="space-y-4">
+                {latest.artifact.sections.map((s) => (
+                  <DenseSection key={s.id} title={s.title}>
+                    <p className="whitespace-pre-line">{s.body}</p>
+                  </DenseSection>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-[1.2rem] border border-white/10 bg-[rgba(0,0,0,0.1)] px-4 py-4 sm:px-5">
+              <p className="text-sm font-medium text-[--metis-paper]">No draft saved for this template + audience yet.</p>
+              <p className="mt-2 text-sm leading-7 text-[--metis-paper-muted]">
+                Click &quot;Generate&quot; to create deterministic copy for <span className="text-[--metis-paper]">{selectedLensLabel}</span>.
+              </p>
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-4">
+          <ReviewRailCard
+            title="Draft status"
+            meta={
+              <ReviewBanner
+                title="Draft for review"
+                body="Not approved for circulation. Check for sensitive, legal, personal, security, or unverified claims before using this draft in any channel."
+                tone="warning"
+              />
+            }
+          >
+            <div className="space-y-3 text-sm leading-6 text-[--metis-paper-muted]">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Lens</span>
+                <span className="text-[--metis-paper]">{selectedLensLabel}</span>
+              </div>
               {latest ? (
                 <>
-                  <span className="text-[0.62rem] uppercase tracking-[0.2em] text-[--metis-ink-soft]">Version {latest.versionNumber}</span>
-                  <span
-                    className={`rounded-full border px-3 py-1 text-[0.62rem] font-medium uppercase tracking-[0.18em] ${
-                      inSync
-                        ? "border-emerald-400/35 bg-[rgba(18,83,58,0.45)] text-emerald-50"
-                        : "border-sky-400/35 bg-[rgba(19,86,118,0.55)] text-sky-50"
-                    }`}
-                  >
-                    {inSync ? "Up to date" : "Stale"}
-                  </span>
+                  <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-3">
+                    <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Version</span>
+                    <span className="text-[--metis-paper]">{latest.versionNumber}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-3">
+                    <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Status</span>
+                    <span
+                      className={`rounded-full border px-3 py-1 text-[0.62rem] font-medium uppercase tracking-[0.18em] ${
+                        inSync
+                          ? "border-emerald-400/35 bg-[rgba(18,83,58,0.45)] text-emerald-50"
+                          : "border-sky-400/35 bg-[rgba(19,86,118,0.55)] text-sky-50"
+                      }`}
+                    >
+                      {inSync ? "Up to date" : "Stale"}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-3">
+                    <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Open gaps</span>
+                    <span className="text-[--metis-paper]">{latest.artifact.metadata.openGapsLabel}</span>
+                  </div>
                 </>
-              ) : (
-                <span className="text-[0.62rem] uppercase tracking-[0.2em] text-[--metis-ink-soft]">No saved draft</span>
-              )}
+              ) : null}
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
-              <Button
-                type="button"
-                className="h-10 rounded-full px-5"
-                disabled={loading}
-                onClick={() => void generate()}
-              >
-                {loading
-                  ? "Generating…"
-                  : latest
-                    ? selectedTemplateId === "internal_staff_update"
-                      ? "Regenerate staff update"
-                      : "Regenerate external update"
-                    : selectedTemplateId === "internal_staff_update"
-                      ? "Generate staff update"
-                      : "Generate external update"}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                className="h-10 rounded-full"
-                disabled={!markdown}
-                onClick={() => void copyMd()}
-              >
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <Button type="button" variant="outline" className="h-10 rounded-full" disabled={!markdown} onClick={() => void copyMd()}>
                 <Copy className="mr-2 h-4 w-4" />
                 {copyState === "copied" ? "Copied" : copyState === "error" ? "Copy failed" : "Copy Markdown"}
               </Button>
             </div>
-          </div>
+          </ReviewRailCard>
+
+          {latest?.artifact.metadata.issueLevelAudienceNote ? (
+            <ReviewRailCard title="Setup note" meta={<span>{latest.artifact.metadata.issueLevelAudienceNote}</span>}>
+              <div />
+            </ReviewRailCard>
+          ) : null}
+
+          {latest?.artifact.metadata.lensEnrichmentNote ? (
+            <ReviewRailCard title="Lens note" meta={<span>{latest.artifact.metadata.lensEnrichmentNote}</span>}>
+              <div />
+            </ReviewRailCard>
+          ) : null}
+
+          {latest ? (
+            <CollapsibleSection
+              summary={
+                <div className="flex items-center justify-between gap-3">
+                  <h3 className="text-[0.7rem] font-medium uppercase tracking-[0.22em] text-[rgba(176,171,160,0.72)]">
+                    Guardrails (internal)
+                  </h3>
+                  <span className="text-xs text-[--metis-paper-muted]">Show</span>
+                </div>
+              }
+            >
+              <div className="space-y-3">
+                <p className="text-sm leading-7 text-[--metis-paper-muted]">{latest.artifact.guardrails.toneNotes}</p>
+                <ul className="list-disc space-y-1 pl-5 text-sm leading-7 text-[--metis-paper-muted]">
+                  {latest.artifact.guardrails.mustAvoid.map((m) => (
+                    <li key={m}>{m}</li>
+                  ))}
+                </ul>
+              </div>
+            </CollapsibleSection>
+          ) : null}
         </div>
       </div>
-
-      {latest ? (
-        <div className="space-y-4">
-          <div className="rounded-[1.2rem] border border-white/10 bg-[rgba(0,0,0,0.12)] px-4 py-4 sm:px-5">
-            <p className="font-[Cormorant_Garamond] text-2xl text-[--metis-paper]">{latest.artifact.metadata.publicHeadline}</p>
-            <p className="mt-1 text-sm text-[--metis-paper-muted]">
-              Audience: {latest.artifact.metadata.audienceLabel} · {latest.artifact.metadata.openGapsLabel}
-            </p>
-            {latest.artifact.metadata.issueLevelAudienceNote ? (
-              <p className="mt-3 rounded-xl border border-amber-400/25 bg-amber-950/25 px-4 py-3 text-sm leading-6 text-amber-50/95">
-                {latest.artifact.metadata.issueLevelAudienceNote}
-              </p>
-            ) : null}
-            {latest.artifact.metadata.lensEnrichmentNote ? (
-              <p className="mt-3 rounded-xl border border-sky-400/20 bg-sky-950/20 px-4 py-3 text-sm leading-6 text-sky-50/95">
-                {latest.artifact.metadata.lensEnrichmentNote}
-              </p>
-            ) : null}
-          </div>
-
-          <div className="space-y-4">
-            {latest.artifact.sections.map((s) => (
-              <section key={s.id} className="space-y-1.5 border-t border-white/8 pt-4 first:border-t-0 first:pt-0">
-                <h3 className="text-[0.7rem] font-medium uppercase tracking-[0.22em] text-[rgba(176,171,160,0.72)]">{s.title}</h3>
-                <p className="whitespace-pre-line text-sm leading-7 text-[--metis-paper]">{s.body}</p>
-              </section>
-            ))}
-          </div>
-
-          <details className="rounded-[1.2rem] border border-white/10 bg-[rgba(0,0,0,0.18)] px-4 py-4 sm:px-5">
-            <summary className="cursor-pointer list-none">
-              <div className="flex items-center justify-between gap-3">
-                <h3 className="text-[0.7rem] font-medium uppercase tracking-[0.22em] text-[rgba(176,171,160,0.72)]">Guardrails (internal)</h3>
-                <span className="text-xs text-[--metis-paper-muted]">Show</span>
-              </div>
-            </summary>
-            <div className="mt-3 space-y-3">
-              <p className="text-sm leading-7 text-[--metis-paper-muted]">{latest.artifact.guardrails.toneNotes}</p>
-              <ul className="list-disc space-y-1 pl-5 text-sm leading-7 text-[--metis-paper-muted]">
-                {latest.artifact.guardrails.mustAvoid.map((m) => (
-                  <li key={m}>{m}</li>
-                ))}
-              </ul>
-            </div>
-          </details>
-        </div>
-      ) : (
-        <div className="rounded-[1.2rem] border border-white/10 bg-[rgba(0,0,0,0.1)] px-4 py-4 sm:px-5">
-          <p className="text-sm font-medium text-[--metis-paper]">No draft saved for this template + audience yet.</p>
-          <p className="mt-2 text-sm leading-7 text-[--metis-paper-muted]">
-            Click &quot;Generate&quot; to create deterministic copy for <span className="text-[--metis-paper]">{selectedLensLabel}</span>.
-          </p>
-        </div>
-      )}
     </div>
   );
 }
