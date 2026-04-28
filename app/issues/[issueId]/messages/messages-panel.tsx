@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import type { MessageVariantArtifact, MessageVariantTemplateId } from "@metis/shared/messageVariant";
 import { renderMessageVariantMarkdown } from "@/lib/messages/generateExternalCustomerUpdate";
 import { renderInternalStaffUpdateMarkdown } from "@/lib/messages/generateInternalStaffUpdate";
+import { renderMediaHoldingLineMarkdown } from "@/lib/messages/generateMediaHoldingLine";
 
 type AudienceGroupOption = { id: string; label: string };
 
@@ -69,6 +70,9 @@ export function MessagesPanel({
     if (!latest) return "";
     if (latest.artifact.templateId === "internal_staff_update") {
       return renderInternalStaffUpdateMarkdown(issueTitle, latest.artifact);
+    }
+    if (latest.artifact.templateId === "media_holding_line") {
+      return renderMediaHoldingLineMarkdown(issueTitle, latest.artifact);
     }
     return renderMessageVariantMarkdown(issueTitle, latest.artifact);
   }, [latest, issueTitle]);
@@ -141,7 +145,9 @@ export function MessagesPanel({
   const templateHelperText =
     selectedTemplateId === "internal_staff_update"
       ? "Internal draft: may include internal notes and evidence references. Internal notes are not confirmed facts. Review for sensitive or legally risky content before sharing."
-      : "External draft: uses issue summary/confirmed facts and uncertainty wording. Still requires human review for sensitive or legally risky content.";
+      : selectedTemplateId === "media_holding_line"
+        ? "Media draft: short holding line with confirmed facts only where possible; no observations or internal references. Review for sensitive or legally risky content before use."
+        : "External draft: uses issue summary/confirmed facts and uncertainty wording. Still requires human review for sensitive or legally risky content.";
 
   return (
     <div className="space-y-5">
@@ -167,6 +173,7 @@ export function MessagesPanel({
                 >
                   <option value="external_customer_resident_student">External / customer–resident–student update</option>
                   <option value="internal_staff_update">Internal / staff update</option>
+                  <option value="media_holding_line">Media / holding line</option>
                 </select>
                 <p className="text-xs leading-5 text-[--metis-paper-muted]">{templateHelperText}</p>
               </label>

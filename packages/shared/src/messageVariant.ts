@@ -1,6 +1,10 @@
 import { z } from "zod";
 
-export const MessageVariantTemplateIdSchema = z.enum(["external_customer_resident_student", "internal_staff_update"]);
+export const MessageVariantTemplateIdSchema = z.enum([
+  "external_customer_resident_student",
+  "internal_staff_update",
+  "media_holding_line",
+]);
 export type MessageVariantTemplateId = z.infer<typeof MessageVariantTemplateIdSchema>;
 
 export const MessageVariantSectionSchema = z.object({
@@ -49,9 +53,18 @@ export const InternalStaffUpdateArtifactSchema = z.object({
 });
 export type InternalStaffUpdateArtifact = z.infer<typeof InternalStaffUpdateArtifactSchema>;
 
+export const MediaHoldingLineArtifactSchema = z.object({
+  templateId: z.literal("media_holding_line"),
+  metadata: CommonArtifactMetadataSchema,
+  sections: z.array(MessageVariantSectionSchema),
+  guardrails: GuardrailsSchema,
+});
+export type MediaHoldingLineArtifact = z.infer<typeof MediaHoldingLineArtifactSchema>;
+
 export const MessageVariantArtifactSchema = z.discriminatedUnion("templateId", [
   ExternalCustomerResidentStudentArtifactSchema,
   InternalStaffUpdateArtifactSchema,
+  MediaHoldingLineArtifactSchema,
 ]);
 export type MessageVariantArtifact = z.infer<typeof MessageVariantArtifactSchema>;
 

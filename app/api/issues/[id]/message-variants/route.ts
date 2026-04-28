@@ -21,6 +21,10 @@ import {
   generateInternalStaffUpdateArtifact,
   type AudienceInput as InternalAudienceInput,
 } from "@/lib/messages/generateInternalStaffUpdate";
+import {
+  generateMediaHoldingLineArtifact,
+  type AudienceInput as MediaAudienceInput,
+} from "@/lib/messages/generateMediaHoldingLine";
 import { revalidatePath } from "next/cache";
 
 function serializeMessageVariant(row: {
@@ -134,6 +138,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   let audience: ExternalAudienceInput;
   let internalAudience: InternalAudienceInput;
+  let mediaAudience: MediaAudienceInput;
   let issueLens: IssueStakeholder | null = null;
   let group: StakeholderGroup | null = null;
 
@@ -147,9 +152,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     });
     audience = { kind: "group", group, issueLens };
     internalAudience = { kind: "group", group, issueLens };
+    mediaAudience = { kind: "group", group, issueLens };
   } else {
     audience = { kind: "setup" };
     internalAudience = { kind: "setup" };
+    mediaAudience = { kind: "setup" };
   }
 
   const [sources, gaps, internalInputs] = await Promise.all([
@@ -180,6 +187,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const artifact = (() => {
     if (parsed.data.templateId === "external_customer_resident_student") {
       return generateExternalCustomerResidentStudentArtifact({ issue, sources, gaps, audience });
+    }
+    if (parsed.data.templateId === "media_holding_line") {
+      return generateMediaHoldingLineArtifact({ issue, gaps, audience: mediaAudience });
     }
     return generateInternalStaffUpdateArtifact({ issue, sources, gaps, internalInputs, audience: internalAudience });
   })();
