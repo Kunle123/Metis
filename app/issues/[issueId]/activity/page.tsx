@@ -8,6 +8,7 @@ import { getIssueById } from "@/lib/issues/getIssueContext";
 export const dynamic = "force-dynamic";
 
 const KIND_LABELS: Record<string, string> = {
+  issue_created: "Issue · created",
   issue_triage_updated: "Issue · triage updated",
   brief_version_created: "Brief · new version",
   gap_created: "Gap · created",
