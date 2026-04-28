@@ -4,6 +4,10 @@ import { AlertTriangle, FileOutput, Library, RefreshCcw, ScanSearch } from "luci
 import { ConfidencePill, SurfaceCard, MetisShell } from "@/components/MetisShell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { CollapsibleSection } from "@/components/review/CollapsibleSection";
+import { DenseSection } from "@/components/review/DenseSection";
+import { ReviewRailCard } from "@/components/review/ReviewRailCard";
+import { ReviewToolbar } from "@/components/review/ReviewToolbar";
 import { prisma } from "@/lib/db/prisma";
 import { getIssueById } from "@/lib/issues/getIssueContext";
 import { BriefModeSchema, type BriefMode, type BriefConfidence, type BriefArtifact } from "@metis/shared/briefVersion";
@@ -152,33 +156,45 @@ export default async function IssueBriefPage({
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <SurfaceCard>
           <div className="border-b border-white/8 bg-[rgba(255,255,255,0.025)] px-6 py-5 sm:px-7">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-sm leading-6 text-[--metis-paper-muted]">Produce the executive output for the issue.</p>
-              <div className="flex flex-wrap items-center justify-end gap-3">
-                <BriefModeToggle issueId={issue.id} mode={mode} />
-                <GenerateBriefButton
-                  issueId={issue.id}
-                  mode={mode}
-                  label={hasBriefForMode ? "Regenerate brief" : "Generate brief"}
-                  syncHint={briefSyncHint}
-                />
-                <Button asChild className="rounded-full">
-                  <Link href={`/issues/${issue.id}/export?mode=${mode}`}>
-                    <FileOutput className="mr-2 h-4 w-4" />
-                    Prepare output
-                  </Link>
-                </Button>
-              </div>
-            </div>
+            <ReviewToolbar
+              className="border-0 bg-transparent px-0 py-0"
+              left={
+                <div className="space-y-1">
+                  <p className="text-sm leading-6 text-[--metis-paper-muted]">
+                    Produce the executive output for the issue.
+                  </p>
+                  {briefSyncHint ? (
+                    <p className="text-xs leading-5 text-[--metis-paper-muted]">{briefSyncHint}</p>
+                  ) : null}
+                </div>
+              }
+              right={
+                <div className="flex flex-wrap items-center justify-end gap-2">
+                  <BriefModeToggle issueId={issue.id} mode={mode} />
+                  <GenerateBriefButton
+                    issueId={issue.id}
+                    mode={mode}
+                    label={hasBriefForMode ? "Regenerate brief" : "Generate brief"}
+                    syncHint={briefSyncHint}
+                  />
+                  <Button asChild className="rounded-full">
+                    <Link href={`/issues/${issue.id}/export?mode=${mode}`}>
+                      <FileOutput className="mr-2 h-4 w-4" />
+                      Prepare output
+                    </Link>
+                  </Button>
+                </div>
+              }
+            />
           </div>
 
           {fromSetup === "setup" ? <IntakeSuggestionsPanel issueId={issue.id} /> : null}
 
           {artifact ? (
             mode === "full" ? (
-              <article className="space-y-8 px-6 py-6 sm:px-7 sm:py-7">
-                <header className="space-y-5 border-b border-white/8 pb-8">
-                  <p className="max-w-4xl text-lg leading-8 text-[--metis-paper]">{artifact.lede}</p>
+              <article className="space-y-6 px-6 py-6 sm:px-7 sm:py-7">
+                <header className="space-y-4 border-b border-white/8 pb-6">
+                  <p className="max-w-4xl text-base leading-7 text-[--metis-paper]">{artifact.lede}</p>
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[0.62rem] uppercase tracking-[0.14em] text-[rgba(176,171,160,0.56)]">
                     {artifactMetadata.map((item) => (
                       <div key={item.label} className="flex items-center gap-1.5">
@@ -189,39 +205,50 @@ export default async function IssueBriefPage({
                   </div>
                 </header>
 
-                <div className="space-y-8">
+                <div className="space-y-5">
                   {artifact.full.sections.map((section, index) => {
                     const readiness = readinessFromConfidence(section.confidence);
                     return (
-                      <section key={section.id} id={section.id} className={index === 0 ? "space-y-4" : "space-y-4 border-t border-white/8 pt-8"}>
-                        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                          <div className="space-y-2">
-                            <p className="text-[0.55rem] uppercase tracking-[0.14em] text-[rgba(176,171,160,0.44)]">0{index + 1}</p>
-                            <h3 className="font-[Cormorant_Garamond] text-[2.15rem] leading-none text-[--metis-paper]">
-                              {displayTitles(section.id, section.title)}
-                            </h3>
+                      <DenseSection
+                        key={section.id}
+                        title={
+                          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                            <div className="space-y-1">
+                              <p className="text-[0.55rem] uppercase tracking-[0.14em] text-[rgba(176,171,160,0.44)]">
+                                0{index + 1}
+                              </p>
+                              <span className="font-[Cormorant_Garamond] text-[1.75rem] leading-none text-[--metis-paper]">
+                                {displayTitles(section.id, section.title)}
+                              </span>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <ConfidencePill level={section.confidence} />
+                              <Badge className={`border-0 ${readiness.tone}`}>{readiness.label}</Badge>
+                              <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">Updated {section.updatedAtLabel}</Badge>
+                            </div>
                           </div>
-                          <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-                            <ConfidencePill level={section.confidence} />
-                            <Badge className={`border-0 ${readiness.tone}`}>{readiness.label}</Badge>
-                            <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">Updated {section.updatedAtLabel}</Badge>
-                          </div>
-                        </div>
-
-                        <p className="max-w-4xl whitespace-pre-line text-base leading-8 text-[--metis-paper]">{section.body}</p>
-                      </section>
+                        }
+                        className={index === 0 ? "border-t-0 pt-0" : undefined}
+                      >
+                        <p className="max-w-4xl whitespace-pre-line">{section.body}</p>
+                      </DenseSection>
                     );
                   })}
                 </div>
 
-                <section className="space-y-3 border-t border-white/8 pt-7">
-                  <div className="flex items-center justify-between gap-3">
-                    <h3 className="text-[0.78rem] font-medium uppercase tracking-[0.2em] text-[rgba(176,171,160,0.68)]">Sources appendix</h3>
-                    <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{linkedSources.length} entries</Badge>
-                  </div>
-                  <div className="space-y-4">
+                <CollapsibleSection
+                  summary={
+                    <div className="flex items-center justify-between gap-3">
+                      <h3 className="text-[0.7rem] font-medium uppercase tracking-[0.22em] text-[rgba(176,171,160,0.72)]">
+                        Sources appendix
+                      </h3>
+                      <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{linkedSources.length} entries</Badge>
+                    </div>
+                  }
+                >
+                  <div className="space-y-3">
                     {linkedSources.map((s) => (
-                      <div key={s.id} className="border-t border-white/8 pt-4 first:border-t-0 first:pt-0">
+                      <div key={s.id} className="border-t border-white/8 pt-3 first:border-t-0 first:pt-0">
                         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                           <div>
                             <p className="text-sm font-medium text-[--metis-paper]">
@@ -236,13 +263,13 @@ export default async function IssueBriefPage({
                       </div>
                     ))}
                   </div>
-                </section>
+                </CollapsibleSection>
               </article>
             ) : (
-              <article className="space-y-8 px-6 py-6 sm:px-7 sm:py-7">
-                <header className="space-y-5 border-b border-white/8 pb-8">
-                  <h2 className="font-[Cormorant_Garamond] text-[2.15rem] leading-none text-[--metis-paper]">{issue.title}</h2>
-                  <p className="max-w-4xl text-lg leading-8 text-[--metis-paper]">{artifact.lede}</p>
+              <article className="space-y-6 px-6 py-6 sm:px-7 sm:py-7">
+                <header className="space-y-4 border-b border-white/8 pb-6">
+                  <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper]">{issue.title}</h2>
+                  <p className="max-w-4xl text-base leading-7 text-[--metis-paper]">{artifact.lede}</p>
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[0.62rem] uppercase tracking-[0.14em] text-[rgba(176,171,160,0.56)]">
                     {artifactMetadata.map((item) => (
                       <div key={item.label} className="flex items-center gap-1.5">
@@ -253,23 +280,25 @@ export default async function IssueBriefPage({
                   </div>
                 </header>
 
-                <div className="space-y-8">
+                <div className="space-y-5">
                   {artifact.executive.blocks.map((block, index) => (
-                    <section key={`${block.label}-${index}`} className={index === 0 ? "space-y-3" : "space-y-3 border-t border-white/8 pt-8"}>
-                      <h3 className="font-[Cormorant_Garamond] text-[1.65rem] leading-tight text-[--metis-paper]">{block.label}</h3>
-                      <p className="max-w-4xl whitespace-pre-line text-base leading-8 text-[--metis-paper]">{block.body}</p>
-                    </section>
+                    <DenseSection
+                      key={`${block.label}-${index}`}
+                      title={<span className="font-[Cormorant_Garamond] text-[1.55rem] leading-tight text-[--metis-paper]">{block.label}</span>}
+                      className={index === 0 ? "border-t-0 pt-0" : undefined}
+                    >
+                      <p className="max-w-4xl whitespace-pre-line">{block.body}</p>
+                    </DenseSection>
                   ))}
                 </div>
 
-                <section className="space-y-4 border-t border-white/8 pt-8">
-                  <h3 className="text-[0.78rem] font-medium uppercase tracking-[0.2em] text-[rgba(176,171,160,0.68)]">Pre-flight checks</h3>
-                  <ul className="list-disc space-y-2 pl-5 text-base leading-7 text-[--metis-paper]">
+                <DenseSection title="Pre-flight checks">
+                  <ul className="list-disc space-y-2 pl-5">
                     {artifact.executive.immediateActions.map((line, i) => (
                       <li key={`${i}-${line.slice(0, 32)}`}>{line}</li>
                     ))}
                   </ul>
-                </section>
+                </DenseSection>
               </article>
             )
           ) : (
@@ -290,75 +319,89 @@ export default async function IssueBriefPage({
         </SurfaceCard>
 
         <SurfaceCard className="metis-support-surface">
-          <div className="divide-y divide-white/8">
-            <div className="space-y-5 px-5 py-5">
-              <div className="grid gap-3 rounded-[1.2rem] border border-white/8 bg-[rgba(0,0,0,0.16)] px-4 py-4 text-sm leading-6 text-[--metis-paper-muted]">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Status</span>
-                  <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{issue.status}</Badge>
+          <div className="space-y-4 px-5 py-5">
+            <ReviewRailCard
+              title="Status"
+              meta={
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Status</span>
+                    <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{issue.status}</Badge>
+                  </div>
+                  <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-2">
+                    <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Clarification gaps</span>
+                    <Badge className="border-0 bg-[rgba(124,78,18,0.6)] text-amber-50">{issue.openGapsCount}</Badge>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-3">
-                  <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Clarification gaps</span>
-                  <Badge className="border-0 bg-[rgba(124,78,18,0.6)] text-amber-50">{issue.openGapsCount}</Badge>
-                </div>
-                <div className="space-y-2 border-t border-white/8 pt-3">
-                  {changeSummary.map((item) => (
-                    <div key={item} className="grid grid-cols-[10px_minmax(0,1fr)] gap-2.5 text-sm leading-6">
-                      <span className="mt-2 h-1.5 w-1.5 rounded-full bg-[--metis-brass]" />
-                      <p>{item}</p>
-                    </div>
-                  ))}
-                </div>
+              }
+            >
+              <div className="space-y-2 text-sm leading-6 text-[--metis-paper-muted]">
+                {changeSummary.map((item) => (
+                  <div key={item} className="grid grid-cols-[10px_minmax(0,1fr)] gap-2.5">
+                    <span className="mt-2 h-1.5 w-1.5 rounded-full bg-[--metis-brass]" />
+                    <p>{item}</p>
+                  </div>
+                ))}
               </div>
+            </ReviewRailCard>
 
-              <div className="space-y-4 rounded-[1.2rem] border border-white/8 bg-[rgba(0,0,0,0.16)] px-4 py-4">
+            <ReviewRailCard
+              title="Blockers"
+              meta={
                 <div className="flex items-center gap-2 text-[--metis-paper]">
                   <AlertTriangle className="h-4 w-4 text-[--metis-brass]" />
-                  <p className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Blockers</p>
+                  <span>Top items to validate</span>
                 </div>
-                <div className="space-y-3">
-                  {blockers.length ? (
-                    blockers.map((item) => (
-                      <div key={item.title} className="border-t border-white/8 pt-3 first:border-t-0 first:pt-0">
-                        <div className="flex flex-wrap items-center justify-between gap-3">
-                          <p className="text-sm font-medium text-[--metis-paper]">{item.title}</p>
-                          <ConfidencePill level={item.confidence} />
-                        </div>
-                        <p className="mt-2 text-[0.68rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Owner · {item.owner}</p>
+              }
+            >
+              <div className="space-y-3">
+                {blockers.length ? (
+                  blockers.map((item) => (
+                    <div key={item.title} className="border-t border-white/8 pt-3 first:border-t-0 first:pt-0">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <p className="text-sm font-medium text-[--metis-paper]">{item.title}</p>
+                        <ConfidencePill level={item.confidence} />
                       </div>
-                    ))
-                  ) : (
-                    <p className="text-sm text-[--metis-paper-muted]">No blockers detected.</p>
-                  )}
-                </div>
-
-                <div className="space-y-3 border-t border-white/8 pt-3">
-                  <div className="flex items-center gap-2 text-[--metis-paper]">
-                    <Library className="h-4 w-4 text-[--metis-brass]" />
-                    <p className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Evidence</p>
-                  </div>
-                  {evidenceItems.length ? (
-                    evidenceItems.map((s) => (
-                      <div key={s.id} className="border-t border-white/8 pt-3 first:border-t-0 first:pt-0">
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <p className="text-sm font-medium text-[--metis-paper]">{s.sourceCode}</p>
-                            <p className="mt-1 text-[0.68rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">
-                              {s.tier} · {s.linkedSection ?? "—"}
-                            </p>
-                          </div>
-                          <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{s.reliability ?? "In use"}</Badge>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-sm text-[--metis-paper-muted]">No evidence linked yet.</p>
-                  )}
-                </div>
+                      <p className="mt-2 text-[0.68rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Owner · {item.owner}</p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-[--metis-paper-muted]">No blockers detected.</p>
+                )}
               </div>
-            </div>
+            </ReviewRailCard>
 
-            <div className="grid gap-3 px-5 py-5">
+            <ReviewRailCard
+              title="Evidence"
+              meta={
+                <div className="flex items-center gap-2 text-[--metis-paper]">
+                  <Library className="h-4 w-4 text-[--metis-brass]" />
+                  <span>{linkedSources.length ? `${linkedSources.length} linked sources` : "No linked sources yet"}</span>
+                </div>
+              }
+            >
+              <div className="space-y-3">
+                {evidenceItems.length ? (
+                  evidenceItems.map((s) => (
+                    <div key={s.id} className="border-t border-white/8 pt-3 first:border-t-0 first:pt-0">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-medium text-[--metis-paper]">{s.sourceCode}</p>
+                          <p className="mt-1 text-[0.68rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">
+                            {s.tier} · {s.linkedSection ?? "—"}
+                          </p>
+                        </div>
+                        <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{s.reliability ?? "In use"}</Badge>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-[--metis-paper-muted]">No evidence linked yet.</p>
+                )}
+              </div>
+            </ReviewRailCard>
+
+            <div className="grid gap-3">
               <Button asChild variant="outline" className="w-full rounded-full">
                 <Link href={`/issues/${issue.id}/sources`}>
                   <ScanSearch className="mr-2 h-4 w-4" />
