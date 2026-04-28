@@ -7,6 +7,8 @@ import { ReviewBanner } from "@/components/review/ReviewBanner";
 import { ReviewRailCard } from "@/components/review/ReviewRailCard";
 import { ReviewToolbar } from "@/components/review/ReviewToolbar";
 
+import { ContrastAudit } from "@/app/dev/ui/contrast-audit.client";
+
 export const dynamic = "force-static";
 
 type Token = { name: string; sample: "bg" | "border" | "text" };
@@ -154,6 +156,15 @@ export default function MetisUiDiagnosticsPage() {
               </p>
               <div className="mt-4">
                 <LayerStackSample />
+              </div>
+            </DenseSection>
+
+            <DenseSection title="Contrast audit">
+              <p className="text-sm leading-7 text-[--metis-paper-muted]">
+                Objective measurements using browser-computed colors. WCAG ratios are for text/UI boundaries; layer separation is an internal heuristic for visual hierarchy.
+              </p>
+              <div className="mt-4">
+                <ContrastAudit />
               </div>
             </DenseSection>
 
