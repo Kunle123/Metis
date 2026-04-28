@@ -130,7 +130,7 @@ function MetricCard({ label, value, detail }: { label: string; value: string; de
   );
 }
 
-type GlobalNavGroup = "Work" | "Current issue" | "Settings" | "All issues tools";
+type GlobalNavGroup = "Work" | "Issue tools" | "Settings";
 
 const workNav = [
   { id: "dashboard", group: "Work" as GlobalNavGroup, path: "/", shortLabel: "Dashboard" },
@@ -141,16 +141,7 @@ const settingsNav = [
   { id: "stakeholders", group: "Settings" as GlobalNavGroup, path: "/stakeholders", shortLabel: "Audience groups" },
 ] as const;
 
-const allIssuesToolsNav = [
-  { id: "brief", group: "All issues tools" as GlobalNavGroup, path: "/brief", shortLabel: "Brief" },
-  { id: "sources", group: "All issues tools" as GlobalNavGroup, path: "/sources", shortLabel: "Sources" },
-  { id: "gaps", group: "All issues tools" as GlobalNavGroup, path: "/gaps", shortLabel: "Gaps" },
-  { id: "input", group: "All issues tools" as GlobalNavGroup, path: "/input", shortLabel: "Observations" },
-  { id: "compare", group: "All issues tools" as GlobalNavGroup, path: "/compare", shortLabel: "Compare" },
-  { id: "export", group: "All issues tools" as GlobalNavGroup, path: "/export", shortLabel: "Export" },
-] as const;
-
-const primaryNav = [...workNav, ...settingsNav, ...allIssuesToolsNav] as const;
+const primaryNav = [...workNav, ...settingsNav] as const;
 
 const issueWorkspacePrimaryNav = [{ id: "workspace" as const, path: "/workspace" as const, shortLabel: "Workspace" }] as const;
 
@@ -169,6 +160,17 @@ const issueRecordToolsNav = [
 ] as const;
 
 const issueToolsNav = [...issueOutputToolsNav, ...issueRecordToolsNav] as const;
+
+const stableIssueToolsNav = [
+  issueWorkspacePrimaryNav[0],
+  ...issueOutputToolsNav.slice(0, 2), // Brief, Messages
+  issueRecordToolsNav[0], // Sources
+  issueRecordToolsNav[1], // Gaps
+  issueRecordToolsNav[2], // Observations
+  issueOutputToolsNav[2], // Compare
+  issueOutputToolsNav[3], // Export
+  issueOutputToolsNav[4], // Activity
+] as const;
 
 type IssueScopedNavItem = (typeof issueWorkspacePrimaryNav)[number] | (typeof issueToolsNav)[number];
 const issueToolIds = new Set<string>(issueToolsNav.map((i) => i.id));
@@ -208,8 +210,7 @@ export function MetisShell({
 }) {
   const shouldShowOperationalSnapshot = showOperationalSnapshot ?? activePath === "/";
   const globalNavItemVisible = filterGlobalNavItems(issueRoutePrefix);
-  const activeGroup =
-    primaryNav.find((item) => item.path === activePath && globalNavItemVisible(item))?.group ?? null;
+  const activeGroup = primaryNav.find((item) => item.path === activePath && globalNavItemVisible(item))?.group ?? null;
 
   function issueHrefForItem(item: IssueScopedNavItem) {
     if (!issueRoutePrefix) return item.path;
@@ -233,45 +234,68 @@ export function MetisShell({
     href,
     label,
     isActive,
+    disabled,
   }: {
     href: string;
     label: string;
     isActive: boolean;
+    disabled?: boolean;
   }) {
+    const base =
+      "group relative flex items-start gap-2.5 overflow-hidden rounded-[1.2rem] border px-4 py-2.5 transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60";
+    const active =
+      "border-[rgba(224,183,111,0.48)] bg-[linear-gradient(135deg,rgba(224,183,111,0.28),rgba(78,55,20,0.76))] ring-1 ring-[rgba(224,183,111,0.3)] shadow-[0_28px_72px_rgba(0,0,0,0.42),inset_0_1px_0_rgba(255,255,255,0.1)]";
+    const inactive =
+      "border-white/5 bg-[rgba(0,0,0,0.16)] hover:border-white/10 hover:bg-[rgba(255,255,255,0.04)]";
+    const disabledCls =
+      "border-white/5 bg-[rgba(0,0,0,0.12)] text-[--metis-paper-muted] opacity-[0.85]";
+
+    const Wrap: any = disabled ? "div" : Link;
+    const wrapProps = disabled ? { role: "link", "aria-disabled": "true" as const } : { href };
+
     return (
-      <Link
-        href={href}
-        className={cn(
-          "group relative flex items-start gap-2.5 overflow-hidden rounded-[1.2rem] border px-4 py-2.5 transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60",
-          isActive
-            ? "border-[rgba(224,183,111,0.48)] bg-[linear-gradient(135deg,rgba(224,183,111,0.28),rgba(78,55,20,0.76))] ring-1 ring-[rgba(224,183,111,0.3)] shadow-[0_28px_72px_rgba(0,0,0,0.42),inset_0_1px_0_rgba(255,255,255,0.1)]"
-            : "border-white/5 bg-[rgba(0,0,0,0.16)] hover:border-white/10 hover:bg-[rgba(255,255,255,0.04)]",
-        )}
+      <Wrap
+        {...wrapProps}
+        className={cn(base, disabled ? disabledCls : isActive ? active : inactive, disabled && "cursor-not-allowed")}
       >
         <span
           className={cn(
             "absolute inset-y-2 left-1 w-[5px] rounded-full bg-transparent transition duration-300",
-            isActive && "bg-[--metis-brass-soft] shadow-[0_0_24px_rgba(224,183,111,0.5)]",
+            isActive && !disabled && "bg-[--metis-brass-soft] shadow-[0_0_24px_rgba(224,183,111,0.5)]",
           )}
         />
         <span
           className={cn(
             "mt-0.5 h-2 w-2 shrink-0 rounded-full border border-white/10 bg-white/10 shadow-[0_0_0_3px_rgba(255,255,255,0.02)]",
-            isActive && "border-[--metis-brass-soft]/70 bg-[--metis-brass-soft] shadow-[0_0_0_4px_rgba(224,183,111,0.16)]",
+            isActive &&
+              !disabled &&
+              "border-[--metis-brass-soft]/70 bg-[--metis-brass-soft] shadow-[0_0_0_4px_rgba(224,183,111,0.16)]",
           )}
         />
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2">
-            <span className={cn("text-sm font-medium text-[--metis-paper]", isActive && "text-white")}>{label}</span>
+            <span
+              className={cn(
+                "text-sm font-medium text-[--metis-paper]",
+                disabled && "text-[--metis-paper-muted]",
+                isActive && !disabled && "text-white",
+              )}
+            >
+              {label}
+            </span>
             <ChevronRight
               className={cn(
                 "h-3.5 w-3.5 shrink-0 text-[--metis-ink-soft] transition duration-300",
-                isActive ? "translate-x-0 text-[--metis-brass-soft]" : "group-hover:translate-x-0.5",
+                disabled
+                  ? "opacity-40"
+                  : isActive
+                    ? "translate-x-0 text-[--metis-brass-soft]"
+                    : "group-hover:translate-x-0.5",
               )}
             />
           </div>
         </div>
-      </Link>
+      </Wrap>
     );
   }
 
@@ -279,10 +303,12 @@ export function MetisShell({
     group,
     items,
     activeGroupLabel,
+    metaPill,
   }: {
     group: GlobalNavGroup;
-    items: Array<{ id: string; href: string; label: string; isActive: boolean }>;
+    items: Array<{ id: string; href: string; label: string; isActive: boolean; disabled?: boolean }>;
     activeGroupLabel?: string | null;
+    metaPill?: string | null;
   }) {
     if (items.length === 0) return null;
     const groupIsActive = items.some((i) => i.isActive);
@@ -306,7 +332,11 @@ export function MetisShell({
           >
             {group}
           </p>
-          {activeGroupLabel && group === activeGroupLabel ? (
+          {metaPill ? (
+            <span className="rounded-full border border-[--metis-brass]/20 bg-[--metis-brass]/10 px-2 py-0.5 text-[0.52rem] uppercase tracking-[0.26em] text-[--metis-brass-soft]">
+              {metaPill}
+            </span>
+          ) : activeGroupLabel && group === activeGroupLabel ? (
             <span className="rounded-full border border-[--metis-brass]/20 bg-[--metis-brass]/10 px-2 py-0.5 text-[0.52rem] uppercase tracking-[0.26em] text-[--metis-brass-soft]">
               Active
             </span>
@@ -314,7 +344,9 @@ export function MetisShell({
         </div>
         <div className="space-y-2">
           {items.map((item) => (
-            <div key={item.id}>{renderNavItem({ href: item.href, label: item.label, isActive: item.isActive })}</div>
+            <div key={item.id}>
+              {renderNavItem({ href: item.href, label: item.label, isActive: item.isActive, disabled: item.disabled })}
+            </div>
           ))}
         </div>
       </div>
@@ -348,23 +380,17 @@ export function MetisShell({
                   .map((i) => ({ id: i.id, href: navHrefForItem(i), label: i.shortLabel, isActive: i.path === activePath })),
               })}
 
-              {issueRoutePrefix
-                ? renderNavGroup({
-                    group: "Current issue",
-                    items: [issueWorkspacePrimaryNav[0], ...issueToolsNav].map((i) => ({
-                      id: i.id,
-                      href: issueHrefForItem(i),
-                      label: i.shortLabel,
-                      isActive: i.path === activePath,
-                    })),
-                  })
-                : renderNavGroup({
-                    group: "All issues tools",
-                    activeGroupLabel: activeGroup,
-                    items: allIssuesToolsNav
-                      .filter(globalNavItemVisible)
-                      .map((i) => ({ id: i.id, href: navHrefForItem(i), label: i.shortLabel, isActive: i.path === activePath })),
-                  })}
+              {renderNavGroup({
+                group: "Issue tools",
+                metaPill: issueRoutePrefix ? "Active" : "Select issue",
+                items: stableIssueToolsNav.map((i) => ({
+                  id: i.id,
+                  href: issueHrefForItem(i),
+                  label: i.shortLabel,
+                  isActive: Boolean(issueRoutePrefix) && i.path === activePath,
+                  disabled: !issueRoutePrefix,
+                })),
+              })}
 
               {renderNavGroup({
                 group: "Settings",
