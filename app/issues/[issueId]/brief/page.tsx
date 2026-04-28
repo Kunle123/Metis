@@ -87,6 +87,9 @@ export default async function IssueBriefPage({
       ? "Matches the current issue record."
       : "Issue or linked data changed since this was generated; regenerate to refresh.";
   })();
+  const briefInSync = Boolean(
+    artifact && briefVersion && issue.updatedAt.getTime() === briefVersion.generatedFromIssueUpdatedAt.getTime(),
+  );
   const linkedSources = await prisma.source.findMany({
     where: { issueId: issue.id },
     orderBy: [{ createdAt: "desc" }],
@@ -160,12 +163,7 @@ export default async function IssueBriefPage({
               className="border-0 bg-transparent px-0 py-0"
               left={
                 <div className="space-y-1">
-                  <p className="text-sm leading-6 text-[--metis-paper-muted]">
-                    Produce the executive output for the issue.
-                  </p>
-                  {briefSyncHint ? (
-                    <p className="text-xs leading-5 text-[--metis-paper-muted]">{briefSyncHint}</p>
-                  ) : null}
+                  <p className="text-sm leading-6 text-[--metis-paper-muted]">Produce the executive output for the issue.</p>
                 </div>
               }
               right={
@@ -192,32 +190,24 @@ export default async function IssueBriefPage({
 
           {artifact ? (
             mode === "full" ? (
-              <article className="space-y-6 px-6 py-6 sm:px-7 sm:py-7">
-                <header className="space-y-4 border-b border-white/8 pb-6">
+              <article className="space-y-5 px-6 py-6 sm:px-7 sm:py-7">
+                <header className="space-y-3 border-b border-white/8 pb-5">
                   <p className="max-w-4xl text-base leading-7 text-[--metis-paper]">{artifact.lede}</p>
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[0.62rem] uppercase tracking-[0.14em] text-[rgba(176,171,160,0.56)]">
-                    {artifactMetadata.map((item) => (
-                      <div key={item.label} className="flex items-center gap-1.5">
-                        <span>{item.label}</span>
-                        <span className="text-[rgba(244,238,228,0.88)]">{item.value}</span>
-                      </div>
-                    ))}
-                  </div>
                 </header>
 
-                <div className="space-y-5">
+                <div className="grid gap-4 xl:grid-cols-2">
                   {artifact.full.sections.map((section, index) => {
                     const readiness = readinessFromConfidence(section.confidence);
+                    const bodyLen = (section.body ?? "").trim().length;
+                    const isLong = bodyLen > 520 || (section.body ?? "").includes("\n\n");
                     return (
                       <DenseSection
                         key={section.id}
                         title={
                           <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                             <div className="space-y-1">
-                              <p className="text-[0.55rem] uppercase tracking-[0.14em] text-[rgba(176,171,160,0.44)]">
-                                0{index + 1}
-                              </p>
-                              <span className="font-[Cormorant_Garamond] text-[1.75rem] leading-none text-[--metis-paper]">
+                              <p className="text-[0.55rem] uppercase tracking-[0.14em] text-[rgba(176,171,160,0.44)]">0{index + 1}</p>
+                              <span className="font-[Cormorant_Garamond] text-[1.65rem] leading-none text-[--metis-paper]">
                                 {displayTitles(section.id, section.title)}
                               </span>
                             </div>
@@ -228,77 +218,36 @@ export default async function IssueBriefPage({
                             </div>
                           </div>
                         }
-                        className={index === 0 ? "border-t-0 pt-0" : undefined}
+                        className={index === 0 ? `border-t-0 pt-0 ${isLong ? "xl:col-span-2" : ""}` : isLong ? "xl:col-span-2" : undefined}
                       >
-                        <p className="max-w-4xl whitespace-pre-line">{section.body}</p>
+                        <p className="whitespace-pre-line">{section.body}</p>
                       </DenseSection>
                     );
                   })}
                 </div>
-
-                <CollapsibleSection
-                  summary={
-                    <div className="flex items-center justify-between gap-3">
-                      <h3 className="text-[0.7rem] font-medium uppercase tracking-[0.22em] text-[rgba(176,171,160,0.72)]">
-                        Sources appendix
-                      </h3>
-                      <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{linkedSources.length} entries</Badge>
-                    </div>
-                  }
-                >
-                  <div className="space-y-3">
-                    {linkedSources.map((s) => (
-                      <div key={s.id} className="border-t border-white/8 pt-3 first:border-t-0 first:pt-0">
-                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                          <div>
-                            <p className="text-sm font-medium text-[--metis-paper]">
-                              {s.sourceCode} · {s.title}
-                            </p>
-                            <p className="mt-1 text-[0.72rem] uppercase tracking-[0.2em] text-[--metis-ink-soft]">
-                              {s.tier} · {s.linkedSection ?? "—"}
-                            </p>
-                          </div>
-                          <Badge className="w-fit border-0 bg-white/8 text-[--metis-paper-muted]">{s.reliability ?? "In use"}</Badge>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CollapsibleSection>
               </article>
             ) : (
-              <article className="space-y-6 px-6 py-6 sm:px-7 sm:py-7">
-                <header className="space-y-4 border-b border-white/8 pb-6">
+              <article className="space-y-5 px-6 py-6 sm:px-7 sm:py-7">
+                <header className="space-y-3 border-b border-white/8 pb-5">
                   <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper]">{issue.title}</h2>
                   <p className="max-w-4xl text-base leading-7 text-[--metis-paper]">{artifact.lede}</p>
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[0.62rem] uppercase tracking-[0.14em] text-[rgba(176,171,160,0.56)]">
-                    {artifactMetadata.map((item) => (
-                      <div key={item.label} className="flex items-center gap-1.5">
-                        <span>{item.label}</span>
-                        <span className="text-[rgba(244,238,228,0.88)]">{item.value}</span>
-                      </div>
-                    ))}
-                  </div>
                 </header>
 
-                <div className="space-y-5">
-                  {artifact.executive.blocks.map((block, index) => (
-                    <DenseSection
-                      key={`${block.label}-${index}`}
-                      title={<span className="font-[Cormorant_Garamond] text-[1.55rem] leading-tight text-[--metis-paper]">{block.label}</span>}
-                      className={index === 0 ? "border-t-0 pt-0" : undefined}
-                    >
-                      <p className="max-w-4xl whitespace-pre-line">{block.body}</p>
-                    </DenseSection>
-                  ))}
+                <div className="grid gap-4 xl:grid-cols-2">
+                  {artifact.executive.blocks.map((block, index) => {
+                    const bodyLen = (block.body ?? "").trim().length;
+                    const isLong = bodyLen > 520 || (block.body ?? "").includes("\n\n");
+                    return (
+                      <DenseSection
+                        key={`${block.label}-${index}`}
+                        title={<span className="font-[Cormorant_Garamond] text-[1.45rem] leading-tight text-[--metis-paper]">{block.label}</span>}
+                        className={index === 0 ? `border-t-0 pt-0 ${isLong ? "xl:col-span-2" : ""}` : isLong ? "xl:col-span-2" : undefined}
+                      >
+                        <p className="whitespace-pre-line">{block.body}</p>
+                      </DenseSection>
+                    );
+                  })}
                 </div>
-
-                <DenseSection title="Pre-flight checks">
-                  <ul className="list-disc space-y-2 pl-5">
-                    {artifact.executive.immediateActions.map((line, i) => (
-                      <li key={`${i}-${line.slice(0, 32)}`}>{line}</li>
-                    ))}
-                  </ul>
-                </DenseSection>
               </article>
             )
           ) : (
@@ -320,6 +269,94 @@ export default async function IssueBriefPage({
 
         <SurfaceCard className="metis-support-surface">
           <div className="space-y-4 px-5 py-5">
+            <ReviewRailCard
+              title="Brief"
+              meta={
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Mode</span>
+                    <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{mode === "full" ? "Full" : "Executive"}</Badge>
+                  </div>
+                  {briefVersion ? (
+                    <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-2">
+                      <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Sync</span>
+                      <span
+                        className={`rounded-full border px-3 py-1 text-[0.62rem] font-medium uppercase tracking-[0.18em] ${
+                          briefInSync
+                            ? "border-emerald-400/35 bg-[rgba(18,83,58,0.45)] text-emerald-50"
+                            : "border-sky-400/35 bg-[rgba(19,86,118,0.55)] text-sky-50"
+                        }`}
+                      >
+                        {briefInSync ? "Up to date" : "Stale"}
+                      </span>
+                    </div>
+                  ) : null}
+                  {briefSyncHint ? (
+                    <p className="border-t border-white/8 pt-2 text-sm leading-6 text-[--metis-paper-muted]">{briefSyncHint}</p>
+                  ) : null}
+                </div>
+              }
+            >
+              <div className="space-y-2 text-sm leading-6 text-[--metis-paper-muted]">
+                {artifactMetadata.length ? (
+                  artifactMetadata.map((item) => (
+                    <div key={item.label} className="flex items-center justify-between gap-3 border-t border-white/8 pt-2 first:border-t-0 first:pt-0">
+                      <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">{item.label}</span>
+                      <span className="text-[--metis-paper]">{item.value}</span>
+                    </div>
+                  ))
+                ) : (
+                  <p>No stored brief for this mode yet.</p>
+                )}
+              </div>
+            </ReviewRailCard>
+
+            {mode === "executive" && artifact?.executive?.immediateActions?.length ? (
+              <CollapsibleSection
+                defaultOpen={false}
+                summary={
+                  <div className="flex items-center justify-between gap-3">
+                    <h3 className="text-[0.7rem] font-medium uppercase tracking-[0.22em] text-[rgba(176,171,160,0.72)]">Pre-flight checks</h3>
+                    <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{artifact.executive.immediateActions.length}</Badge>
+                  </div>
+                }
+              >
+                <ul className="list-disc space-y-2 pl-5 text-sm leading-7 text-[--metis-paper-muted]">
+                  {artifact.executive.immediateActions.map((line, i) => (
+                    <li key={`${i}-${line.slice(0, 32)}`}>{line}</li>
+                  ))}
+                </ul>
+              </CollapsibleSection>
+            ) : null}
+
+            {mode === "full" && linkedSources.length ? (
+              <CollapsibleSection
+                defaultOpen={false}
+                summary={
+                  <div className="flex items-center justify-between gap-3">
+                    <h3 className="text-[0.7rem] font-medium uppercase tracking-[0.22em] text-[rgba(176,171,160,0.72)]">Sources appendix</h3>
+                    <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{linkedSources.length}</Badge>
+                  </div>
+                }
+              >
+                <div className="space-y-3">
+                  {linkedSources.map((s) => (
+                    <div key={s.id} className="border-t border-white/8 pt-3 first:border-t-0 first:pt-0">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-medium text-[--metis-paper]">{s.sourceCode} · {s.title}</p>
+                          <p className="mt-1 text-[0.68rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">
+                            {s.tier} · {s.linkedSection ?? "—"}
+                          </p>
+                        </div>
+                        <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{s.reliability ?? "In use"}</Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CollapsibleSection>
+            ) : null}
+
             <ReviewRailCard
               title="Status"
               meta={

@@ -171,7 +171,6 @@ export function MessagesPanel({
                   <option value="internal_staff_update">Internal / staff update</option>
                   <option value="media_holding_line">Media / holding line</option>
                 </select>
-                <p className="text-xs leading-5 text-[--metis-paper-muted]">{templateHelperText}</p>
               </label>
 
               <label className="space-y-1.5">
@@ -191,9 +190,6 @@ export function MessagesPanel({
                     </option>
                   ))}
                 </select>
-                <p className="text-xs leading-5 text-[--metis-paper-muted]">
-                  Lens: <span className="text-[--metis-paper]">{selectedLensLabel}</span>
-                </p>
               </label>
             </div>
           </div>
@@ -215,6 +211,10 @@ export function MessagesPanel({
                       ? "Generate holding line"
                       : "Generate external update"}
             </Button>
+            <Button type="button" variant="outline" className="h-10 rounded-full" disabled={!markdown} onClick={() => void copyMd()}>
+              <Copy className="mr-2 h-4 w-4" />
+              {copyState === "copied" ? "Copied" : copyState === "error" ? "Copy failed" : "Copy Markdown"}
+            </Button>
           </div>
         }
       />
@@ -227,12 +227,20 @@ export function MessagesPanel({
                 <p className="font-[Cormorant_Garamond] text-2xl text-[--metis-paper]">{latest.artifact.metadata.publicHeadline}</p>
               </div>
 
-              <div className="space-y-4">
-                {latest.artifact.sections.map((s) => (
-                  <DenseSection key={s.id} title={s.title}>
-                    <p className="whitespace-pre-line">{s.body}</p>
-                  </DenseSection>
-                ))}
+              <div className="grid gap-4 xl:grid-cols-2">
+                {latest.artifact.sections.map((s, idx) => {
+                  const bodyLen = (s.body ?? "").trim().length;
+                  const isLong = bodyLen > 520 || (s.body ?? "").includes("\n\n");
+                  return (
+                    <DenseSection
+                      key={s.id}
+                      title={s.title}
+                      className={idx === 0 ? `border-t-0 pt-0 ${isLong ? "xl:col-span-2" : ""}` : isLong ? "xl:col-span-2" : undefined}
+                    >
+                      <p className="whitespace-pre-line">{s.body}</p>
+                    </DenseSection>
+                  );
+                })}
               </div>
             </div>
           ) : (
@@ -261,6 +269,7 @@ export function MessagesPanel({
                 <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Lens</span>
                 <span className="text-[--metis-paper]">{selectedLensLabel}</span>
               </div>
+              <div className="border-t border-white/8 pt-3 text-sm leading-6 text-[--metis-paper-muted]">{templateHelperText}</div>
               {latest ? (
                 <>
                   <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-3">
@@ -285,13 +294,6 @@ export function MessagesPanel({
                   </div>
                 </>
               ) : null}
-            </div>
-
-            <div className="mt-4 flex flex-wrap items-center gap-2">
-              <Button type="button" variant="outline" className="h-10 rounded-full" disabled={!markdown} onClick={() => void copyMd()}>
-                <Copy className="mr-2 h-4 w-4" />
-                {copyState === "copied" ? "Copied" : copyState === "error" ? "Copy failed" : "Copy Markdown"}
-              </Button>
             </div>
           </ReviewRailCard>
 
