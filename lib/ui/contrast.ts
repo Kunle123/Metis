@@ -11,6 +11,17 @@ function clamp255(n: number) {
 export function parseCssColor(input: string): Rgba | null {
   const s = input.trim().toLowerCase();
 
+  // color(srgb r g b / a)
+  // Example: color(srgb 0.12 0.34 0.56 / 0.9)
+  const srgbMatch = s.match(/^color\(\s*srgb\s+([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)(?:\s*\/\s*([0-9.]+))?\s*\)$/);
+  if (srgbMatch) {
+    const r = clamp255(Number.parseFloat(srgbMatch[1]!) * 255);
+    const g = clamp255(Number.parseFloat(srgbMatch[2]!) * 255);
+    const b = clamp255(Number.parseFloat(srgbMatch[3]!) * 255);
+    const a = srgbMatch[4] == null ? 1 : clamp01(Number.parseFloat(srgbMatch[4]!));
+    return { r, g, b, a };
+  }
+
   // #rgb, #rgba, #rrggbb, #rrggbbaa
   if (s.startsWith("#")) {
     const hex = s.slice(1);
@@ -34,20 +45,42 @@ export function parseCssColor(input: string): Rgba | null {
     }
   }
 
-  // rgb(...) / rgba(...)
-  const rgbMatch = s.match(/^rgba?\(\s*([^\)]+)\s*\)$/);
-  if (rgbMatch) {
-    const parts = rgbMatch[1]!.split(",").map((p) => p.trim());
-    if (parts.length < 3) return null;
+  // rgb()/rgba() - comma-separated or space-separated with optional "/ alpha"
+  // Examples:
+  // - rgb(255, 255, 255)
+  // - rgba(255, 255, 255, 0.5)
+  // - rgb(255 255 255 / 0.5)
+  // - rgb(100% 0% 0% / 50%)
+  const fnMatch = s.match(/^rgba?\(\s*([^\)]+)\s*\)$/);
+  if (fnMatch) {
+    const body = fnMatch[1]!;
+    const slashSplit = body.split("/");
+    const channelsRaw = slashSplit[0]!.trim();
+    const alphaRaw = slashSplit[1]?.trim();
+
+    const channels = channelsRaw.includes(",")
+      ? channelsRaw.split(",").map((p) => p.trim()).filter(Boolean)
+      : channelsRaw.split(/\s+/).map((p) => p.trim()).filter(Boolean);
+    if (channels.length < 3) return null;
+
     const toChannel = (raw: string) => {
       if (raw.endsWith("%")) return clamp255((Number.parseFloat(raw) / 100) * 255);
       return clamp255(Number.parseFloat(raw));
     };
-    const r = toChannel(parts[0]!);
-    const g = toChannel(parts[1]!);
-    const b = toChannel(parts[2]!);
-    const aRaw = parts[3];
-    const a = aRaw == null ? 1 : clamp01(Number.parseFloat(aRaw));
+    const toAlpha = (raw: string) => {
+      if (raw.endsWith("%")) return clamp01(Number.parseFloat(raw) / 100);
+      return clamp01(Number.parseFloat(raw));
+    };
+
+    const r = toChannel(channels[0]!);
+    const g = toChannel(channels[1]!);
+    const b = toChannel(channels[2]!);
+
+    // If comma-separated rgba(..., a) style alpha exists as 4th channel, honor it.
+    const alphaFrom4th = channels[3];
+    const a =
+      alphaRaw != null ? toAlpha(alphaRaw) : alphaFrom4th != null ? toAlpha(alphaFrom4th) : 1;
+
     return { r, g, b, a };
   }
 

@@ -34,6 +34,36 @@ function separationNote(ratio: number) {
   return "Strong";
 }
 
+function normalizeCssColorViaCanvas(css: string) {
+  // Normalizes supported CSS Color 4 formats (oklch(), color-mix(), etc) to an rgb/rgba string in most browsers.
+  // If the browser can't parse it, returns null.
+  const canvas = document.createElement("canvas");
+  canvas.width = 1;
+  canvas.height = 1;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
+
+  const sentinel = "rgba(0, 0, 0, 0)";
+  ctx.fillStyle = sentinel;
+  ctx.fillStyle = css;
+  const normalized = ctx.fillStyle as unknown as string;
+  if (!normalized || normalized === sentinel) {
+    // If the intended color is exactly transparent, allow it.
+    return css.trim().toLowerCase() === "transparent" ? "rgba(0, 0, 0, 0)" : null;
+  }
+  return normalized;
+}
+
+function parseComputedColor(css: string) {
+  // First attempt direct parsing (handles rgb/rgba/hex/color(srgb...)).
+  const direct = parseCssColor(css);
+  if (direct) return direct;
+  // Fallback: try canvas normalization for oklch()/color-mix()/etc.
+  const normalized = normalizeCssColorViaCanvas(css);
+  if (!normalized) return null;
+  return parseCssColor(normalized);
+}
+
 function resolveTokenColor(token: string, property: "color" | "backgroundColor" | "borderColor"): Resolved {
   const el = document.createElement("div");
   el.style.position = "absolute";
@@ -55,7 +85,7 @@ function resolveTokenColor(token: string, property: "color" | "backgroundColor" 
     property === "borderColor" ? cs.borderTopColor : property === "backgroundColor" ? cs.backgroundColor : cs.color;
   document.body.removeChild(el);
 
-  return { token, css, rgba: parseCssColor(css) };
+  return { token, css, rgba: parseComputedColor(css) };
 }
 
 function tokenPropertyForKind(kind: Pair["kind"], which: "fg" | "bg"): "color" | "backgroundColor" | "borderColor" {
