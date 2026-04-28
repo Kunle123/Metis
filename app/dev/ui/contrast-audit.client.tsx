@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   compositeOver,
   contrastRatio,
@@ -23,9 +24,43 @@ type Pair = {
 
 type Resolved = {
   token: string;
-  css: string;
+  rawVar: string;
+  rawComputed: string;
+  normalizedComputed: string | null;
   rgba: Rgba | null;
+  strategy: string;
 };
+
+type AuditExportRow = {
+  id: string;
+  kind: Pair["kind"];
+  fgToken: string;
+  bgToken: string;
+  resolves: boolean;
+  fg: {
+    rawVar: string;
+    rawComputed: string;
+    normalizedComputed: string | null;
+    parsedHex: string | null;
+    strategy: string;
+  };
+  bg: {
+    rawVar: string;
+    rawComputed: string;
+    normalizedComputed: string | null;
+    parsedHex: string | null;
+    strategy: string;
+  };
+  ratio: number | null;
+  labels:
+    | null
+    | {
+        aaNormalText: boolean;
+        aaLargeTextOrUi: boolean;
+        aaaText: boolean;
+      };
+  separationLabel: string | null;
+ };
 
 function separationNote(ratio: number) {
   if (ratio < 1.15) return "Weak (near-indistinguishable)";
@@ -57,14 +92,19 @@ function normalizeCssColorViaCanvas(css: string) {
 function parseComputedColor(css: string) {
   // First attempt direct parsing (handles rgb/rgba/hex/color(srgb...)).
   const direct = parseCssColor(css);
-  if (direct) return direct;
+  if (direct) return { rgba: direct, normalized: null };
   // Fallback: try canvas normalization for oklch()/color-mix()/etc.
   const normalized = normalizeCssColorViaCanvas(css);
-  if (!normalized) return null;
-  return parseCssColor(normalized);
+  if (!normalized) return { rgba: null, normalized: null };
+  return { rgba: parseCssColor(normalized), normalized };
 }
 
-function resolveTokenColor(token: string, property: "color" | "backgroundColor" | "borderColor"): Resolved {
+function readRootVar(token: string) {
+  // Expects token like "--background"
+  return getComputedStyle(document.documentElement).getPropertyValue(token).trim();
+}
+
+function computedFromProbe(appliedCss: string, property: "color" | "backgroundColor" | "borderColor") {
   const el = document.createElement("div");
   el.style.position = "absolute";
   el.style.left = "-9999px";
@@ -75,17 +115,71 @@ function resolveTokenColor(token: string, property: "color" | "backgroundColor" 
   el.style.backgroundColor = "transparent";
   el.style.color = "transparent";
 
-  if (property === "borderColor") el.style.borderTopColor = `var(${token})`;
-  if (property === "backgroundColor") el.style.backgroundColor = `var(${token})`;
-  if (property === "color") el.style.color = `var(${token})`;
+  if (property === "borderColor") el.style.borderTopColor = appliedCss;
+  if (property === "backgroundColor") el.style.backgroundColor = appliedCss;
+  if (property === "color") el.style.color = appliedCss;
 
   document.body.appendChild(el);
   const cs = getComputedStyle(el);
-  const css =
+  const rawComputed =
     property === "borderColor" ? cs.borderTopColor : property === "backgroundColor" ? cs.backgroundColor : cs.color;
   document.body.removeChild(el);
+  return rawComputed;
+}
 
-  return { token, css, rgba: parseComputedColor(css) };
+function resolveTokenColor(token: string, property: "color" | "backgroundColor" | "borderColor"): Resolved {
+  const rawVar = readRootVar(token);
+
+  const candidates: Array<{ strategy: string; appliedCss: string }> = [{ strategy: `${property}: var(${token})`, appliedCss: `var(${token})` }];
+
+  // If this var looks like a full color value (starts with a color function or #),
+  // prefer applying it directly as a full color (not wrapped in hsl/oklch).
+  const looksLikeFullColor = /^#|^rgb\(|^rgba\(|^hsl\(|^hsla\(|^oklch\(|^oklab\(|^color\(|^lab\(|^lch\(/i.test(rawVar);
+  const tried: typeof candidates = looksLikeFullColor
+    ? [{ strategy: `${property}: var(${token}) (full-color)`, appliedCss: `var(${token})` }]
+    : [
+        ...candidates,
+        { strategy: `${property}: hsl(var(${token}))`, appliedCss: `hsl(var(${token}))` },
+        { strategy: `${property}: oklch(var(${token}))`, appliedCss: `oklch(var(${token}))` },
+      ];
+
+  const rawVarIsTransparent = rawVar === "transparent" || rawVar === "";
+  const allowTransparentToken = token === "--border"; // Some border tokens may be low-alpha; treat true transparent as failure unless explicitly transparent.
+
+  for (const c of tried) {
+    const rawComputed = computedFromProbe(c.appliedCss, property);
+    const parsed = parseComputedColor(rawComputed);
+
+    const isTransparentBlack =
+      parsed.rgba && parsed.rgba.a === 0 && parsed.rgba.r === 0 && parsed.rgba.g === 0 && parsed.rgba.b === 0;
+    // If a non-transparent var yields transparent black, treat it as an invalid strategy (often from invalid hsl/oklch wrapper).
+    if (isTransparentBlack && !rawVarIsTransparent && !allowTransparentToken) {
+      continue;
+    }
+
+    if (parsed.rgba) {
+      return {
+        token,
+        rawVar,
+        rawComputed,
+        normalizedComputed: parsed.normalized,
+        rgba: parsed.rgba,
+        strategy: c.strategy,
+      };
+    }
+  }
+
+  // Capture last computed for debugging.
+  const rawComputed = computedFromProbe(`var(${token})`, property);
+  const parsed = parseComputedColor(rawComputed);
+  return {
+    token,
+    rawVar,
+    rawComputed,
+    normalizedComputed: parsed.normalized,
+    rgba: parsed.rgba,
+    strategy: "parse failed (all strategies)",
+  };
 }
 
 function tokenPropertyForKind(kind: Pair["kind"], which: "fg" | "bg"): "color" | "backgroundColor" | "borderColor" {
@@ -141,6 +235,53 @@ export function ContrastAudit() {
     }>
   >([]);
 
+  const exportRows: AuditExportRow[] = useMemo(() => {
+    return rows.map((r) => ({
+      id: r.pair.id,
+      kind: r.pair.kind,
+      fgToken: r.pair.fg,
+      bgToken: r.pair.bg,
+      resolves: Boolean(r.fg.rgba && r.bg.rgba && r.ratio != null),
+      fg: {
+        rawVar: r.fg.rawVar,
+        rawComputed: r.fg.rawComputed,
+        normalizedComputed: r.fg.normalizedComputed,
+        parsedHex: r.fg.rgba ? rgbaToHex(r.fg.rgba) : null,
+        strategy: r.fg.strategy,
+      },
+      bg: {
+        rawVar: r.bg.rawVar,
+        rawComputed: r.bg.rawComputed,
+        normalizedComputed: r.bg.normalizedComputed,
+        parsedHex: r.bg.rgba ? rgbaToHex(r.bg.rgba) : null,
+        strategy: r.bg.strategy,
+      },
+      ratio: r.ratio,
+      labels: r.labels,
+      separationLabel: r.separation,
+    }));
+  }, [rows]);
+
+  const keyPairIds = useMemo(
+    () =>
+      [
+        "ui-border-on-bg",
+        "ui-control-border-on-control",
+        "ui-info-border-on-info",
+        "layer-card-vs-bg",
+        "layer-control-vs-card",
+        "layer-info-vs-card",
+        "text-paper-on-bg",
+        "text-muted-on-bg",
+        "text-paper-on-info",
+      ] as const,
+    [],
+  );
+
+  const keyPairs = useMemo(() => exportRows.filter((r) => keyPairIds.includes(r.id as any)), [exportRows, keyPairIds]);
+  const keyPairsJson = useMemo(() => JSON.stringify(keyPairs, null, 2), [keyPairs]);
+  const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
+
   useEffect(() => {
     const under = resolveTokenColor("--background", "backgroundColor");
     const underOpaque: Rgba = under.rgba ? { ...under.rgba, a: 1 } : { r: 10, g: 14, b: 15, a: 1 };
@@ -189,14 +330,14 @@ export function ContrastAudit() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[900px] border-separate border-spacing-0 text-left text-sm">
+          <table className="w-full min-w-[1220px] border-separate border-spacing-0 text-left text-sm">
             <thead>
               <tr className="text-xs text-[--metis-paper-muted]">
                 <th className="sticky left-0 z-10 bg-[rgba(0,0,0,0.18)] p-2">Pair</th>
                 <th className="p-2">FG token</th>
                 <th className="p-2">BG token</th>
-                <th className="p-2">Computed FG</th>
-                <th className="p-2">Computed BG</th>
+                <th className="p-2">FG debug</th>
+                <th className="p-2">BG debug</th>
                 <th className="p-2">Ratio</th>
                 {showWcag ? <th className="p-2">WCAG</th> : <th className="p-2">Separation</th>}
                 <th className="p-2">Note</th>
@@ -215,30 +356,72 @@ export function ContrastAudit() {
                     <code className="text-xs text-[--metis-paper]">{r.pair.bg}</code>
                   </td>
                   <td className="p-2 align-top">
-                    {r.fg.rgba ? (
-                      <div className="flex items-center gap-2">
-                        <ColorChip rgba={r.fg.rgba} />
-                        <div className="text-xs text-[--metis-paper-muted]">
-                          <div className="text-[--metis-paper]">{rgbaToHex(r.fg.rgba)}</div>
-                          <div>{r.fg.css}</div>
+                    <div className="space-y-2">
+                      <div className="text-xs text-[--metis-paper-muted]">
+                        <div className="text-[--metis-paper]">
+                          {r.fg.rgba ? (
+                            <span className="inline-flex items-center gap-2">
+                              <ColorChip rgba={r.fg.rgba} />
+                              <span>{rgbaToHex(r.fg.rgba)}</span>
+                            </span>
+                          ) : (
+                            <Badge className="border-0 bg-rose-900/35 text-rose-50">parse failed</Badge>
+                          )}
+                        </div>
+                        <div>
+                          <span className="text-[--metis-ink-soft]">strategy</span> · <span>{r.fg.strategy}</span>
                         </div>
                       </div>
-                    ) : (
-                      <Badge className="border-0 bg-rose-900/35 text-rose-50">Unresolved</Badge>
-                    )}
+                      <div className="rounded-lg border border-white/10 bg-black/20 p-2 text-[0.7rem] leading-5 text-[--metis-paper-muted]">
+                        <div>
+                          <span className="text-[--metis-ink-soft]">var</span> · <code className="text-[--metis-paper]">{r.fg.rawVar || "∅"}</code>
+                        </div>
+                        <div className="mt-1">
+                          <span className="text-[--metis-ink-soft]">computed</span> ·{" "}
+                          <code className="text-[--metis-paper]">{r.fg.rawComputed || "∅"}</code>
+                        </div>
+                        {r.fg.normalizedComputed ? (
+                          <div className="mt-1">
+                            <span className="text-[--metis-ink-soft]">normalized</span> ·{" "}
+                            <code className="text-[--metis-paper]">{r.fg.normalizedComputed}</code>
+                          </div>
+                        ) : null}
+                      </div>
+                    </div>
                   </td>
                   <td className="p-2 align-top">
-                    {r.bg.rgba ? (
-                      <div className="flex items-center gap-2">
-                        <ColorChip rgba={r.bg.rgba} />
-                        <div className="text-xs text-[--metis-paper-muted]">
-                          <div className="text-[--metis-paper]">{rgbaToHex(r.bg.rgba)}</div>
-                          <div>{r.bg.css}</div>
+                    <div className="space-y-2">
+                      <div className="text-xs text-[--metis-paper-muted]">
+                        <div className="text-[--metis-paper]">
+                          {r.bg.rgba ? (
+                            <span className="inline-flex items-center gap-2">
+                              <ColorChip rgba={r.bg.rgba} />
+                              <span>{rgbaToHex(r.bg.rgba)}</span>
+                            </span>
+                          ) : (
+                            <Badge className="border-0 bg-rose-900/35 text-rose-50">parse failed</Badge>
+                          )}
+                        </div>
+                        <div>
+                          <span className="text-[--metis-ink-soft]">strategy</span> · <span>{r.bg.strategy}</span>
                         </div>
                       </div>
-                    ) : (
-                      <Badge className="border-0 bg-rose-900/35 text-rose-50">Unresolved</Badge>
-                    )}
+                      <div className="rounded-lg border border-white/10 bg-black/20 p-2 text-[0.7rem] leading-5 text-[--metis-paper-muted]">
+                        <div>
+                          <span className="text-[--metis-ink-soft]">var</span> · <code className="text-[--metis-paper]">{r.bg.rawVar || "∅"}</code>
+                        </div>
+                        <div className="mt-1">
+                          <span className="text-[--metis-ink-soft]">computed</span> ·{" "}
+                          <code className="text-[--metis-paper]">{r.bg.rawComputed || "∅"}</code>
+                        </div>
+                        {r.bg.normalizedComputed ? (
+                          <div className="mt-1">
+                            <span className="text-[--metis-ink-soft]">normalized</span> ·{" "}
+                            <code className="text-[--metis-paper]">{r.bg.normalizedComputed}</code>
+                          </div>
+                        ) : null}
+                      </div>
+                    </div>
                   </td>
                   <td className="p-2 align-top">
                     {r.ratio != null ? (
@@ -276,6 +459,47 @@ export function ContrastAudit() {
 
   return (
     <div className="space-y-4">
+      <div className="space-y-2 rounded-[1.2rem] border border-white/10 bg-black/10 px-4 py-4">
+        <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Export (for verification)</p>
+        <p className="text-sm leading-6 text-[--metis-paper-muted]">
+          Copy this JSON to share exact computed values (dev-only; not a WCAG artifact).
+        </p>
+        <div className="rounded-lg border border-white/10 bg-black/30 p-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Key pairs (requested)</p>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                className="h-9 rounded-full px-4 text-xs"
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(keyPairsJson);
+                    setCopyState("copied");
+                    window.setTimeout(() => setCopyState("idle"), 1500);
+                  } catch {
+                    setCopyState("error");
+                    window.setTimeout(() => setCopyState("idle"), 1800);
+                  }
+                }}
+              >
+                Copy key pairs JSON
+              </Button>
+              {copyState === "copied" ? (
+                <Badge className="border-0 bg-emerald-900/35 text-emerald-50">Copied</Badge>
+              ) : copyState === "error" ? (
+                <Badge className="border-0 bg-rose-900/35 text-rose-50">Copy failed</Badge>
+              ) : null}
+            </div>
+          </div>
+          <pre className="mt-2 max-h-[240px] overflow-auto text-[0.7rem] leading-5 text-[--metis-paper]">
+            {keyPairsJson}
+          </pre>
+        </div>
+        <pre className="max-h-[320px] overflow-auto rounded-lg border border-white/10 bg-black/30 p-3 text-[0.7rem] leading-5 text-[--metis-paper]">
+          {JSON.stringify(exportRows, null, 2)}
+        </pre>
+      </div>
       <Table title="Text contrast (WCAG)" items={grouped.text} showWcag />
       <Table title="UI boundary contrast (WCAG-ish)" items={grouped.ui} showWcag />
       <Table title="Layer separation (heuristic)" items={grouped.layer} showWcag={false} />
