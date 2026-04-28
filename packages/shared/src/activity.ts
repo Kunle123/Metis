@@ -7,6 +7,7 @@ export const OperatorPostureSchema = z.union([z.literal("Monitoring"), z.literal
 export type OperatorPosture = z.infer<typeof OperatorPostureSchema>;
 
 export const IssueActivityKindSchema = z.union([
+  z.literal("issue_created"),
   z.literal("issue_triage_updated"),
   z.literal("brief_version_created"),
   z.literal("gap_created"),

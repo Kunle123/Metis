@@ -1,6 +1,7 @@
 import { IssueActivityKindSchema } from "@metis/shared/activity";
 
 export const IssueActivityKinds = {
+  issue_created: IssueActivityKindSchema.parse("issue_created"),
   issue_triage_updated: IssueActivityKindSchema.parse("issue_triage_updated"),
   brief_version_created: IssueActivityKindSchema.parse("brief_version_created"),
   gap_created: IssueActivityKindSchema.parse("gap_created"),

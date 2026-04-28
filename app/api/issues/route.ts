@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 
 import { CreateIssueInputSchema } from "@metis/shared/issue";
 import { prisma } from "@/lib/db/prisma";
+import { IssueActivityKinds } from "@/lib/issues/activityKinds";
+import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
 import { requireMutation } from "@/lib/governance/requireMutation";
 
 export async function GET() {
@@ -20,8 +22,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const gate = await requireMutation(request);
-  if (gate instanceof NextResponse) return gate;
+  const user = await requireMutation(request);
+  if (user instanceof NextResponse) return user;
 
   const json = await request.json();
   const parsed = CreateIssueInputSchema.safeParse(json);
@@ -38,24 +40,37 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Missing required fields." }, { status: 400 });
   }
 
-  const created = await prisma.issue.create({
-    data: {
-      title: titleTrimmed,
-      summary: summaryTrimmed,
-      confirmedFacts: parsed.data.confirmedFacts ?? null,
-      openQuestions: parsed.data.openQuestions ?? null,
-      context: parsed.data.context ?? null,
-      issueType: issueTypeTrimmed,
-      severity: parsed.data.severity,
-      status: parsed.data.status,
-      priority: parsed.data.priority ?? "Normal",
-      operatorPosture: parsed.data.operatorPosture ?? "Monitoring",
-      ownerName: parsed.data.ownerName ?? null,
-      audience: parsed.data.audience ?? null,
-      // `openGapsCount` is derived from persisted `Gap` rows; ignore any client-provided value.
-      openGapsCount: 0,
-      sourcesCount: parsed.data.sourcesCount ?? 0,
-    },
+  const created = await prisma.$transaction(async (tx) => {
+    const issue = await tx.issue.create({
+      data: {
+        title: titleTrimmed,
+        summary: summaryTrimmed,
+        confirmedFacts: parsed.data.confirmedFacts ?? null,
+        openQuestions: parsed.data.openQuestions ?? null,
+        context: parsed.data.context ?? null,
+        issueType: issueTypeTrimmed,
+        severity: parsed.data.severity,
+        status: parsed.data.status,
+        priority: parsed.data.priority ?? "Normal",
+        operatorPosture: parsed.data.operatorPosture ?? "Monitoring",
+        ownerName: parsed.data.ownerName ?? null,
+        audience: parsed.data.audience ?? null,
+        // `openGapsCount` is derived from persisted `Gap` rows; ignore any client-provided value.
+        openGapsCount: 0,
+        sourcesCount: parsed.data.sourcesCount ?? 0,
+      },
+    });
+
+    await writeIssueActivity(tx, {
+      issueId: issue.id,
+      kind: IssueActivityKinds.issue_created,
+      summary: `Issue created: ${issue.title}`,
+      refType: "Issue",
+      refId: issue.id,
+      actorLabel: user.email ?? null,
+    });
+
+    return issue;
   });
 
   return NextResponse.json({
