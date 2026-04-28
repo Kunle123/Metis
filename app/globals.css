@@ -23,15 +23,15 @@
   --metis-info: oklch(0.78 0.085 232);
   --metis-info-soft: oklch(0.9 0.04 232);
   /* Tuned for clearer separation vs neutral panels. */
-  --metis-info-bg: color-mix(in oklab, var(--metis-info) 18%, rgba(0, 0, 0, 0.14));
-  --metis-info-border: color-mix(in oklab, var(--metis-info) 46%, rgba(255, 255, 255, 0.12));
+  --metis-info-bg: color-mix(in oklab, var(--metis-info) 24%, rgba(0, 0, 0, 0.12));
+  --metis-info-border: color-mix(in oklab, var(--metis-info) 58%, rgba(255, 255, 255, 0.14));
   --metis-info-ring: color-mix(in oklab, var(--metis-info) 66%, transparent);
   /* Neutral control layer: above quiet panels (~3–6% white) so fields/buttons read as operable. */
   --metis-control-bg: rgb(255 255 255 / 0.18);
-  --metis-control-border: rgb(255 255 255 / 0.34);
+  --metis-control-border: rgb(255 255 255 / 0.4);
   --metis-control-inset: rgb(255 255 255 / 0.1);
   --metis-control-bg-hover: rgb(255 255 255 / 0.22);
-  --metis-control-border-hover: rgb(255 255 255 / 0.42);
+  --metis-control-border-hover: rgb(255 255 255 / 0.46);
   --metis-control-inset-hover: rgb(255 255 255 / 0.13);
   --metis-control-bg-disabled: rgb(255 255 255 / 0.09);
   --metis-control-border-disabled: rgb(255 255 255 / 0.2);
@@ -52,7 +52,7 @@
   --shadow-card: 0 24px 72px rgba(0, 0, 0, 0.26);
   --background: var(--metis-frame);
   --foreground: var(--metis-paper);
-  --card: oklch(0.225 0.01 68);
+  --card: oklch(0.245 0.01 68);
   --card-foreground: var(--metis-paper);
   --popover: oklch(0.18 0.008 62);
   --popover-foreground: var(--metis-paper);
@@ -72,9 +72,9 @@
 }
 
 .dark {
-  --background: oklch(0.14 0.008 60);
+  --background: oklch(0.13 0.008 60);
   --foreground: var(--metis-paper);
-  --card: oklch(0.225 0.01 68);
+  --card: oklch(0.245 0.01 68);
   --card-foreground: var(--metis-paper);
   --popover: oklch(0.18 0.008 62);
   --popover-foreground: var(--metis-paper);
