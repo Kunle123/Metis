@@ -1,12 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Link2, Lock, PencilLine, PlusCircle } from "lucide-react";
+import { ArrowRight, ChevronDown, ChevronRight, Link2, Lock, PencilLine, PlusCircle } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { ConfidencePill, ReadinessPill, SurfaceCard } from "@/components/MetisShell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { CollapsibleSection } from "@/components/review/CollapsibleSection";
+import { DenseSection } from "@/components/review/DenseSection";
+import { ReviewRailCard } from "@/components/review/ReviewRailCard";
+import { ReviewToolbar } from "@/components/review/ReviewToolbar";
 import type { InternalInput } from "@metis/shared/internalInput";
 
 import { InternalInputCreateForm } from "./input-create-form";
@@ -18,8 +22,15 @@ const operatorRules = [
   { icon: PencilLine, text: "Attributable wording" },
 ] as const;
 
+function clampText(s: string, max = 220) {
+  const t = s.trim();
+  if (t.length <= max) return t;
+  return `${t.slice(0, max).trimEnd()}…`;
+}
+
 export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; inputs: InternalInput[] }) {
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [openId, setOpenId] = useState<string | null>(null);
   const [excludedById, setExcludedById] = useState<Record<string, boolean>>(() => {
     const init: Record<string, boolean> = {};
     for (const i of inputs) init[i.id] = Boolean((i as any).excludedFromBrief);
@@ -52,31 +63,37 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <SurfaceCard>
           <div className="border-b border-white/8 bg-[rgba(255,255,255,0.025)] px-6 py-5 sm:px-7">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-              <div>
-                <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper] sm:text-[2rem]">Attributable records</h2>
-                <p className="mt-1 text-sm leading-6 text-[--metis-paper-muted]">
-                  Full list of internal observations. Normal capture happens in the workspace; use this for full-list review and management.
-                </p>
-              </div>
-              {inputs[0] ? (
-                <div className="flex flex-wrap items-center gap-2">
-                  <ConfidencePill level={inputs[0].confidence} />
-                  <ReadinessPill state="Updated since last version" />
+            <ReviewToolbar
+              className="border-0 bg-transparent px-0 py-0"
+              left={
+                <div>
+                  <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper] sm:text-[2rem]">Attributable records</h2>
+                  <p className="mt-1 text-sm leading-6 text-[--metis-paper-muted]">
+                    Full list of internal observations. Normal capture happens in the workspace; use this for full-list review and management.
+                  </p>
                 </div>
-              ) : (
-                <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">No observations yet</Badge>
-              )}
-            </div>
-            <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
-              <Button
-                asChild
-                variant="outline"
-                className="h-10 rounded-full border-white/10 bg-white/[0.03] px-4 text-[--metis-paper] hover:bg-white/[0.08]"
-              >
-                <Link href={`/issues/${issueId}`}>Back to workspace</Link>
-              </Button>
-            </div>
+              }
+              right={
+                inputs[0] ? (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <ConfidencePill level={inputs[0].confidence} />
+                    <ReadinessPill state="Updated since last version" />
+                  </div>
+                ) : (
+                  <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">No observations yet</Badge>
+                )
+              }
+            >
+              <div className="flex flex-wrap items-center gap-2 lg:justify-center">
+                <Button
+                  asChild
+                  variant="outline"
+                  className="h-10 rounded-full border-white/10 bg-white/[0.03] px-4 text-[--metis-paper] hover:bg-white/[0.08]"
+                >
+                  <Link href={`/issues/${issueId}`}>Back to workspace</Link>
+                </Button>
+              </div>
+            </ReviewToolbar>
           </div>
 
           <div className="space-y-8 px-6 py-6 sm:px-7 sm:py-7">
@@ -93,40 +110,103 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
               {inputs.length === 0 ? (
                 <p className="text-sm leading-6 text-[--metis-paper-muted]">No observations yet. Add one below or from the issue workspace.</p>
               ) : (
-                <div className="space-y-3">
-                  {inputs.map((input) => (
-                    <article key={input.id} className="rounded-[1.15rem] border border-white/8 bg-[rgba(255,255,255,0.035)] px-4 py-4">
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div>
-                          <div className="flex flex-wrap items-center gap-2">
-                            <Badge className="border-0 bg-[--metis-brass]/12 text-[--metis-brass-soft]">{input.id}</Badge>
-                            <h4 className="text-sm font-medium text-[--metis-paper]">
-                              {input.role} · {input.name}
-                            </h4>
+                <div className="rounded-[1.25rem] border border-white/10 bg-[rgba(255,255,255,0.035)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+                  {inputs.map((input) => {
+                    const expanded = openId === input.id;
+                    const response = (input.response ?? "").trim();
+                    const responsePreview = clampText(response, 240);
+                    const linked = input.linkedSection ?? "—";
+                    const visibility = input.visibility ?? "—";
+                    const timestamp = input.timestampLabel ?? "—";
+                    const isExcluded = Boolean(excludedById[input.id]);
+
+                    return (
+                      <div
+                        key={input.id}
+                        className={["border-t border-white/10 px-4 py-3 first:border-t-0 sm:px-5", !expanded ? "hover:bg-white/[0.02]" : ""].join(" ")}
+                      >
+                        <DenseSection
+                          title={
+                            <div className="flex flex-wrap items-center gap-2">
+                              <Badge className="border-0 bg-[--metis-brass]/12 text-[--metis-brass-soft]">{input.id.slice(0, 8)}…</Badge>
+                              <span className="text-sm font-medium text-[--metis-paper]">
+                                {input.role} · {input.name}
+                              </span>
+                            </div>
+                          }
+                          className="space-y-2 border-t-0 pt-0"
+                          titleClassName="text-[0.62rem]"
+                        >
+                          <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
+                            <div className="min-w-0 flex-1">
+                              <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-[--metis-paper-muted]">
+                                <span className="text-[--metis-paper]">Timestamp:</span>
+                                <span>{timestamp}</span>
+                                <span className="text-white/20">•</span>
+                                <span className="text-[--metis-paper]">Section:</span>
+                                <span>{linked}</span>
+                                <span className="text-white/20">•</span>
+                                <span className="text-[--metis-paper]">Visibility:</span>
+                                <span>{visibility}</span>
+                              </div>
+
+                              <p className="mt-2 text-sm leading-6 text-[--metis-paper-muted]">{responsePreview || "—"}</p>
+                            </div>
+
+                            <div className="flex shrink-0 flex-wrap items-center gap-2">
+                              {isExcluded ? (
+                                <Badge className="border-0 bg-rose-900/25 text-rose-50">Excluded from brief output</Badge>
+                              ) : null}
+                              <ConfidencePill level={input.confidence} />
+                              <button
+                                type="button"
+                                disabled={busyId === input.id}
+                                onClick={() => void toggleExcluded(input.id, !isExcluded)}
+                                className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/75 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
+                                title="Excluded notes are kept in the record but omitted from generated briefs."
+                              >
+                                {isExcluded ? "Include in briefs" : "Exclude from briefs"}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setOpenId((cur) => (cur === input.id ? null : input.id))}
+                                className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs text-white/65 hover:bg-white/[0.06]"
+                                aria-expanded={expanded}
+                              >
+                                {expanded ? "Hide response" : "Full response"}
+                                {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                              </button>
+                            </div>
                           </div>
-                          <p className="mt-2 text-[0.72rem] uppercase tracking-[0.18em] text-[--metis-ink-soft]">
-                            {input.timestampLabel ?? "—"} · {input.linkedSection ?? "—"} · {input.visibility ?? "—"}
-                          </p>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-2">
-                          {excludedById[input.id] ? (
-                            <Badge className="border-0 bg-rose-900/25 text-rose-50">Excluded from brief output</Badge>
+
+                          {expanded ? (
+                            <div className="pt-1">
+                              <CollapsibleSection
+                                defaultOpen={true}
+                                className="bg-[rgba(0,0,0,0.14)] px-4 py-3"
+                                summary={
+                                  <div className="flex items-center justify-between gap-3">
+                                    <div className="min-w-0">
+                                      <p className="text-xs font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">
+                                        Response
+                                      </p>
+                                      <p className="mt-1 text-xs text-[--metis-paper-muted]">Full text as captured.</p>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-white/45">
+                                      <span className="text-xs">Toggle</span>
+                                      <ChevronDown className="h-4 w-4" />
+                                    </div>
+                                  </div>
+                                }
+                              >
+                                <p className="whitespace-pre-wrap text-sm leading-7 text-[--metis-paper]">{response || "—"}</p>
+                              </CollapsibleSection>
+                            </div>
                           ) : null}
-                          <ConfidencePill level={input.confidence} />
-                          <button
-                            type="button"
-                            disabled={busyId === input.id}
-                            onClick={() => void toggleExcluded(input.id, !excludedById[input.id])}
-                            className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/75 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
-                            title="Excluded notes are kept in the record but omitted from generated briefs."
-                          >
-                            {excludedById[input.id] ? "Include in briefs" : "Exclude from briefs"}
-                          </button>
-                        </div>
+                        </DenseSection>
                       </div>
-                      <p className="mt-3 text-sm leading-6 text-[--metis-paper-muted]">{input.response}</p>
-                    </article>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </section>
@@ -150,9 +230,9 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
         </SurfaceCard>
 
         <SurfaceCard className="metis-support-surface">
-          <div className="divide-y divide-white/8">
-            <div className="px-5 py-5 text-sm leading-6 text-[--metis-paper-muted]">
-              <div className="space-y-4 rounded-[1.2rem] border border-white/8 bg-[rgba(0,0,0,0.18)] px-4 py-4">
+          <div className="space-y-4 px-5 py-5">
+            <ReviewRailCard title="Operator rules" meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Output hygiene guidance for attributable notes.</p>}>
+              <div className="space-y-3 text-sm leading-6 text-[--metis-paper-muted]">
                 {operatorRules.map((item) => {
                   const Icon = item.icon;
                   return (
@@ -162,30 +242,39 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
                     </div>
                   );
                 })}
-                <div className="space-y-3 border-t border-white/8 pt-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Current effect</span>
-                    <ReadinessPill state="Updated since last version" />
-                  </div>
-                  <p>Observations are stored for attribution and can close clarification gaps when explicitly linked.</p>
-                </div>
               </div>
-            </div>
+            </ReviewRailCard>
 
-            <div className="grid gap-3 px-5 py-5">
-              <Button asChild variant="outline" className="w-full rounded-full">
-                <Link href={`/issues/${issueId}/brief?mode=full`}>
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Open brief
-                </Link>
-              </Button>
-              <Button asChild variant="outline" className="w-full rounded-full">
-                <Link href={`/issues/${issueId}/gaps`}>
-                  Review clarification gaps
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-            </div>
+            <ReviewRailCard
+              title="Current effect"
+              meta={
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-sm leading-6 text-[--metis-paper-muted]">
+                    Observations are stored for attribution and can close clarification gaps when explicitly linked.
+                  </span>
+                  <ReadinessPill state="Updated since last version" />
+                </div>
+              }
+            >
+              <div />
+            </ReviewRailCard>
+
+            <ReviewRailCard title="Next" meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Move from notes to brief output and validation.</p>}>
+              <div className="grid gap-3">
+                <Button asChild variant="outline" className="w-full rounded-full">
+                  <Link href={`/issues/${issueId}/brief?mode=full`}>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Open brief
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" className="w-full rounded-full">
+                  <Link href={`/issues/${issueId}/gaps`}>
+                    Review clarification gaps
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </ReviewRailCard>
           </div>
         </SurfaceCard>
       </div>
