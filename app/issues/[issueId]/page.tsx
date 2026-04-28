@@ -17,7 +17,7 @@ function sectionNavItem(id: string, label: string) {
     <a
       key={id}
       href={`#${id}`}
-      className="rounded-full border border-white/10 bg-[rgba(255,255,255,0.025)] px-4 py-2.5 text-sm text-[--metis-paper-muted] transition hover:border-white/14 hover:bg-white/[0.05] hover:text-[--metis-paper]"
+      className="rounded-full border border-white/10 bg-[rgba(255,255,255,0.025)] px-3.5 py-2 text-sm text-[--metis-paper-muted] transition hover:border-white/14 hover:bg-white/[0.05] hover:text-[--metis-paper]"
     >
       {label}
     </a>
@@ -79,7 +79,7 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
                 <Badge className="border-0 bg-[rgba(131,82,17,0.72)] text-amber-50">Open gaps · {issue.openGapsCount}</Badge>
               </div>
             </div>
-            <div className="mt-5 flex flex-wrap gap-3">
+            <div className="mt-4 flex flex-wrap gap-2.5">
               {[
                 ["summary", "Issue summary"],
                 ["facts", "Confirmed vs unclear"],
@@ -91,39 +91,39 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
             </div>
           </div>
 
-          <div className="space-y-10 px-6 py-6 sm:px-7 sm:py-7">
+          <div className="space-y-7 px-6 py-6 sm:px-7 sm:py-7">
             <section id="summary" className="space-y-4">
               <div className="space-y-2">
                 <p className="text-[0.72rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Issue summary</p>
                 <h3 className="text-[1.35rem] font-medium leading-8 text-[--metis-paper]">{issue.title}</h3>
-                <p className="max-w-4xl text-base leading-8 text-[--metis-paper] whitespace-pre-wrap">{issue.summary}</p>
+                <p className="max-w-4xl text-sm leading-7 text-[--metis-paper] whitespace-pre-wrap">{issue.summary}</p>
               </div>
             </section>
 
-            <section id="facts" className="space-y-6 border-t border-white/8 pt-10">
+            <section id="facts" className="space-y-5 border-t border-white/8 pt-7">
               <div className="space-y-2">
                 <p className="text-[0.72rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Confirmed vs unclear</p>
                 <p className="text-sm leading-6 text-[--metis-paper-muted]">Keep facts and unknowns separate.</p>
               </div>
-              <div className="grid gap-6 xl:grid-cols-2">
-                <div className="space-y-2 rounded-[1.25rem] border border-white/8 bg-[rgba(255,255,255,0.03)] px-5 py-5">
+              <div className="grid gap-4 xl:grid-cols-2">
+                <div className="space-y-2 rounded-[1.25rem] border border-white/8 bg-[rgba(255,255,255,0.03)] px-4 py-4 sm:px-5 sm:py-5">
                   <p className="text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">Confirmed facts</p>
                   <p className="text-sm leading-7 text-[--metis-paper] whitespace-pre-wrap">{issue.confirmedFacts ?? "—"}</p>
                 </div>
-                <div className="space-y-2 rounded-[1.25rem] border border-white/8 bg-[rgba(255,255,255,0.03)] px-5 py-5">
+                <div className="space-y-2 rounded-[1.25rem] border border-white/8 bg-[rgba(255,255,255,0.03)] px-4 py-4 sm:px-5 sm:py-5">
                   <p className="text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">Open questions</p>
                   <p className="text-sm leading-7 text-[--metis-paper] whitespace-pre-wrap">{issue.openQuestions ?? "—"}</p>
                 </div>
               </div>
               {issue.context ? (
-                <div className="space-y-2 rounded-[1.25rem] border border-white/8 bg-[rgba(0,0,0,0.18)] px-5 py-5">
+                <div className="space-y-2 rounded-[1.25rem] border border-white/8 bg-[rgba(0,0,0,0.18)] px-4 py-4 sm:px-5 sm:py-5">
                   <p className="text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">Context</p>
                   <p className="text-sm leading-7 text-[--metis-paper-muted] whitespace-pre-wrap">{issue.context}</p>
                 </div>
               ) : null}
             </section>
 
-            <section id="sources" className="space-y-6 border-t border-white/8 pt-10">
+            <section id="sources" className="space-y-5 border-t border-white/8 pt-7">
               <WorkspaceSection
                 title="Sources"
                 description="Evidence and artifacts linked to this issue."
@@ -153,7 +153,7 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
               </WorkspaceSection>
             </section>
 
-            <section id="gaps" className="space-y-6 border-t border-white/8 pt-10">
+            <section id="gaps" className="space-y-5 border-t border-white/8 pt-7">
               <WorkspaceSection
                 title="Gaps"
                 description="Unknowns and questions that must be answered."
@@ -188,7 +188,7 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
               </WorkspaceSection>
             </section>
 
-            <section id="input" className="space-y-6 border-t border-white/8 pt-10">
+            <section id="input" className="space-y-5 border-t border-white/8 pt-7">
               <WorkspaceSection
                 title="Observations"
                 description="Attributable internal observations linked to sections."
@@ -221,7 +221,7 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
               </WorkspaceSection>
             </section>
 
-            <section id="stakeholders" className="space-y-6 border-t border-white/8 pt-10">
+            <section id="stakeholders" className="space-y-5 border-t border-white/8 pt-7">
               <WorkspaceSection
                 title="Audience lens"
                 description="Plan outputs by audience group. Sources, gaps, and observations remain the stakeholder-agnostic truth layer."

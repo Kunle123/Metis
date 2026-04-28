@@ -183,7 +183,7 @@ function CardShell({
       <button
         type="button"
         onClick={onToggle}
-        className="flex w-full items-start justify-between gap-4 px-4 py-3 text-left hover:bg-white/[0.04]"
+        className="flex w-full items-start justify-between gap-4 px-4 py-2.5 text-left hover:bg-white/[0.04]"
         aria-expanded={expanded}
       >
         <div className="min-w-0 flex-1">{summary}</div>
@@ -192,7 +192,7 @@ function CardShell({
           {expanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
         </div>
       </button>
-      {expanded && details ? <div className="border-t border-white/10 px-4 pb-4 pt-3">{details}</div> : null}
+      {expanded && details ? <div className="border-t border-white/10 px-4 pb-3 pt-2.5">{details}</div> : null}
     </div>
   );
 }
@@ -332,7 +332,7 @@ export function WorkspaceGapCards({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2.5">
       {gaps.map((g) => {
         const expanded = openId === g.id;
         const preview = clampText(g.prompt, 140);
@@ -737,7 +737,7 @@ export function WorkspaceSourceCards({
   }, [sources]);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2.5">
       {sources.map((s) => {
         const expanded = openId === s.id;
         const title = (s.title ?? "").trim() || "Source";
@@ -840,11 +840,11 @@ export function WorkspaceObservationCards({ issueId, observations }: { issueId: 
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2.5">
       {observations.map((o) => (
         <div
           key={o.id}
-          className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3"
+          className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-2.5"
         >
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
@@ -873,7 +873,7 @@ export function WorkspaceObservationCards({ issueId, observations }: { issueId: 
               </button>
             </div>
           </div>
-          <p className="mt-3 whitespace-pre-wrap text-sm text-white/85">{o.response}</p>
+          <p className="mt-2.5 whitespace-pre-wrap text-sm text-white/85">{o.response}</p>
           <p className="mt-2 text-xs text-white/45">{new Date(o.createdAt).toLocaleString()}</p>
         </div>
       ))}

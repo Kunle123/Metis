@@ -26,7 +26,7 @@ export function CollapsibleFormPanel({
   const label = useMemo(() => (expanded ? "Hide form" : addLabel), [addLabel, expanded]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="space-y-1">
           <p className="text-[0.72rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">{title}</p>
@@ -48,10 +48,10 @@ export function CollapsibleFormPanel({
       </div>
 
       <div id={regionId} className={expanded ? "block" : "hidden"} aria-hidden={!expanded}>
-        <div className="rounded-[1.25rem] border border-white/8 bg-[rgba(0,0,0,0.14)] px-5 py-5">{form}</div>
+        <div className="rounded-[1.25rem] border border-white/8 bg-[rgba(0,0,0,0.14)] px-4 py-4 sm:px-5 sm:py-5">{form}</div>
       </div>
 
-      <div className="space-y-3">{children}</div>
+      <div className="space-y-2.5">{children}</div>
     </div>
   );
 }
