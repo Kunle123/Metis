@@ -457,10 +457,10 @@ export function GapLedger({
 
       <SurfaceCard className="metis-support-surface">
         <div className="space-y-4 px-5 py-5">
-          <ReviewRailCard title="By section" meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Where gaps are accumulating.</p>}>
+          <ReviewRailCard title="By section" tone="info" meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Where gaps are accumulating.</p>}>
             <div className="space-y-3">
               {sectionPressure.map((item) => (
-                <div key={item.section} className="rounded-[1.15rem] border border-white/8 bg-[rgba(0,0,0,0.18)] px-4 py-4">
+                <div key={item.section} className="rounded-[1.15rem] border border-[--metis-info-border] bg-[--metis-info-bg] px-4 py-4">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="text-sm font-medium text-[--metis-paper]">{item.section}</p>
@@ -483,7 +483,7 @@ export function GapLedger({
             </div>
           </ReviewRailCard>
 
-          <ReviewRailCard title="Counts" meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Sanity-check ledger totals.</p>}>
+          <ReviewRailCard title="Counts" tone="info" meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Sanity-check ledger totals.</p>}>
             <div className="space-y-3 text-sm leading-6 text-[--metis-paper-muted]">
               <div className="flex items-center justify-between gap-3">
                 <span className="text-[--metis-paper]">Observation records</span>
@@ -500,7 +500,7 @@ export function GapLedger({
             </div>
           </ReviewRailCard>
 
-          <ReviewRailCard title="Next" meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Add attributable observations used to resolve gaps.</p>}>
+          <ReviewRailCard title="Next" tone="info" meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Add attributable observations used to resolve gaps.</p>}>
             <div className="grid gap-3">
               <Button asChild variant="outline" className="w-full rounded-full">
                 <Link href={`/issues/${issueId}/input`}>Add attributable input</Link>

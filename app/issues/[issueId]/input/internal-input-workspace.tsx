@@ -183,7 +183,7 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
                             <div className="pt-1">
                               <CollapsibleSection
                                 defaultOpen={true}
-                                className="bg-[rgba(0,0,0,0.14)] px-4 py-3"
+                                className="border-[--metis-info-border] bg-[--metis-info-bg] px-4 py-3"
                                 summary={
                                   <div className="flex items-center justify-between gap-3">
                                     <div className="min-w-0">
@@ -231,7 +231,7 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
 
         <SurfaceCard className="metis-support-surface">
           <div className="space-y-4 px-5 py-5">
-            <ReviewRailCard title="Operator rules" meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Output hygiene guidance for attributable notes.</p>}>
+            <ReviewRailCard title="Operator rules" tone="info" meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Output hygiene guidance for attributable notes.</p>}>
               <div className="space-y-3 text-sm leading-6 text-[--metis-paper-muted]">
                 {operatorRules.map((item) => {
                   const Icon = item.icon;
@@ -247,6 +247,7 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
 
             <ReviewRailCard
               title="Current effect"
+              tone="info"
               meta={
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-sm leading-6 text-[--metis-paper-muted]">
@@ -259,7 +260,7 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
               <div />
             </ReviewRailCard>
 
-            <ReviewRailCard title="Next" meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Move from notes to brief output and validation.</p>}>
+            <ReviewRailCard title="Next" tone="info" meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Move from notes to brief output and validation.</p>}>
               <div className="grid gap-3">
                 <Button asChild variant="outline" className="w-full rounded-full">
                   <Link href={`/issues/${issueId}/brief?mode=full`}>

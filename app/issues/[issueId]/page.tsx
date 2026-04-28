@@ -106,17 +106,17 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
                 <p className="text-sm leading-6 text-[--metis-paper-muted]">Keep facts and unknowns separate.</p>
               </div>
               <div className="grid gap-4 xl:grid-cols-2">
-                <div className="space-y-2 rounded-[1.25rem] border border-white/8 bg-[rgba(255,255,255,0.03)] px-4 py-4 sm:px-5 sm:py-5">
+                <div className="space-y-2 rounded-[1.25rem] border border-[--metis-info-border] bg-[rgba(255,255,255,0.03)] px-4 py-4 sm:px-5 sm:py-5">
                   <p className="text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">Confirmed facts</p>
                   <p className="text-sm leading-7 text-[--metis-paper] whitespace-pre-wrap">{issue.confirmedFacts ?? "—"}</p>
                 </div>
-                <div className="space-y-2 rounded-[1.25rem] border border-white/8 bg-[rgba(255,255,255,0.03)] px-4 py-4 sm:px-5 sm:py-5">
+                <div className="space-y-2 rounded-[1.25rem] border border-[--metis-info-border] bg-[rgba(255,255,255,0.03)] px-4 py-4 sm:px-5 sm:py-5">
                   <p className="text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">Open questions</p>
                   <p className="text-sm leading-7 text-[--metis-paper] whitespace-pre-wrap">{issue.openQuestions ?? "—"}</p>
                 </div>
               </div>
               {issue.context ? (
-                <div className="space-y-2 rounded-[1.25rem] border border-white/8 bg-[rgba(0,0,0,0.18)] px-4 py-4 sm:px-5 sm:py-5">
+                <div className="space-y-2 rounded-[1.25rem] border border-[--metis-info-border] bg-[rgba(0,0,0,0.18)] px-4 py-4 sm:px-5 sm:py-5">
                   <p className="text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">Context</p>
                   <p className="text-sm leading-7 text-[--metis-paper-muted] whitespace-pre-wrap">{issue.context}</p>
                 </div>
