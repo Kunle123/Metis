@@ -13,6 +13,18 @@
   --metis-ink-soft: oklch(0.63 0.015 72);
   --metis-brass: oklch(0.69 0.08 70);
   --metis-brass-soft: oklch(0.8 0.07 74);
+  /* Semantic mapping: primary accent remains brass. */
+  --metis-accent: var(--metis-brass);
+  --metis-accent-soft: var(--metis-brass-soft);
+  /*
+   * Semantic "info" accent (restrained blue).
+   * Used for metadata/evidence/structure context, especially in right rails.
+   */
+  --metis-info: oklch(0.78 0.085 232);
+  --metis-info-soft: oklch(0.9 0.04 232);
+  --metis-info-bg: color-mix(in oklab, var(--metis-info) 12%, rgba(0, 0, 0, 0.16));
+  --metis-info-border: color-mix(in oklab, var(--metis-info) 34%, rgba(255, 255, 255, 0.1));
+  --metis-info-ring: color-mix(in oklab, var(--metis-info) 55%, transparent);
   /* Neutral control layer: above quiet panels (~3–6% white) so fields/buttons read as operable. */
   --metis-control-bg: rgb(255 255 255 / 0.14);
   --metis-control-border: rgb(255 255 255 / 0.3);

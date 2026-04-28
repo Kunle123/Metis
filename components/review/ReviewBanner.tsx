@@ -9,9 +9,9 @@ const toneStyles: Record<ReviewBannerTone, { wrap: string; title: string; body: 
     body: "text-amber-50/90",
   },
   info: {
-    wrap: "border-sky-400/20 bg-sky-950/15",
-    title: "text-sky-100/90",
-    body: "text-sky-50/85",
+    wrap: "border-[--metis-info-border] bg-[--metis-info-bg]",
+    title: "text-[--metis-info-soft]",
+    body: "text-[--metis-paper-muted]",
   },
   neutral: {
     wrap: "border-white/10 bg-white/5",

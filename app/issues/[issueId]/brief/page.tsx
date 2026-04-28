@@ -265,6 +265,7 @@ export default async function IssueBriefPage({
           <div className="space-y-4 px-5 py-5">
             <ReviewRailCard
               title="Brief"
+              tone="info"
               meta={
                 <div className="space-y-2">
                   <div className="flex items-center justify-between gap-3">
@@ -353,6 +354,7 @@ export default async function IssueBriefPage({
 
             <ReviewRailCard
               title="Status"
+              tone="info"
               meta={
                 <div className="space-y-2">
                   <div className="flex items-center justify-between gap-3">
@@ -404,6 +406,7 @@ export default async function IssueBriefPage({
 
             <ReviewRailCard
               title="Evidence"
+              tone="info"
               meta={
                 <div className="flex items-center gap-2 text-[--metis-paper]">
                   <Library className="h-4 w-4 text-[--metis-brass]" />

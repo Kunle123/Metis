@@ -254,6 +254,7 @@ export function MessagesPanel({
         <div className="space-y-4">
           <ReviewRailCard
             title="Draft status"
+            tone="info"
             meta={
               <ReviewBanner
                 title="Draft for review"
@@ -296,19 +297,20 @@ export function MessagesPanel({
           </ReviewRailCard>
 
           {latest?.artifact.metadata.issueLevelAudienceNote ? (
-            <ReviewRailCard title="Setup note" meta={<span>{latest.artifact.metadata.issueLevelAudienceNote}</span>}>
+            <ReviewRailCard title="Setup note" tone="info" meta={<span>{latest.artifact.metadata.issueLevelAudienceNote}</span>}>
               <div />
             </ReviewRailCard>
           ) : null}
 
           {latest?.artifact.metadata.lensEnrichmentNote ? (
-            <ReviewRailCard title="Lens note" meta={<span>{latest.artifact.metadata.lensEnrichmentNote}</span>}>
+            <ReviewRailCard title="Lens note" tone="info" meta={<span>{latest.artifact.metadata.lensEnrichmentNote}</span>}>
               <div />
             </ReviewRailCard>
           ) : null}
 
           {latest ? (
             <CollapsibleSection
+              className="border-[--metis-info-border] bg-[--metis-info-bg]"
               summary={
                 <div className="flex items-center justify-between gap-3">
                   <h3 className="text-[0.7rem] font-medium uppercase tracking-[0.22em] text-[rgba(176,171,160,0.72)]">
