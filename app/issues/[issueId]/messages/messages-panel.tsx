@@ -140,6 +140,14 @@ export function MessagesPanel({
 
   return (
     <div className="space-y-8">
+      <div className="rounded-[1.2rem] border border-amber-400/25 bg-amber-950/20 px-5 py-5 sm:px-6">
+        <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-amber-200/90">Draft for review</p>
+        <p className="mt-2 text-sm leading-6 text-amber-50/90">
+          Not approved for circulation. Check for sensitive, legal, personal, security, or unverified claims before using this draft in any
+          channel.
+        </p>
+      </div>
+
       <div className="rounded-[1.15rem] border border-[--metis-brass]/25 bg-[rgba(164,132,82,0.08)] px-5 py-4 sm:px-6">
         <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-brass-soft]">Showing message for</p>
         <p className="mt-1 text-base font-medium text-[--metis-paper]">{selectedLensLabel}</p>
@@ -152,7 +160,8 @@ export function MessagesPanel({
       <div className="rounded-[1.2rem] border border-white/10 bg-[rgba(0,0,0,0.14)] px-5 py-5 sm:px-6">
         <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Template</p>
         <p className="mt-2 text-sm leading-6 text-[--metis-paper-muted]">
-          Choose the message template. External updates avoid internal observations and source references; internal staff updates may include them.
+          Choose the message template. External updates avoid internal observations and source references; internal staff updates may include
+          them.
         </p>
         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <label className="block min-w-[min(100%,20rem)] flex-1 space-y-2">
@@ -167,6 +176,11 @@ export function MessagesPanel({
             </select>
           </label>
         </div>
+        <p className="mt-3 text-sm leading-6 text-[--metis-paper-muted]">
+          {selectedTemplateId === "internal_staff_update"
+            ? "Internal draft: may include internal notes and evidence references. Internal notes are not confirmed facts. Review for sensitive or legally risky content before sharing."
+            : "External draft: uses issue summary/confirmed facts and uncertainty wording. Still requires human review for sensitive or legally risky content."}
+        </p>
       </div>
 
       <div className="rounded-[1.2rem] border border-white/10 bg-[rgba(0,0,0,0.14)] px-5 py-5 sm:px-6">

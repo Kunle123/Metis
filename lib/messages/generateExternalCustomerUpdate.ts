@@ -198,6 +198,7 @@ export function generateExternalCustomerResidentStudentArtifact(input: ExternalM
     "Do not quote or paraphrase internal observations in external channels.",
     "Do not share internal source identifiers or evidence appendix details publicly.",
     "Do not speculate beyond what is stated in confirmed facts and this update.",
+    "Treat this as a draft for review; it may contain sensitive or unverified claims from the issue record.",
   ];
   if (issueLens) {
     const risk = cleanText(issueLens.issueRisk);
@@ -253,6 +254,10 @@ function bulletsFromParagraph(text: string) {
 export function renderMessageVariantMarkdown(title: string, artifact: MessageVariantArtifact) {
   const lines: string[] = [`# ${artifact.metadata.publicHeadline || title}`, ""];
   lines.push(`*Audience: ${artifact.metadata.audienceLabel} · ${artifact.metadata.lastRevisionLabel}*`);
+  lines.push(
+    "",
+    "**DRAFT FOR REVIEW — NOT APPROVED FOR CIRCULATION.** Check for sensitive, legal, personal, security, or unverified claims before use.",
+  );
   if (artifact.metadata.issueLevelAudienceNote) {
     lines.push("", `*${artifact.metadata.issueLevelAudienceNote}*`);
   }

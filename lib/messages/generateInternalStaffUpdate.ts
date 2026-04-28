@@ -163,7 +163,9 @@ export function generateInternalStaffUpdateArtifact(input: InternalStaffMessageG
     const lines = topInputs.map(formatInternalInputLine).filter(Boolean);
     const extra = nonExcludedInputs.length > topInputs.length ? `\n\n(${nonExcludedInputs.length - topInputs.length} more internal notes not shown.)` : "";
     return (
-      "Internal notes (not confirmed facts):\n\n" + lines.map((l) => `- ${l}`).join("\n") + extra
+      "Internal notes (not confirmed facts):\nThese notes may be incomplete, sensitive, or wrong. Do not treat as confirmed facts.\n\n" +
+      lines.map((l) => `- ${l}`).join("\n") +
+      extra
     ).trim();
   })();
 
@@ -217,6 +219,7 @@ export function generateInternalStaffUpdateArtifact(input: InternalStaffMessageG
   const mustAvoid: string[] = [
     "Do not present internal notes as confirmed facts.",
     "Do not paste internal evidence references into external channels; use the external update template instead.",
+    "Treat this as a draft for review; internal notes may be wrong or sensitive even when useful for investigation.",
   ];
   if (issueLens) {
     const risk = cleanText(issueLens.issueRisk);
@@ -265,6 +268,10 @@ export function generateInternalStaffUpdateArtifact(input: InternalStaffMessageG
 export function renderInternalStaffUpdateMarkdown(title: string, artifact: InternalStaffUpdateArtifact) {
   const lines: string[] = [`# ${artifact.metadata.publicHeadline || title}`, ""];
   lines.push(`*Audience: ${artifact.metadata.audienceLabel} · ${artifact.metadata.lastRevisionLabel}*`);
+  lines.push(
+    "",
+    "**DRAFT FOR REVIEW — NOT APPROVED FOR CIRCULATION.** Check for sensitive, legal, personal, security, or unverified claims before use.",
+  );
   if (artifact.metadata.issueLevelAudienceNote) lines.push("", `*${artifact.metadata.issueLevelAudienceNote}*`);
   if (artifact.metadata.lensEnrichmentNote) lines.push("", `*${artifact.metadata.lensEnrichmentNote}*`);
   if (artifact.metadata.internalNotesLabel) lines.push("", `*${artifact.metadata.internalNotesLabel}*`);
