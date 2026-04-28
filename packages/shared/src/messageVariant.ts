@@ -17,8 +17,18 @@ export const MessageVariantArtifactSchema = z.object({
     lastRevisionLabel: z.string(),
     openGapsLabel: z.string(),
     audienceLabel: z.string(),
-    lensSource: z.union([z.literal("issue_stakeholder"), z.literal("issue_audience_only")]),
+    lensSource: z.union([
+      z.literal("issue_stakeholder"),
+      z.literal("issue_audience_only"),
+      z.literal("stakeholder_group"),
+    ]),
     issueLevelAudienceNote: z.string().nullable(),
+    /** Present when using an organisation audience group (new rows). */
+    stakeholderGroupId: z.string().uuid().nullable().optional(),
+    /** True when IssueStakeholder row supplied issue-specific lens fields used in copy. */
+    issueSpecificLensApplied: z.boolean().optional(),
+    /** e.g. defaults-only message when no IssueStakeholder row. */
+    lensEnrichmentNote: z.string().nullable().optional(),
   }),
   sections: z.array(MessageVariantSectionSchema),
   guardrails: z.object({
@@ -34,6 +44,7 @@ export const MessageVariantRecordSchema = z.object({
   templateId: MessageVariantTemplateIdSchema,
   versionNumber: z.number().int(),
   generatedFromIssueUpdatedAt: z.string(),
+  stakeholderGroupId: z.string().nullable(),
   issueStakeholderId: z.string().nullable(),
   audienceSnapshot: z.record(z.string(), z.unknown()),
   artifact: MessageVariantArtifactSchema,
@@ -43,14 +54,15 @@ export type MessageVariantRecord = z.infer<typeof MessageVariantRecordSchema>;
 
 export const CreateMessageVariantInputSchema = z.object({
   templateId: MessageVariantTemplateIdSchema,
-  issueStakeholderId: z.string().uuid().nullable().optional(),
+  /** null = audience note from issue setup only; otherwise organisation StakeholderGroup id. */
+  stakeholderGroupId: z.string().uuid().nullable().optional(),
 });
 export type CreateMessageVariantInput = z.infer<typeof CreateMessageVariantInputSchema>;
 
-/** GET /message-variants: optional filter for latest/history scoped to one audience bucket (null = issue-level). */
+/** GET /message-variants: optional filter scoped to audience bucket (null = setup note). */
 export const MessageVariantListQuerySchema = z.object({
   templateId: MessageVariantTemplateIdSchema.optional(),
-  /** Omit or `"issue"` for issue-level audience (issueStakeholderId null on rows). */
+  /** Omit or `"issue"` for setup audience; otherwise `StakeholderGroup.id`. */
   lens: z.union([z.literal("issue"), z.string().uuid()]).optional(),
   history: z.enum(["1"]).optional(),
 });

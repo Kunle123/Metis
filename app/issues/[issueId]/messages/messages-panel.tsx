@@ -8,12 +8,13 @@ import { Button } from "@/components/ui/button";
 import type { MessageVariantArtifact } from "@metis/shared/messageVariant";
 import { renderMessageVariantMarkdown } from "@/lib/messages/generateExternalCustomerUpdate";
 
-type StakeholderOption = { id: string; label: string };
+type AudienceGroupOption = { id: string; label: string };
 
 type LatestPayload = {
   id: string;
   versionNumber: number;
   generatedFromIssueUpdatedAt: string;
+  stakeholderGroupId: string | null;
   issueStakeholderId: string | null;
   artifact: MessageVariantArtifact;
 } | null;
@@ -22,17 +23,17 @@ export function MessagesPanel({
   issueId,
   issueTitle,
   issueUpdatedAt,
-  stakeholderOptions,
-  selectedStakeholderId,
+  audienceGroupOptions,
+  selectedStakeholderGroupId,
   selectedLensLabel,
   initialLatest,
 }: {
   issueId: string;
   issueTitle: string;
   issueUpdatedAt: string;
-  stakeholderOptions: StakeholderOption[];
-  /** null = issue-level audience bucket (`?lens=issue`). */
-  selectedStakeholderId: string | null;
+  audienceGroupOptions: AudienceGroupOption[];
+  /** null = setup audience note (`?lens=issue`). */
+  selectedStakeholderGroupId: string | null;
   selectedLensLabel: string;
   initialLatest: LatestPayload;
 }) {
@@ -42,7 +43,7 @@ export function MessagesPanel({
   const [loading, setLoading] = useState(false);
   const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
 
-  const selectValue = selectedStakeholderId === null ? "" : selectedStakeholderId;
+  const selectValue = selectedStakeholderGroupId === null ? "" : selectedStakeholderGroupId;
 
   useEffect(() => {
     setLatest(initialLatest);
@@ -50,8 +51,9 @@ export function MessagesPanel({
     initialLatest?.id,
     initialLatest?.versionNumber,
     initialLatest?.generatedFromIssueUpdatedAt,
+    initialLatest?.stakeholderGroupId,
     initialLatest?.issueStakeholderId,
-    selectedStakeholderId,
+    selectedStakeholderGroupId,
   ]);
 
   const inSync = useMemo(() => {
@@ -64,8 +66,8 @@ export function MessagesPanel({
     return renderMessageVariantMarkdown(issueTitle, latest.artifact);
   }, [latest, issueTitle]);
 
-  function navigateToLens(nextStakeholderId: string | null) {
-    const q = nextStakeholderId === null ? "issue" : nextStakeholderId;
+  function navigateToLens(nextGroupId: string | null) {
+    const q = nextGroupId === null ? "issue" : nextGroupId;
     router.push(`${pathname}?lens=${encodeURIComponent(q)}`);
   }
 
@@ -78,7 +80,7 @@ export function MessagesPanel({
         credentials: "include",
         body: JSON.stringify({
           templateId: "external_customer_resident_student",
-          issueStakeholderId: selectedStakeholderId,
+          stakeholderGroupId: selectedStakeholderGroupId,
         }),
       });
       const data = (await res.json().catch(() => ({}))) as unknown;
@@ -91,6 +93,7 @@ export function MessagesPanel({
         id: string;
         versionNumber: number;
         generatedFromIssueUpdatedAt: string;
+        stakeholderGroupId: string | null;
         issueStakeholderId: string | null;
         artifact: MessageVariantArtifact;
       };
@@ -98,6 +101,7 @@ export function MessagesPanel({
         id: row.id,
         versionNumber: row.versionNumber,
         generatedFromIssueUpdatedAt: row.generatedFromIssueUpdatedAt,
+        stakeholderGroupId: row.stakeholderGroupId,
         issueStakeholderId: row.issueStakeholderId,
         artifact: row.artifact,
       });
@@ -128,15 +132,16 @@ export function MessagesPanel({
         <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-brass-soft]">Showing message for</p>
         <p className="mt-1 text-base font-medium text-[--metis-paper]">{selectedLensLabel}</p>
         <p className="mt-2 text-sm leading-6 text-[--metis-paper-muted]">
-          Each audience lens keeps its own latest saved message. Change the lens above to view another audience&apos;s copy, then generate or
-          regenerate if none exists or the issue record has moved on.
+          Each audience keeps its own latest saved message. Change the audience above to view another lens, then generate or regenerate if none
+          exists or the issue record has moved on.
         </p>
       </div>
 
       <div className="rounded-[1.2rem] border border-white/10 bg-[rgba(0,0,0,0.14)] px-5 py-5 sm:px-6">
-        <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Audience lens</p>
+        <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Audience</p>
         <p className="mt-2 text-sm leading-6 text-[--metis-paper-muted]">
-          Choose the linked audience for needs, risks, channel guidance, and tone. Use issue-level only when no stakeholder applies.
+          Organisation audience groups come from settings. Optional per-issue lens notes enrich a group when present; otherwise library defaults
+          apply.
         </p>
         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <label className="block min-w-[min(100%,20rem)] flex-1 space-y-2">
@@ -149,8 +154,8 @@ export function MessagesPanel({
               }}
               className="h-11 w-full rounded-full border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
             >
-              <option value="">Issue-level audience only</option>
-              {stakeholderOptions.map((o) => (
+              <option value="">Audience note from setup</option>
+              {audienceGroupOptions.map((o) => (
                 <option key={o.id} value={o.id}>
                   {o.label}
                 </option>
@@ -192,6 +197,11 @@ export function MessagesPanel({
             {latest.artifact.metadata.issueLevelAudienceNote ? (
               <p className="mt-3 rounded-xl border border-amber-400/25 bg-amber-950/25 px-4 py-3 text-sm leading-6 text-amber-50/95">
                 {latest.artifact.metadata.issueLevelAudienceNote}
+              </p>
+            ) : null}
+            {latest.artifact.metadata.lensEnrichmentNote ? (
+              <p className="mt-3 rounded-xl border border-sky-400/20 bg-sky-950/20 px-4 py-3 text-sm leading-6 text-sky-50/95">
+                {latest.artifact.metadata.lensEnrichmentNote}
               </p>
             ) : null}
           </div>

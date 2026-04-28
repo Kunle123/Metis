@@ -2,11 +2,23 @@ import type { Gap, Issue, IssueStakeholder, Source, StakeholderGroup } from "@pr
 
 import type { MessageVariantArtifact } from "@metis/shared/messageVariant";
 
+/** Setup-only audience (issue.audience); no StakeholderGroup. */
+export type SetupAudienceInput = { kind: "setup" };
+
+/** Organisation group + optional per-issue IssueStakeholder enrichment. */
+export type GroupAudienceInput = {
+  kind: "group";
+  group: StakeholderGroup;
+  issueLens: IssueStakeholder | null;
+};
+
+export type ExternalAudienceInput = SetupAudienceInput | GroupAudienceInput;
+
 export type ExternalMessageGenerationInput = {
   issue: Issue;
   sources: Source[];
   gaps: Gap[];
-  issueStakeholder: (IssueStakeholder & { stakeholderGroup: StakeholderGroup }) | null;
+  audience: ExternalAudienceInput;
 };
 
 function cleanText(value: unknown) {
@@ -46,38 +58,39 @@ function formatUncertaintyLine(g: Gap) {
   return base.endsWith("?") ? `We are still working to answer: ${base}` : `We are still working to answer: ${base}?`;
 }
 
-export function buildAudienceSnapshot(
-  issue: Issue,
-  issueStakeholder: (IssueStakeholder & { stakeholderGroup: StakeholderGroup }) | null,
-): Record<string, unknown> {
-  if (!issueStakeholder) {
+function issueLensHasContent(row: IssueStakeholder) {
+  return Boolean(
+    cleanText(row.needsToKnow) ||
+      cleanText(row.issueRisk) ||
+      cleanText(row.channelGuidance) ||
+      cleanText(row.toneAdjustment) ||
+      cleanText(row.notes),
+  );
+}
+
+export function buildAudienceSnapshot(issue: Issue, audience: ExternalAudienceInput): Record<string, unknown> {
+  if (audience.kind === "setup") {
     return {
-      lensSource: "issue_audience_only",
+      lensSource: "setup_audience_note",
+      stakeholderGroupId: null,
+      issueStakeholderId: null,
       issueAudienceLabel: cleanText(issue.audience) || null,
-      stakeholderGroupName: null,
-      priority: null,
-      needsToKnow: null,
-      issueRisk: null,
-      channelGuidance: null,
-      toneAdjustment: null,
-      notes: null,
-      defaultSensitivity: null,
-      defaultChannels: null,
-      defaultToneGuidance: null,
     };
   }
-  const g = issueStakeholder.stakeholderGroup;
+  const g = audience.group;
+  const row = audience.issueLens;
   return {
-    lensSource: "issue_stakeholder",
-    issueStakeholderId: issueStakeholder.id,
+    lensSource: "stakeholder_group",
     stakeholderGroupId: g.id,
     stakeholderGroupName: g.name,
-    priority: issueStakeholder.priority,
-    needsToKnow: cleanText(issueStakeholder.needsToKnow) || null,
-    issueRisk: cleanText(issueStakeholder.issueRisk) || null,
-    channelGuidance: cleanText(issueStakeholder.channelGuidance) || null,
-    toneAdjustment: cleanText(issueStakeholder.toneAdjustment) || null,
-    notes: cleanText(issueStakeholder.notes) || null,
+    issueStakeholderId: row?.id ?? null,
+    issueSpecificLensApplied: row ? issueLensHasContent(row) : false,
+    priority: row?.priority ?? null,
+    needsToKnow: row ? cleanText(row.needsToKnow) || null : null,
+    issueRisk: row ? cleanText(row.issueRisk) || null : null,
+    channelGuidance: row ? cleanText(row.channelGuidance) || null : null,
+    toneAdjustment: row ? cleanText(row.toneAdjustment) || null : null,
+    notes: row ? cleanText(row.notes) || null : null,
     defaultSensitivity: cleanText(g.defaultSensitivity) || null,
     defaultChannels: cleanText(g.defaultChannels) || null,
     defaultToneGuidance: cleanText(g.defaultToneGuidance) || null,
@@ -85,20 +98,40 @@ export function buildAudienceSnapshot(
 }
 
 export function generateExternalCustomerResidentStudentArtifact(input: ExternalMessageGenerationInput): MessageVariantArtifact {
-  const { issue, sources, gaps, issueStakeholder } = input;
+  const { issue, sources, gaps, audience } = input;
   const summary = cleanText(issue.summary);
   const confirmed = cleanText(issue.confirmedFacts);
   const open = openGaps(gaps).sort((a, b) => gapSeverityRank(a.severity) - gapSeverityRank(b.severity));
   const topOpen = open.slice(0, 3);
 
-  const audienceLabel = issueStakeholder
-    ? issueStakeholder.stakeholderGroup.name.trim()
-    : cleanText(issue.audience) || "Affected audience";
+  const isSetup = audience.kind === "setup";
+  const group = audience.kind === "group" ? audience.group : null;
+  const issueLens = audience.kind === "group" ? audience.issueLens : null;
+  const issueSpecificLensApplied = Boolean(group && issueLens && issueLensHasContent(issueLens));
 
-  const lensSource = issueStakeholder ? ("issue_stakeholder" as const) : ("issue_audience_only" as const);
-  const issueLevelAudienceNote = issueStakeholder
-    ? null
-    : "No linked audience group is on this issue. This text uses the issue-level audience label only; add an audience on the issue for tailored needs, risks, and tone.";
+  const audienceLabel = isSetup
+    ? cleanText(issue.audience) || "Affected audience"
+    : (group?.name ?? "").trim() || "Audience";
+
+  const lensSource = isSetup ? ("issue_audience_only" as const) : ("stakeholder_group" as const);
+
+  const issueLevelAudienceNote = isSetup
+    ? "Using the audience note from issue setup only. Choose an organisation audience group for library defaults and optional issue-specific lens notes."
+    : null;
+
+  const lensEnrichmentNote = (() => {
+    if (isSetup || !group) return null;
+    if (!issueLens || !issueLensHasContent(issueLens)) {
+      return "No issue-specific lens added for this audience yet. Organisation defaults from the audience library are being used.";
+    }
+    return null;
+  })();
+
+  const needsToKnowEffective = issueLens ? cleanText(issueLens.needsToKnow) : "";
+  const channelEffective = issueLens ? cleanText(issueLens.channelGuidance) : "";
+  const channelFromDefaults = group ? cleanText(group.defaultChannels) : "";
+  const toneFromIssue = issueLens ? cleanText(issueLens.toneAdjustment) : "";
+  const toneFromGroup = group ? cleanText(group.defaultToneGuidance) : "";
 
   const whatIsHappening = (() => {
     if (confirmed) {
@@ -130,17 +163,18 @@ export function generateExternalCustomerResidentStudentArtifact(input: ExternalM
         "We are still assembling the supporting information we can reference for external statements. Until that is in place, treat this update as provisional except where explicitly confirmed above.",
       );
     }
-    if (issueStakeholder) {
-      const nk = cleanText(issueStakeholder.needsToKnow);
-      if (nk) parts.push(`For this audience, our focus is: ${nk}`);
+    if (needsToKnowEffective) {
+      parts.push(`For this audience, our focus is: ${needsToKnowEffective}`);
     }
     return parts.join("\n\n");
   })();
 
   const whatYouCanDo = (() => {
-    const ch = issueStakeholder ? cleanText(issueStakeholder.channelGuidance) : "";
-    if (ch) {
-      return `Practical guidance:\n${ch}\n\nIf you need help, use the contact channels your organisation has published for this type of issue.`;
+    if (channelEffective) {
+      return `Practical guidance:\n${channelEffective}\n\nIf you need help, use the contact channels your organisation has published for this type of issue.`;
+    }
+    if (channelFromDefaults) {
+      return `Channel guidance (from audience library defaults):\n${channelFromDefaults}\n\nIf you need help, use the contact channels your organisation has published for this type of issue.`;
     }
     return "No specific actions are recorded in the issue template yet. If you need help, use the contact channels your organisation has published for this type of issue.";
   })();
@@ -165,18 +199,14 @@ export function generateExternalCustomerResidentStudentArtifact(input: ExternalM
     "Do not share internal source identifiers or evidence appendix details publicly.",
     "Do not speculate beyond what is stated in confirmed facts and this update.",
   ];
-  if (issueStakeholder) {
-    const risk = cleanText(issueStakeholder.issueRisk);
+  if (issueLens) {
+    const risk = cleanText(issueLens.issueRisk);
     if (risk) mustAvoid.push(`Audience risk note (internal): ${risk}`);
   }
 
   const toneParts: string[] = [];
-  if (issueStakeholder) {
-    const ta = cleanText(issueStakeholder.toneAdjustment);
-    const dt = cleanText(issueStakeholder.stakeholderGroup.defaultToneGuidance);
-    if (ta) toneParts.push(ta);
-    if (dt) toneParts.push(dt);
-  }
+  if (toneFromIssue) toneParts.push(toneFromIssue);
+  if (toneFromGroup) toneParts.push(toneFromGroup);
   const toneNotes =
     toneParts.length > 0
       ? toneParts.join(" ")
@@ -199,6 +229,9 @@ export function generateExternalCustomerResidentStudentArtifact(input: ExternalM
       audienceLabel,
       lensSource,
       issueLevelAudienceNote,
+      stakeholderGroupId: group?.id ?? null,
+      issueSpecificLensApplied,
+      lensEnrichmentNote,
     },
     sections,
     guardrails: {
@@ -222,6 +255,9 @@ export function renderMessageVariantMarkdown(title: string, artifact: MessageVar
   lines.push(`*Audience: ${artifact.metadata.audienceLabel} · ${artifact.metadata.lastRevisionLabel}*`);
   if (artifact.metadata.issueLevelAudienceNote) {
     lines.push("", `*${artifact.metadata.issueLevelAudienceNote}*`);
+  }
+  if (artifact.metadata.lensEnrichmentNote) {
+    lines.push("", `*${artifact.metadata.lensEnrichmentNote}*`);
   }
   lines.push("");
   for (const s of artifact.sections) {

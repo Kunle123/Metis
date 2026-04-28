@@ -12,18 +12,11 @@ export const dynamic = "force-dynamic";
 
 const TEMPLATE = "external_customer_resident_student" as const;
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 function cleanText(value: unknown) {
   if (typeof value !== "string") return "";
   return value.trim();
-}
-
-function resolveSelectedStakeholderId(
-  lensRaw: string | undefined,
-  stakeholderRows: { id: string }[],
-): string | null {
-  if (lensRaw === undefined || lensRaw === "" || lensRaw === "issue") return null;
-  if (stakeholderRows.some((r) => r.id === lensRaw)) return lensRaw;
-  return null;
 }
 
 export default async function IssueMessagesPage({
@@ -48,44 +41,59 @@ export default async function IssueMessagesPage({
     );
   }
 
-  const issueStakeholders = await prisma.issueStakeholder.findMany({
-    where: { issueId: issue.id },
-    include: { stakeholderGroup: true },
-    orderBy: [{ createdAt: "asc" }],
+  const activeGroups = await prisma.stakeholderGroup.findMany({
+    where: { isActive: true },
+    orderBy: [{ displayOrder: "asc" }, { name: "asc" }],
   });
 
-  if (lensRaw && lensRaw !== "issue" && !issueStakeholders.some((r) => r.id === lensRaw)) {
+  let selectedStakeholderGroupId: string | null = null;
+
+  if (lensRaw === undefined || lensRaw === "" || lensRaw === "issue") {
+    selectedStakeholderGroupId = null;
+  } else if (UUID_RE.test(lensRaw)) {
+    if (activeGroups.some((g) => g.id === lensRaw)) {
+      selectedStakeholderGroupId = lensRaw;
+    } else {
+      const legacyStakeholder = await prisma.issueStakeholder.findFirst({
+        where: { id: lensRaw, issueId: issue.id },
+        select: { stakeholderGroupId: true },
+      });
+      if (legacyStakeholder) {
+        redirect(`/issues/${issue.id}/messages?lens=${encodeURIComponent(legacyStakeholder.stakeholderGroupId)}`);
+      }
+      redirect(`/issues/${issue.id}/messages?lens=issue`);
+    }
+  } else {
     redirect(`/issues/${issue.id}/messages?lens=issue`);
   }
-
-  const selectedStakeholderId = resolveSelectedStakeholderId(lensRaw, issueStakeholders);
 
   const latestRow = await prisma.messageVariant.findFirst({
     where: {
       issueId: issue.id,
       templateId: TEMPLATE,
-      issueStakeholderId: selectedStakeholderId,
+      stakeholderGroupId: selectedStakeholderGroupId,
     },
     orderBy: [{ versionNumber: "desc" }],
   });
 
-  const stakeholderOptions = issueStakeholders.map((row) => ({
-    id: row.id,
-    label: row.stakeholderGroup.name,
+  const audienceGroupOptions = activeGroups.map((g) => ({
+    id: g.id,
+    label: g.name,
   }));
 
   const selectedLensLabel =
-    selectedStakeholderId === null
+    selectedStakeholderGroupId === null
       ? cleanText(issue.audience)
-        ? `Issue-level audience (${cleanText(issue.audience)})`
-        : "Issue-level audience only"
-      : (issueStakeholders.find((r) => r.id === selectedStakeholderId)?.stakeholderGroup.name ?? "Audience");
+        ? `Audience note from setup (${cleanText(issue.audience)})`
+        : "Audience note from setup"
+      : (activeGroups.find((g) => g.id === selectedStakeholderGroupId)?.name ?? "Audience");
 
   const initialLatest = latestRow
     ? {
         id: latestRow.id,
         versionNumber: latestRow.versionNumber,
         generatedFromIssueUpdatedAt: latestRow.generatedFromIssueUpdatedAt.toISOString(),
+        stakeholderGroupId: latestRow.stakeholderGroupId,
         issueStakeholderId: latestRow.issueStakeholderId,
         artifact: MessageVariantArtifactSchema.parse(latestRow.artifact),
       }
@@ -120,8 +128,8 @@ export default async function IssueMessagesPage({
             issueId={issue.id}
             issueTitle={issue.title}
             issueUpdatedAt={issue.updatedAt.toISOString()}
-            stakeholderOptions={stakeholderOptions}
-            selectedStakeholderId={selectedStakeholderId}
+            audienceGroupOptions={audienceGroupOptions}
+            selectedStakeholderGroupId={selectedStakeholderGroupId}
             selectedLensLabel={selectedLensLabel}
             initialLatest={initialLatest}
           />

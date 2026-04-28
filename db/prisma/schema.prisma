@@ -63,6 +63,7 @@ model StakeholderGroup {
   updatedAt          DateTime @updatedAt
 
   issueStakeholders IssueStakeholder[]
+  messageVariants   MessageVariant[]
 
   @@index([displayOrder])
   @@index([isActive, displayOrder])
@@ -97,16 +98,20 @@ model MessageVariant {
   templateId                   String
   versionNumber                Int
   generatedFromIssueUpdatedAt  DateTime
+  /** Organisation audience bucket; null = issue setup audience note only. */
+  stakeholderGroupId           String?
   issueStakeholderId           String?
   audienceSnapshot             Json
   artifact                     Json
   createdAt                    DateTime @default(now())
 
   issue              Issue              @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  stakeholderGroup   StakeholderGroup?  @relation(fields: [stakeholderGroupId], references: [id], onDelete: SetNull)
   issueStakeholder   IssueStakeholder?  @relation(fields: [issueStakeholderId], references: [id], onDelete: SetNull)
 
   @@unique([issueId, templateId, versionNumber])
   @@index([issueId, templateId, createdAt])
+  @@index([issueId, templateId, stakeholderGroupId])
   @@index([issueStakeholderId])
 }
 

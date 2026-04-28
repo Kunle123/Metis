@@ -15,6 +15,7 @@ import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
 import {
   buildAudienceSnapshot,
   generateExternalCustomerResidentStudentArtifact,
+  type ExternalAudienceInput,
 } from "@/lib/messages/generateExternalCustomerUpdate";
 import { revalidatePath } from "next/cache";
 
@@ -26,6 +27,7 @@ function serializeMessageVariant(row: {
   templateId: string;
   versionNumber: number;
   generatedFromIssueUpdatedAt: Date;
+  stakeholderGroupId: string | null;
   issueStakeholderId: string | null;
   audienceSnapshot: unknown;
   artifact: unknown;
@@ -38,6 +40,7 @@ function serializeMessageVariant(row: {
     templateId: row.templateId,
     versionNumber: row.versionNumber,
     generatedFromIssueUpdatedAt: row.generatedFromIssueUpdatedAt.toISOString(),
+    stakeholderGroupId: row.stakeholderGroupId,
     issueStakeholderId: row.issueStakeholderId,
     audienceSnapshot: row.audienceSnapshot as Record<string, unknown>,
     artifact,
@@ -45,9 +48,9 @@ function serializeMessageVariant(row: {
   };
 }
 
-/** Prisma filter: one audience bucket (null = issue-level only). */
-function whereForLens(issueStakeholderId: string | null): { issueStakeholderId: string | null } {
-  return { issueStakeholderId };
+/** One audience bucket: null = setup note from issue; non-null = organisation StakeholderGroup. */
+function whereForLens(stakeholderGroupId: string | null): { stakeholderGroupId: string | null } {
+  return { stakeholderGroupId };
 }
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -63,25 +66,36 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   if (!issue) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const lensParam = url.searchParams.get("lens");
-  let scopedLens: string | null | undefined;
+  let scopedGroupId: string | null | undefined;
   if (lensParam === "issue" || lensParam === "") {
-    scopedLens = null;
+    scopedGroupId = null;
   } else if (lensParam) {
     const ok = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(lensParam);
     if (!ok) {
-      return NextResponse.json({ error: "Invalid lens (use issue or a stakeholder id)" }, { status: 400 });
+      return NextResponse.json({ error: "Invalid lens (use issue or a StakeholderGroup id)" }, { status: 400 });
     }
-    const belongs = await prisma.issueStakeholder.findFirst({ where: { id: lensParam, issueId } });
-    if (!belongs) {
-      return NextResponse.json({ error: "Lens stakeholder not found on this issue" }, { status: 404 });
+    const activeGroup = await prisma.stakeholderGroup.findFirst({ where: { id: lensParam, isActive: true } });
+    if (activeGroup) {
+      scopedGroupId = lensParam;
+    } else {
+      const legacy = await prisma.issueStakeholder.findFirst({ where: { id: lensParam, issueId } });
+      if (!legacy) {
+        return NextResponse.json({ error: "Audience group not found or inactive" }, { status: 404 });
+      }
+      const groupForLegacy = await prisma.stakeholderGroup.findFirst({
+        where: { id: legacy.stakeholderGroupId, isActive: true },
+      });
+      if (!groupForLegacy) {
+        return NextResponse.json({ error: "Audience group not found or inactive" }, { status: 404 });
+      }
+      scopedGroupId = legacy.stakeholderGroupId;
     }
-    scopedLens = lensParam;
   }
 
   const history = url.searchParams.get("history") === "1";
   const whereBase: Prisma.MessageVariantWhereInput = { issueId, templateId: parsedTemplate.data };
   const whereScoped: Prisma.MessageVariantWhereInput =
-    scopedLens === undefined ? whereBase : { ...whereBase, ...whereForLens(scopedLens) };
+    scopedGroupId === undefined ? whereBase : { ...whereBase, ...whereForLens(scopedGroupId) };
 
   if (history) {
     const items = await prisma.messageVariant.findMany({
@@ -118,16 +132,23 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const issue = await prisma.issue.findUnique({ where: { id: issueId } });
   if (!issue) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const stakeholderId = parsed.data.issueStakeholderId ?? null;
-  let issueStakeholder: (IssueStakeholder & { stakeholderGroup: StakeholderGroup }) | null = null;
-  if (stakeholderId) {
-    issueStakeholder = await prisma.issueStakeholder.findFirst({
-      where: { id: stakeholderId, issueId },
-      include: { stakeholderGroup: true },
-    });
-    if (!issueStakeholder) {
-      return NextResponse.json({ error: "Issue stakeholder not found for this issue" }, { status: 404 });
+  const stakeholderGroupId = parsed.data.stakeholderGroupId ?? null;
+
+  let audience: ExternalAudienceInput;
+  let issueLens: IssueStakeholder | null = null;
+  let group: StakeholderGroup | null = null;
+
+  if (stakeholderGroupId) {
+    group = await prisma.stakeholderGroup.findFirst({ where: { id: stakeholderGroupId, isActive: true } });
+    if (!group) {
+      return NextResponse.json({ error: "Audience group not found or inactive" }, { status: 404 });
     }
+    issueLens = await prisma.issueStakeholder.findFirst({
+      where: { issueId, stakeholderGroupId: group.id },
+    });
+    audience = { kind: "group", group, issueLens };
+  } else {
+    audience = { kind: "setup" };
   }
 
   const [sources, gaps] = await Promise.all([
@@ -136,14 +157,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   ]);
 
   const latestForLens = await prisma.messageVariant.findFirst({
-    where: { issueId, templateId: TEMPLATE, ...whereForLens(stakeholderId) },
+    where: { issueId, templateId: TEMPLATE, ...whereForLens(stakeholderGroupId) },
     orderBy: [{ versionNumber: "desc" }],
   });
 
   if (
     latestForLens &&
     latestForLens.generatedFromIssueUpdatedAt.getTime() === issue.updatedAt.getTime() &&
-    (latestForLens.issueStakeholderId ?? null) === stakeholderId
+    (latestForLens.stakeholderGroupId ?? null) === stakeholderGroupId
   ) {
     return NextResponse.json(serializeMessageVariant(latestForLens));
   }
@@ -158,9 +179,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     issue,
     sources,
     gaps,
-    issueStakeholder,
+    audience,
   });
-  const audienceSnapshot = buildAudienceSnapshot(issue, issueStakeholder);
+  const audienceSnapshot = buildAudienceSnapshot(issue, audience);
 
   const created = await prisma.$transaction(async (tx) => {
     const row = await tx.messageVariant.create({
@@ -169,7 +190,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         templateId: TEMPLATE,
         versionNumber,
         generatedFromIssueUpdatedAt: issue.updatedAt,
-        issueStakeholderId: stakeholderId,
+        stakeholderGroupId,
+        issueStakeholderId: issueLens?.id ?? null,
         audienceSnapshot: audienceSnapshot as Prisma.InputJsonValue,
         artifact: artifact as Prisma.InputJsonValue,
       },
