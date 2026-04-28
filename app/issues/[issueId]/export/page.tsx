@@ -4,6 +4,10 @@ import { CheckCircle2, Copy, Download, Eye, FileText, Mail, RefreshCcw } from "l
 import { MetisShell, ReadinessPill, SurfaceCard } from "@/components/MetisShell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { CollapsibleSection } from "@/components/review/CollapsibleSection";
+import { DenseSection } from "@/components/review/DenseSection";
+import { ReviewRailCard } from "@/components/review/ReviewRailCard";
+import { ReviewToolbar } from "@/components/review/ReviewToolbar";
 import { CirculationEventTypeSchema, CirculationChannelSchema } from "@metis/shared/circulation";
 import { prisma } from "@/lib/db/prisma";
 import { getIssueById } from "@/lib/issues/getIssueContext";
@@ -101,13 +105,23 @@ export default async function IssueExportPage({
       >
         <SurfaceCard className="overflow-hidden">
           <div className="border-b border-white/8 bg-[rgba(255,255,255,0.025)] px-6 py-5 sm:px-7">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper]">Package selection</h2>
-              <div className="flex flex-wrap items-center gap-2">
-                <ReadinessPill state="Ready for review" />
-                <Badge className="border-0 bg-[--metis-brass]/12 text-[--metis-brass-soft]">—</Badge>
-              </div>
-            </div>
+            <ReviewToolbar
+              className="border-0 bg-transparent px-0 py-0"
+              left={
+                <div className="space-y-1">
+                  <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper]">Package selection</h2>
+                  <p className="text-sm leading-6 text-[--metis-paper-muted]">
+                    Prepare output requires a stored brief version.
+                  </p>
+                </div>
+              }
+              right={
+                <div className="flex flex-wrap items-center gap-2">
+                  <ReadinessPill state="Ready for review" />
+                  <Badge className="border-0 bg-[--metis-brass]/12 text-[--metis-brass-soft]">—</Badge>
+                </div>
+              }
+            />
           </div>
 
           <div className="space-y-6 px-6 py-6 sm:px-7 sm:py-7">
@@ -118,15 +132,20 @@ export default async function IssueExportPage({
             <Button asChild className="w-fit rounded-full px-5">
               <Link href={`/issues/${issue.id}/brief?mode=${mode}`}>Open brief</Link>
             </Button>
-            <div className="mt-8 rounded-[1.2rem] border border-white/10 bg-[rgba(0,0,0,0.12)] px-5 py-4 sm:px-6">
-              <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Message variants</p>
-              <p className="mt-2 text-sm leading-6 text-[--metis-paper-muted]">
-                You can still draft a reviewable external update from the issue record (no brief required).
-              </p>
-              <Button asChild variant="outline" className="mt-4 rounded-full">
-                <Link href={`/issues/${issue.id}/messages`}>Open Messages</Link>
-              </Button>
-            </div>
+            <ReviewRailCard
+              title="Message variants"
+              meta={
+                <p className="text-sm leading-6 text-[--metis-paper-muted]">
+                  You can still draft a reviewable external update from the issue record (no brief required).
+                </p>
+              }
+            >
+              <div className="grid gap-3">
+                <Button asChild variant="outline" className="w-fit rounded-full">
+                  <Link href={`/issues/${issue.id}/messages`}>Open Messages</Link>
+                </Button>
+              </div>
+            </ReviewRailCard>
           </div>
         </SurfaceCard>
       </MetisShell>
@@ -166,76 +185,117 @@ export default async function IssueExportPage({
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
         <SurfaceCard className="overflow-hidden">
           <div className="border-b border-white/8 bg-[rgba(255,255,255,0.025)] px-6 py-5 sm:px-7">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper]">Package selection</h2>
-              <div className="flex flex-wrap items-center gap-2">
-                <ReadinessPill state="Ready for review" />
-                <Badge className="border-0 bg-[--metis-brass]/12 text-[--metis-brass-soft]">
-                  {packageOptions.find((o) => o.id === selectedFormat)?.label ?? "—"}
-                </Badge>
-              </div>
-            </div>
+            <ReviewToolbar
+              className="border-0 bg-transparent px-0 py-0"
+              left={
+                <div className="space-y-1">
+                  <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper]">Prepare output</h2>
+                  <p className="text-sm leading-6 text-[--metis-paper-muted]">
+                    Select a package, then download or copy for circulation.
+                  </p>
+                </div>
+              }
+              right={
+                <div className="flex flex-wrap items-center gap-2">
+                  <ReadinessPill state="Ready for review" />
+                  <Badge className="border-0 bg-[--metis-brass]/12 text-[--metis-brass-soft]">
+                    {packageOptions.find((o) => o.id === selectedFormat)?.label ?? "—"}
+                  </Badge>
+                </div>
+              }
+            />
           </div>
 
-          <div className="space-y-8 px-6 py-6 sm:px-7 sm:py-7">
-            <section className="rounded-[1.2rem] border border-white/10 bg-[rgba(0,0,0,0.12)] px-5 py-4 sm:px-6">
-              <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Message variants</p>
-              <p className="mt-2 text-sm leading-6 text-[--metis-paper-muted]">
-                Generate a reviewable external (customer / resident / student) update from the issue record and audience lens—separate from briefs.
-              </p>
-              <Button asChild className="mt-4 rounded-full">
-                <Link href={`/issues/${issue.id}/messages`}>Open Messages</Link>
-              </Button>
-            </section>
+          <div className="space-y-6 px-6 py-6 sm:px-7 sm:py-7">
+            <ReviewRailCard
+              title="Message variants"
+              meta={
+                <p className="text-sm leading-6 text-[--metis-paper-muted]">
+                  Draft a reviewable external update from the issue record and audience lens—separate from briefs.
+                </p>
+              }
+            >
+              <div className="grid gap-3">
+                <Button asChild className="w-fit rounded-full">
+                  <Link href={`/issues/${issue.id}/messages`}>Open Messages</Link>
+                </Button>
+              </div>
+            </ReviewRailCard>
 
-            <section className="space-y-4">
-              <div className="space-y-4">
+            <section className="space-y-3">
+              <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Package options</p>
+              <div className="rounded-[1.25rem] border border-white/10 bg-[rgba(255,255,255,0.035)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
                 {packageOptions.map((item) => {
                   const isSelected = item.id === selectedFormat;
                   return (
                     <Link
                       key={item.id}
                       href={`/issues/${issue.id}/export?mode=${mode}&format=${item.id}`}
-                      className={`block rounded-[1.35rem] border px-5 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] ${
-                        isSelected
-                          ? "border-[rgba(224,183,111,0.32)] bg-[linear-gradient(180deg,rgba(224,183,111,0.16),rgba(255,255,255,0.045))]"
-                          : "border-white/10 bg-[rgba(255,255,255,0.055)]"
+                      className={`block border-t border-white/10 px-4 py-3 first:border-t-0 sm:px-5 ${
+                        isSelected ? "bg-[rgba(224,183,111,0.08)]" : "hover:bg-white/[0.02]"
                       }`}
                     >
-                      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                        <div>
+                      <DenseSection
+                        title={
                           <div className="flex flex-wrap items-center gap-2">
-                            <h4 className="text-base font-medium text-[--metis-paper]">{item.label}</h4>
-                            {isSelected ? <Badge className="border-0 bg-[--metis-brass]/15 text-[--metis-brass-soft]">Selected</Badge> : null}
+                            <span className="text-sm font-medium text-[--metis-paper]">{item.label}</span>
+                            {isSelected ? (
+                              <Badge className="border-0 bg-[--metis-brass]/15 text-[--metis-brass-soft]">Selected</Badge>
+                            ) : null}
                           </div>
-                          <p className="mt-2 text-sm leading-6 text-[--metis-paper-muted]">{item.description}</p>
+                        }
+                        className="space-y-2 border-t-0 pt-0"
+                        titleClassName="text-[0.62rem]"
+                      >
+                        <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm leading-6 text-[--metis-paper-muted]">{item.description}</p>
+                            <p className="mt-1 text-xs text-[--metis-paper-muted]">
+                              <span className="text-[--metis-paper]">Audience:</span> {item.audience}
+                            </p>
+                          </div>
+                          <div className="shrink-0">
+                            <ReadinessPill state={item.state} />
+                          </div>
                         </div>
-                        <div className="flex flex-col items-start gap-2 lg:items-end">
-                          <ReadinessPill state={item.state} />
-                          <span className="text-[0.72rem] uppercase tracking-[0.18em] text-[--metis-ink-soft]">{item.audience}</span>
-                        </div>
-                      </div>
+                      </DenseSection>
                     </Link>
                   );
                 })}
               </div>
             </section>
 
-            <section className="space-y-4 border-t border-white/8 pt-8">
-              <h3 className="text-[0.78rem] font-medium uppercase tracking-[0.2em] text-[rgba(176,171,160,0.7)]">Package contents</h3>
-              <div className="grid gap-4 md:grid-cols-2">
+            <CollapsibleSection
+              defaultOpen={false}
+              summary={
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Package contents</p>
+                    <p className="mt-1 text-xs text-[--metis-paper-muted]">What’s included in the selected package.</p>
+                  </div>
+                </div>
+              }
+            >
+              <div className="grid gap-3 sm:grid-cols-2">
                 {packageContents.map((item) => (
-                  <div key={item.label} className="flex items-center justify-between rounded-[1.1rem] border border-white/10 bg-[rgba(255,255,255,0.05)] px-4 py-3">
+                  <div
+                    key={item.label}
+                    className="flex items-center justify-between rounded-[1.1rem] border border-white/10 bg-[rgba(255,255,255,0.05)] px-4 py-3"
+                  >
                     <span className="text-sm text-[--metis-paper]">{item.label}</span>
-                    <Badge className={`border-0 ${item.included ? "bg-[rgba(18,84,58,0.62)] text-emerald-50" : "bg-white/8 text-[--metis-paper-muted]"}`}>
+                    <Badge
+                      className={`border-0 ${
+                        item.included ? "bg-[rgba(18,84,58,0.62)] text-emerald-50" : "bg-white/8 text-[--metis-paper-muted]"
+                      }`}
+                    >
                       {item.included ? "Included" : "Hidden"}
                     </Badge>
                   </div>
                 ))}
               </div>
-            </section>
+            </CollapsibleSection>
 
-            <section className="grid gap-3 border-t border-white/8 pt-8 sm:grid-cols-3">
+            <section className="grid gap-3 border-t border-white/8 pt-6 sm:grid-cols-3">
               <form action={`/api/issues/${issue.id}/export`} method="post">
                 <input type="hidden" name="briefVersionId" value={latest.id} />
                 <input type="hidden" name="format" value={selectedFormat} />
@@ -281,9 +341,8 @@ export default async function IssueExportPage({
         </SurfaceCard>
 
         <SurfaceCard className="metis-support-surface overflow-hidden">
-          <div className="divide-y divide-white/8">
-            <div className="space-y-3 px-5 py-5">
-              <p className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Preview</p>
+          <div className="space-y-4 px-5 py-5">
+            <ReviewRailCard title="Preview" meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Quick check before exporting.</p>}>
               <div className="rounded-[1.6rem] border border-[--metis-brass]/20 bg-[linear-gradient(180deg,rgba(255,251,242,0.98),rgba(250,246,237,0.96))] p-5 text-[--metis-dark] shadow-[0_20px_60px_rgba(0,0,0,0.18)]">
                 <div className="flex items-center justify-between gap-4 border-b border-[rgba(36,31,23,0.08)] pb-4">
                   <div>
@@ -300,10 +359,17 @@ export default async function IssueExportPage({
                   <p>v{latest.versionNumber}</p>
                 </div>
               </div>
-            </div>
+            </ReviewRailCard>
 
-            <div className="space-y-4 px-5 py-5">
-              <p className="text-[0.58rem] uppercase tracking-[0.16em] text-[rgba(176,171,160,0.58)]">Recent circulation record</p>
+            <CollapsibleSection
+              defaultOpen={false}
+              summary={
+                <div className="min-w-0">
+                  <p className="text-[0.58rem] uppercase tracking-[0.16em] text-[rgba(176,171,160,0.58)]">Recent circulation record</p>
+                  <p className="mt-1 text-xs text-[--metis-paper-muted]">Last 5 actions.</p>
+                </div>
+              }
+            >
               {recentCirculationEvents.length === 0 ? (
                 <div className="rounded-[1.25rem] border border-white/10 bg-[rgba(255,255,255,0.04)] px-4 py-3 text-sm leading-6 text-[--metis-paper-muted]">
                   No circulation actions logged yet.
@@ -311,10 +377,7 @@ export default async function IssueExportPage({
               ) : (
                 <div className="space-y-2">
                   {recentCirculationEvents.map((e) => (
-                    <div
-                      key={e.id}
-                      className="rounded-[1.25rem] border border-white/10 bg-[rgba(255,255,255,0.04)] px-4 py-3"
-                    >
+                    <div key={e.id} className="rounded-[1.25rem] border border-white/10 bg-[rgba(255,255,255,0.04)] px-4 py-3">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-[--metis-paper]">
@@ -334,39 +397,50 @@ export default async function IssueExportPage({
                   ))}
                 </div>
               )}
-            </div>
+            </CollapsibleSection>
 
-            <div className="space-y-4 px-5 py-5">
-              <p className="text-[0.58rem] uppercase tracking-[0.16em] text-[rgba(176,171,160,0.58)]">Circulation checks</p>
-              {packageOptions.map((item) => (
-                <div key={item.label} className="space-y-2 border-t border-white/8 pt-4 first:border-t-0 first:pt-0">
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="text-sm font-medium text-[--metis-paper]">{item.label}</span>
-                    <ReadinessPill state={item.state} />
-                  </div>
-                  <p className="text-sm leading-6 text-[--metis-paper-muted]">{item.description}</p>
+            <CollapsibleSection
+              defaultOpen={false}
+              summary={
+                <div className="min-w-0">
+                  <p className="text-[0.58rem] uppercase tracking-[0.16em] text-[rgba(176,171,160,0.58)]">Circulation checks</p>
+                  <p className="mt-1 text-xs text-[--metis-paper-muted]">Posture + format readiness.</p>
                 </div>
-              ))}
-              <div className="flex items-start gap-3 border-t border-white/8 pt-4 text-sm leading-6 text-[--metis-paper-muted]">
-                <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-[--metis-brass]" />
-                <span>{rendered.mimeType === "text/plain" ? "Plain text package ready." : "Markdown package ready."}</span>
+              }
+            >
+              <div className="space-y-3">
+                {packageOptions.map((item) => (
+                  <div key={item.label} className="space-y-2 border-t border-white/8 pt-4 first:border-t-0 first:pt-0">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-sm font-medium text-[--metis-paper]">{item.label}</span>
+                      <ReadinessPill state={item.state} />
+                    </div>
+                    <p className="text-sm leading-6 text-[--metis-paper-muted]">{item.description}</p>
+                  </div>
+                ))}
+                <div className="flex items-start gap-3 border-t border-white/8 pt-4 text-sm leading-6 text-[--metis-paper-muted]">
+                  <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-[--metis-brass]" />
+                  <span>{rendered.mimeType === "text/plain" ? "Plain text package ready." : "Markdown package ready."}</span>
+                </div>
               </div>
-            </div>
+            </CollapsibleSection>
 
-            <div className="grid gap-3 px-5 py-5">
-              <Button asChild variant="outline" className="w-full rounded-full">
-                <Link href={`/issues/${issue.id}/brief?mode=${mode}`}>
-                  <Eye className="mr-2 h-4 w-4" />
-                  Open brief
-                </Link>
-              </Button>
-              <Button asChild variant="outline" className="w-full rounded-full">
-                <Link href={`/issues/${issue.id}/compare?mode=${mode}`}>
-                  <RefreshCcw className="mr-2 h-4 w-4" />
-                  Open delta
-                </Link>
-              </Button>
-            </div>
+            <ReviewRailCard title="Links" meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Jump back to generation and change tracking.</p>}>
+              <div className="grid gap-3">
+                <Button asChild variant="outline" className="w-full rounded-full">
+                  <Link href={`/issues/${issue.id}/brief?mode=${mode}`}>
+                    <Eye className="mr-2 h-4 w-4" />
+                    Open brief
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" className="w-full rounded-full">
+                  <Link href={`/issues/${issue.id}/compare?mode=${mode}`}>
+                    <RefreshCcw className="mr-2 h-4 w-4" />
+                    Open delta
+                  </Link>
+                </Button>
+              </div>
+            </ReviewRailCard>
           </div>
         </SurfaceCard>
       </div>
