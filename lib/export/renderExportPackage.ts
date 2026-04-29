@@ -11,6 +11,24 @@ function section(title: string, body: string) {
   return `\n## ${title}\n\n${body.trim()}\n`;
 }
 
+function normalizeExportTerminology(input: string) {
+  const s = String(input ?? "");
+  if (!s) return s;
+  return (
+    s
+      // posture language
+      .replace(/\bOperator posture\b/g, "Briefing posture")
+      // old gap terminology variants
+      .replace(/\bClarification gaps\b/gi, (m) => (m[0] === "C" ? "Open questions" : "open questions"))
+      .replace(/\bopen gaps\b/gi, (m) => (m[0] === "O" ? "Open questions" : "open questions"))
+      .replace(/\bopen gap\(s\)\b/gi, "open question(s)")
+      .replace(/\bopen gap\b/gi, "open question")
+      .replace(/\bgaps\b/gi, (m) => (m[0] === "G" ? "Open questions" : "open questions"))
+      .replace(/\bgap\b/gi, (m) => (m[0] === "G" ? "Open question" : "open question"))
+      .replace(/\bUnassigned needs\b/gi, (m) => (m[0] === "U" ? "Additional open questions" : "additional open questions"))
+  );
+}
+
 export function renderExportPackage({
   issue,
   mode,
@@ -22,11 +40,11 @@ export function renderExportPackage({
   format: ExportFormat;
   artifact: BriefArtifact;
 }) {
-  const title = issue.title;
+  const title = normalizeExportTerminology(issue.title);
 
   if (format === "executive-brief" || mode === "executive") {
     const blocks = artifact.executive.blocks
-      .map((b) => section(b.label, b.body))
+      .map((b) => section(normalizeExportTerminology(b.label), normalizeExportTerminology(b.body)))
       .join("");
 
     return {
@@ -36,8 +54,8 @@ export function renderExportPackage({
   }
 
   if (format === "board-note") {
-    const lede = artifact.lede;
-    const posture = `Circulation: ${artifact.metadata.circulation}`;
+    const lede = normalizeExportTerminology(artifact.lede);
+    const posture = normalizeExportTerminology(`Circulation: ${artifact.metadata.circulation}`);
     return {
       mimeType: "text/markdown" as const,
       content: `${mdHeader(`${title} — board note`)}\n${lede}\n\n${posture}\n`.trim() + "\n",
@@ -45,9 +63,9 @@ export function renderExportPackage({
   }
 
   if (format === "email-ready") {
-    const lede = artifact.lede;
-    const circulation = artifact.metadata.circulation;
-    const actions = artifact.executive.immediateActions.map((a) => `- ${a}`).join("\n");
+    const lede = normalizeExportTerminology(artifact.lede);
+    const circulation = normalizeExportTerminology(artifact.metadata.circulation);
+    const actions = artifact.executive.immediateActions.map((a) => `- ${normalizeExportTerminology(a)}`).join("\n");
     return {
       mimeType: "text/plain" as const,
       content: `Subject: ${title}\nCirculation: ${circulation}\n\n${lede}\n\nImmediate actions:\n${actions}\n`,
@@ -55,10 +73,10 @@ export function renderExportPackage({
   }
 
   // full-issue-brief
-  const sections = artifact.full.sections.map((s) => section(s.title, s.body)).join("");
+  const sections = artifact.full.sections.map((s) => section(normalizeExportTerminology(s.title), normalizeExportTerminology(s.body))).join("");
   return {
     mimeType: "text/markdown" as const,
-    content: `${mdHeader(title)}\n${section("Lede", artifact.lede)}${sections}`.trim() + "\n",
+    content: `${mdHeader(title)}\n${section("Lede", normalizeExportTerminology(artifact.lede))}${sections}`.trim() + "\n",
   };
 }
 

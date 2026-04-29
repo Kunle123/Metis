@@ -14,6 +14,7 @@ import { getIssueById } from "@/lib/issues/getIssueContext";
 import { BriefModeSchema, BriefArtifactSchema, type BriefMode, type BriefArtifact } from "@metis/shared/briefVersion";
 import { ExportFormatSchema, type ExportFormat } from "@metis/shared/export";
 import { renderExportPackage } from "@/lib/export/renderExportPackage";
+import { ExportActionsClient } from "@/app/issues/[issueId]/export/export-actions.client";
 
 export const dynamic = "force-dynamic";
 
@@ -297,68 +298,44 @@ export default async function IssueExportPage({
               </div>
             </CollapsibleSection>
 
-            <section className="grid gap-3 border-t border-white/8 pt-6 sm:grid-cols-3">
-              <form action={`/api/issues/${issue.id}/export`} method="post">
-                <input type="hidden" name="briefVersionId" value={latest.id} />
-                <input type="hidden" name="format" value={selectedFormat} />
-                <input type="hidden" name="logEvent.eventType" value={downloadedEvent} />
-                <input type="hidden" name="logEvent.channel" value={fileChannel} />
-                <Button type="submit" className="w-full justify-start rounded-[1rem]">
-                  <Download className="mr-2 h-4 w-4" />
-                  Download package file
-                </Button>
-              </form>
-
-              <form action={`/api/issues/${issue.id}/export`} method="post">
-                <input type="hidden" name="briefVersionId" value={latest.id} />
-                <input type="hidden" name="format" value={selectedFormat} />
-                <input type="hidden" name="logEvent.eventType" value={copiedEvent} />
-                <input type="hidden" name="logEvent.channel" value={copyChannel} />
-                <Button
-                  type="submit"
-                  variant="outline"
-                  className="w-full justify-start rounded-[1rem]"
-                >
-                  <Copy className="mr-2 h-4 w-4 text-[--metis-brass]" />
-                  Copy executive brief text
-                </Button>
-              </form>
-
-              <form action={`/api/issues/${issue.id}/export`} method="post">
-                <input type="hidden" name="briefVersionId" value={latest.id} />
-                <input type="hidden" name="format" value="email-ready" />
-                <input type="hidden" name="logEvent.eventType" value={preparedEvent} />
-                <input type="hidden" name="logEvent.channel" value={emailChannel} />
-                <Button
-                  type="submit"
-                  variant="outline"
-                  className="w-full justify-start rounded-[1rem]"
-                >
-                  <Mail className="mr-2 h-4 w-4 text-[--metis-brass]" />
-                  Copy email-ready package
-                </Button>
-              </form>
-            </section>
+            <ExportActionsClient
+              issueId={issue.id}
+              briefVersionId={latest.id}
+              selectedFormat={selectedFormat}
+              mode={mode}
+              previewTitle={issue.title}
+              previewMeta={[
+                { label: "Format", value: packageOptions.find((o) => o.id === selectedFormat)?.label ?? "—" },
+                { label: "Version", value: `v${latest.versionNumber}` },
+                { label: "Circulation", value: artifact.metadata.circulation },
+              ]}
+              previewContent={rendered.content}
+              previewMimeType={rendered.mimeType}
+              eventTypes={{ prepared: preparedEvent, downloaded: downloadedEvent, copied: copiedEvent }}
+              channels={{ file: fileChannel, copy: copyChannel, email: emailChannel }}
+            />
           </div>
         </SurfaceCard>
 
         <SurfaceCard className="metis-support-surface overflow-hidden">
           <div className="space-y-4 px-5 py-5">
-            <ReviewRailCard title="Preview" tone="info" meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Quick check before exporting.</p>}>
-              <div className="rounded-[1.6rem] border border-[--metis-brass]/20 bg-[linear-gradient(180deg,rgba(255,251,242,0.98),rgba(250,246,237,0.96))] p-5 text-[--metis-dark] shadow-[0_20px_60px_rgba(0,0,0,0.18)]">
-                <div className="flex items-center justify-between gap-4 border-b border-[rgba(36,31,23,0.08)] pb-4">
-                  <div>
-                    <p className="text-[0.68rem] uppercase tracking-[0.24em] text-[rgba(36,31,23,0.72)]">
-                      {packageOptions.find((o) => o.id === selectedFormat)?.label ?? "Preview"}
-                    </p>
-                    <h3 className="mt-2 font-[Cormorant_Garamond] text-3xl text-[rgba(36,31,23,0.92)]">{issue.title}</h3>
-                  </div>
-                  <FileText className="h-5 w-5 text-[--metis-brass]" />
+            <ReviewRailCard
+              title="Preview"
+              tone="info"
+              meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Preview is shown in the main panel for readability.</p>}
+            >
+              <div className="space-y-2 text-sm leading-6 text-[--metis-paper-muted]">
+                <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-2 first:border-t-0 first:pt-0">
+                  <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Format</span>
+                  <span className="text-[--metis-paper]">{packageOptions.find((o) => o.id === selectedFormat)?.label ?? "—"}</span>
                 </div>
-                <div className="mt-5 space-y-3 text-sm leading-7 text-[rgba(36,31,23,0.78)]">
-                  <p>{artifact.lede}</p>
-                  <p>{artifact.metadata.circulation} circulation.</p>
-                  <p>v{latest.versionNumber}</p>
+                <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-2">
+                  <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Mode</span>
+                  <span className="text-[--metis-paper]">{mode === "full" ? "Full" : "Executive"}</span>
+                </div>
+                <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-2">
+                  <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Version</span>
+                  <span className="text-[--metis-paper]">v{latest.versionNumber}</span>
                 </div>
               </div>
             </ReviewRailCard>
