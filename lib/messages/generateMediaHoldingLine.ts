@@ -98,13 +98,13 @@ export function generateMediaHoldingLineArtifact(input: MediaHoldingLineGenerati
   const lensSource = isSetup ? ("issue_audience_only" as const) : ("stakeholder_group" as const);
 
   const issueLevelAudienceNote = isSetup
-    ? "Using the audience note from issue setup only. Choose an organisation audience group for library defaults and optional issue-specific lens notes."
+    ? "Using intake audience note only. Select an organisation audience group in Messages to apply defaults from Settings → Audience groups."
     : null;
 
   const lensEnrichmentNote = (() => {
     if (isSetup || !group) return null;
     if (!issueLens || !issueLensHasContent(issueLens)) {
-      return "No issue-specific lens added for this audience yet. Organisation defaults from the audience library are being used.";
+      return "Using organisation audience defaults for this group from Settings → Audience groups.";
     }
     return null;
   })();

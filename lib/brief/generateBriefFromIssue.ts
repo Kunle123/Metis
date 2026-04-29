@@ -428,7 +428,7 @@ function formatAudienceImplications(
 
   if (rows.length) {
     if (fromIssue && headerAudience) {
-      parts.push("Stakeholder lens (the issue audience is listed in the brief header; detail by group):");
+      parts.push("Audience notes by group (the issue audience is listed in the brief header; detail by group):");
     }
     const slice = rows.slice(0, cap);
     for (const r of slice) {
@@ -436,7 +436,7 @@ function formatAudienceImplications(
       const line = [r.priority !== "Normal" ? `Priority: ${r.priority}` : null, cleanText(r.needsToKnow) ? `Need to know: ${r.needsToKnow.trim()}` : null, cleanText(r.issueRisk) ? `Risk: ${r.issueRisk.trim()}` : null, cleanText(r.channelGuidance) ? `Channels: ${r.channelGuidance.trim()}` : null]
         .filter(Boolean)
         .join(" · ");
-      parts.push(`• ${g}: ${line || "No issue-specific output notes yet."}`);
+      parts.push(`• ${g}: ${line || "No additional notes for this group yet."}`);
     }
     if (rows.length > cap) {
       parts.push(`…${rows.length - cap} additional audience group(s) on this issue.`);
@@ -444,11 +444,11 @@ function formatAudienceImplications(
   } else if (fromIssue && headerAudience) {
     parts.push(
       leadership
-        ? "The intended audience is in the record header. Add group-level lens and channel notes when the narrative must vary by stakeholder."
-        : "The issue audience is in the record header. No per-group notes are added yet. Add group-level lens and channel notes when the narrative must vary by stakeholder.",
+        ? "The intended audience is in the record header. Adjust audience group defaults in Settings → Audience groups when messaging must vary by audience."
+        : "The issue audience is in the record header. No per-group notes are recorded here yet. Adjust audience group defaults in Settings → Audience groups when messaging must vary by audience.",
     );
   } else if (!fromIssue) {
-    parts.push("No audience-lens group selections and no issue-level audience note recorded yet.");
+    parts.push("No audience group links and no issue-level audience note recorded yet.");
   }
 
   return parts.join("\n");
@@ -868,8 +868,8 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
 
     const shortIntro =
       cleanText(issue.audience ?? "") || issueStakeholders.length
-        ? "This section highlights the stakeholder lens and message sensitivities for the recorded audience."
-        : "No audience notes are recorded yet; add audience and stakeholder notes to sharpen the briefing posture.";
+        ? "This section highlights messaging sensitivities for the recorded audience and organisation audience groups."
+        : "No audience notes are recorded yet; add intake audience notes and organisation audience groups to sharpen the briefing posture.";
 
     const obsLines = formatObsForExecutive(internalInputsForBrief, 2).split(/\r?\n/).filter((l) => l.trim().startsWith("•")).slice(0, 2);
     const obsBlock = obsLines.length ? obsLines.join("\n") : "No observation excerpts available.";

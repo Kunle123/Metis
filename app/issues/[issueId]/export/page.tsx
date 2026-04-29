@@ -214,7 +214,7 @@ export default async function IssueExportPage({
               tone="info"
               meta={
                 <p className="text-sm leading-6 text-[--metis-paper-muted]">
-                  Draft a reviewable external update from the issue record and audience lens—separate from briefs.
+                  Draft a reviewable external update from the issue record and organisation audience group defaults (selected in Messages)—separate from briefs.
                 </p>
               }
             >

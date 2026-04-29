@@ -116,13 +116,13 @@ export function generateExternalCustomerResidentStudentArtifact(input: ExternalM
   const lensSource = isSetup ? ("issue_audience_only" as const) : ("stakeholder_group" as const);
 
   const issueLevelAudienceNote = isSetup
-    ? "Using the audience note from issue setup only. Choose an organisation audience group for library defaults and optional issue-specific lens notes."
+    ? "Using intake audience note only. Select an organisation audience group in Messages to apply defaults from Settings → Audience groups."
     : null;
 
   const lensEnrichmentNote = (() => {
     if (isSetup || !group) return null;
     if (!issueLens || !issueLensHasContent(issueLens)) {
-      return "No issue-specific lens added for this audience yet. Organisation defaults from the audience library are being used.";
+      return "Using organisation audience defaults for this group from Settings → Audience groups.";
     }
     return null;
   })();
@@ -174,7 +174,7 @@ export function generateExternalCustomerResidentStudentArtifact(input: ExternalM
       return `Practical guidance:\n${channelEffective}\n\nIf you need help, use the contact channels your organisation has published for this type of issue.`;
     }
     if (channelFromDefaults) {
-      return `Channel guidance (from audience library defaults):\n${channelFromDefaults}\n\nIf you need help, use the contact channels your organisation has published for this type of issue.`;
+      return `Channel guidance (from organisation audience group defaults):\n${channelFromDefaults}\n\nIf you need help, use the contact channels your organisation has published for this type of issue.`;
     }
     return "No specific actions are recorded in the issue template yet. If you need help, use the contact channels your organisation has published for this type of issue.";
   })();

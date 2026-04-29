@@ -262,8 +262,8 @@ export default async function IssueBriefPage({
                 <h2 className="font-[Cormorant_Garamond] text-[2.15rem] leading-none text-[--metis-paper]">No brief version yet</h2>
                 <p className="max-w-3xl text-sm leading-7 text-[--metis-paper-muted]">
                   {fromSetup === "setup"
-                    ? "This issue record has been created. Use Generate brief in the control bar above to build from the issue record, sources, open questions, observations, and audience lens."
-                    : "Use Generate brief in the control bar above. Metis will create a stored brief for this mode from the issue record, sources, open questions, observations, and audience lens."}
+                    ? "This issue record has been created. Use Generate brief in the control bar above to build from the issue record, sources, open questions, observations, and Messages audience group selection (organisation-level audiences from Settings → Audience groups)."
+                    : "Use Generate brief in the control bar above. Metis will create a stored brief for this mode from the issue record, sources, open questions, observations, and Messages audience group selection (organisation-level audiences from Settings → Audience groups)."}
                 </p>
               </header>
               <div className="text-[0.68rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">

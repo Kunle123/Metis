@@ -48,7 +48,7 @@ export function MessagesPanel({
   issueUpdatedAt: string;
   selectedTemplateId: MessageVariantTemplateId;
   audienceGroupOptions: AudienceGroupOption[];
-  /** null = setup audience note (`?lens=issue`). */
+  /** null = general / no organisation audience group; URL retains `lens` query for backwards compatibility. */
   selectedStakeholderGroupId: string | null;
   selectedAudienceGroupLabel: string;
   initialLatest: LatestPayload;
@@ -317,7 +317,7 @@ export function MessagesPanel({
             </div>
           </ReviewRailCard>
 
-          {/* Hide legacy issue-level audience/lens notes: Messages uses organisation-level audience groups only. */}
+          {/* Legacy metadata notes suppressed: Messages uses organisation-level audience groups only. */}
 
           {latest ? (
             <CollapsibleSection

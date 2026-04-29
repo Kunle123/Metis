@@ -23,7 +23,7 @@ const CommonArtifactMetadataSchema = z.object({
   issueLevelAudienceNote: z.string().nullable(),
   /** Present when using an organisation audience group. */
   stakeholderGroupId: z.string().uuid().nullable().optional(),
-  /** True when IssueStakeholder row supplied issue-specific lens fields used in copy. */
+  /** True when IssueStakeholder row supplied audience overlay fields used in copy (legacy linkage). */
   issueSpecificLensApplied: z.boolean().optional(),
   /** e.g. defaults-only message when no IssueStakeholder row. */
   lensEnrichmentNote: z.string().nullable().optional(),

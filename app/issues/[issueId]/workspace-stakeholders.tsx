@@ -177,8 +177,8 @@ export function WorkspaceStakeholders({
               <p className="font-medium text-amber-50">Some audiences need guidance.</p>
               <p className="mt-1 text-amber-50/80">
                 {selectedNeedGuidance.length === 1
-                  ? `${selectedNeedGuidance[0]!.group.name} has no issue-specific notes yet. Messages may fall back to generic setup context.`
-                  : `${selectedNeedGuidance.length} selected audiences have no issue-specific notes yet. Messages may fall back to generic setup context.`}
+                  ? `${selectedNeedGuidance[0]!.group.name} has no notes on record here yet; manage organisation audiences in Settings → Audience groups.`
+                  : `${selectedNeedGuidance.length} audiences have no notes on record here yet; manage organisation audiences in Settings → Audience groups.`}
               </p>
             </div>
           ) : null}

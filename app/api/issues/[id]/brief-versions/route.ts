@@ -105,7 +105,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         ].filter(Boolean);
         return `- ${g}${bits.length ? ` — ${bits.join(" · ")}` : ""}`;
       });
-      if (rows.length) parts.push("Stakeholder lens:\n" + rows.join("\n"));
+      if (rows.length) parts.push("Audience groups (linked to this issue record, if any):\n" + rows.join("\n"));
       return parts.join("\n\n");
     })();
 

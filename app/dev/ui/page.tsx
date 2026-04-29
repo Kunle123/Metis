@@ -291,7 +291,7 @@ export default function MetisUiDiagnosticsPage() {
               tone="info"
               meta={<ReviewBanner title="Draft for review" body="Not approved for circulation." tone="warning" />}
             >
-              <div className="text-sm leading-6 text-[--metis-paper-muted]">Lens · Audience note from setup</div>
+              <div className="text-sm leading-6 text-[--metis-paper-muted]">Audience group · General (no audience group)</div>
             </ReviewRailCard>
 
             <ReviewRailCard title="Evidence row sample" tone="info" meta={<span>Source metadata</span>}>
