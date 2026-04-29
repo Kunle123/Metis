@@ -535,7 +535,7 @@ export function WorkspaceGapCards({
                       <div className="grid gap-3 md:grid-cols-2">
                         <div className="md:pr-3 md:border-r md:border-white/10">
                           <p className="text-xs text-white/55">Existing observation</p>
-                          <p className="mt-1 text-sm text-white/70">Select, then mark resolved.</p>
+                          <p className="mt-1 text-sm text-white/70">Select, then mark answered.</p>
                           <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
                             <select
                               value={resolveSelectionById[g.id] ?? ""}
@@ -582,7 +582,7 @@ export function WorkspaceGapCards({
                               }}
                             >
                               <CheckCircle2 size={14} />
-                              Mark resolved
+                              Mark answered
                             </ActionButton>
                           </div>
                         </div>
@@ -592,7 +592,7 @@ export function WorkspaceGapCards({
                           <p className="mt-1 text-sm text-white/70">Add an attributable observation that answers this question.</p>
 
                           <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                            <p className="text-xs text-white/50">Save, then select it above and mark resolved.</p>
+                            <p className="text-xs text-white/50">Save, then select it above and mark answered.</p>
                             <ActionButton
                               className="border-white/8 bg-white/[0.04] text-white/75 hover:bg-white/[0.08]"
                               onClick={() =>
@@ -662,7 +662,7 @@ export function WorkspaceGapCards({
                                   }
                                   rows={4}
                                   className="w-full rounded-[0.95rem] border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 py-3 text-sm leading-6 text-white/85 shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
-                                  placeholder="Attributable observation that answers the gap"
+                                  placeholder="Attributable observation that answers the open question"
                                 />
                               </label>
 

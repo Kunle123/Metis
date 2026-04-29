@@ -155,7 +155,7 @@ const issueOutputToolsNav = [
 
 const issueRecordToolsNav = [
   { id: "sources" as const, path: "/sources" as const, shortLabel: "Sources" },
-  { id: "gaps" as const, path: "/gaps" as const, shortLabel: "Gaps" },
+  { id: "gaps" as const, path: "/gaps" as const, shortLabel: "Open questions" },
   { id: "input" as const, path: "/input" as const, shortLabel: "Observations" },
 ] as const;
 
@@ -229,7 +229,7 @@ export function MetisShell({
   const issueStats = [
     { label: "Active issues", value: "12", detail: "+3 since yesterday" },
     { label: "Briefs ready to circulate", value: "4", detail: "2 awaiting legal validation" },
-    { label: "Open clarification gaps", value: "17", detail: "7 critical across all issues" },
+    { label: "Open questions", value: "17", detail: "7 critical across all issues" },
     { label: "Average time to first draft", value: "18 min", detail: "Target under 20" },
   ];
 
@@ -451,7 +451,7 @@ export function MetisShell({
                 </div>
                 <div className="grid grid-cols-2 gap-3 text-xs text-[--metis-paper-muted]">
                   <div className="rounded-2xl border border-white/8 bg-[rgba(0,0,0,0.16)] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
-                  <div className="text-[0.68rem] uppercase tracking-[0.2em] text-[--metis-ink-soft]">Gaps</div>
+                  <div className="text-[0.68rem] uppercase tracking-[0.2em] text-[--metis-ink-soft]">Open questions</div>
                     <div className="mt-2 text-xl text-[--metis-paper]">{activeIssue?.openGapsCount ?? "—"}</div>
                   </div>
                   <div className="rounded-2xl border border-white/8 bg-[rgba(0,0,0,0.16)] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">

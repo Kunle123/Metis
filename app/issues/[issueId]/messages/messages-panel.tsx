@@ -288,7 +288,7 @@ export function MessagesPanel({
                     </span>
                   </div>
                   <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-3">
-                    <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Open gaps</span>
+                    <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Open questions</span>
                     <span className="text-[--metis-paper]">{latest.artifact.metadata.openGapsLabel}</span>
                   </div>
                 </>

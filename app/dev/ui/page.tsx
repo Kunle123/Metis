@@ -236,7 +236,7 @@ export default function MetisUiDiagnosticsPage() {
             <DenseSection title="Common controls">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge className="border-0 bg-[--metis-brass]/15 text-[--metis-brass-soft]">Selected pill</Badge>
-                <Badge className="border-0 bg-[rgba(124,78,18,0.6)] text-amber-50">Open gaps · 3</Badge>
+                <Badge className="border-0 bg-[rgba(124,78,18,0.6)] text-amber-50">Open questions · 3</Badge>
                 <Badge className="border-0 bg-[rgba(18,84,58,0.62)] text-emerald-50">Up to date</Badge>
                 <Badge className="border-0 bg-[rgba(19,86,118,0.55)] text-sky-50">Stale</Badge>
                 <ConfidencePill level="Confirmed" />

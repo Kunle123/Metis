@@ -76,7 +76,7 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
                 <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{issue.issueType}</Badge>
                 <Badge className="border-0 bg-rose-900/35 text-rose-100">{issue.severity}</Badge>
                 <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">Sources · {issue.sourcesCount}</Badge>
-                <Badge className="border-0 bg-[rgba(131,82,17,0.72)] text-amber-50">Open gaps · {issue.openGapsCount}</Badge>
+                <Badge className="border-0 bg-[rgba(131,82,17,0.72)] text-amber-50">Open questions · {issue.openGapsCount}</Badge>
               </div>
             </div>
             <div className="mt-4 flex flex-wrap gap-2.5">
@@ -84,7 +84,7 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
                 ["summary", "Issue summary"],
                 ["facts", "Confirmed vs unclear"],
                 ["sources", "Sources"],
-                ["gaps", "Gaps"],
+                ["gaps", "Open questions"],
                   ["input", "Observations"],
                 ["stakeholders", "Audience lens"],
               ].map(([id, label]) => sectionNavItem(id, label))}
@@ -155,9 +155,9 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
 
             <section id="gaps" className="space-y-5 border-t border-white/8 pt-7">
               <WorkspaceSection
-                title="Gaps"
+                title="Open questions"
                 description="Unknowns and questions that must be answered."
-                addLabel="Add gap"
+                addLabel="Add open question"
                 advancedHref={`/issues/${issue.id}/gaps`}
                 form={<GapCreateForm issueId={issue.id} />}
               >
@@ -183,7 +183,7 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
                     }))}
                   />
                 ) : (
-                  <p className="text-sm text-[--metis-paper-muted]">No gaps yet.</p>
+                  <p className="text-sm text-[--metis-paper-muted]">No open questions yet.</p>
                 )}
               </WorkspaceSection>
             </section>

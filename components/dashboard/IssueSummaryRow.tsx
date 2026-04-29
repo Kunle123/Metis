@@ -36,7 +36,7 @@ export function IssueSummaryRow({ issue, workspaceHref }: { issue: DashboardIssu
           <Badge className="border-0 bg-emerald-950/35 text-emerald-100">{issue.status}</Badge>
           {showPriority ? <Badge className="border-0 bg-amber-950/40 text-amber-100">{priority} priority</Badge> : null}
           {showOpenGaps ? (
-            <Badge className="border-0 bg-[rgba(131,82,17,0.72)] text-amber-50">Open gaps · {issue.openGapsCount}</Badge>
+            <Badge className="border-0 bg-[rgba(131,82,17,0.72)] text-amber-50">Open questions · {issue.openGapsCount}</Badge>
           ) : null}
           {isRecentlyUpdated ? <Badge className="border-0 bg-sky-900/35 text-sky-100">Updated recently</Badge> : null}
         </div>
@@ -50,7 +50,7 @@ export function IssueSummaryRow({ issue, workspaceHref }: { issue: DashboardIssu
 
       <div className="min-w-0 rounded-[1.35rem] border border-white/10 bg-[rgba(255,255,255,0.03)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
         <div className="grid min-w-0 grid-cols-2 gap-3 border-b border-white/8 pb-4">
-          <IssueStatTile label="Open gaps" value={issue.openGapsCount} />
+          <IssueStatTile label="Open questions" value={issue.openGapsCount} />
           <IssueStatTile label="Sources" value={issue.sourcesCount} />
         </div>
         <Link

@@ -158,7 +158,7 @@ export function GapLedger({
     setError(null);
     const selected = resolveSelections[gapId]?.trim();
     if (!selected) {
-      setError("Select an internal input record before marking a gap resolved.");
+      setError("Select an internal input record before marking an open question answered.");
       return;
     }
 
@@ -225,7 +225,7 @@ export function GapLedger({
             className="border-0 bg-transparent px-0 py-0"
             left={
               <div className="space-y-1">
-                <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper]">Gap ledger</h2>
+                <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper]">Open questions</h2>
                 <p className="text-sm leading-6 text-[--metis-paper-muted]">
                   Full list of open and resolved questions. Use the workspace for day-to-day review; this page is for deeper ledger work.
                 </p>
@@ -256,9 +256,9 @@ export function GapLedger({
 
         <div className="px-6 py-6 sm:px-7 sm:py-7">
           <CollapsibleFormPanel
-            title="Gaps ledger"
-            description="Review and resolve the full list. Add new gaps only when needed."
-            addLabel="Add gap"
+            title="Open questions"
+            description="Review and mark answered when you have attributable input. Add a new open question only when needed."
+            addLabel="Add open question"
             form={<GapCreateForm issueId={issueId} />}
             secondaryAction={
               <Button asChild variant="outline" className="h-10 rounded-full px-4">
@@ -401,7 +401,7 @@ export function GapLedger({
                                     className="w-full rounded-full"
                                   >
                                     <CheckCircle2 className="mr-2 h-4 w-4" />
-                                    Mark resolved
+                                    Mark answered
                                   </Button>
                                 </div>
                               ) : (
@@ -416,7 +416,7 @@ export function GapLedger({
                                     className="w-full rounded-full"
                                   >
                                     <RotateCcw className="mr-2 h-4 w-4" />
-                                    Reopen gap
+                                    Reopen question
                                   </Button>
                                 </div>
                               )}
@@ -457,7 +457,11 @@ export function GapLedger({
 
       <SurfaceCard className="metis-support-surface">
         <div className="space-y-4 px-5 py-5">
-          <ReviewRailCard title="By section" tone="info" meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Where gaps are accumulating.</p>}>
+          <ReviewRailCard
+            title="By section"
+            tone="info"
+            meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Where open questions are accumulating.</p>}
+          >
             <div className="space-y-3">
               {sectionPressure.map((item) => (
                 <div key={item.section} className="rounded-[1.15rem] border border-[--metis-info-border] bg-[--metis-info-bg] px-4 py-4">

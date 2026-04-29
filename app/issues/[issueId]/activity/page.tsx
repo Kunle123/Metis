@@ -11,9 +11,9 @@ const KIND_LABELS: Record<string, string> = {
   issue_created: "Issue · created",
   issue_triage_updated: "Issue · triage updated",
   brief_version_created: "Brief · new version",
-  gap_created: "Gap · created",
-  gap_resolved: "Gap · resolved",
-  gap_reopened: "Gap · reopened",
+  gap_created: "Open question · added",
+  gap_resolved: "Open question · answered",
+  gap_reopened: "Open question · reopened",
   internal_input_created: "Observation · added",
   source_created: "Source · added",
   export_created: "Export · created",
@@ -31,6 +31,18 @@ function formatActivityTimestamp(value: Date) {
 
 function kindLabel(kind: string) {
   return KIND_LABELS[kind] ?? kind.replaceAll("_", " ");
+}
+
+function displaySummary(kind: string, summary: string) {
+  if (kind === "gap_created" && summary === "Gap created") return "Open question added";
+  if (kind === "gap_resolved" && summary === "Gap resolved") return "Open question answered";
+  if (kind === "gap_reopened" && summary === "Gap reopened") return "Open question reopened";
+  return summary;
+}
+
+function displayRefType(refType: string) {
+  if (refType === "Gap") return "Open question";
+  return refType;
 }
 
 function shortRefId(id: string) {
@@ -100,7 +112,7 @@ export default async function IssueActivityPage({ params }: { params: Promise<{ 
                         {formatActivityTimestamp(a.createdAt)}
                       </p>
                     </div>
-                    <p className="mt-2 text-sm font-medium leading-6 text-[--metis-paper]">{a.summary}</p>
+                    <p className="mt-2 text-sm font-medium leading-6 text-[--metis-paper]">{displaySummary(a.kind, a.summary)}</p>
                     {a.actorLabel ? (
                       <p className="mt-1.5 text-xs leading-5 text-[--metis-paper-muted]">
                         <span className="text-[--metis-ink-soft]">Actor</span>
@@ -111,7 +123,7 @@ export default async function IssueActivityPage({ params }: { params: Promise<{ 
                     {a.refType || a.refId ? (
                       <p className="mt-1 text-xs leading-5 text-[--metis-paper-muted]">
                         {a.refType ? (
-                          <span className="font-mono text-[0.7rem] text-[rgba(176,171,160,0.85)]">{a.refType}</span>
+                          <span className="font-mono text-[0.7rem] text-[rgba(176,171,160,0.85)]">{displayRefType(a.refType)}</span>
                         ) : (
                           <span className="font-mono text-[0.7rem] text-[rgba(176,171,160,0.85)]">Ref</span>
                         )}

@@ -101,7 +101,7 @@ export default async function IssueBriefPage({
         { label: "Audience", value: artifact.metadata.audience ?? "—" },
         { label: "Circulation", value: artifact.metadata.circulation },
         { label: "Last revision", value: artifact.metadata.lastRevisionLabel },
-        { label: "Clarification gaps", value: artifact.metadata.openGapsLabel },
+        { label: "Open questions", value: artifact.metadata.openGapsLabel },
       ] as const)
     : ([] as const);
 
@@ -128,7 +128,7 @@ export default async function IssueBriefPage({
       out.push({ title: "No client-confirmed facts on file in intake", owner: "—", confidence: "Unclear" });
     }
     if (issue.openGapsCount > 0) {
-      out.push({ title: "Unresolved clarification needs remain in play", owner: "—", confidence: "Unclear" });
+      out.push({ title: "Open questions remain in play", owner: "—", confidence: "Unclear" });
     }
     if (linkedSources.length === 0) {
       out.push({ title: "Narrative is not yet supported by linked sources", owner: "—", confidence: "Needs validation" });
@@ -250,8 +250,8 @@ export default async function IssueBriefPage({
                 <h2 className="font-[Cormorant_Garamond] text-[2.15rem] leading-none text-[--metis-paper]">No brief version yet</h2>
                 <p className="max-w-3xl text-sm leading-7 text-[--metis-paper-muted]">
                   {fromSetup === "setup"
-                    ? "This issue record has been created. Use Generate brief in the control bar above to build from the issue record, sources, gaps, observations, and audience lens."
-                    : "Use Generate brief in the control bar above. Metis will create a stored brief for this mode from the issue record, sources, gaps, observations, and audience lens."}
+                    ? "This issue record has been created. Use Generate brief in the control bar above to build from the issue record, sources, open questions, observations, and audience lens."
+                    : "Use Generate brief in the control bar above. Metis will create a stored brief for this mode from the issue record, sources, open questions, observations, and audience lens."}
                 </p>
               </header>
               <div className="text-[0.68rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">
@@ -362,7 +362,7 @@ export default async function IssueBriefPage({
                     <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{issue.status}</Badge>
                   </div>
                   <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-2">
-                    <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Clarification gaps</span>
+                    <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Open questions</span>
                     <Badge className="border-0 bg-[rgba(124,78,18,0.6)] text-amber-50">{issue.openGapsCount}</Badge>
                   </div>
                 </div>
