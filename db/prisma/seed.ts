@@ -94,7 +94,7 @@ const seededIssues = [
       [
         "Stakeholders expect clarity on priorities and delivery, plus reassurance on consultation integrity and accessibility.",
         "The briefing should include disciplined boundaries: what we can commit to, what needs validation, and what requires a follow-up pathway.",
-        "Use evidence language (“sources”) and “gaps” to keep the conversation credible and avoid over-claiming.",
+        "Keep claims tied to the evidence on file and be explicit where questions remain open.",
       ].join("\n\n"),
     openQuestions:
       [

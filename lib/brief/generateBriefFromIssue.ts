@@ -125,6 +125,14 @@ function sentence(s: string) {
   return `${stripTrailingPunctuation(t)}.`;
 }
 
+function sanitizeBriefUserText(raw: string) {
+  const input = raw ?? "";
+  if (!input.trim()) return input;
+  return input
+    .replace(/\bgaps\b/gi, (m) => (m[0] === "G" ? "Open questions" : "open questions"))
+    .replace(/\bgap\b/gi, (m) => (m[0] === "G" ? "Open question" : "open question"));
+}
+
 function severityRank(severity: string | null | undefined) {
   if (!severity) return 9;
   if (severity === "Critical") return 0;
@@ -206,13 +214,13 @@ function formatSourceForExecutive(s: Source) {
 }
 
 function formatGapsForExecutive(open: Gap[], cap: number) {
-  if (!open.length) return "No open clarification gaps recorded in the tracker yet.";
+  if (!open.length) return "No open questions are recorded in the tracker yet.";
   const slice = open.slice(0, cap);
   const lines = slice.map(
     (g) => `• [${g.severity}] ${g.prompt.trim() || g.title}${g.linkedSection ? ` — ${g.linkedSection}` : ""}`,
   );
   if (open.length > cap) {
-    return `${lines.join("\n")}\n\n…${open.length - cap} additional open gap(s). See the gap ledger for the full list.`;
+    return `${lines.join("\n")}\n\n…${open.length - cap} additional open question(s). See the Open questions view for the full list.`;
   }
   return lines.join("\n");
 }
@@ -244,14 +252,14 @@ function gapToLeadershipDecision(g: Gap): string {
 }
 
 function formatGapsForFull(gaps: Gap[], cap: number) {
-  if (!gaps.length) return "No clarification gaps recorded yet.";
+  if (!gaps.length) return "No open questions recorded yet.";
   const slice = gaps.slice(0, cap);
   const lines = slice.map(
     (g) =>
       `- [${g.status}] [${g.severity}] ${g.prompt.trim() || g.title}${g.linkedSection ? ` · ${g.linkedSection}` : ""}`,
   );
   if (gaps.length > cap) {
-    return `${lines.join("\n")}\n\n…${gaps.length - cap} more gap(s) in the tracker.`;
+    return `${lines.join("\n")}\n\n…${gaps.length - cap} more open question(s) in the tracker.`;
   }
   return lines.join("\n");
 }
@@ -419,7 +427,7 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
   const titleLine = cleanText(issue.title);
   const confirmedFacts = cleanText(issue.confirmedFacts ?? "");
   const openQuestions = cleanText(issue.openQuestions ?? "");
-  const context = cleanText(issue.context ?? "");
+  const context = sanitizeBriefUserText(cleanText(issue.context ?? ""));
 
   const confirmedBlock = paragraphOrFallback(
     bulletsFromMultiline(confirmedFacts),
@@ -445,7 +453,7 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
         ]
           .filter(Boolean)
           .join("\n\n")
-      : "No open clarification gaps recorded.";
+      : "No open questions recorded.";
     return [a, b].filter(Boolean).join("\n\n");
   })();
 
@@ -628,7 +636,7 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
         { label: "Situation", body: situationBody },
         { label: "Current assessment", body: currentAssessment },
         { label: "Confirmed facts", body: confirmedBlock },
-        { label: "Key unknowns / open gaps", body: keyUnknownsCombined },
+        { label: "Key unknowns / open questions", body: keyUnknownsCombined },
         { label: "Evidence base", body: evidenceBaseExecutive(sources, sources.length) },
         {
           label: "Observations",
@@ -653,7 +661,7 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
       ]
     : [
         "Check that the lede in the header still matches the issue record’s working line after the latest edits (or regenerate the brief if the record moved on).",
-        `Gap counts: ${issue.openGapsCount} in the issue, ${openG.length} open in the tracker—resolve any mismatch in the gap view before a hard send.`,
+        `Open questions: ${issue.openGapsCount} on the issue, ${openG.length} open in the tracker—resolve any mismatch in the Open questions view before a hard send.`,
         sources.length
           ? "If this brief is used for external or board use, re-open the two highest-signal sources (by tier and recency) for conflicts with the lede."
           : "If you plan to use this for external or board use, the evidence register is empty at generation time; add and review sources first.",
@@ -748,7 +756,7 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
     if (openG.length) {
       return "Open questions remain. Leadership should assume downstream impacts and messaging may still move as questions are answered. Revisit when the open-questions register is clear or explicitly accepted as residual risk.";
     }
-    return "Implications should be revisited as sources are reviewed and the gap register changes. If no gaps remain and facts are current, consider implications in line with the audience notes.";
+    return "Implications should be revisited as sources are reviewed and the open-questions register changes. If no open questions remain and facts are current, consider implications in line with the audience notes.";
   })();
 
   const fullExecutiveSummary = (() => {

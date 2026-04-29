@@ -27,7 +27,7 @@ function readinessFromConfidence(confidence: BriefConfidence) {
 function displayTitles(id: string, fallback: string) {
   const map: Record<string, string> = {
     "executive-summary": "Executive summary",
-    chronology: "Chronology",
+    chronology: "Background and context",
     "confirmed-vs-unclear": "Confirmed vs unclear",
     "narrative-map": "Stakeholder narratives",
     implications: "Implications",
