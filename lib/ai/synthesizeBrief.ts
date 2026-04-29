@@ -79,6 +79,9 @@ export type BriefSynthesisInput = {
 export async function synthesizeBriefExecutiveSummary(
   input: BriefSynthesisInput,
 ): Promise<{ rewrite: string; limitations: string } | null> {
+  const enabled = process.env.BRIEF_AI_SYNTHESIS_ENABLED === "true";
+  if (!enabled) return null;
+
   const key = process.env.OPENAI_API_KEY?.trim();
   if (!key) return null;
 
