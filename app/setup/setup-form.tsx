@@ -260,14 +260,14 @@ export function SetupForm() {
       <p className="text-sm leading-6 text-[--metis-paper-muted]">Fields marked (optional) can be left blank.</p>
 
       <div className="space-y-4">
-        <p className="text-[0.72rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">AI assist</p>
+        <p className="text-[0.72rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">AI assist (optional)</p>
         <p className="text-sm leading-6 text-[--metis-paper-muted]">
           Paste rough notes. This suggests fields for you to review. It does not create the issue or submit the form.
         </p>
         <Textarea
           value={intakeRawNotes}
           onChange={(e) => setIntakeRawNotes(e.target.value)}
-          placeholder="Paste messy situation notes, fragments, or bullets…"
+          placeholder="Paste rough notes, fragments, or bullets…"
           className="min-h-[120px] rounded-[1.2rem] px-4 py-4 text-sm leading-7"
         />
         <div className="flex flex-wrap items-center gap-3">
@@ -277,7 +277,7 @@ export function SetupForm() {
             disabled={structLoading || !intakeRawNotes.trim().length}
             className="h-10 rounded-full px-5"
           >
-            {structLoading ? "Structuring…" : "Structure with AI"}
+            {structLoading ? "Structuring…" : "Suggest fields (AI)"}
           </Button>
           <Button
             type="button"
@@ -311,15 +311,15 @@ export function SetupForm() {
               {[
                 { label: "Suggested title", v: structureResponse.suggestions.title },
                 { label: "Suggested issue type", v: structureResponse.suggestions.issueType },
-                { label: "Suggested working line", v: structureResponse.suggestions.summary },
+                { label: "Suggested summary", v: structureResponse.suggestions.summary },
                 { label: "Suggested audience", v: structureResponse.suggestions.audience },
                 { label: "Suggested confirmed facts", v: structureResponse.suggestions.confirmedFacts },
                 { label: "Suggested open questions", v: structureResponse.suggestions.openQuestions },
                 { label: "Suggested context", v: structureResponse.suggestions.context },
-                { label: "Suggested owner", v: structureResponse.suggestions.ownerName },
+                { label: "Suggested issue owner", v: structureResponse.suggestions.ownerName },
                 { label: "Suggested severity", v: structureResponse.suggestions.severity },
                 { label: "Suggested urgency", v: structureResponse.suggestions.priority },
-                { label: "Suggested operator posture", v: structureResponse.suggestions.operatorPosture },
+                { label: "Suggested briefing posture", v: structureResponse.suggestions.operatorPosture },
               ].map(({ label, v }) => (
                 <div key={label} className="space-y-1">
                   <p className="text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">{label}</p>
@@ -355,7 +355,7 @@ export function SetupForm() {
 
             {structureResponse.suggestedGaps?.length ? (
               <div className="space-y-3 border-t border-white/8 pt-5">
-                <p className="text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">Suggested clarification gaps</p>
+                <p className="text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">Suggested open questions</p>
                 <div className="space-y-4 pl-1">
                   {structureResponse.suggestedGaps.map((gap, idx) => (
                     <div key={`${gap.title ?? "gap"}-${idx}`} className="space-y-1">
@@ -461,11 +461,14 @@ export function SetupForm() {
         </div>
 
         <div className="md:col-span-2">
-          <label className="mb-3 block text-sm font-medium text-[--metis-paper]">Working line</label>
+          <label className="mb-2 block text-sm font-medium text-[--metis-paper]">Issue summary</label>
+          <p className="mb-3 text-xs leading-5 text-[--metis-paper-muted]">
+            A short briefing summary of the situation. Keep it factual; you can refine it later.
+          </p>
           <Textarea
             value={summary}
             onChange={(e) => setSummary(e.target.value)}
-            placeholder="Customer self-service remains degraded while security containment is verified…"
+            placeholder="Summarise what is happening and why it matters for briefing…"
             className="min-h-[148px] rounded-[1.25rem] px-4 py-4 text-sm leading-7"
           />
         </div>
@@ -491,7 +494,10 @@ export function SetupForm() {
         </div>
 
         <div>
-          <label className="mb-3 block text-sm font-medium text-[--metis-paper]">Operator posture (optional)</label>
+          <label className="mb-2 block text-sm font-medium text-[--metis-paper]">Briefing posture (optional)</label>
+          <p className="mb-3 text-xs leading-5 text-[--metis-paper-muted]">
+            Monitoring = tracking only. Active = being handled now. Holding = wait for evidence/decisions. Closed = no further action expected.
+          </p>
           <div className="relative">
             <select
               value={operatorPosture}
@@ -511,7 +517,8 @@ export function SetupForm() {
         </div>
 
         <div>
-          <label className="mb-3 block text-sm font-medium text-[--metis-paper]">Owner (optional)</label>
+          <label className="mb-2 block text-sm font-medium text-[--metis-paper]">Issue owner (optional)</label>
+          <p className="mb-3 text-xs leading-5 text-[--metis-paper-muted]">The person responsible for coordinating this issue record.</p>
           <Input
             value={ownerName}
             onChange={(e) => setOwnerName(e.target.value)}
@@ -529,9 +536,9 @@ export function SetupForm() {
               type="button"
               onClick={onPasteConfirmedFacts}
               variant="outline"
-              className="h-9 rounded-full px-4"
+              className="h-9 rounded-full px-4 opacity-75"
             >
-              Paste
+              Paste from clipboard
             </Button>
           </div>
           <Textarea
@@ -564,9 +571,9 @@ export function SetupForm() {
               type="button"
               onClick={onPasteContext}
               variant="outline"
-              className="h-9 rounded-full border-white/10 bg-white/[0.03] px-4 text-[--metis-paper] hover:bg-white/[0.08]"
+              className="h-9 rounded-full border-white/10 bg-white/[0.03] px-4 text-[--metis-paper] opacity-75 hover:bg-white/[0.08]"
             >
-              Paste
+              Paste from clipboard
             </Button>
           </div>
           <Textarea
@@ -594,9 +601,9 @@ export function SetupForm() {
         <Button
           onClick={onSubmit}
           disabled={!canSubmit || submitting}
-          className="rounded-full px-5"
+          className="rounded-full bg-[--metis-brass] px-6 text-[--metis-dark] hover:bg-[--metis-brass-soft]"
         >
-          {submitting ? "Creating issue..." : "Create issue & open brief"}
+          {submitting ? "Creating issue…" : "Create issue and open brief"}
         </Button>
       </div>
     </div>

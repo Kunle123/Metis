@@ -14,17 +14,17 @@ const recentUpdates = [
   {
     time: "08:52 CET",
     title: "Legal caution added to executive summary",
-    detail: "The active cyber issue now distinguishes confirmed outage facts from still-unverified access assumptions.",
+    detail: "A regulatory briefing now distinguishes confirmed points from still-unverified assumptions.",
   },
   {
     time: "08:24 CET",
-    title: "Customer comms questions now affecting narrative risk",
-    detail: "Inbound support themes shifted from access failures toward security concern framing in three markets.",
+    title: "Stakeholder questions now affecting narrative tone",
+    detail: "Feedback shifted toward consultation accessibility and what is genuinely open to change.",
   },
   {
     time: "07:42 CET",
-    title: "Holding statement draft opened",
-    detail: "Messaging remains unsent pending validation of customer-exposure language and legal thresholds.",
+    title: "Message draft prepared for review",
+    detail: "The draft is held pending evidence checks and leadership sign-off on commitments.",
   },
 ] as const;
 

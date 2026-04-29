@@ -163,7 +163,9 @@ export default async function IssueBriefPage({
               className="border-0 bg-transparent px-0 py-0"
               left={
                 <div className="space-y-1">
-                  <p className="text-sm leading-6 text-[--metis-paper-muted]">Produce the executive output for the issue.</p>
+                  <p className="text-sm leading-6 text-[--metis-paper-muted]">
+                    Create a leadership-ready brief from the latest issue record, sources, open questions, and observations.
+                  </p>
                 </div>
               }
               right={

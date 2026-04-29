@@ -374,9 +374,9 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
       ? [
           withSection.length ? `Tagged to an impact area\n${formatGapsForExecutive(withSection, CAP_EX_OPEN_GAPS)}` : "",
           unassigned.length
-            ? `Unassigned needs\n${formatGapsForExecutive(unassigned, CAP_EX_OPEN_GAPS)}`
+            ? `Additional open questions\n${formatGapsForExecutive(unassigned, CAP_EX_OPEN_GAPS)}`
             : allWereDuplicates
-              ? "Unassigned needs\nNo additional unassigned needs beyond intake questions."
+              ? "Additional open questions\nNo additional open questions beyond intake questions."
               : "",
         ]
           .filter(Boolean)
@@ -520,9 +520,9 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
             ? `Tagged to an impact area\n${formatGapsKeyUnknownsLeadership(withSection, CAP_EX_OPEN_GAPS)}`
             : "",
           unassigned.length
-            ? `Unassigned needs\n${formatGapsKeyUnknownsLeadership(unassigned, CAP_EX_OPEN_GAPS)}`
+            ? `Additional open questions\n${formatGapsKeyUnknownsLeadership(unassigned, CAP_EX_OPEN_GAPS)}`
             : allWereDuplicates
-              ? "Unassigned needs\nNo additional unassigned needs beyond intake questions."
+              ? "Additional open questions\nNo additional open questions beyond intake questions."
               : "",
         ]
           .filter(Boolean)
@@ -617,9 +617,9 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
       ? [
           openWithSection.length ? `Tagged to an impact area\n${formatGapsForFull(openWithSection, CAP_FULL_GAPS)}` : "",
           openUnassigned.length
-            ? `Unassigned needs\n${formatGapsForFull(openUnassigned, CAP_FULL_GAPS)}`
+            ? `Additional open questions\n${formatGapsForFull(openUnassigned, CAP_FULL_GAPS)}`
             : allWereDuplicates
-              ? "Unassigned needs\nNo additional unassigned needs beyond intake questions."
+              ? "Additional open questions\nNo additional open questions beyond intake questions."
               : "",
         ]
           .filter(Boolean)
