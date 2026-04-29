@@ -358,7 +358,11 @@ export function MessagesPanel({
           ) : null}
 
           {latest?.artifact.metadata.lensEnrichmentNote ? (
-            <ReviewRailCard title="Lens note" tone="info" meta={<span>{latest.artifact.metadata.lensEnrichmentNote}</span>}>
+            <ReviewRailCard
+              title="Audience guidance note"
+              tone="info"
+              meta={<span>{latest.artifact.metadata.lensEnrichmentNote}</span>}
+            >
               <div />
             </ReviewRailCard>
           ) : null}

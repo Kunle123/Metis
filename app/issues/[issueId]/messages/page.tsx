@@ -107,7 +107,7 @@ export default async function IssueMessagesPage({
   const selectedLensLabel =
     selectedStakeholderGroupId === null
       ? "Audience note from setup"
-      : (activeGroups.find((g) => g.id === selectedStakeholderGroupId)?.name ?? "Stakeholder lens");
+      : (activeGroups.find((g) => g.id === selectedStakeholderGroupId)?.name ?? "Stakeholder guidance");
 
   const selectedLensStatus =
     selectedStakeholderGroupId === null
@@ -145,7 +145,7 @@ export default async function IssueMessagesPage({
           <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper]">Messages</h2>
           <p className="mt-2 max-w-3xl text-sm leading-7 text-[--metis-paper-muted]">
             This is not a leadership brief. External updates are deterministic copy derived from the issue record, sources, open gaps, and your
-            audience lens. Internal observations are never quoted or paraphrased here.
+            audience guidance. Internal observations are never quoted or paraphrased here.
           </p>
         </div>
         <div className="px-6 py-6 sm:px-7 sm:py-7">

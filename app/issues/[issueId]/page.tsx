@@ -86,7 +86,7 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
                 ["sources", "Sources"],
                 ["gaps", "Open questions"],
                   ["input", "Observations"],
-                ["stakeholders", "Audience lens"],
+                ["stakeholders", "Audience guidance"],
               ].map(([id, label]) => sectionNavItem(id, label))}
             </div>
           </div>
@@ -223,13 +223,13 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
 
             <section id="stakeholders" className="space-y-5 border-t border-white/8 pt-7">
               <WorkspaceSection
-                title="Audience lens"
+                title="Audience guidance"
                 description="Plan outputs by audience group. Sources, gaps, and observations remain the stakeholder-agnostic truth layer."
                 addLabel="Add audience group"
                 advancedHref="/stakeholders"
                 form={
                   <div className="text-sm text-[--metis-paper-muted]">
-                    Select an audience group below, then capture messaging notes inside each card. This does not change the underlying issue record.
+                    Select an audience group below, then capture stakeholder guidance inside each card. This does not change the underlying issue record.
                   </div>
                 }
               >
