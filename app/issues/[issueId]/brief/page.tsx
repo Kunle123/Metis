@@ -28,9 +28,9 @@ function displayTitles(id: string, fallback: string) {
   const map: Record<string, string> = {
     "executive-summary": "Executive summary",
     chronology: "Background and context",
-    "confirmed-vs-unclear": "Confirmed vs unclear",
+    "confirmed-vs-unclear": "Current position and open questions",
     "narrative-map": "Stakeholder narratives",
-    implications: "Implications",
+    implications: "Risks and sensitivities",
     "recommended-actions": "Recommended actions",
   };
   return map[id] ?? fallback;

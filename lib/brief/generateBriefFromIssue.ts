@@ -133,6 +133,35 @@ function sanitizeBriefUserText(raw: string) {
     .replace(/\bgap\b/gi, (m) => (m[0] === "G" ? "Open question" : "open question"));
 }
 
+function normalizeQuestionKey(input: string) {
+  const base = normalizeNeedText(input);
+  if (!base) return "";
+  return base
+    .replace(
+      /\b(the|a|an|to|of|for|and|or|will|be|are|is|was|were|should|could|would|can|do|does|did|what|which|who|when|where|why|how)\b/g,
+      " ",
+    )
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function fixMalformedQuestionText(input: string) {
+  const raw = input.trim();
+  if (!raw) return "";
+  const withoutLead = raw.replace(/^[-•*]+\s+/u, "").replace(/^\d+\s*[\).]\s+/u, "").trim();
+
+  const openParens = (withoutLead.match(/\(/g) ?? []).length;
+  const closeParens = (withoutLead.match(/\)/g) ?? []).length;
+  const parenFixed = openParens > closeParens ? `${withoutLead})` : withoutLead;
+
+  const base = stripTrailingPunctuation(parenFixed);
+  const startsLikeQuestion = /^(what|which|who|when|where|why|how|can|should|is|are|do|does|will)\b/i.test(base);
+  const endsWithTerminal = /[?!.]$/u.test(parenFixed.trim());
+  if (endsWithTerminal) return parenFixed.trim();
+  if (!startsLikeQuestion) return base;
+  return `${base}?`;
+}
+
 function severityRank(severity: string | null | undefined) {
   if (!severity) return 9;
   if (severity === "Critical") return 0;
@@ -153,16 +182,28 @@ function capBulletBlock(text: string, maxBullets: number) {
 function topOpenQuestionsSummary({
   openQuestionsRaw,
   openGaps,
-  cap = 6,
+  cap = 5,
 }: {
   openQuestionsRaw: string;
   openGaps: Gap[];
   cap?: number;
 }) {
-  const intakeItems = splitIntakeOpenQuestions(openQuestionsRaw)
-    .map((s) => s.trim())
-    .filter(Boolean);
-  const intakeNormalized = new Set(intakeItems.map(normalizeNeedText).filter(Boolean));
+  const intakeItems = splitIntakeOpenQuestions(openQuestionsRaw).map((s) => fixMalformedQuestionText(s)).filter(Boolean);
+
+  const byKey = new Map<
+    string,
+    { source: "intake" | "gap"; score: number; text: string; severity?: string | null; section?: string | null }
+  >();
+
+  for (const item of intakeItems) {
+    const key = normalizeQuestionKey(item) || normalizeNeedText(item);
+    if (!key) continue;
+    const existing = byKey.get(key);
+    const candidate = { source: "intake" as const, score: 0, text: item, severity: null, section: null };
+    if (!existing || candidate.score > existing.score || (candidate.score === existing.score && candidate.text.length < existing.text.length)) {
+      byKey.set(key, candidate);
+    }
+  }
 
   const gapsSorted = [...openGaps].sort((a, b) => {
     const ar = severityRank(a.severity);
@@ -171,27 +212,35 @@ function topOpenQuestionsSummary({
     return String(a.createdAt ?? "").localeCompare(String(b.createdAt ?? ""));
   });
 
-  const gapLines = gapsSorted
-    .map((g) => {
-      const raw = (g.prompt || g.title || "").trim();
-      if (!raw) return "";
-      const key = normalizeNeedText(raw);
-      if (key && intakeNormalized.has(key)) return "";
-      const sev = g.severity ? `[${g.severity}] ` : "";
-      const section = cleanText((g as any).linkedSection) ? ` — ${(g as any).linkedSection}` : "";
-      return `- ${sev}${stripTrailingPunctuation(raw)}${section}`;
-    })
-    .filter(Boolean);
+  for (const g of gapsSorted) {
+    const raw = fixMalformedQuestionText((g.prompt || g.title || "").trim());
+    if (!raw) continue;
+    const key = normalizeQuestionKey(raw) || normalizeNeedText(raw);
+    if (!key) continue;
+    const hasSeverity = Boolean(g.severity);
+    const linkedSection = cleanText((g as any).linkedSection) ? String((g as any).linkedSection) : null;
+    const score = (hasSeverity ? 2 : 0) + (linkedSection ? 1 : 0);
+    const existing = byKey.get(key);
+    const candidate = { source: "gap" as const, score, text: raw, severity: g.severity ?? null, section: linkedSection };
+    if (!existing) {
+      byKey.set(key, candidate);
+      continue;
+    }
+    const prefer = candidate.score > existing.score || (candidate.score === existing.score && candidate.text.length < existing.text.length);
+    if (prefer) byKey.set(key, candidate);
+  }
 
-  const out: string[] = [];
-  for (const item of intakeItems) {
-    out.push(`- ${stripTrailingPunctuation(item.replace(/^-+\s*/u, "").replace(/^•\s*/u, ""))}`);
-    if (out.length >= cap) break;
-  }
-  for (const line of gapLines) {
-    if (out.length >= cap) break;
-    out.push(line);
-  }
+  const ranked = [...byKey.values()].sort((a, b) => {
+    if (a.source !== b.source) return a.source === "gap" ? -1 : 1;
+    if (a.score !== b.score) return b.score - a.score;
+    return a.text.length - b.text.length;
+  });
+
+  const out = ranked.slice(0, cap).map((q) => {
+    const sev = q.source === "gap" && q.severity ? `[${q.severity}] ` : "";
+    const section = q.source === "gap" && q.section ? ` — ${q.section}` : "";
+    return `- ${sev}${stripTrailingPunctuation(q.text)}${section}`;
+  });
 
   return out.join("\n");
 }
@@ -436,7 +485,7 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
   const unknownsFromIntake = paragraphOrFallback(intakeOpenQuestionsAsBulletLines(openQuestions), "");
 
   const openG = openGaps(gaps);
-  const topOpenQuestions = topOpenQuestionsSummary({ openQuestionsRaw: openQuestions, openGaps: openG, cap: 6 });
+  const topOpenQuestions = topOpenQuestionsSummary({ openQuestionsRaw: openQuestions, openGaps: openG, cap: 5 });
   const keyUnknownsCombined = (() => {
     const a = cleanText(unknownsFromIntake) ? `From intake (open questions)\n${capLines(unknownsFromIntake, 14)}` : "";
     const withSection = openG.filter((g) => cleanText((g as any).linkedSection));
@@ -460,16 +509,34 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
   const recommendedActionsForFull: string[] = (() => {
     const out: string[] = [];
     const oqItems = splitIntakeOpenQuestions(openQuestions);
-    for (const g of openG.slice(0, 2)) {
-      const label = (g.prompt || g.title).trim();
-      if (label) {
-        const topic = stripTrailingPunctuation(label);
-        const related = g.linkedSection ? ` Related: ${stripTrailingPunctuation(g.linkedSection)}.` : "";
-        out.push(
-          `Assign an owner and deadline to close: “${topic}”.${related}`,
-        );
-      }
+    const actionFromQuestion = (qRaw: string) => {
+      const q = fixMalformedQuestionText(qRaw);
+      const t = normalizeNeedText(q);
+      if (!t) return "";
+      if (/\bfollow[- ]?up\b|\bcadence\b|\bnamed owner\b/i.test(q)) return "Confirm follow-up cadence and named owner before any leadership or stakeholder meeting.";
+      if (/\bproof point\b|\bevidence\b|\bcite\b|\bsources?\b/i.test(q)) return "Agree which proof points can be cited and which require softer wording or follow-up.";
+      if (/\btimeline\b|\bwhen\b|\bdates?\b|\bdecision point\b|\bsign[- ]?off\b/i.test(q))
+        return "Confirm timeline, decision points, and sign-off milestones for the next update.";
+      if (/\bstakeholder\b|\bsector\b|\bcommunity\b|\bconcerns?\b/i.test(q))
+        return "Align expected stakeholder concerns and who will support detail on the day.";
+      const short = stripTrailingPunctuation(q).slice(0, 90);
+      return `Confirm the current position on: ${short}.`;
+    };
+
+    const candidates = [
+      ...splitIntakeOpenQuestions(openQuestions),
+      ...openG.map((g) => (g.prompt || g.title || "").trim()),
+    ].filter(Boolean);
+    const seen = new Set<string>();
+    for (const c of candidates) {
+      const key = normalizeQuestionKey(c) || normalizeNeedText(c);
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      const a = actionFromQuestion(c);
+      if (a) out.push(a);
+      if (out.length >= 2) break;
     }
+
     if (sources.length) {
       const top = sources.slice(0, 2).map((s) => `${s.title} (${s.tier})`);
       out.push(
@@ -500,11 +567,28 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
   const recommendedActionsForLeadership: string[] = (() => {
     const out: string[] = [];
     const oqItems = splitIntakeOpenQuestions(openQuestions);
-    for (const g of openG.slice(0, 2)) {
-      const line = (g.prompt || g.title).trim();
-      if (line) {
-        out.push(gapToLeadershipDecision(g));
+    const candidates = [
+      ...openG.map((g) => (g.prompt || g.title || "").trim()),
+      ...splitIntakeOpenQuestions(openQuestions),
+    ].filter(Boolean);
+    const seen = new Set<string>();
+    for (const c of candidates) {
+      const key = normalizeQuestionKey(c) || normalizeNeedText(c);
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      const q = fixMalformedQuestionText(c);
+      if (!q) continue;
+      if (/\bfollow[- ]?up\b|\bcadence\b|\bnamed owner\b/i.test(q)) {
+        out.push("Confirm follow-up cadence and named owner before the leadership session.");
+      } else if (/\bproof point\b|\bevidence\b|\bcite\b|\bsources?\b/i.test(q)) {
+        out.push("Agree which proof points can be used in the room and which require softer wording or follow-up.");
+      } else if (/\btimeline\b|\bwhen\b|\bdates?\b|\bdecision point\b|\bsign[- ]?off\b/i.test(q)) {
+        out.push("Confirm timeline and decision points, including what can be said publicly vs internally.");
+      } else {
+        const short = stripTrailingPunctuation(q).slice(0, 80);
+        out.push(`Resolve the open question: ${short}.`);
       }
+      if (out.length >= 2) break;
     }
     if (sources.length) {
       const top = sources.slice(0, 2).map((s) => `${s.title} (${s.tier})`);
@@ -589,9 +673,9 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
     if (!cleanText(openQuestions) && openG.length === 0) {
       return "No open questions are recorded yet.";
     }
-    const summary = topOpenQuestions ? capBulletBlock(topOpenQuestions, 6) : "";
+    const summary = topOpenQuestions ? capBulletBlock(topOpenQuestions, 5) : "";
     const note =
-      openG.length > 6 || splitIntakeOpenQuestions(openQuestions).length > 6
+      openG.length > 5 || splitIntakeOpenQuestions(openQuestions).length > 5
         ? "See the Open questions view for the full register."
         : "";
     return [summary, note].filter(Boolean).join("\n\n");
@@ -702,7 +786,7 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
 
   const confirmedVsBody = (() => {
     const confirmed = cleanText(confirmedFacts) ? capBulletBlock(confirmedBlock, 8) : confirmedBlock;
-    const openSummary = topOpenQuestions ? capBulletBlock(topOpenQuestions, 6) : "";
+    const openSummary = topOpenQuestions ? capBulletBlock(topOpenQuestions, 5) : "";
     const openLine =
       openSummary.length > 0
         ? `Open questions (summary)\n${openSummary}\n\nSee Workspace → Open questions for the full register.`
@@ -715,55 +799,66 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
   })();
 
   const narrativeBody = (() => {
-    const discipline = [
-      "- Anchor claims on confirmed facts and linked sources.",
-      "- Separate what is confirmed from what is still open.",
-      "- Keep the tone suitable for the recorded audience.",
-    ].join("\n");
+    const lensLines = formatAudienceImplications(issue.audience, issueStakeholders, 12, { issueAudienceInBriefHeader: true })
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter((l) => l.startsWith("•") || l.startsWith("-"))
+      .slice(0, 3);
 
-    const header = context.length ? capLines(context, 8) : "Background context is not recorded yet.";
-    const audienceLens = formatAudienceImplications(issue.audience, issueStakeholders, 8, { issueAudienceInBriefHeader: true });
+    const shortIntro =
+      cleanText(issue.audience ?? "") || issueStakeholders.length
+        ? "This section highlights the stakeholder lens and message sensitivities for the recorded audience."
+        : "No audience notes are recorded yet; add audience and stakeholder notes to sharpen the briefing posture.";
 
-    const obsExcerpt =
-      formatObsForExecutive(internalInputsForBrief, 4) +
-      (excludedObsCount ? `\n\n${excludedObsCount} observation(s) are excluded from brief output.` : "");
+    const obsLines = formatObsForExecutive(internalInputsForBrief, 2).split(/\r?\n/).filter((l) => l.trim().startsWith("•")).slice(0, 2);
+    const obsBlock = obsLines.length ? obsLines.join("\n") : "No observation excerpts available.";
 
-    const sourceLines = sourcesNarrativeFull(sources, sources.length).split(/\r?\n/);
-    const sourceSummary = sourceLines.slice(0, 8).join("\n");
-    const sourceTail = sourceLines.length > 8 ? "\n…see Sources appendix for the full register." : "";
+    const sourceRank = (s: Source) => (s.tier === "Official" ? 0 : s.tier === "Internal" ? 1 : 2);
+    const sourceRefs = [...sources]
+      .sort((a, b) => sourceRank(a) - sourceRank(b))
+      .slice(0, 2)
+      .map((s) => `- ${s.sourceCode} — ${s.title} (${s.tier})`);
+    const evidenceBlock = sourceRefs.length ? sourceRefs.join("\n") : "";
 
     return [
-      header,
+      sentence(shortIntro),
       "",
-      "Stakeholder and message posture",
-      audienceLens,
+      lensLines.length ? ["Stakeholder implications", ...lensLines].join("\n") : "Stakeholder implications\n- —",
       "",
-      "Narrative discipline",
-      discipline,
-      "",
-      `Observations (excerpt; ${internalInputs.length} on file)`,
-      obsExcerpt,
-      "",
-      "Evidence (summary)",
-      `${sourceSummary}${sourceTail}`,
+      "Observation excerpts",
+      obsBlock,
+      ...(evidenceBlock ? ["", "Evidence references (if cited)", evidenceBlock] : []),
     ].join("\n");
   })();
 
   const implicationsBody = (() => {
-    if (openG.length && !confirmedFacts.length) {
-      return "Implications are not yet fully supportable: confirmed facts are thin and open questions remain. Treat downstream impacts as contingent until evidence and owners catch up.";
+    const text = [titleLine, summary, context, openQuestions, String(issue.audience ?? "")].join("\n").toLowerCase();
+    const risks: string[] = [];
+    if (openG.length || cleanText(openQuestions)) {
+      risks.push("Risk of over-claiming while open questions remain; keep language explicitly conditional where needed.");
     }
-    if (openG.length) {
-      return "Open questions remain. Leadership should assume downstream impacts and messaging may still move as questions are answered. Revisit when the open-questions register is clear or explicitly accepted as residual risk.";
+    if (text.includes("consultation")) {
+      risks.push("Consultation integrity and process clarity: distinguish what is fixed constraints vs what is genuinely open to input.");
     }
-    return "Implications should be revisited as sources are reviewed and the open-questions register changes. If no open questions remain and facts are current, consider implications in line with the audience notes.";
+    if (text.includes("accessib")) {
+      risks.push("Accessibility and inclusion: ensure participation options and support are clear, especially for stakeholder-facing lines.");
+    }
+    if (/\bfollow[- ]?up\b|\bcadence\b|\bnamed owner\b/i.test(text)) {
+      risks.push("Follow-up commitments: avoid promising timelines or actions without a named owner and agreed cadence.");
+    }
+    if (!sources.length) {
+      risks.push("Evidence thin: avoid specific claims until at least one attributable source is linked and reviewed.");
+    }
+    if (!risks.length) {
+      risks.push("Keep sensitive points aligned to the recorded audience notes; separate confirmed facts from what is still open.");
+    }
+    return risks.slice(0, 4).map((r) => `- ${sentence(r)}`).join("\n");
   })();
 
   const fullExecutiveSummary = (() => {
     const parts: string[] = [];
     if (titleLine) parts.push(`Issue: ${titleLine}`);
-    if (context.length) parts.push(capLines(context, 4));
-    parts.push(summary || "No issue summary recorded yet.");
+    parts.push(summary ? sentence(summary) : "No issue summary recorded yet.");
     if (openG.length) parts.push(`Leadership attention: ${openG.length} open question(s) remain.`);
     return parts.filter(Boolean).join("\n\n");
   })();
@@ -796,7 +891,7 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
         },
         {
           id: "confirmed-vs-unclear",
-          title: "Confirmed vs unclear",
+          title: "Current position and open questions",
           body: confirmedVsBody,
           confidence: openQuestions.length || openG.length ? "Unclear" : confidence,
           updatedAtLabel,
@@ -812,7 +907,7 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
         },
         {
           id: "implications",
-          title: "Implications",
+          title: "Risks and sensitivities",
           body: implicationsBody,
           confidence: openG.length && !confirmedFacts.length ? "Unclear" : confidence,
           updatedAtLabel,
