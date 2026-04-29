@@ -90,6 +90,35 @@ function stripTrailingPunctuation(s: string) {
   return s.replace(/[.。…!?)\]]+$/u, "").trimEnd();
 }
 
+function normalizeNeedText(input: string) {
+  const trimmed = input.trim();
+  if (!trimmed) return "";
+  const withoutLead = trimmed
+    .replace(/^[-•*]+\s+/u, "")
+    .replace(/^\d+\s*[\).]\s+/u, "");
+  const withoutTail = stripTrailingPunctuation(withoutLead);
+  return withoutTail.toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+function dedupeUnassignedNeedsAgainstIntake(openQuestionsRaw: string, unassigned: Gap[]) {
+  const intakeItems = splitIntakeOpenQuestions(openQuestionsRaw)
+    .map(normalizeNeedText)
+    .filter(Boolean);
+  const intakeSet = new Set(intakeItems);
+  if (!intakeSet.size || !unassigned.length) {
+    return { kept: unassigned, allWereDuplicates: false };
+  }
+
+  const kept = unassigned.filter((g) => {
+    const raw = (g.prompt || g.title || "").trim();
+    const key = normalizeNeedText(raw);
+    if (!key) return true;
+    return !intakeSet.has(key);
+  });
+
+  return { kept, allWereDuplicates: kept.length === 0 && unassigned.length > 0 };
+}
+
 function sentence(s: string) {
   const t = s.trim();
   if (!t) return "";
@@ -339,13 +368,16 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
   const keyUnknownsCombined = (() => {
     const a = cleanText(unknownsFromIntake) ? `From intake (open questions)\n${capLines(unknownsFromIntake, 14)}` : "";
     const withSection = openG.filter((g) => cleanText((g as any).linkedSection));
-    const unassigned = openG.filter((g) => !cleanText((g as any).linkedSection));
+    const unassignedAll = openG.filter((g) => !cleanText((g as any).linkedSection));
+    const { kept: unassigned, allWereDuplicates } = dedupeUnassignedNeedsAgainstIntake(openQuestions, unassignedAll);
     const b = openG.length
       ? [
           withSection.length ? `Tagged to an impact area\n${formatGapsForExecutive(withSection, CAP_EX_OPEN_GAPS)}` : "",
           unassigned.length
             ? `Unassigned needs\n${formatGapsForExecutive(unassigned, CAP_EX_OPEN_GAPS)}`
-            : "",
+            : allWereDuplicates
+              ? "Unassigned needs\nNo additional unassigned needs beyond intake questions."
+              : "",
         ]
           .filter(Boolean)
           .join("\n\n")
@@ -480,7 +512,8 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
   const keyUnknownsLeadership = (() => {
     const a = cleanText(unknownsFromIntake) ? `From intake (open questions)\n${capLines(unknownsFromIntake, 14)}` : "";
     const withSection = openG.filter((g) => cleanText((g as any).linkedSection));
-    const unassigned = openG.filter((g) => !cleanText((g as any).linkedSection));
+    const unassignedAll = openG.filter((g) => !cleanText((g as any).linkedSection));
+    const { kept: unassigned, allWereDuplicates } = dedupeUnassignedNeedsAgainstIntake(openQuestions, unassignedAll);
     const b = openG.length
       ? [
           withSection.length
@@ -488,7 +521,9 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
             : "",
           unassigned.length
             ? `Unassigned needs\n${formatGapsKeyUnknownsLeadership(unassigned, CAP_EX_OPEN_GAPS)}`
-            : "",
+            : allWereDuplicates
+              ? "Unassigned needs\nNo additional unassigned needs beyond intake questions."
+              : "",
         ]
           .filter(Boolean)
           .join("\n\n")
@@ -576,11 +611,16 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
     const open = gaps.filter((g) => g.status === "Open");
     const resolved = gaps.filter((g) => g.status === "Resolved");
     const openWithSection = open.filter((g) => cleanText((g as any).linkedSection));
-    const openUnassigned = open.filter((g) => !cleanText((g as any).linkedSection));
+    const openUnassignedAll = open.filter((g) => !cleanText((g as any).linkedSection));
+    const { kept: openUnassigned, allWereDuplicates } = dedupeUnassignedNeedsAgainstIntake(openQuestions, openUnassignedAll);
     const openBody = open.length
       ? [
           openWithSection.length ? `Tagged to an impact area\n${formatGapsForFull(openWithSection, CAP_FULL_GAPS)}` : "",
-          openUnassigned.length ? `Unassigned needs\n${formatGapsForFull(openUnassigned, CAP_FULL_GAPS)}` : "",
+          openUnassigned.length
+            ? `Unassigned needs\n${formatGapsForFull(openUnassigned, CAP_FULL_GAPS)}`
+            : allWereDuplicates
+              ? "Unassigned needs\nNo additional unassigned needs beyond intake questions."
+              : "",
         ]
           .filter(Boolean)
           .join("\n\n")
