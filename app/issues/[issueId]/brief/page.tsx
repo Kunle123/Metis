@@ -158,19 +158,38 @@ export default async function IssueBriefPage({
     >
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <SurfaceCard>
-          <div className="border-b border-white/8 bg-[rgba(255,255,255,0.025)] px-6 py-5 sm:px-7">
+          <div className="border-b border-white/8 bg-[rgba(255,255,255,0.02)] px-5 py-3 sm:px-6">
             <ReviewToolbar
               className="border-0 bg-transparent px-0 py-0"
               left={
-                <div className="space-y-1">
-                  <p className="text-sm leading-6 text-[--metis-paper-muted]">
-                    Create a leadership-ready brief from the latest issue record, sources, open questions, and observations.
-                  </p>
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                  <div className="flex items-center gap-2">
+                    <Library className="h-4 w-4 text-[--metis-paper-muted]" />
+                    <span className="text-sm font-semibold text-[--metis-paper]">Brief</span>
+                  </div>
+                  <BriefModeToggle issueId={issue.id} mode={mode} />
+                  {briefVersion ? (
+                    <span
+                      className={`rounded-full border px-3 py-1 text-[0.62rem] font-medium uppercase tracking-[0.18em] ${
+                        briefInSync
+                          ? "border-emerald-400/35 bg-[rgba(18,83,58,0.45)] text-emerald-50"
+                          : "border-sky-400/35 bg-[rgba(19,86,118,0.55)] text-sky-50"
+                      }`}
+                    >
+                      {briefInSync ? "Up to date" : "Stale"}
+                    </span>
+                  ) : (
+                    <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[0.62rem] font-medium uppercase tracking-[0.18em] text-[--metis-paper-muted]">
+                      Not generated
+                    </span>
+                  )}
+                  {briefSyncHint ? (
+                    <span className="hidden text-sm leading-6 text-[--metis-paper-muted] lg:inline">{briefSyncHint}</span>
+                  ) : null}
                 </div>
               }
               right={
                 <div className="flex flex-wrap items-center justify-end gap-2">
-                  <BriefModeToggle issueId={issue.id} mode={mode} />
                   <GenerateBriefButton
                     issueId={issue.id}
                     mode={mode}
@@ -192,30 +211,26 @@ export default async function IssueBriefPage({
 
           {artifact ? (
             mode === "full" ? (
-              <article className="space-y-5 px-6 py-6 sm:px-7 sm:py-7">
-                <header className="space-y-3 border-b border-white/8 pb-5">
-                  <p className="max-w-4xl text-base leading-7 text-[--metis-paper]">{artifact.lede}</p>
-                </header>
-
-                <div className="space-y-5">
+              <article className="space-y-4 px-6 py-5 sm:px-7 sm:py-6">
+                <div className="space-y-4">
                   {artifact.full.sections.map((section, index) => {
                     const readiness = readinessFromConfidence(section.confidence);
                     return (
                       <DenseSection
                         key={section.id}
                         title={
-                          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                            <div className="space-y-1">
-                              <p className="text-[0.55rem] uppercase tracking-[0.14em] text-[rgba(176,171,160,0.44)]">0{index + 1}</p>
-                              <span className="font-[Cormorant_Garamond] text-[1.65rem] leading-none text-[--metis-paper]">
+                          <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2">
+                            <div className="flex items-baseline gap-3">
+                              <span className="text-[0.55rem] uppercase tracking-[0.18em] text-[rgba(176,171,160,0.44)]">
+                                {String(index + 1).padStart(2, "0")}
+                              </span>
+                              <span className="text-base font-semibold leading-6 text-[--metis-paper]">
                                 {displayTitles(section.id, section.title)}
                               </span>
                             </div>
-                            <div className="flex flex-wrap items-center gap-2">
-                              <ConfidencePill level={section.confidence} />
-                              <Badge className={`border-0 ${readiness.tone}`}>{readiness.label}</Badge>
-                              <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">Updated {section.updatedAtLabel}</Badge>
-                            </div>
+                            <span className="text-xs text-[--metis-paper-muted]">
+                              {readiness.label} · Updated {section.updatedAtLabel}
+                            </span>
                           </div>
                         }
                         className={index === 0 ? "border-t-0 pt-0" : undefined}
@@ -227,17 +242,12 @@ export default async function IssueBriefPage({
                 </div>
               </article>
             ) : (
-              <article className="space-y-5 px-6 py-6 sm:px-7 sm:py-7">
-                <header className="space-y-3 border-b border-white/8 pb-5">
-                  <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper]">{issue.title}</h2>
-                  <p className="max-w-4xl text-base leading-7 text-[--metis-paper]">{artifact.lede}</p>
-                </header>
-
-                <div className="space-y-5">
+              <article className="space-y-4 px-6 py-5 sm:px-7 sm:py-6">
+                <div className="space-y-4">
                   {artifact.executive.blocks.map((block, index) => (
                     <DenseSection
                       key={`${block.label}-${index}`}
-                      title={<span className="font-[Cormorant_Garamond] text-[1.45rem] leading-tight text-[--metis-paper]">{block.label}</span>}
+                      title={<span className="text-base font-semibold leading-6 text-[--metis-paper]">{block.label}</span>}
                       className={index === 0 ? "border-t-0 pt-0" : undefined}
                     >
                       <p className="max-w-4xl whitespace-pre-line">{block.body}</p>
