@@ -540,72 +540,6 @@ async function main() {
       ];
     })();
 
-    const issueStakeholders = (() => {
-      if (issue.id.startsWith("11111111")) {
-        return [
-          {
-            stakeholderGroupName: "Community and residents",
-            priority: "High",
-            needsToKnow:
-              "That this is a consultation on options (not a final decision), how to participate, and how feedback will be used.",
-            issueRisk:
-              "Perception of stealth cuts or ‘done deal’ framing; risk increases if accessibility support is unclear.",
-            channelGuidance: "Publish clear consultation page + plain-language summary; community meetings; avoid defensive social tone.",
-            toneAdjustment: "Respectful, practical, invite participation; avoid implying closure.",
-          },
-          {
-            stakeholderGroupName: "Elected members and officials",
-            priority: "High",
-            needsToKnow:
-              "Site-by-site options, governance timeline, and how equality/access considerations will be handled.",
-            issueRisk: "Questions on fairness and evidence; risk of politicisation if detail is vague.",
-            channelGuidance: "Member briefing note + Q&A pack; align with committee timetable.",
-            toneAdjustment: "Options-based; explicit constraints vs choices.",
-          },
-        ];
-      }
-      if (issue.id.startsWith("22222222")) {
-        return [
-          {
-            stakeholderGroupName: "Community and residents",
-            priority: "High",
-            needsToKnow:
-              "What is genuinely open for input, how to participate, and what accessibility support exists.",
-            issueRisk:
-              "Trust and process integrity criticism; risk of reputational drag if participation is uneven.",
-            channelGuidance: "Accessible formats, assisted sessions, transparent ‘what changed’ updates.",
-            toneAdjustment: "Non-defensive; show listening and practical improvements.",
-          },
-          {
-            stakeholderGroupName: "Leadership",
-            priority: "High",
-            needsToKnow: "Current stakeholder sentiment, evidence base, and the plan to improve accessibility and documentation.",
-            issueRisk: "Leadership-facing reputational concern; demands for proof of integrity and decision discipline.",
-            channelGuidance: "Briefing pack; disciplined Q&A; keep audit trail of material changes.",
-            toneAdjustment: "Evidence-first; calm; avoid debate-winner phrasing.",
-          },
-        ];
-      }
-      return [
-        {
-          stakeholderGroupName: "Leadership",
-          priority: "High",
-          needsToKnow: "CEO proof points with sources, clear boundaries on commitments, and follow-up owners/cadence.",
-          issueRisk: "Over-claiming or vague promises undermining credibility.",
-          channelGuidance: "Roundtable pack + follow-up note; log commitments and owners.",
-          toneAdjustment: "Concise, disciplined, evidence-backed.",
-        },
-        {
-          stakeholderGroupName: "Elected members and officials",
-          priority: "Normal",
-          needsToKnow: "How consultation integrity and accessibility will be handled across programmes.",
-          issueRisk: "Requests for formal commitments beyond what is validated.",
-          channelGuidance: "Structured briefing; options and constraints; clear next decision points.",
-          toneAdjustment: "Structured and pragmatic.",
-        },
-      ];
-    })();
-
     const createdIssue = await prisma.issue.create({
       data: {
         id: issue.id,
@@ -707,32 +641,6 @@ async function main() {
           linkedSection: i.linkedSection,
           visibility: i.visibility,
           timestampLabel: i.timestampLabel,
-        },
-      });
-    }
-
-    for (const lens of issueStakeholders) {
-      const group = await prisma.stakeholderGroup.findUnique({ where: { name: lens.stakeholderGroupName } });
-      if (!group) continue;
-      await prisma.issueStakeholder.upsert({
-        where: { issueId_stakeholderGroupId: { issueId: createdIssue.id, stakeholderGroupId: group.id } },
-        create: {
-          issueId: createdIssue.id,
-          stakeholderGroupId: group.id,
-          priority: lens.priority,
-          needsToKnow: lens.needsToKnow,
-          issueRisk: lens.issueRisk,
-          channelGuidance: lens.channelGuidance,
-          toneAdjustment: lens.toneAdjustment,
-          notes: null,
-        },
-        update: {
-          priority: lens.priority,
-          needsToKnow: lens.needsToKnow,
-          issueRisk: lens.issueRisk,
-          channelGuidance: lens.channelGuidance,
-          toneAdjustment: lens.toneAdjustment,
-          notes: null,
         },
       });
     }
