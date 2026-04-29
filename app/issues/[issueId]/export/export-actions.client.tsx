@@ -13,7 +13,11 @@ type Props = {
   issueId: string;
   briefVersionId: string;
   selectedFormat: ExportFormat;
-  mode: "full" | "executive";
+  /** Brief mode preserved in bookmarks / navigation (query param `mode`). */
+  urlMode: "full" | "executive";
+  /** Stored BriefVersion.mode powering this package preview and download/copy. */
+  briefSourceMode: "full" | "executive";
+  executiveBriefUsesFullBriefFallback: boolean;
   previewTitle: string;
   previewMeta: { label: string; value: string }[];
   previewContent: string;
@@ -165,11 +169,16 @@ export function ExportActionsClient(props: Props) {
           <div className="min-w-0">
             <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Preview</p>
             <p className="mt-1 text-xs text-[--metis-paper-muted]">
-              {props.previewMimeType === "text/plain" ? "Plain text" : "Markdown"} · {props.mode === "full" ? "Full" : "Executive"}
+              {props.previewMimeType === "text/plain" ? "Plain text" : "Markdown"} · Brief source:{" "}
+              {props.briefSourceMode === "full" ? "Full" : "Executive"} (stored)
+              {props.urlMode !== props.briefSourceMode
+                ? ` · Bookmark mode: ${props.urlMode === "full" ? "Full" : "Executive"}`
+                : ""}
+              {props.executiveBriefUsesFullBriefFallback ? " · Full snapshot fallback until Executive regenerates." : ""}
             </p>
           </div>
           <div className="flex items-center gap-2">
-            {props.previewMeta.slice(0, 2).map((m) => (
+            {props.previewMeta.slice(0, 5).map((m) => (
               <Badge key={m.label} className="border-0 bg-white/8 text-[--metis-paper-muted]">
                 {m.label}: {m.value}
               </Badge>
@@ -192,7 +201,11 @@ export function ExportActionsClient(props: Props) {
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold text-white">{props.previewTitle}</p>
                 <p className="mt-1 text-xs text-white/70">
-                  {props.previewMimeType === "text/plain" ? "Plain text" : "Markdown"} · {props.mode === "full" ? "Full" : "Executive"}
+                  {props.previewMimeType === "text/plain" ? "Plain text" : "Markdown"} · Brief source:{" "}
+                  {props.briefSourceMode === "full" ? "Full" : "Executive"}
+                  {props.urlMode !== props.briefSourceMode
+                    ? ` · Bookmark mode: ${props.urlMode === "full" ? "Full" : "Executive"}`
+                    : ""}
                 </p>
               </div>
               <div className="flex items-center gap-2">

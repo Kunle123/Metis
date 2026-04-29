@@ -13,6 +13,7 @@ import { prisma } from "@/lib/db/prisma";
 import { getIssueById } from "@/lib/issues/getIssueContext";
 import { BriefModeSchema, BriefArtifactSchema, type BriefMode, type BriefArtifact } from "@metis/shared/briefVersion";
 import { ExportFormatSchema, type ExportFormat } from "@metis/shared/export";
+import { resolveBriefVersionForExport } from "@/lib/export/resolveBriefVersionForExport";
 import { renderExportPackage } from "@/lib/export/renderExportPackage";
 import { ExportActionsClient } from "@/app/issues/[issueId]/export/export-actions.client";
 
@@ -68,8 +69,8 @@ export default async function IssueExportPage({
   const sp = (await searchParams) ?? {};
 
   const modeRaw = typeof sp.mode === "string" ? sp.mode : Array.isArray(sp.mode) ? sp.mode[0] : undefined;
-  const parsedMode = BriefModeSchema.safeParse(modeRaw ?? "full");
-  const mode = parsedMode.success ? parsedMode.data : ("full" as const);
+  const parsedUrlMode = BriefModeSchema.safeParse(modeRaw ?? "full");
+  const urlMode = parsedUrlMode.success ? parsedUrlMode.data : ("full" as const);
 
   const formatRaw = typeof sp.format === "string" ? sp.format : Array.isArray(sp.format) ? sp.format[0] : undefined;
   const parsedFormat = ExportFormatSchema.safeParse(formatRaw ?? "executive-brief");
@@ -86,12 +87,9 @@ export default async function IssueExportPage({
     );
   }
 
-  const latest = await prisma.briefVersion.findFirst({
-    where: { issueId: issue.id, mode },
-    orderBy: { createdAt: "desc" },
-  });
+  const resolved = await resolveBriefVersionForExport(issue.id, urlMode, selectedFormat);
 
-  if (!latest) {
+  if (!resolved) {
     return (
       <MetisShell
         activePath="/export"
@@ -131,7 +129,7 @@ export default async function IssueExportPage({
               Prepare output requires a stored brief version. Generate the first brief, then return here to package it for circulation.
             </p>
             <Button asChild className="w-fit rounded-full px-5">
-              <Link href={`/issues/${issue.id}/brief?mode=${mode}`}>Open brief</Link>
+              <Link href={`/issues/${issue.id}/brief?mode=${urlMode}`}>Open brief</Link>
             </Button>
             <ReviewRailCard
               title="Message variants"
@@ -160,8 +158,10 @@ export default async function IssueExportPage({
     take: 5,
   });
 
-  const artifact = BriefArtifactSchema.parse(latest.artifact) as BriefArtifact;
-  const rendered = renderExportPackage({ issue, mode, format: selectedFormat, artifact });
+  const { briefVersion, sourceMode, executiveBriefUsesFullBriefFallback } = resolved;
+
+  const artifact = BriefArtifactSchema.parse(briefVersion.artifact) as BriefArtifact;
+  const rendered = renderExportPackage({ issue, mode: sourceMode, format: selectedFormat, artifact });
 
   // Wave 4: strict event semantics for export actions.
   const preparedEvent = CirculationEventTypeSchema.parse("prepared");
@@ -200,6 +200,9 @@ export default async function IssueExportPage({
               right={
                 <div className="flex flex-wrap items-center gap-2">
                   <ReadinessPill state="Ready for review" />
+                  <Badge className="border-0 bg-white/10 text-[--metis-paper-muted]">
+                    {sourceMode === "full" ? "Full" : "Executive"} brief
+                  </Badge>
                   <Badge className="border-0 bg-[--metis-brass]/12 text-[--metis-brass-soft]">
                     {packageOptions.find((o) => o.id === selectedFormat)?.label ?? "—"}
                   </Badge>
@@ -233,7 +236,7 @@ export default async function IssueExportPage({
                   return (
                     <Link
                       key={item.id}
-                      href={`/issues/${issue.id}/export?mode=${mode}&format=${item.id}`}
+                      href={`/issues/${issue.id}/export?mode=${urlMode}&format=${item.id}`}
                       className={`block border-t border-white/10 px-4 py-3 first:border-t-0 sm:px-5 ${
                         isSelected ? "bg-[rgba(224,183,111,0.08)]" : "hover:bg-white/[0.02]"
                       }`}
@@ -298,16 +301,36 @@ export default async function IssueExportPage({
               </div>
             </CollapsibleSection>
 
+            {executiveBriefUsesFullBriefFallback ? (
+              <ReviewRailCard
+                tone="info"
+                title="Executive brief not generated yet"
+                meta={
+                  <p className="text-sm leading-6 text-[--metis-paper-muted]">
+                    This preview uses your latest Full brief snapshot&apos;s excerpt blocks until you generate or regenerate an Executive brief version.
+                  </p>
+                }
+              >
+                <Button asChild className="w-fit rounded-full">
+                  <Link href={`/issues/${issue.id}/brief?mode=executive`}>Generate Executive brief</Link>
+                </Button>
+              </ReviewRailCard>
+            ) : null}
+
             <ExportActionsClient
               issueId={issue.id}
-              briefVersionId={latest.id}
+              briefVersionId={briefVersion.id}
               selectedFormat={selectedFormat}
-              mode={mode}
+              urlMode={urlMode}
+              briefSourceMode={sourceMode}
+              executiveBriefUsesFullBriefFallback={executiveBriefUsesFullBriefFallback}
               previewTitle={issue.title}
               previewMeta={[
-                { label: "Format", value: packageOptions.find((o) => o.id === selectedFormat)?.label ?? "—" },
-                { label: "Version", value: `v${latest.versionNumber}` },
+                { label: "Export format", value: packageOptions.find((o) => o.id === selectedFormat)?.label ?? "—" },
+                { label: "Brief source", value: `${sourceMode === "full" ? "Full" : "Executive"} (stored)` },
+                { label: "Version", value: `v${briefVersion.versionNumber}` },
                 { label: "Circulation", value: artifact.metadata.circulation },
+                ...(urlMode !== sourceMode ? ([{ label: "Bookmark (URL)", value: urlMode === "full" ? "Full" : "Executive" }] as const) : []),
               ]}
               previewContent={rendered.content}
               previewMimeType={rendered.mimeType}
@@ -326,16 +349,22 @@ export default async function IssueExportPage({
             >
               <div className="space-y-2 text-sm leading-6 text-[--metis-paper-muted]">
                 <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-2 first:border-t-0 first:pt-0">
-                  <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Format</span>
+                  <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Export format</span>
                   <span className="text-[--metis-paper]">{packageOptions.find((o) => o.id === selectedFormat)?.label ?? "—"}</span>
                 </div>
                 <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-2">
-                  <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Mode</span>
-                  <span className="text-[--metis-paper]">{mode === "full" ? "Full" : "Executive"}</span>
+                  <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Brief source</span>
+                  <span className="text-[--metis-paper]">{sourceMode === "full" ? "Full" : "Executive"} (stored)</span>
                 </div>
+                {urlMode !== sourceMode ? (
+                  <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-2">
+                    <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Bookmark (URL)</span>
+                    <span className="text-[--metis-paper]">{urlMode === "full" ? "Full" : "Executive"}</span>
+                  </div>
+                ) : null}
                 <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-2">
                   <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Version</span>
-                  <span className="text-[--metis-paper]">v{latest.versionNumber}</span>
+                  <span className="text-[--metis-paper]">v{briefVersion.versionNumber}</span>
                 </div>
               </div>
             </ReviewRailCard>
@@ -409,13 +438,13 @@ export default async function IssueExportPage({
             <ReviewRailCard title="Links" tone="info" meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Jump back to generation and change tracking.</p>}>
               <div className="grid gap-3">
                 <Button asChild variant="outline" className="w-full rounded-full">
-                  <Link href={`/issues/${issue.id}/brief?mode=${mode}`}>
+                  <Link href={`/issues/${issue.id}/brief?mode=${sourceMode}`}>
                     <Eye className="mr-2 h-4 w-4" />
                     Open brief
                   </Link>
                 </Button>
                 <Button asChild variant="outline" className="w-full rounded-full">
-                  <Link href={`/issues/${issue.id}/compare?mode=${mode}`}>
+                  <Link href={`/issues/${issue.id}/compare?mode=${urlMode}`}>
                     <RefreshCcw className="mr-2 h-4 w-4" />
                     Open delta
                   </Link>

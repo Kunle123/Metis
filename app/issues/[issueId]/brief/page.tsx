@@ -197,7 +197,9 @@ export default async function IssueBriefPage({
                     syncHint={briefSyncHint}
                   />
                   <Button asChild className="rounded-full">
-                    <Link href={`/issues/${issue.id}/export?mode=${mode}`}>
+                    <Link
+                      href={`/issues/${issue.id}/export?mode=${mode}&format=${mode === "executive" ? "executive-brief" : "full-issue-brief"}`}
+                    >
                       <FileOutput className="mr-2 h-4 w-4" />
                       Prepare output
                     </Link>
