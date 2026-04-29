@@ -125,6 +125,69 @@ function sentence(s: string) {
   return `${stripTrailingPunctuation(t)}.`;
 }
 
+function severityRank(severity: string | null | undefined) {
+  if (!severity) return 9;
+  if (severity === "Critical") return 0;
+  if (severity === "Important") return 1;
+  if (severity === "Watch") return 2;
+  return 9;
+}
+
+function capBulletBlock(text: string, maxBullets: number) {
+  const raw = text.trim();
+  if (!raw) return "";
+  const lines = raw.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  if (lines.length <= maxBullets) return raw;
+  const head = lines.slice(0, maxBullets);
+  return `${head.join("\n")}\n- …${lines.length - maxBullets} more item(s) in the record`;
+}
+
+function topOpenQuestionsSummary({
+  openQuestionsRaw,
+  openGaps,
+  cap = 6,
+}: {
+  openQuestionsRaw: string;
+  openGaps: Gap[];
+  cap?: number;
+}) {
+  const intakeItems = splitIntakeOpenQuestions(openQuestionsRaw)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const intakeNormalized = new Set(intakeItems.map(normalizeNeedText).filter(Boolean));
+
+  const gapsSorted = [...openGaps].sort((a, b) => {
+    const ar = severityRank(a.severity);
+    const br = severityRank(b.severity);
+    if (ar !== br) return ar - br;
+    return String(a.createdAt ?? "").localeCompare(String(b.createdAt ?? ""));
+  });
+
+  const gapLines = gapsSorted
+    .map((g) => {
+      const raw = (g.prompt || g.title || "").trim();
+      if (!raw) return "";
+      const key = normalizeNeedText(raw);
+      if (key && intakeNormalized.has(key)) return "";
+      const sev = g.severity ? `[${g.severity}] ` : "";
+      const section = cleanText((g as any).linkedSection) ? ` — ${(g as any).linkedSection}` : "";
+      return `- ${sev}${stripTrailingPunctuation(raw)}${section}`;
+    })
+    .filter(Boolean);
+
+  const out: string[] = [];
+  for (const item of intakeItems) {
+    out.push(`- ${stripTrailingPunctuation(item.replace(/^-+\s*/u, "").replace(/^•\s*/u, ""))}`);
+    if (out.length >= cap) break;
+  }
+  for (const line of gapLines) {
+    if (out.length >= cap) break;
+    out.push(line);
+  }
+
+  return out.join("\n");
+}
+
 export type BriefGenerationInput = {
   issue: Issue;
   sources: Source[];
@@ -365,6 +428,7 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
   const unknownsFromIntake = paragraphOrFallback(intakeOpenQuestionsAsBulletLines(openQuestions), "");
 
   const openG = openGaps(gaps);
+  const topOpenQuestions = topOpenQuestionsSummary({ openQuestionsRaw: openQuestions, openGaps: openG, cap: 6 });
   const keyUnknownsCombined = (() => {
     const a = cleanText(unknownsFromIntake) ? `From intake (open questions)\n${capLines(unknownsFromIntake, 14)}` : "";
     const withSection = openG.filter((g) => cleanText((g as any).linkedSection));
@@ -462,73 +526,67 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
   const recommendedBodyForLeadership = recommendedActionsForLeadership.map((x, i) => `${i + 1}) ${x}`).join("\n");
 
   const guardrails = [
-    "Do not state causes, scope, or customer impact that are not supported by the confirmed facts, linked sources, or agreed observations above.",
+    "Do not state causes, scope, or impact that are not supported by confirmed facts, linked sources, or attributable observations.",
     openG.length
-      ? `There are ${openG.length} open gap(s) in the tracker; treat them as open until closed with an attributable observation.`
-      : "If new unknowns appear, log them as gaps or intake questions before treating them as settled.",
-    "Avoid speculative or inflammatory exposure language; align any external line with the audience notes and validation status.",
+      ? `There are ${openG.length} open question(s) in the tracker; treat them as open until answered with attributable input.`
+      : "If new unknowns appear, record them as open questions before treating them as settled.",
+    "Avoid speculative or escalatory language; align any external line with the recorded audience notes and validation posture.",
   ].join("\n\n");
 
   const guardrailsLeadership = [
-    "Do not state causes, scope, or customer impact that are not supported by confirmed facts, linked sources, or clear observations above.",
+    "Do not state causes, scope, or impact that are not supported by confirmed facts, linked sources, or attributable observations.",
     openG.length
-      ? `There are ${openG.length} open clarification item(s) on the list; treat them as open until an attributable observation or a confirmed intake update closes them.`
-      : "If new material unknowns appear, record them in intake or as a formal clarification need before treating them as settled for external or board use.",
-    "Avoid speculative or inflammatory exposure language; align any external line with the audience notes and the issue’s validation posture.",
+      ? `There are ${openG.length} open question(s) on the list; treat them as open until attributable input or confirmed intake updates answer them.`
+      : "If new material unknowns appear, record them as open questions before treating them as settled for leadership or external use.",
+    "Avoid speculative or escalatory language; align any external line with audience notes and the issue’s validation posture.",
   ].join("\n\n");
 
   const situationBody = (() => {
-    if (context.length) {
-      return `Context from intake (the title and working line are in the brief header above):\n${capLines(context, 8)}`;
+    const bits: string[] = [];
+    if (context.length) bits.push(capLines(context, 8));
+    if (lede.length) bits.push(`Current position:\n${lede}`);
+    if (!bits.length) {
+      return "Title and issue summary are not recorded yet. Add a short summary and context so the brief reads as a coherent note.";
     }
-    return "Title and working line are in the header. Add background in the issue’s context field when you need a stable narrative that does not fit in the working line alone.";
+    return bits.join("\n\n");
   })();
 
   const situationBodyLeadership = (() => {
-    if (context.length) {
-      return `Leadership context:\n${capLines(context, 8)}`;
-    }
-    return "Leadership context is not recorded yet. Use the working line as the reference point; treat downstream implications as provisional until facts and sources catch up.";
+    const bits: string[] = [];
+    if (context.length) bits.push(capLines(context, 8));
+    if (lede.length) bits.push(`Current position:\n${lede}`);
+    if (!bits.length) return "Current position is not recorded yet.";
+    return bits.join("\n\n");
   })();
 
   const currentAssessment = [
     `Status: ${issue.status}`,
     `Severity: ${issue.severity}`,
-    `Urgency / priority: ${issue.priority}`,
-    `Operator posture: ${issue.operatorPosture}`,
-    `Clarification gaps (count): ${issue.openGapsCount} (${openG.length} open in tracker)`,
-    cleanText(issue.ownerName ?? "") ? `Owner: ${issue.ownerName}` : "Owner: not recorded yet.",
+    `Urgency: ${issue.priority}`,
+    `Briefing posture: ${issue.operatorPosture}`,
+    `Open questions: ${issue.openGapsCount} (tracker: ${openG.length} open)`,
+    cleanText(issue.ownerName ?? "") ? `Issue owner: ${issue.ownerName}` : "Issue owner: not recorded yet.",
   ].join("\n");
 
   const currentAssessmentLeadership = [
     `Status: ${issue.status}`,
     `Severity: ${issue.severity}`,
-    `Urgency / priority: ${issue.priority}`,
-    `Operator posture: ${issue.operatorPosture}`,
-    `Clarification load: ${issue.openGapsCount} on the issue record · ${openG.length} not yet closed on the list`,
-    cleanText(issue.ownerName ?? "") ? `Owner: ${issue.ownerName}` : "Owner: not recorded yet.",
+    `Urgency: ${issue.priority}`,
+    `Briefing posture: ${issue.operatorPosture}`,
+    `Open questions: ${issue.openGapsCount} on the issue record · ${openG.length} open in tracker`,
+    cleanText(issue.ownerName ?? "") ? `Issue owner: ${issue.ownerName}` : "Issue owner: not recorded yet.",
   ].join("\n");
 
   const keyUnknownsLeadership = (() => {
-    const a = cleanText(unknownsFromIntake) ? `From intake (open questions)\n${capLines(unknownsFromIntake, 14)}` : "";
-    const withSection = openG.filter((g) => cleanText((g as any).linkedSection));
-    const unassignedAll = openG.filter((g) => !cleanText((g as any).linkedSection));
-    const { kept: unassigned, allWereDuplicates } = dedupeUnassignedNeedsAgainstIntake(openQuestions, unassignedAll);
-    const b = openG.length
-      ? [
-          withSection.length
-            ? `Tagged to an impact area\n${formatGapsKeyUnknownsLeadership(withSection, CAP_EX_OPEN_GAPS)}`
-            : "",
-          unassigned.length
-            ? `Additional open questions\n${formatGapsKeyUnknownsLeadership(unassigned, CAP_EX_OPEN_GAPS)}`
-            : allWereDuplicates
-              ? "Additional open questions\nNo additional open questions beyond intake questions."
-              : "",
-        ]
-          .filter(Boolean)
-          .join("\n\n")
-      : "No open clarification items remain on the current list.";
-    return [a, b].filter(Boolean).join("\n\n");
+    if (!cleanText(openQuestions) && openG.length === 0) {
+      return "No open questions are recorded yet.";
+    }
+    const summary = topOpenQuestions ? capBulletBlock(topOpenQuestions, 6) : "";
+    const note =
+      openG.length > 6 || splitIntakeOpenQuestions(openQuestions).length > 6
+        ? "See the Open questions view for the full register."
+        : "";
+    return [summary, note].filter(Boolean).join("\n\n");
   })();
 
   const confirmedFactsBlockExecutive = (() => {
@@ -602,58 +660,105 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
         `Observations: ${internalInputs.length} on file; skim the latest 1–2 for contradictions to the lede if time allows.`,
       ];
 
-  const timelineBody =
-    context.toLowerCase().includes("timeline") || openQuestions.toLowerCase().includes("when")
-      ? "No structured chronology is recorded. Pull key times from the issue context, open questions, and sources, and add a dated line when they are agreed."
-      : "No separate chronology section is in the issue record. When timing matters for leadership, add key timestamps to context and sources as they are confirmed.";
+  const backgroundContextBody = (() => {
+    const parts: string[] = [];
+
+    if (context.length) {
+      parts.push(capLines(context, 10));
+    } else {
+      parts.push(
+        "Background context is not recorded yet. Add a short paragraph in the issue’s context field to capture prior position, constraints, and what changed.",
+      );
+    }
+
+    if (summary.length) {
+      parts.push(`Current framing:\n${sentence(summary)}`);
+    } else if (titleLine.length) {
+      parts.push(`Current framing:\n${sentence(titleLine)}`);
+    }
+
+    const developments = internalInputsForBrief.slice(0, 2);
+    if (developments.length) {
+      parts.push(
+        `Recent developments (from observations)\n${formatObsForExecutive(developments, 2)}`,
+      );
+    } else if (sources.length) {
+      const top = sources.slice(0, 2).map((s) => `${s.title} (${s.tier})`);
+      parts.push(
+        `Recent developments (from sources)\n- ${top.join("\n- ")}${sources.length > 2 ? "\n- …see Sources for the full register." : ""}`,
+      );
+    }
+
+    return parts.filter(Boolean).join("\n\n");
+  })();
 
   const confirmedVsBody = (() => {
-    const open = gaps.filter((g) => g.status === "Open");
-    const resolved = gaps.filter((g) => g.status === "Resolved");
-    const openWithSection = open.filter((g) => cleanText((g as any).linkedSection));
-    const openUnassignedAll = open.filter((g) => !cleanText((g as any).linkedSection));
-    const { kept: openUnassigned, allWereDuplicates } = dedupeUnassignedNeedsAgainstIntake(openQuestions, openUnassignedAll);
-    const openBody = open.length
-      ? [
-          openWithSection.length ? `Tagged to an impact area\n${formatGapsForFull(openWithSection, CAP_FULL_GAPS)}` : "",
-          openUnassigned.length
-            ? `Additional open questions\n${formatGapsForFull(openUnassigned, CAP_FULL_GAPS)}`
-            : allWereDuplicates
-              ? "Additional open questions\nNo additional open questions beyond intake questions."
-              : "",
-        ]
-          .filter(Boolean)
-          .join("\n\n")
-      : "No open gaps recorded.";
-    const resolvedBody = resolved.length ? formatGapsForFull(resolved, 8) : "No resolved gaps recorded.";
-
-    return `Confirmed (from issue record)\n${confirmedBlock}\n\nUnclear / needs confirmation (from issue record)\n${
-      unknownsFromIntake || "No open questions recorded yet."
-    }\n\nOpen clarification gaps\n${openBody}\n\nResolved gaps (recent)\n${resolvedBody}`;
+    const confirmed = cleanText(confirmedFacts) ? capBulletBlock(confirmedBlock, 8) : confirmedBlock;
+    const openSummary = topOpenQuestions ? capBulletBlock(topOpenQuestions, 6) : "";
+    const openLine =
+      openSummary.length > 0
+        ? `Open questions (summary)\n${openSummary}\n\nSee Workspace → Open questions for the full register.`
+        : "Open questions (summary)\nNo open questions recorded yet.";
+    const note =
+      openG.length > 0
+        ? `Tracker note: ${openG.length} open question(s) are recorded in the open-questions tracker.`
+        : "Tracker note: no open questions are recorded in the tracker.";
+    return ["Confirmed facts", confirmed, "", openLine, "", note].join("\n");
   })();
 
   const narrativeBody = (() => {
-    const a = context.length
-      ? `Context\n${context}\n\nNarrative discipline\n- Anchor updates on confirmed facts and linked sources.\n- Name unknowns; do not imply closure where gaps remain open.`
-      : "No context paragraph recorded yet.\n\nNarrative discipline\n- Anchor updates on confirmed facts and linked sources.\n- Name unknowns; do not imply closure where gaps remain open.";
-    const b = formatAudienceImplications(issue.audience, issueStakeholders, 12, { issueAudienceInBriefHeader: true });
+    const discipline = [
+      "- Anchor claims on confirmed facts and linked sources.",
+      "- Separate what is confirmed from what is still open.",
+      "- Keep the tone suitable for the recorded audience.",
+    ].join("\n");
+
+    const header = context.length ? capLines(context, 8) : "Background context is not recorded yet.";
+    const audienceLens = formatAudienceImplications(issue.audience, issueStakeholders, 8, { issueAudienceInBriefHeader: true });
+
     const obsExcerpt =
-      formatObsForFull(internalInputsForBrief, CAP_FULL_OBS) +
+      formatObsForExecutive(internalInputsForBrief, 4) +
       (excludedObsCount ? `\n\n${excludedObsCount} observation(s) are excluded from brief output.` : "");
-    return `${a}\n\nAudience & stakeholder lens\n${b}\n\n---\nAttributable observations (excerpt; ${internalInputs.length} on file)\n${obsExcerpt}\n\n---\nSources register (summary)\n${sourcesNarrativeFull(sources, sources.length)}`;
+
+    const sourceLines = sourcesNarrativeFull(sources, sources.length).split(/\r?\n/);
+    const sourceSummary = sourceLines.slice(0, 8).join("\n");
+    const sourceTail = sourceLines.length > 8 ? "\n…see Sources appendix for the full register." : "";
+
+    return [
+      header,
+      "",
+      "Stakeholder and message posture",
+      audienceLens,
+      "",
+      "Narrative discipline",
+      discipline,
+      "",
+      `Observations (excerpt; ${internalInputs.length} on file)`,
+      obsExcerpt,
+      "",
+      "Evidence (summary)",
+      `${sourceSummary}${sourceTail}`,
+    ].join("\n");
   })();
 
   const implicationsBody = (() => {
     if (openG.length && !confirmedFacts.length) {
-      return "Implications (commercial, regulatory, reputational) are not yet fully supportable: confirmed facts are thin and open gaps are present. Treat downstream impacts as contingent until evidence and owners catch up.";
+      return "Implications are not yet fully supportable: confirmed facts are thin and open questions remain. Treat downstream impacts as contingent until evidence and owners catch up.";
     }
     if (openG.length) {
-      return `There are open clarification gaps. Leadership should assume downstream impacts, notifications, and messaging may still move as gaps close. Revisit when the gap register is clear or explicitly accepted as residual risk.`;
+      return "Open questions remain. Leadership should assume downstream impacts and messaging may still move as questions are answered. Revisit when the open-questions register is clear or explicitly accepted as residual risk.";
     }
     return "Implications should be revisited as sources are reviewed and the gap register changes. If no gaps remain and facts are current, consider implications in line with the audience notes.";
   })();
 
-  const fullExecutiveSummary = [titleLine ? `Issue: ${titleLine}` : null, summary || "No working line recorded yet."].filter(Boolean).join("\n\n");
+  const fullExecutiveSummary = (() => {
+    const parts: string[] = [];
+    if (titleLine) parts.push(`Issue: ${titleLine}`);
+    if (context.length) parts.push(capLines(context, 4));
+    parts.push(summary || "No issue summary recorded yet.");
+    if (openG.length) parts.push(`Leadership attention: ${openG.length} open question(s) remain.`);
+    return parts.filter(Boolean).join("\n\n");
+  })();
 
   const artifact: BriefArtifact = {
     lede,
@@ -675,8 +780,8 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
         },
         {
           id: "chronology",
-          title: "Chronology",
-          body: timelineBody,
+          title: "Background and context",
+          body: backgroundContextBody,
           confidence: "Unclear",
           updatedAtLabel,
           evidenceRefs: [],
