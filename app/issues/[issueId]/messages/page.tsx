@@ -48,25 +48,6 @@ export default async function IssueMessagesPage({
     orderBy: [{ displayOrder: "asc" }, { name: "asc" }],
   });
 
-  const issueStakeholders = await prisma.issueStakeholder.findMany({
-    where: { issueId: issue.id },
-    select: {
-      stakeholderGroupId: true,
-      needsToKnow: true,
-      issueRisk: true,
-      channelGuidance: true,
-    },
-  });
-
-  const guidanceByGroupId = new Map<string, "complete" | "needs_guidance">(
-    issueStakeholders.map((row) => {
-      const hasGuidance = Boolean(
-        cleanText(row.needsToKnow) || cleanText(row.issueRisk) || cleanText(row.channelGuidance),
-      );
-      return [row.stakeholderGroupId, hasGuidance ? "complete" : "needs_guidance"];
-    }),
-  );
-
   let selectedStakeholderGroupId: string | null = null;
 
   if (lensRaw === undefined || lensRaw === "" || lensRaw === "issue") {
@@ -100,21 +81,12 @@ export default async function IssueMessagesPage({
   const audienceGroupOptions = activeGroups.map((g) => ({
     id: g.id,
     label: g.name,
-    status: guidanceByGroupId.get(g.id) ?? "needs_guidance",
   }));
 
-  const setupAudienceNote = cleanText(issue.audience);
-  const selectedLensLabel =
+  const selectedAudienceGroupLabel =
     selectedStakeholderGroupId === null
-      ? "Audience note from setup"
-      : (activeGroups.find((g) => g.id === selectedStakeholderGroupId)?.name ?? "Stakeholder guidance");
-
-  const selectedLensStatus =
-    selectedStakeholderGroupId === null
-      ? setupAudienceNote
-        ? ("setup_note" as const)
-        : ("setup_missing" as const)
-      : (guidanceByGroupId.get(selectedStakeholderGroupId) ?? "needs_guidance");
+      ? "General (no audience group)"
+      : (activeGroups.find((g) => g.id === selectedStakeholderGroupId)?.name ?? "Audience group");
 
   const initialLatest = latestRow
     ? {
@@ -156,9 +128,7 @@ export default async function IssueMessagesPage({
             selectedTemplateId={templateId}
             audienceGroupOptions={audienceGroupOptions}
             selectedStakeholderGroupId={selectedStakeholderGroupId}
-            selectedLensLabel={selectedLensLabel}
-            selectedLensStatus={selectedLensStatus}
-            setupAudienceNote={setupAudienceNote}
+            selectedAudienceGroupLabel={selectedAudienceGroupLabel}
             initialLatest={initialLatest}
           />
           <div className="mt-8 border-t border-white/8 pt-6">

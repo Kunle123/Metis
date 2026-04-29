@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import type { IssueStakeholder, StakeholderGroup } from "@prisma/client";
+import type { StakeholderGroup } from "@prisma/client";
 import { Prisma } from "@prisma/client";
 
 import {
@@ -139,7 +139,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   let audience: ExternalAudienceInput;
   let internalAudience: InternalAudienceInput;
   let mediaAudience: MediaAudienceInput;
-  let issueLens: IssueStakeholder | null = null;
+  const issueLens = null;
   let group: StakeholderGroup | null = null;
 
   if (stakeholderGroupId) {
@@ -147,9 +147,6 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     if (!group) {
       return NextResponse.json({ error: "Audience group not found or inactive" }, { status: 404 });
     }
-    issueLens = await prisma.issueStakeholder.findFirst({
-      where: { issueId, stakeholderGroupId: group.id },
-    });
     audience = { kind: "group", group, issueLens };
     internalAudience = { kind: "group", group, issueLens };
     mediaAudience = { kind: "group", group, issueLens };
@@ -203,7 +200,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         versionNumber,
         generatedFromIssueUpdatedAt: issue.updatedAt,
         stakeholderGroupId,
-        issueStakeholderId: issueLens?.id ?? null,
+        issueStakeholderId: null,
         audienceSnapshot: audienceSnapshot as Prisma.InputJsonValue,
         artifact: artifact as Prisma.InputJsonValue,
       },
