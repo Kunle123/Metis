@@ -62,6 +62,18 @@ export function WorkspaceStakeholders({
   const [rowErrorById, setRowErrorById] = useState<Record<string, string>>({});
 
   const selectedGroupIds = useMemo(() => new Set(selected.map((s) => s.stakeholderGroupId)), [selected]);
+  const selectedNeedGuidance = useMemo(
+    () =>
+      selected.filter(
+        (s) =>
+          !s.needsToKnow.trim() &&
+          !s.issueRisk.trim() &&
+          !s.channelGuidance.trim() &&
+          !(s.toneAdjustment ?? "").trim() &&
+          !(s.notes ?? "").trim(),
+      ),
+    [selected],
+  );
   const availableGroups = useMemo(
     () => allGroups.filter((g) => g.isActive && !selectedGroupIds.has(g.id)),
     [allGroups, selectedGroupIds],
@@ -160,6 +172,16 @@ export function WorkspaceStakeholders({
           <p className="text-sm text-[--metis-paper-muted]">
             Use audience groups to plan messaging and outputs. This layer does not change the underlying sources, gaps, or observations.
           </p>
+          {selectedNeedGuidance.length ? (
+            <div className="mt-3 rounded-[1.1rem] border border-amber-400/25 bg-[rgba(131,82,17,0.16)] px-4 py-3 text-sm leading-6 text-amber-50/90">
+              <p className="font-medium text-amber-50">Some audiences need guidance.</p>
+              <p className="mt-1 text-amber-50/80">
+                {selectedNeedGuidance.length === 1
+                  ? `${selectedNeedGuidance[0]!.group.name} has no issue-specific notes yet. Messages may fall back to generic setup context.`
+                  : `${selectedNeedGuidance.length} selected audiences have no issue-specific notes yet. Messages may fall back to generic setup context.`}
+              </p>
+            </div>
+          ) : null}
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <select

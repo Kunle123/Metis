@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Copy } from "lucide-react";
@@ -40,16 +41,20 @@ export function MessagesPanel({
   audienceGroupOptions,
   selectedStakeholderGroupId,
   selectedLensLabel,
+  selectedLensStatus,
+  setupAudienceNote,
   initialLatest,
 }: {
   issueId: string;
   issueTitle: string;
   issueUpdatedAt: string;
   selectedTemplateId: MessageVariantTemplateId;
-  audienceGroupOptions: AudienceGroupOption[];
+  audienceGroupOptions: Array<AudienceGroupOption & { status: "complete" | "needs_guidance" }>;
   /** null = setup audience note (`?lens=issue`). */
   selectedStakeholderGroupId: string | null;
   selectedLensLabel: string;
+  selectedLensStatus: "complete" | "needs_guidance" | "setup_note" | "setup_missing";
+  setupAudienceNote: string;
   initialLatest: LatestPayload;
 }) {
   const router = useRouter();
@@ -160,6 +165,28 @@ export function MessagesPanel({
         ? "Media draft: short holding line with confirmed facts only where possible; no observations or internal references. Review for sensitive or legally risky content before use."
         : "External draft: uses issue summary/confirmed facts and uncertainty wording. Still requires human review for sensitive or legally risky content.";
 
+  const lensHelperText = (() => {
+    if (selectedLensStatus === "setup_missing") {
+      return "Using setup audience note only (none recorded yet). Add it in setup to tailor language and emphasis.";
+    }
+    if (selectedLensStatus === "setup_note") {
+      return setupAudienceNote ? `Using setup audience note only: ${setupAudienceNote}` : "Using setup audience note only.";
+    }
+    if (selectedLensStatus === "needs_guidance") {
+      return "No issue-specific guidance is recorded for this audience. This message may be generic; add stakeholder guidance to tailor it further.";
+    }
+    return "Using stakeholder guidance recorded for this issue.";
+  })();
+
+  const lensIndicator = (() => {
+    if (selectedLensStatus === "complete") return { tone: "ok" as const, label: "Using guidance" };
+    if (selectedLensStatus === "needs_guidance") return { tone: "warn" as const, label: "Needs guidance" };
+    if (selectedLensStatus === "setup_missing") return { tone: "warn" as const, label: "Setup note missing" };
+    return { tone: "info" as const, label: "Setup note only" };
+  })();
+
+  const showGuidanceCta = selectedLensStatus !== "complete";
+
   return (
     <div className="space-y-5">
       <ReviewToolbar
@@ -189,14 +216,42 @@ export function MessagesPanel({
                   }}
                   className="h-10 w-full rounded-full border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
                 >
-                  <option value="">Audience note from setup</option>
+                  <option value="">Setup audience note (issue)</option>
                   {audienceGroupOptions.map((o) => (
                     <option key={o.id} value={o.id}>
-                      {o.label}
+                      {o.status === "complete" ? `${o.label} ✓ guidance` : `${o.label} · needs guidance`}
                     </option>
                   ))}
                 </select>
               </label>
+            </div>
+
+            <div className="text-sm leading-6 text-[--metis-paper-muted]">
+              <span className="text-[--metis-paper]">Shaping context:</span>{" "}
+              <span className="text-[--metis-paper]">{selectedTemplateId.replaceAll("_", " ")}</span> ·{" "}
+              <span className="text-[--metis-paper]">{selectedLensLabel}</span>{" "}
+              <span
+                className={`ml-2 inline-flex items-center rounded-full border px-2.5 py-0.5 text-[0.62rem] font-medium uppercase tracking-[0.16em] ${
+                  lensIndicator.tone === "ok"
+                    ? "border-emerald-400/30 bg-[rgba(18,83,58,0.35)] text-emerald-50"
+                    : lensIndicator.tone === "warn"
+                      ? "border-amber-400/35 bg-[rgba(131,82,17,0.42)] text-amber-50"
+                      : "border-sky-400/35 bg-[rgba(19,86,118,0.42)] text-sky-50"
+                }`}
+              >
+                {lensIndicator.label}
+              </span>
+              <div className="mt-1 text-[--metis-paper-muted]">{lensHelperText}</div>
+              {showGuidanceCta ? (
+                <div className="mt-2">
+                  <Link
+                    href={`/issues/${encodeURIComponent(issueId)}#stakeholders`}
+                    className="text-sm text-[--metis-brass-soft] underline-offset-4 hover:underline"
+                  >
+                    Add stakeholder guidance →
+                  </Link>
+                </div>
+              ) : null}
             </div>
           </div>
         }
