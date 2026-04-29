@@ -14,6 +14,10 @@ export const MessageVariantSectionSchema = z.object({
 });
 export type MessageVariantSection = z.infer<typeof MessageVariantSectionSchema>;
 
+/** How body text was produced for Messages (optional for older stored artifacts). */
+export const MessageVariantWordingPolishSchema = z.enum(["deterministic_only", "ai_polished"]);
+export type MessageVariantWordingPolish = z.infer<typeof MessageVariantWordingPolishSchema>;
+
 const CommonArtifactMetadataSchema = z.object({
   publicHeadline: z.string(),
   lastRevisionLabel: z.string(),
@@ -27,6 +31,8 @@ const CommonArtifactMetadataSchema = z.object({
   issueSpecificLensApplied: z.boolean().optional(),
   /** e.g. defaults-only message when no IssueStakeholder row. */
   lensEnrichmentNote: z.string().nullable().optional(),
+  /** Set when Messages optional AI wording pass runs; omit on older deterministic-only rows. */
+  aiWordingPolish: MessageVariantWordingPolishSchema.optional(),
 });
 
 const GuardrailsSchema = z.object({
@@ -86,6 +92,8 @@ export const CreateMessageVariantInputSchema = z.object({
   templateId: MessageVariantTemplateIdSchema,
   /** null = audience note from issue setup only; otherwise organisation StakeholderGroup id. */
   stakeholderGroupId: z.string().uuid().nullable().optional(),
+  /** Requires server-side MESSAGES_AI_CLEANUP_ENABLED and OPENAI; otherwise deterministic only. */
+  improveWithAi: z.boolean().optional(),
 });
 export type CreateMessageVariantInput = z.infer<typeof CreateMessageVariantInputSchema>;
 

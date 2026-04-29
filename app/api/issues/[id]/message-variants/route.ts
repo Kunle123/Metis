@@ -1,13 +1,16 @@
 import { NextResponse } from "next/server";
-import type { StakeholderGroup } from "@prisma/client";
+import type { Gap, Source, StakeholderGroup } from "@prisma/client";
 import { Prisma } from "@prisma/client";
 
 import {
   CreateMessageVariantInputSchema,
   MessageVariantArtifactSchema,
   MessageVariantTemplateIdSchema,
+  type MessageVariantArtifact,
   type MessageVariantTemplateId,
+  type MessageVariantWordingPolish,
 } from "@metis/shared/messageVariant";
+import { cleanupMessageVariantsSections } from "@/lib/ai/cleanupMessageDraft";
 import { prisma } from "@/lib/db/prisma";
 import { requireMutation } from "@/lib/governance/requireMutation";
 import { IssueActivityKinds } from "@/lib/issues/activityKinds";
@@ -26,6 +29,51 @@ import {
   type AudienceInput as MediaAudienceInput,
 } from "@/lib/messages/generateMediaHoldingLine";
 import { revalidatePath } from "next/cache";
+
+function readStoredWordingPolish(artifactUnknown: unknown): MessageVariantWordingPolish {
+  const p = MessageVariantArtifactSchema.safeParse(artifactUnknown);
+  if (!p.success) return "deterministic_only";
+  return p.data.metadata.aiWordingPolish === "ai_polished" ? "ai_polished" : "deterministic_only";
+}
+
+/** Server flag: defaults OFF unless env is exactly `"true"`. */
+function desiredWordingPolish(improveRequest: boolean | undefined): MessageVariantWordingPolish {
+  const wants = Boolean(improveRequest);
+  const enabled = typeof process.env.MESSAGES_AI_CLEANUP_ENABLED === "string" && process.env.MESSAGES_AI_CLEANUP_ENABLED === "true";
+  const key = Boolean(process.env.OPENAI_API_KEY?.trim());
+  return wants && enabled && key ? "ai_polished" : "deterministic_only";
+}
+
+function cleanSnippet(text: unknown, max: number) {
+  let t = typeof text === "string" ? text.replace(/\s+/g, " ").trim() : "";
+  if (!t.length) return "";
+  if (t.length > max) return `${t.slice(0, max - 1)}…`;
+  return t;
+}
+
+function summarizeSourcesForAi(sources: Source[]) {
+  return sources.slice(0, 12).map((s) => `${s.sourceCode} (${String(s.tier)}) — ${cleanSnippet(s.title, 240)}`).filter(Boolean);
+}
+
+function summarizeGapsForAi(gaps: Gap[]) {
+  return gaps
+    .filter((g) => g.status === "Open")
+    .slice(0, 14)
+    .map((g) => `${g.severity ? `[${String(g.severity)}] ` : ""}${cleanSnippet(g.prompt || g.title, 520)}`)
+    .filter(Boolean);
+}
+
+function truncateIssueOpenQs(text: unknown) {
+  const t = typeof text === "string" ? text.trim() : "";
+  if (t.length <= 2800) return t;
+  return `${t.slice(0, 2799)}…`;
+}
+
+const TEMPLATE_LABELS: Record<MessageVariantTemplateId, string> = {
+  external_customer_resident_student: "External — customer/resident/student update",
+  internal_staff_update: "Internal — staff update",
+  media_holding_line: "Media — holding line",
+};
 
 function serializeMessageVariant(row: {
   id: string;
@@ -167,10 +215,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     orderBy: [{ versionNumber: "desc" }],
   });
 
+  const desiredPolish = desiredWordingPolish(parsed.data.improveWithAi);
+
   if (
     latestForLens &&
     latestForLens.generatedFromIssueUpdatedAt.getTime() === issue.updatedAt.getTime() &&
-    (latestForLens.stakeholderGroupId ?? null) === stakeholderGroupId
+    (latestForLens.stakeholderGroupId ?? null) === stakeholderGroupId &&
+    readStoredWordingPolish(latestForLens.artifact) === desiredPolish
   ) {
     return NextResponse.json(serializeMessageVariant(latestForLens));
   }
@@ -181,7 +232,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   });
   const versionNumber = (globalLatest?.versionNumber ?? 0) + 1;
 
-  const artifact = (() => {
+  const deterministic = ((): MessageVariantArtifact => {
     if (parsed.data.templateId === "external_customer_resident_student") {
       return generateExternalCustomerResidentStudentArtifact({ issue, sources, gaps, audience });
     }
@@ -190,6 +241,72 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     }
     return generateInternalStaffUpdateArtifact({ issue, sources, gaps, internalInputs, audience: internalAudience });
   })();
+
+  let mergedArtifact: MessageVariantArtifact = {
+    ...deterministic,
+    metadata: {
+      ...deterministic.metadata,
+      aiWordingPolish: "deterministic_only",
+    },
+  };
+
+  if (desiredPolish === "ai_polished") {
+    const audiencePathLabel =
+      stakeholderGroupId && group
+        ? `Organisation audience group: ${group.name}`
+        : "General — issue intake audience note only (no organisation audience group selected)";
+    const audienceOrgDefaultsHint =
+      group
+        ? (() => {
+            const joined = [group.defaultSensitivity, group.defaultToneGuidance, group.defaultChannels]
+              .filter((x): x is string => typeof x === "string" && Boolean(String(x).trim()))
+              .join(" · ");
+            if (!joined) return null;
+            const s = cleanSnippet(joined, 2400);
+            return s.length ? s : null;
+          })()
+        : null;
+
+    const payload = {
+      templateId: parsed.data.templateId,
+      templateLabel: TEMPLATE_LABELS[parsed.data.templateId],
+      audiencePathLabel,
+      audienceOrgDefaultsHint,
+      issue: {
+        title: cleanSnippet(issue.title, 520) || "Issue",
+        summary: cleanSnippet(issue.summary, 4000),
+        context: cleanSnippet(issue.context, 6000),
+        confirmedFacts: cleanSnippet(issue.confirmedFacts, 8000),
+        openQuestionsSummary: truncateIssueOpenQs(issue.openQuestions ?? ""),
+      },
+      evidenceSummaryLines: summarizeSourcesForAi(sources),
+      openIssuesSummaryLines: summarizeGapsForAi(gaps),
+      sectionsDeterministic: deterministic.sections.map((s) => ({
+        id: s.id,
+        title: s.title,
+        body: s.body,
+      })),
+    };
+
+    try {
+      const polished = await cleanupMessageVariantsSections(payload);
+      if (polished) {
+        mergedArtifact = MessageVariantArtifactSchema.parse({
+          ...mergedArtifact,
+          sections: polished.sections,
+          metadata: {
+            ...mergedArtifact.metadata,
+            aiWordingPolish: "ai_polished",
+          },
+        });
+      }
+    } catch {
+      mergedArtifact = MessageVariantArtifactSchema.parse(mergedArtifact);
+    }
+  } else {
+    mergedArtifact = MessageVariantArtifactSchema.parse(mergedArtifact);
+  }
+
   const audienceSnapshot = buildAudienceSnapshot(issue, audience);
 
   const created = await prisma.$transaction(async (tx) => {
@@ -202,7 +319,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         stakeholderGroupId,
         issueStakeholderId: null,
         audienceSnapshot: audienceSnapshot as Prisma.InputJsonValue,
-        artifact: artifact as Prisma.InputJsonValue,
+        artifact: mergedArtifact as Prisma.InputJsonValue,
       },
     });
 

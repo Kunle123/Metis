@@ -42,6 +42,7 @@ export function MessagesPanel({
   selectedStakeholderGroupId,
   selectedAudienceGroupLabel,
   initialLatest,
+  messagesAiCleanupEnabled,
 }: {
   issueId: string;
   issueTitle: string;
@@ -52,12 +53,15 @@ export function MessagesPanel({
   selectedStakeholderGroupId: string | null;
   selectedAudienceGroupLabel: string;
   initialLatest: LatestPayload;
+  /** Server flag MESSAGES_AI_CLEANUP_ENABLED==="true"; when false, AI toggle hidden. */
+  messagesAiCleanupEnabled: boolean;
 }) {
   const router = useRouter();
   const pathname = usePathname();
   const [latest, setLatest] = useState<LatestPayload>(initialLatest);
   const [loading, setLoading] = useState(false);
   const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
+  const [improveWithAi, setImproveWithAi] = useState(false);
 
   const selectValue = selectedStakeholderGroupId === null ? "" : selectedStakeholderGroupId;
 
@@ -109,6 +113,7 @@ export function MessagesPanel({
         body: JSON.stringify({
           templateId: selectedTemplateId,
           stakeholderGroupId: selectedStakeholderGroupId,
+          ...(messagesAiCleanupEnabled ? { improveWithAi } : {}),
         }),
       });
       const data = (await res.json().catch(() => ({}))) as unknown;
@@ -134,6 +139,7 @@ export function MessagesPanel({
         artifact: row.artifact,
       });
       router.refresh();
+      setImproveWithAi(false);
     } catch (e) {
       console.error(e);
       alert(e instanceof Error ? e.message : "Generation failed");
@@ -206,6 +212,25 @@ export function MessagesPanel({
                 </select>
               </label>
             </div>
+
+            {messagesAiCleanupEnabled ? (
+              <label className="flex cursor-pointer gap-3 rounded-[1rem] border border-white/12 bg-[rgba(0,0,0,0.1)] px-4 py-3">
+                <input
+                  type="checkbox"
+                  className="mt-1 size-4 rounded border-[var(--metis-control-border)] accent-[--metis-brass]"
+                  checked={improveWithAi}
+                  disabled={loading}
+                  onChange={(e) => setImproveWithAi(e.target.checked)}
+                />
+                <span className="min-w-0 space-y-1">
+                  <span className="text-sm font-medium text-[--metis-paper]">Improve wording with AI</span>
+                  <span className="block text-xs leading-relaxed text-[--metis-paper-muted]">
+                    Keeps the same facts and uncertainty, but polishes wording for clarity. Applies only to the next generated message when selected
+                    (deterministic drafting remains default).
+                  </span>
+                </span>
+              </label>
+            ) : null}
 
             <div className="text-sm leading-6 text-[--metis-paper-muted]">
               <span className="text-[--metis-paper]">Shaping context:</span>{" "}
@@ -311,6 +336,12 @@ export function MessagesPanel({
                   <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-3">
                     <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Open questions</span>
                     <span className="text-[--metis-paper]">{latest.artifact.metadata.openGapsLabel}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-3">
+                    <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Draft wording</span>
+                    <span className="text-[--metis-paper]">
+                      {latest.artifact.metadata.aiWordingPolish === "ai_polished" ? "AI-polished draft" : "Deterministic draft"}
+                    </span>
                   </div>
                 </>
               ) : null}

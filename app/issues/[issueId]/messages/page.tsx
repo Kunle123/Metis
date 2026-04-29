@@ -78,6 +78,8 @@ export default async function IssueMessagesPage({
     orderBy: [{ versionNumber: "desc" }],
   });
 
+  const messagesAiCleanupEnabled = process.env.MESSAGES_AI_CLEANUP_ENABLED === "true";
+
   const audienceGroupOptions = activeGroups.map((g) => ({
     id: g.id,
     label: g.name,
@@ -130,6 +132,7 @@ export default async function IssueMessagesPage({
             selectedStakeholderGroupId={selectedStakeholderGroupId}
             selectedAudienceGroupLabel={selectedAudienceGroupLabel}
             initialLatest={initialLatest}
+            messagesAiCleanupEnabled={messagesAiCleanupEnabled}
           />
           <div className="mt-8 border-t border-white/8 pt-6">
             <Link href={`/issues/${issue.id}/export`} className="text-sm text-[--metis-brass-soft] underline-offset-4 hover:underline">
