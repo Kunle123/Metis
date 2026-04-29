@@ -68,7 +68,7 @@ export type BriefSynthesisInput = {
     context: string;
     confirmedFacts: string;
     openQuestionsIntake: string[];
-    stakeholderLensSummary: string;
+    audienceContextSummary: string;
   };
   topTrackerOpenQuestions: { severity?: string | null; linkedSection?: string | null; text: string }[];
   topSources: { sourceCode: string; tier: string; title: string; linkedSection?: string | null }[];

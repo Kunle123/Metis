@@ -23,15 +23,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const issue = await prisma.issue.findUnique({ where: { id: issueId } });
   if (!issue) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const [sources, gaps, internalInputs, issueStakeholders] = await Promise.all([
+  const [sources, gaps, internalInputs] = await Promise.all([
     prisma.source.findMany({ where: { issueId }, orderBy: [{ createdAt: "desc" }] }),
     prisma.gap.findMany({ where: { issueId }, orderBy: [{ updatedAt: "desc" }] }),
     prisma.internalInput.findMany({ where: { issueId }, orderBy: [{ createdAt: "desc" }] }),
-    prisma.issueStakeholder.findMany({
-      where: { issueId },
-      include: { stakeholderGroup: true },
-      orderBy: [{ createdAt: "desc" }],
-    }),
   ]);
 
   const latest = await prisma.briefVersion.findFirst({
@@ -49,7 +44,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   const versionNumber = (latest?.versionNumber ?? 0) + 1;
   const artifactDeterministic = generateBriefFromIssue(
-    { issue, sources, gaps, internalInputs, issueStakeholders },
+    { issue, sources, gaps, internalInputs },
     parsed.data.mode,
   );
 
@@ -91,23 +86,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       .filter(Boolean)
       .slice(0, 6);
 
-    const stakeholderLensSummary = (() => {
-      const parts: string[] = [];
-      if (String(issue.audience ?? "").trim()) {
-        parts.push(`Audience note: ${String(issue.audience ?? "").trim()}`);
-      }
-      const rows = issueStakeholders.slice(0, 3).map((r) => {
-        const g = r.stakeholderGroup.name;
-        const bits = [
-          r.priority !== "Normal" ? `Priority: ${r.priority}` : null,
-          String(r.needsToKnow ?? "").trim() ? `Need to know: ${String(r.needsToKnow).trim()}` : null,
-          String(r.issueRisk ?? "").trim() ? `Risk: ${String(r.issueRisk).trim()}` : null,
-        ].filter(Boolean);
-        return `- ${g}${bits.length ? ` — ${bits.join(" · ")}` : ""}`;
-      });
-      if (rows.length) parts.push("Audience groups (linked to this issue record, if any):\n" + rows.join("\n"));
-      return parts.join("\n\n");
-    })();
+    const audienceNote = String(issue.audience ?? "").trim();
+    const audienceContextSummary = audienceNote
+      ? `Audience note: ${audienceNote}`
+      : "No specific audience note is recorded on the issue.";
 
     const rewrite = await synthesizeBriefExecutiveSummary({
       issue: {
@@ -116,7 +98,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         context: issue.context ?? "",
         confirmedFacts: issue.confirmedFacts ?? "",
         openQuestionsIntake,
-        stakeholderLensSummary,
+        audienceContextSummary,
       },
       topTrackerOpenQuestions: openTracker,
       topSources,

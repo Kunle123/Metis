@@ -1,11 +1,10 @@
-import type { Issue, Source, Gap, InternalInput, IssueStakeholder, StakeholderGroup } from "@prisma/client";
+import type { Issue, Source, Gap, InternalInput } from "@prisma/client";
 
 import type { BriefArtifact, BriefMode } from "@metis/shared/briefVersion";
 
 const CAP_EX_SOURCES = 8;
 const CAP_EX_OPEN_GAPS = 8;
 const CAP_EX_OBS = 5;
-const CAP_EX_AUDIENCE = 5;
 const CAP_FULL_GAPS = 20;
 const CAP_FULL_SOURCES_NARRATIVE = 12;
 const CAP_FULL_OBS = 20;
@@ -282,7 +281,6 @@ export type BriefGenerationInput = {
   sources: Source[];
   gaps: Gap[];
   internalInputs: InternalInput[];
-  issueStakeholders: (IssueStakeholder & { stakeholderGroup: StakeholderGroup })[];
 };
 
 function openGaps(gaps: Gap[]) {
@@ -411,47 +409,13 @@ function formatObsForFull(inputs: InternalInput[], cap: number) {
   return `${lines.join("\n\n")}${tail.length ? `\n\n${tail.join("\n")}` : ""}`;
 }
 
-function formatAudienceImplications(
-  issueAudience: string | null,
-  rows: (IssueStakeholder & { stakeholderGroup: StakeholderGroup })[],
-  cap: number,
-  options?: { issueAudienceInBriefHeader: boolean; leadershipVoice?: boolean },
-) {
+/** Deterministic audience copy from intake `issue.audience` only (no legacy per-issue stakeholder rows). */
+function formatAudienceImplications(issueAudience: string | null): string {
   const fromIssue = cleanText(issueAudience ?? "");
-  const headerAudience = options?.issueAudienceInBriefHeader ?? false;
-  const leadership = options?.leadershipVoice ?? false;
-  const parts: string[] = [];
-
-  if (fromIssue && !headerAudience) {
-    parts.push(`Issue-level audience note (intake): ${fromIssue}`);
+  if (fromIssue) {
+    return `Issue-level audience note (intake): ${fromIssue}`;
   }
-
-  if (rows.length) {
-    if (fromIssue && headerAudience) {
-      parts.push("Audience notes by group (the issue audience is listed in the brief header; detail by group):");
-    }
-    const slice = rows.slice(0, cap);
-    for (const r of slice) {
-      const g = r.stakeholderGroup.name;
-      const line = [r.priority !== "Normal" ? `Priority: ${r.priority}` : null, cleanText(r.needsToKnow) ? `Need to know: ${r.needsToKnow.trim()}` : null, cleanText(r.issueRisk) ? `Risk: ${r.issueRisk.trim()}` : null, cleanText(r.channelGuidance) ? `Channels: ${r.channelGuidance.trim()}` : null]
-        .filter(Boolean)
-        .join(" · ");
-      parts.push(`• ${g}: ${line || "No additional notes for this group yet."}`);
-    }
-    if (rows.length > cap) {
-      parts.push(`…${rows.length - cap} additional audience group(s) on this issue.`);
-    }
-  } else if (fromIssue && headerAudience) {
-    parts.push(
-      leadership
-        ? "The intended audience is in the record header. Adjust audience group defaults in Settings → Audience groups when messaging must vary by audience."
-        : "The issue audience is in the record header. No per-group notes are recorded here yet. Adjust audience group defaults in Settings → Audience groups when messaging must vary by audience.",
-    );
-  } else if (!fromIssue) {
-    parts.push("No audience group links and no issue-level audience note recorded yet.");
-  }
-
-  return parts.join("\n");
+  return "No specific audience note is recorded on the issue.";
 }
 
 function evidenceBaseExecutive(sources: Source[], total: number) {
@@ -493,7 +457,7 @@ function sourcesNarrativeFull(sources: Source[], total: number) {
 }
 
 export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefMode): BriefArtifact {
-  const { issue, sources, gaps, internalInputs, issueStakeholders } = input;
+  const { issue, sources, gaps, internalInputs } = input;
   const isExecutive = mode === "executive";
   const updatedAtLabel = nowLabel();
   const confidence = confidenceFromStatus(issue.status);
@@ -752,13 +716,7 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
     return "No confirmed facts are recorded in intake yet.";
   })();
 
-  const audienceBlock = formatAudienceImplications(issue.audience, issueStakeholders, CAP_EX_AUDIENCE, {
-    issueAudienceInBriefHeader: true,
-  });
-  const audienceBlockLeadership = formatAudienceImplications(issue.audience, issueStakeholders, CAP_EX_AUDIENCE, {
-    issueAudienceInBriefHeader: true,
-    leadershipVoice: true,
-  });
+  const audienceBlock = formatAudienceImplications(issue.audience);
 
   const executiveBlocks: { label: string; body: string }[] = isExecutive
     ? [
@@ -773,7 +731,7 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
             formatObsForExecutive(internalInputsForBrief, CAP_EX_OBS, { leadership: true }) +
             (excludedObsCount ? `\n\n${excludedObsCount} observation(s) are excluded from brief output.` : ""),
         },
-        { label: "Audience implications", body: audienceBlockLeadership },
+        { label: "Audience implications", body: audienceBlock },
         { label: "Recommended decisions / next actions", body: recommendedBodyForLeadership },
         { label: "What not to say yet / uncertainty guardrails", body: guardrailsLeadership },
       ]
@@ -860,16 +818,19 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
   })();
 
   const narrativeBody = (() => {
-    const lensLines = formatAudienceImplications(issue.audience, issueStakeholders, 12, { issueAudienceInBriefHeader: true })
-      .split(/\r?\n/)
-      .map((l) => l.trim())
-      .filter((l) => l.startsWith("•") || l.startsWith("-"))
-      .slice(0, 3);
+    const audienceTextRaw = cleanText(issue.audience ?? "");
+    const lensBullets =
+      audienceTextRaw.length === 0
+        ? []
+        : bulletsFromMultiline(capLines(audienceTextRaw, 12))
+            .split(/\r?\n/)
+            .map((l) => l.trim())
+            .filter((l) => l.startsWith("-"))
+            .slice(0, 3);
 
-    const shortIntro =
-      cleanText(issue.audience ?? "") || issueStakeholders.length
-        ? "This section highlights messaging sensitivities for the recorded audience and organisation audience groups."
-        : "No audience notes are recorded yet; add intake audience notes and organisation audience groups to sharpen the briefing posture.";
+    const shortIntro = audienceTextRaw.length
+      ? "This section highlights messaging sensitivities for the intake audience note recorded on this issue."
+      : "No specific audience note is recorded on the issue.";
 
     const obsLines = formatObsForExecutive(internalInputsForBrief, 2).split(/\r?\n/).filter((l) => l.trim().startsWith("•")).slice(0, 2);
     const obsBlock = obsLines.length ? obsLines.join("\n") : "No observation excerpts available.";
@@ -881,10 +842,15 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
       .map((s) => `- ${s.sourceCode} — ${s.title} (${s.tier})`);
     const evidenceBlock = sourceRefs.length ? sourceRefs.join("\n") : "";
 
+    const stakeholderImplicationsBlock =
+      lensBullets.length > 0
+        ? ["Stakeholder implications", ...lensBullets].join("\n")
+        : "Stakeholder implications\n- No specific audience note is recorded on the issue.";
+
     return [
       sentence(shortIntro),
       "",
-      lensLines.length ? ["Stakeholder implications", ...lensLines].join("\n") : "Stakeholder implications\n- —",
+      stakeholderImplicationsBlock,
       "",
       "Observation excerpts",
       obsBlock,
@@ -962,7 +928,8 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
           id: "narrative-map",
           title: "Stakeholder narratives",
           body: narrativeBody,
-          confidence: context.length || issueStakeholders.length || internalInputs.length ? "Likely" : confidence,
+          confidence:
+            context.length || cleanText(issue.audience ?? "").length || internalInputs.length ? "Likely" : confidence,
           updatedAtLabel,
           evidenceRefs: [],
         },
