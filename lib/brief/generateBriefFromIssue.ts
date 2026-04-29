@@ -680,11 +680,36 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
   })();
 
   const situationBodyLeadership = (() => {
-    const bits: string[] = [];
-    if (context.length) bits.push(capLines(context, 8));
-    if (lede.length) bits.push(`Current position:\n${lede}`);
-    if (!bits.length) return "Current position is not recorded yet.";
-    return bits.join("\n\n");
+    const hasOq = openG.length > 0 || splitIntakeOpenQuestions(openQuestions).length > 0;
+    const whyItMatters = (() => {
+      const text = [titleLine, summary, context, String(issue.audience ?? "")].join("\n").toLowerCase();
+      if (text.includes("roundtable")) {
+        return "Why it matters: leadership-facing relationship management; avoid over-claiming and ensure follow-ups are owned.";
+      }
+      if (text.includes("consultation")) {
+        return "Why it matters: credibility and process integrity; keep language aligned to what is genuinely open vs fixed constraints.";
+      }
+      if (text.includes("criticism") || text.includes("critic")) {
+        return "Why it matters: stakeholder trust and reputational sensitivity; keep tone calm, evidence-led, and process-focused.";
+      }
+      if (String(issue.priority).toLowerCase().includes("high") || String(issue.severity).toLowerCase().includes("high")) {
+        return "Why it matters: leadership attention is likely required; keep claims tied to confirmed facts and sources.";
+      }
+      return "Why it matters: keep the leadership line disciplined, evidence-tied, and explicit about what remains open.";
+    })();
+
+    const leadershipNotes = (() => {
+      const notes: string[] = [];
+      if (hasOq) notes.push(`Open questions remain (${openG.length} on the tracker). Treat details as provisional where not yet confirmed.`);
+      if (!sources.length) notes.push("Evidence base is thin (no linked sources yet). Avoid specific claims until evidence is on file.");
+      if (cleanText(issue.ownerName ?? "")) notes.push(`Named owner: ${issue.ownerName}.`);
+      return notes.join(" ");
+    })();
+
+    const opening = summary ? sentence(summary) : titleLine ? sentence(titleLine) : "Current position is not recorded yet.";
+    const contextLine = context.length ? capLines(context, 3) : "";
+
+    return [opening, whyItMatters, leadershipNotes, contextLine].filter(Boolean).join("\n\n");
   })();
 
   const currentAssessment = [
@@ -737,7 +762,7 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
 
   const executiveBlocks: { label: string; body: string }[] = isExecutive
     ? [
-        { label: "Situation", body: situationBodyLeadership },
+        { label: "Executive summary", body: situationBodyLeadership },
         { label: "Current assessment", body: currentAssessmentLeadership },
         { label: "Confirmed facts", body: confirmedFactsBlockExecutive },
         { label: "Open questions and unresolved needs", body: keyUnknownsLeadership },
