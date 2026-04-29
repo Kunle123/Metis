@@ -11,15 +11,16 @@ export default async function StakeholdersPage() {
   });
 
   return (
-    <MetisShell activePath="/stakeholders" pageMeta="Settings" pageTitle="Stakeholder library">
+    <MetisShell activePath="/stakeholders" pageMeta="Settings" pageTitle="Audience groups">
       <SurfaceCard>
         <div className="border-b border-white/8 bg-[rgba(255,255,255,0.025)] px-6 py-5 sm:px-7">
           <div className="space-y-2">
             <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper]">
-              Stakeholder library
+              Audience groups
             </h2>
             <p className="text-sm leading-6 text-[--metis-paper-muted]">
-              Standing audience groups used as an audience/message lens later. Issues can select a subset and add output guidance without changing the truth layer.
+              Reusable organisation-level audiences used by Messages and briefing outputs. Manage group defaults here; select a group when generating
+              Messages.
             </p>
           </div>
         </div>
