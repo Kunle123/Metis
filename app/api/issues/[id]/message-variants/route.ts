@@ -121,8 +121,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const gate = await requireMutation(request);
-  if (gate instanceof NextResponse) return gate;
+  const user = await requireMutation(request);
+  if (user instanceof NextResponse) return user;
 
   const { id: issueId } = await params;
   const json = await request.json().catch(() => ({}));
@@ -215,6 +215,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       summary: `Message variant ${row.versionNumber} (${row.templateId})`,
       refType: "MessageVariant",
       refId: row.id,
+      actorLabel: user.email ?? null,
     });
 
     return row;

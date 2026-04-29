@@ -22,8 +22,8 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
 }
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const gate = await requireMutation(request);
-  if (gate instanceof NextResponse) return gate;
+  const user = await requireMutation(request);
+  if (user instanceof NextResponse) return user;
 
   const { id } = await params;
   const json = await request.json();
@@ -73,6 +73,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
           summary: changes.join(" · "),
           refType: "Issue",
           refId: id,
+          actorLabel: user.email ?? null,
         });
 
         // Return a fresh read so PATCH reflects persisted lastActivityAt.

@@ -8,8 +8,8 @@ import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
 import { requireMutation } from "@/lib/governance/requireMutation";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const gate = await requireMutation(request);
-  if (gate instanceof NextResponse) return gate;
+  const user = await requireMutation(request);
+  if (user instanceof NextResponse) return user;
 
   const { id: issueId } = await params;
   const json = await request.json();
@@ -69,6 +69,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       summary: `Brief version ${briefVersion.versionNumber} created`,
       refType: "BriefVersion",
       refId: briefVersion.id,
+      actorLabel: user.email ?? null,
     });
 
     return briefVersion;

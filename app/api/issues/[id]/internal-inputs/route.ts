@@ -50,8 +50,8 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const gate = await requireMutation(request);
-  if (gate instanceof NextResponse) return gate;
+  const user = await requireMutation(request);
+  if (user instanceof NextResponse) return user;
 
   const { id: issueId } = await params;
   const json = await request.json();
@@ -98,6 +98,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       summary: "Internal input created",
       refType: "InternalInput",
       refId: input.id,
+      actorLabel: user.email ?? null,
     });
 
     return input;

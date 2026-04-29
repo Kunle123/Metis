@@ -54,8 +54,8 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const gate = await requireMutation(request);
-  if (gate instanceof NextResponse) return gate;
+  const user = await requireMutation(request);
+  if (user instanceof NextResponse) return user;
 
   const { id: issueId } = await params;
   const json = await request.json();
@@ -118,6 +118,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       summary: `Source ${source.sourceCode} created`,
       refType: "Source",
       refId: source.id,
+      actorLabel: user.email ?? null,
     });
 
     return source;

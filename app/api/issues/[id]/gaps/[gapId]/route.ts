@@ -51,8 +51,8 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
 }
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string; gapId: string }> }) {
-  const gate = await requireMutation(request);
-  if (gate instanceof NextResponse) return gate;
+  const user = await requireMutation(request);
+  if (user instanceof NextResponse) return user;
 
   const { id: issueId, gapId } = await params;
   const json = await request.json();
@@ -134,6 +134,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
           summary: "Gap resolved",
           refType: "Gap",
           refId: gap.id,
+          actorLabel: user.email ?? null,
         });
       } else if (existing.status === "Resolved" && gap.status === "Open") {
         await writeIssueActivity(tx, {
@@ -142,6 +143,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
           summary: "Gap reopened",
           refType: "Gap",
           refId: gap.id,
+          actorLabel: user.email ?? null,
         });
       }
     }

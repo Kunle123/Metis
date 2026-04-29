@@ -65,8 +65,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const gate = await requireMutation(request);
-  if (gate instanceof NextResponse) return gate;
+  const user = await requireMutation(request);
+  if (user instanceof NextResponse) return user;
 
   const { id: issueId } = await params;
 
@@ -149,6 +149,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       summary: "Export package created",
       refType: "ArtifactExport",
       refId: exportRow.id,
+      actorLabel: user.email ?? null,
     });
 
     if (logEvent) {
@@ -172,6 +173,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         summary: "Circulation event logged",
         refType: "CirculationEvent",
         refId: event.id,
+        actorLabel: user.email ?? null,
       });
     }
 
