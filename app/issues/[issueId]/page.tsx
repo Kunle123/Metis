@@ -7,7 +7,6 @@ import { SourceEntryForm } from "./sources/source-entry-form";
 import { GapCreateForm } from "./gaps/gap-create-form";
 import { InternalInputCreateForm } from "./input/input-create-form";
 import { WorkspaceGapCards, WorkspaceSourceCards, WorkspaceObservationCards } from "./workspace-cards";
-import { WorkspaceStakeholders } from "./workspace-stakeholders";
 import { WorkspaceSection } from "./workspace-section";
 
 export const dynamic = "force-dynamic";
@@ -37,16 +36,10 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
     );
   }
 
-  const [sources, gaps, inputs, stakeholderGroups, issueStakeholders] = await Promise.all([
+  const [sources, gaps, inputs] = await Promise.all([
     prisma.source.findMany({ where: { issueId: issue.id }, orderBy: [{ createdAt: "desc" }] }),
     prisma.gap.findMany({ where: { issueId: issue.id }, orderBy: [{ createdAt: "desc" }] }),
     prisma.internalInput.findMany({ where: { issueId: issue.id }, orderBy: [{ createdAt: "desc" }] }),
-    prisma.stakeholderGroup.findMany({ orderBy: [{ isActive: "desc" }, { displayOrder: "asc" }, { name: "asc" }] }),
-    prisma.issueStakeholder.findMany({
-      where: { issueId: issue.id },
-      include: { stakeholderGroup: true },
-      orderBy: [{ createdAt: "desc" }],
-    }),
   ]);
 
   return (
@@ -86,7 +79,6 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
                 ["sources", "Sources"],
                 ["gaps", "Open questions"],
                   ["input", "Observations"],
-                ["stakeholders", "Audience guidance"],
               ].map(([id, label]) => sectionNavItem(id, label))}
             </div>
           </div>
@@ -218,54 +210,6 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
                 ) : (
                   <p className="text-sm text-[--metis-paper-muted]">No observations yet.</p>
                 )}
-              </WorkspaceSection>
-            </section>
-
-            <section id="stakeholders" className="space-y-5 border-t border-white/8 pt-7">
-              <WorkspaceSection
-                title="Audience guidance"
-                description="Plan outputs by audience group. Sources, gaps, and observations remain the stakeholder-agnostic truth layer."
-                addLabel="Add audience group"
-                advancedHref="/stakeholders"
-                form={
-                  <div className="text-sm text-[--metis-paper-muted]">
-                    Select an audience group below, then capture stakeholder guidance inside each card. This does not change the underlying issue record.
-                  </div>
-                }
-              >
-                <WorkspaceStakeholders
-                  issueId={issue.id}
-                  allGroups={stakeholderGroups.map((g) => ({
-                    id: g.id,
-                    name: g.name,
-                    description: g.description ?? null,
-                    defaultSensitivity: g.defaultSensitivity ?? null,
-                    defaultChannels: g.defaultChannels ?? null,
-                    defaultToneGuidance: g.defaultToneGuidance ?? null,
-                    displayOrder: g.displayOrder,
-                    isActive: g.isActive,
-                  }))}
-                  selected={issueStakeholders.map((s) => ({
-                    id: s.id,
-                    stakeholderGroupId: s.stakeholderGroupId,
-                    priority: (s.priority as any) ?? "Normal",
-                    needsToKnow: s.needsToKnow,
-                    issueRisk: s.issueRisk,
-                    channelGuidance: s.channelGuidance,
-                    toneAdjustment: s.toneAdjustment ?? null,
-                    notes: s.notes ?? null,
-                    group: {
-                      id: s.stakeholderGroup.id,
-                      name: s.stakeholderGroup.name,
-                      description: s.stakeholderGroup.description ?? null,
-                      defaultSensitivity: s.stakeholderGroup.defaultSensitivity ?? null,
-                      defaultChannels: s.stakeholderGroup.defaultChannels ?? null,
-                      defaultToneGuidance: s.stakeholderGroup.defaultToneGuidance ?? null,
-                      displayOrder: s.stakeholderGroup.displayOrder,
-                      isActive: s.stakeholderGroup.isActive,
-                    },
-                  }))}
-                />
               </WorkspaceSection>
             </section>
           </div>
