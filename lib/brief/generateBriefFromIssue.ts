@@ -133,6 +133,38 @@ function sanitizeBriefUserText(raw: string) {
     .replace(/\bgap\b/gi, (m) => (m[0] === "G" ? "Open question" : "open question"));
 }
 
+function clipAtWordBoundary(input: string, maxChars: number) {
+  const raw = input.trim();
+  if (!raw) return "";
+  if (raw.length <= maxChars) return raw;
+  const slice = raw.slice(0, maxChars);
+  const lastSpace = slice.lastIndexOf(" ");
+  const clipped = (lastSpace > 40 ? slice.slice(0, lastSpace) : slice).trimEnd();
+  const cleaned = clipped.replace(/\b(or|and|to|of|for|with|without)\b$/i, "").trimEnd();
+  return `${stripTrailingPunctuation(cleaned)}…`;
+}
+
+function normalizeQuestionThemeKey(input: string) {
+  const s = normalizeNeedText(input);
+  if (!s) return "";
+  if (/\bfollow[- ]?up\b|\bcadence\b|\bnext meeting\b|\bwritten note\b|\bnamed owner\b|\bowner\b.*\bcadence\b/i.test(s)) {
+    return "theme:follow-up-cadence-owner";
+  }
+  if (/\bproof point\b|\bproofpoints\b|\bevidence\b|\bcite\b|\bsources?\b|\bwhat can remain internal\b/i.test(s)) {
+    return "theme:proof-points-evidence";
+  }
+  if (/\bpartnership\b|\boffers?\b|\bcommit(?:ment|ting)\b|\bprocurement\b|\bbudget\b/i.test(s)) {
+    return "theme:partnership-offers-commitments";
+  }
+  if (/\btimeline\b|\bwhen\b|\bdates?\b|\bdecision point\b|\bsign[- ]?off\b|\blaunch\b|\bclose\b/i.test(s)) {
+    return "theme:timeline-decision";
+  }
+  if (/\baccessib/i.test(s) || /\blanguage(s)?\b|\bformats?\b|\bassisted\b/i.test(s)) {
+    return "theme:accessibility-support";
+  }
+  return "";
+}
+
 function normalizeQuestionKey(input: string) {
   const base = normalizeNeedText(input);
   if (!base) return "";
@@ -196,7 +228,7 @@ function topOpenQuestionsSummary({
   >();
 
   for (const item of intakeItems) {
-    const key = normalizeQuestionKey(item) || normalizeNeedText(item);
+    const key = normalizeQuestionThemeKey(item) || normalizeQuestionKey(item) || normalizeNeedText(item);
     if (!key) continue;
     const existing = byKey.get(key);
     const candidate = { source: "intake" as const, score: 0, text: item, severity: null, section: null };
@@ -215,7 +247,7 @@ function topOpenQuestionsSummary({
   for (const g of gapsSorted) {
     const raw = fixMalformedQuestionText((g.prompt || g.title || "").trim());
     if (!raw) continue;
-    const key = normalizeQuestionKey(raw) || normalizeNeedText(raw);
+    const key = normalizeQuestionThemeKey(raw) || normalizeQuestionKey(raw) || normalizeNeedText(raw);
     if (!key) continue;
     const hasSeverity = Boolean(g.severity);
     const linkedSection = cleanText((g as any).linkedSection) ? String((g as any).linkedSection) : null;
@@ -515,12 +547,14 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
       if (!t) return "";
       if (/\bfollow[- ]?up\b|\bcadence\b|\bnamed owner\b/i.test(q)) return "Confirm follow-up cadence and named owner before any leadership or stakeholder meeting.";
       if (/\bproof point\b|\bevidence\b|\bcite\b|\bsources?\b/i.test(q)) return "Agree which proof points can be cited and which require softer wording or follow-up.";
+      if (/\bpartnership\b|\boffers?\b|\bprocurement\b|\bbudget\b|\bcommit(?:ment|ting)\b/i.test(q))
+        return "Clarify any partnership offers and constraints before they are mentioned externally.";
       if (/\btimeline\b|\bwhen\b|\bdates?\b|\bdecision point\b|\bsign[- ]?off\b/i.test(q))
         return "Confirm timeline, decision points, and sign-off milestones for the next update.";
       if (/\bstakeholder\b|\bsector\b|\bcommunity\b|\bconcerns?\b/i.test(q))
         return "Align expected stakeholder concerns and who will support detail on the day.";
-      const short = stripTrailingPunctuation(q).slice(0, 90);
-      return `Confirm the current position on: ${short}.`;
+      const short = clipAtWordBoundary(stripTrailingPunctuation(q), 92);
+      return short ? `Confirm the current position on: ${short}` : "";
     };
 
     const candidates = [
@@ -529,7 +563,7 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
     ].filter(Boolean);
     const seen = new Set<string>();
     for (const c of candidates) {
-      const key = normalizeQuestionKey(c) || normalizeNeedText(c);
+      const key = normalizeQuestionThemeKey(c) || normalizeQuestionKey(c) || normalizeNeedText(c);
       if (!key || seen.has(key)) continue;
       seen.add(key);
       const a = actionFromQuestion(c);
@@ -573,7 +607,7 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
     ].filter(Boolean);
     const seen = new Set<string>();
     for (const c of candidates) {
-      const key = normalizeQuestionKey(c) || normalizeNeedText(c);
+      const key = normalizeQuestionThemeKey(c) || normalizeQuestionKey(c) || normalizeNeedText(c);
       if (!key || seen.has(key)) continue;
       seen.add(key);
       const q = fixMalformedQuestionText(c);
@@ -582,11 +616,13 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
         out.push("Confirm follow-up cadence and named owner before the leadership session.");
       } else if (/\bproof point\b|\bevidence\b|\bcite\b|\bsources?\b/i.test(q)) {
         out.push("Agree which proof points can be used in the room and which require softer wording or follow-up.");
+      } else if (/\bpartnership\b|\boffers?\b|\bprocurement\b|\bbudget\b|\bcommit(?:ment|ting)\b/i.test(q)) {
+        out.push("Clarify any partnership offers and constraints before they are mentioned externally.");
       } else if (/\btimeline\b|\bwhen\b|\bdates?\b|\bdecision point\b|\bsign[- ]?off\b/i.test(q)) {
         out.push("Confirm timeline and decision points, including what can be said publicly vs internally.");
       } else {
-        const short = stripTrailingPunctuation(q).slice(0, 80);
-        out.push(`Resolve the open question: ${short}.`);
+        const short = clipAtWordBoundary(stripTrailingPunctuation(q), 86);
+        if (short) out.push(`Resolve the open question: ${short}`);
       }
       if (out.length >= 2) break;
     }
