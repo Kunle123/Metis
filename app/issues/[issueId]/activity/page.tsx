@@ -57,7 +57,7 @@ export default async function IssueActivityPage({ params }: { params: Promise<{ 
 
   if (!issue) {
     return (
-      <MetisShell activePath="/activity" pageTitle="Activity" issueRoutePrefix={`/issues/${issueId}`}>
+      <MetisShell activePath="/activity" pageTitle="Activity timeline" issueRoutePrefix={`/issues/${issueId}`}>
         <SurfaceCard>
           <div className="px-6 py-6 text-[--metis-paper]">Issue not found.</div>
         </SurfaceCard>
@@ -74,7 +74,7 @@ export default async function IssueActivityPage({ params }: { params: Promise<{ 
   return (
     <MetisShell
       activePath="/activity"
-      pageTitle="Activity"
+      pageTitle="Activity timeline"
       issueRoutePrefix={`/issues/${issue.id}`}
       activeIssue={{
         title: issue.title,
@@ -88,7 +88,12 @@ export default async function IssueActivityPage({ params }: { params: Promise<{ 
         <SurfaceCard className="overflow-hidden">
           <div className="border-b border-white/8 bg-[rgba(255,255,255,0.025)] px-6 py-5 sm:px-7">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper]">Recent activity</h2>
+              <div className="space-y-1">
+                <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper]">Activity timeline</h2>
+                <p className="max-w-3xl text-sm leading-6 text-[--metis-paper-muted]">
+                  Records key briefing actions and generated outputs. It is not a full before/after edit history.
+                </p>
+              </div>
             </div>
           </div>
 
