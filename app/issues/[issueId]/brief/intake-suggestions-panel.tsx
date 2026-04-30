@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
+import { ControlField, ControlSelect } from "@/components/ui/control";
 
 type SuggestedSource = {
   title: string | null;
@@ -154,7 +155,7 @@ export function IntakeSuggestionsPanel({ issueId }: { issueId: string }) {
           <Button
             type="button"
             variant="outline"
-            className="h-9 rounded-full border-white/10 bg-white/[0.03] px-4 text-[--metis-paper] hover:bg-white/[0.08]"
+            className="h-9 rounded-full px-4"
             onClick={() => {
               clearBundle(issueId);
               setBundle(null);
@@ -305,24 +306,24 @@ export function IntakeSuggestionsPanel({ issueId }: { issueId: string }) {
                               placeholder="What is missing?"
                             />
                           </label>
-                          <label className="space-y-1">
-                            <span className="text-[0.65rem] uppercase tracking-[0.18em] text-[--metis-ink-soft]">Severity</span>
-                            <select
+                          <ControlField label="Severity" className="space-y-1">
+                            <ControlSelect
+                              aria-label={`Severity for gap ${draft.title.slice(0, 24) || "Untitled"}`}
                               value={draft.severity}
+                              className="h-9 rounded-lg"
                               onChange={(e) =>
                                 setGapDraftByIdx((m) => ({
                                   ...m,
                                   [idx]: { ...draft, severity: e.target.value as GapDraft["severity"] },
                                 }))
                               }
-                              className="h-9 w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 text-sm text-[--metis-paper] outline-none focus:border-white/18"
                             >
                               <option value="">Select…</option>
                               <option value="Critical">Critical</option>
                               <option value="Important">Important</option>
                               <option value="Watch">Watch</option>
-                            </select>
-                          </label>
+                            </ControlSelect>
+                          </ControlField>
                         </div>
 
                         <div className="grid gap-2 sm:grid-cols-2">

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import type { BriefMode } from "@metis/shared/briefVersion";
 
 type GenerateBriefButtonProps = {
@@ -13,6 +14,7 @@ type GenerateBriefButtonProps = {
   label?: string;
   /** One line of status (e.g. in sync with issue vs. stale). */
   syncHint?: string | null;
+  className?: string;
 };
 
 export function GenerateBriefButton({
@@ -20,6 +22,7 @@ export function GenerateBriefButton({
   mode,
   label = "Generate brief",
   syncHint = null,
+  className,
 }: GenerateBriefButtonProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -28,7 +31,7 @@ export function GenerateBriefButton({
     <div className="flex max-w-[min(100%,18rem)] flex-col items-end gap-1 sm:max-w-[20rem]">
       {syncHint ? <p className="text-right text-[0.65rem] leading-snug text-[--metis-paper-muted]">{syncHint}</p> : null}
       <Button
-        className="rounded-full px-5"
+        className={cn("h-9 rounded-full px-4", className)}
         disabled={isLoading}
         onClick={async () => {
           setIsLoading(true);

@@ -3,6 +3,7 @@ import { AlertTriangle, FileOutput, Library, RefreshCcw, ScanSearch } from "luci
 
 import { ConfidencePill, SurfaceCard, MetisShell } from "@/components/MetisShell";
 import { Badge } from "@/components/ui/badge";
+import { AiProvenance } from "@/components/ui/ai-provenance";
 import { Button } from "@/components/ui/button";
 import { CollapsibleSection } from "@/components/review/CollapsibleSection";
 import { DenseSection } from "@/components/review/DenseSection";
@@ -142,6 +143,7 @@ export default async function IssueBriefPage({
   const blockers = mode === "executive" && artifact ? executiveRailBlockers : fullSectionBlockers;
 
   const evidenceItems = linkedSources.slice(0, 12);
+  const briefAiSynthesisEnabled = process.env.BRIEF_AI_SYNTHESIS_ENABLED === "true";
 
   return (
     <MetisShell
@@ -158,45 +160,45 @@ export default async function IssueBriefPage({
     >
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <SurfaceCard>
-          <div className="border-b border-white/8 bg-[rgba(255,255,255,0.02)] px-5 py-3 sm:px-6">
+          <div className="border-b border-white/8 bg-[rgba(255,255,255,0.015)] px-5 py-2.5 sm:px-6">
             <ReviewToolbar
               className="border-0 bg-transparent px-0 py-0"
               left={
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-                  <div className="flex items-center gap-2">
-                    <Library className="h-4 w-4 text-[--metis-paper-muted]" />
-                    <span className="text-sm font-semibold text-[--metis-paper]">Brief</span>
+                <div className="flex min-w-0 flex-col gap-2 lg:flex-row lg:flex-wrap lg:items-center lg:gap-x-3 lg:gap-y-2">
+                  <div className="flex items-center gap-2 text-[--metis-text-secondary]">
+                    <Library className="h-4 w-4 shrink-0 opacity-85" aria-hidden />
+                    <span className="text-[0.7rem] font-medium uppercase tracking-[0.14em]">Brief workspace</span>
                   </div>
                   <BriefModeToggle issueId={issue.id} mode={mode} />
                   {briefVersion ? (
                     <span
-                      className={`rounded-full border px-3 py-1 text-[0.62rem] font-medium uppercase tracking-[0.18em] ${
+                      className={
                         briefInSync
-                          ? "border-emerald-400/35 bg-[rgba(18,83,58,0.45)] text-emerald-50"
-                          : "border-sky-400/35 bg-[rgba(19,86,118,0.55)] text-sky-50"
-                      }`}
+                          ? "rounded-full border border-[--metis-status-neutral-border] bg-[--metis-status-neutral-bg] px-3 py-1 text-[0.62rem] font-medium uppercase tracking-[0.18em] text-[--metis-status-neutral-fg]"
+                          : "rounded-full border border-[--metis-status-info-border] bg-[--metis-status-info-bg] px-3 py-1 text-[0.62rem] font-medium uppercase tracking-[0.18em] text-[--metis-status-info-fg]"
+                      }
                     >
                       {briefInSync ? "Up to date" : "Stale"}
                     </span>
                   ) : (
-                    <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[0.62rem] font-medium uppercase tracking-[0.18em] text-[--metis-paper-muted]">
+                    <span className="rounded-full border border-[--metis-outline-subtle] bg-transparent px-3 py-1 text-[0.62rem] font-medium uppercase tracking-[0.18em] text-[--metis-text-tertiary]">
                       Not generated
                     </span>
                   )}
                   {briefSyncHint ? (
-                    <span className="hidden text-sm leading-6 text-[--metis-paper-muted] lg:inline">{briefSyncHint}</span>
+                    <span className="hidden max-w-xl text-[0.8rem] leading-snug text-[--metis-text-secondary] xl:inline">{briefSyncHint}</span>
                   ) : null}
                 </div>
               }
               right={
-                <div className="flex flex-wrap items-center justify-end gap-2">
+                <div className="mt-3 flex flex-wrap items-center gap-2 sm:justify-end lg:mt-0">
                   <GenerateBriefButton
                     issueId={issue.id}
                     mode={mode}
                     label={hasBriefForMode ? "Regenerate brief" : "Generate brief"}
                     syncHint={briefSyncHint}
                   />
-                  <Button asChild className="rounded-full">
+                  <Button asChild variant="outline" className="h-9 rounded-full px-4">
                     <Link
                       href={`/issues/${issue.id}/export?mode=${mode}&format=${mode === "executive" ? "executive-brief" : "full-issue-brief"}`}
                     >
@@ -213,48 +215,57 @@ export default async function IssueBriefPage({
 
           {artifact ? (
             mode === "full" ? (
-              <article className="space-y-4 px-6 py-5 sm:px-7 sm:py-6">
-                <div className="space-y-4">
+              <article className="px-5 pb-6 pt-4 sm:px-7 sm:pb-7 sm:pt-5">
+                <div className="space-y-0 rounded-[1.25rem] border border-[--metis-outline-subtle] bg-[--metis-surface-card] px-4 py-5 sm:px-6 sm:py-6">
+                  <div className="space-y-6">
                   {artifact.full.sections.map((section, index) => {
                     const readiness = readinessFromConfidence(section.confidence);
                     return (
                       <DenseSection
                         key={section.id}
                         title={
-                          <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2">
-                            <div className="flex items-baseline gap-3">
-                              <span className="text-[0.55rem] uppercase tracking-[0.18em] text-[rgba(176,171,160,0.44)]">
+                          <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+                            <div className="min-w-0 space-y-2">
+                              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                              <span className="text-[0.55rem] uppercase tracking-[0.18em] text-[--metis-text-tertiary]">
                                 {String(index + 1).padStart(2, "0")}
                               </span>
-                              <span className="text-base font-semibold leading-6 text-[--metis-paper]">
+                              <span className="text-base font-semibold leading-6 text-[--metis-text-primary]">
                                 {displayTitles(section.id, section.title)}
                               </span>
+                              </div>
+                              {briefAiSynthesisEnabled && section.id === "executive-summary" ? (
+                                <AiProvenance mode="ai" variant="synthesis-available" />
+                              ) : null}
                             </div>
-                            <span className="text-xs text-[--metis-paper-muted]">
+                            <span className="shrink-0 text-xs text-[--metis-text-secondary]">
                               {readiness.label} · Updated {section.updatedAtLabel}
                             </span>
                           </div>
                         }
                         className={index === 0 ? "border-t-0 pt-0" : undefined}
                       >
-                        <p className="max-w-4xl whitespace-pre-line">{section.body}</p>
+                        <p className="max-w-4xl whitespace-pre-line leading-7 text-[--metis-text-secondary]">{section.body}</p>
                       </DenseSection>
                     );
                   })}
+                  </div>
                 </div>
               </article>
             ) : (
-              <article className="space-y-4 px-6 py-5 sm:px-7 sm:py-6">
-                <div className="space-y-4">
+              <article className="px-5 pb-6 pt-4 sm:px-7 sm:pb-7 sm:pt-5">
+                <div className="space-y-0 rounded-[1.25rem] border border-[--metis-outline-subtle] bg-[--metis-surface-card] px-4 py-5 sm:px-6 sm:py-6">
+                  <div className="space-y-6">
                   {artifact.executive.blocks.map((block, index) => (
                     <DenseSection
                       key={`${block.label}-${index}`}
-                      title={<span className="text-base font-semibold leading-6 text-[--metis-paper]">{block.label}</span>}
+                      title={<span className="text-base font-semibold leading-6 text-[--metis-text-primary]">{block.label}</span>}
                       className={index === 0 ? "border-t-0 pt-0" : undefined}
                     >
-                      <p className="max-w-4xl whitespace-pre-line">{block.body}</p>
+                      <p className="max-w-4xl whitespace-pre-line leading-7 text-[--metis-text-secondary]">{block.body}</p>
                     </DenseSection>
                   ))}
+                  </div>
                 </div>
               </article>
             )
@@ -290,11 +301,11 @@ export default async function IssueBriefPage({
                     <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-2">
                       <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Sync</span>
                       <span
-                        className={`rounded-full border px-3 py-1 text-[0.62rem] font-medium uppercase tracking-[0.18em] ${
+                        className={
                           briefInSync
-                            ? "border-emerald-400/35 bg-[rgba(18,83,58,0.45)] text-emerald-50"
-                            : "border-sky-400/35 bg-[rgba(19,86,118,0.55)] text-sky-50"
-                        }`}
+                            ? "rounded-full border border-[--metis-status-neutral-border] bg-[--metis-status-neutral-bg] px-3 py-1 text-[0.62rem] font-medium uppercase tracking-[0.18em] text-[--metis-status-neutral-fg]"
+                            : "rounded-full border border-[--metis-status-info-border] bg-[--metis-status-info-bg] px-3 py-1 text-[0.62rem] font-medium uppercase tracking-[0.18em] text-[--metis-status-info-fg]"
+                        }
                       >
                         {briefInSync ? "Up to date" : "Stale"}
                       </span>
@@ -385,7 +396,7 @@ export default async function IssueBriefPage({
               <div className="space-y-2 text-sm leading-6 text-[--metis-paper-muted]">
                 {changeSummary.map((item) => (
                   <div key={item} className="grid grid-cols-[10px_minmax(0,1fr)] gap-2.5">
-                    <span className="mt-2 h-1.5 w-1.5 rounded-full bg-[--metis-brass]" />
+                    <span className="mt-2 h-1.5 w-1.5 rounded-full bg-[--metis-outline-strong]" aria-hidden />
                     <p>{item}</p>
                   </div>
                 ))}
@@ -395,8 +406,8 @@ export default async function IssueBriefPage({
             <ReviewRailCard
               title="Blockers"
               meta={
-                <div className="flex items-center gap-2 text-[--metis-paper]">
-                  <AlertTriangle className="h-4 w-4 text-[--metis-brass]" />
+                <div className="flex items-center gap-2 text-[--metis-text-primary]">
+                  <AlertTriangle className="h-4 w-4 shrink-0 text-amber-400/85" aria-hidden />
                   <span>Top items to validate</span>
                 </div>
               }
@@ -422,8 +433,8 @@ export default async function IssueBriefPage({
               title="Evidence"
               tone="info"
               meta={
-                <div className="flex items-center gap-2 text-[--metis-paper]">
-                  <Library className="h-4 w-4 text-[--metis-brass]" />
+                <div className="flex items-center gap-2 text-[--metis-text-primary]">
+                  <Library className="h-4 w-4 text-[--metis-text-secondary]" aria-hidden />
                   <span>{linkedSources.length ? `${linkedSources.length} linked sources` : "No linked sources yet"}</span>
                 </div>
               }
