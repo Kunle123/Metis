@@ -39,6 +39,10 @@ export function Switch({
         ? "bg-[--metis-control-thumb] shadow-[0_2px_8px_rgba(0,0,0,0.42)]"
         : "bg-[--metis-control-thumb] shadow-[0_1px_5px_rgba(0,0,0,0.38)]";
 
+  const trackDims = cn(
+    "h-[var(--metis-switch-track-height)] min-h-[var(--metis-switch-track-height)] max-h-[var(--metis-switch-track-height)] w-[var(--metis-switch-track-width)] min-w-[var(--metis-switch-track-width)] max-w-[var(--metis-switch-track-width)] p-[var(--metis-switch-padding)]",
+  );
+
   return (
     <button
       type="button"
@@ -48,15 +52,21 @@ export function Switch({
       disabled={disabled}
       onClick={() => onCheckedChange(!checked)}
       className={cn(
-        "inline-flex h-8 w-[3.25rem] shrink-0 items-center rounded-full border p-1 transition-[background-color,border-color,box-shadow,filter] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-focus-ring]",
+        "inline-flex shrink-0 items-center rounded-[var(--metis-control-radius-pill)] border transition-[background-color,border-color,box-shadow,filter] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-focus-ring]",
         "disabled:cursor-not-allowed disabled:text-[unset] disabled:opacity-100 disabled:focus-visible:ring-0",
+        trackDims,
         track,
         className,
       )}
       {...props}
     >
-      <span className={cn("flex w-full", checked ? "justify-end" : "justify-start")}>
-        <span className={cn("h-6 w-6 shrink-0 rounded-full transition-[background-color,box-shadow] duration-150", knob)} />
+      <span className={cn("flex min-h-[var(--metis-switch-thumb-size)] w-full items-center", checked ? "justify-end" : "justify-start")}>
+        <span
+          className={cn(
+            "h-[var(--metis-switch-thumb-size)] w-[var(--metis-switch-thumb-size)] shrink-0 rounded-[var(--metis-control-radius-pill)] transition-[background-color,box-shadow] duration-150",
+            knob,
+          )}
+        />
       </span>
     </button>
   );

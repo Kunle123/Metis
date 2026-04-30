@@ -1,5 +1,7 @@
 "use client";
 
+import { Copy } from "lucide-react";
+
 import { MetisShell, ConfidencePill, SurfaceCard } from "@/components/MetisShell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -146,11 +148,9 @@ export default function MetisUiDiagnosticsPage() {
                 </div>
               }
               right={
-                <div className="flex flex-wrap items-center justify-end gap-2">
-                  <Button className="h-10 rounded-full px-5">Primary action</Button>
-                  <Button variant="outline" className="h-10 rounded-full px-5">
-                    Outline action
-                  </Button>
+                <div className="flex flex-wrap items-center justify-end gap-[var(--metis-control-gap-md)]">
+                  <Button>Primary action</Button>
+                  <Button variant="outline">Outline action</Button>
                 </div>
               }
             />
@@ -166,55 +166,61 @@ export default function MetisUiDiagnosticsPage() {
                 <div className="grid gap-4 lg:grid-cols-2">
                   <div className="space-y-3 rounded-[1.25rem] border border-white/10 bg-black/10 px-4 py-4">
                     <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-text-tertiary]">Button hierarchy</p>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Button className="h-10 rounded-full px-5">Primary action</Button>
-                      <Button variant="outline" className="h-10 rounded-full px-5">
-                        Secondary action
-                      </Button>
-                      <span className="inline-flex items-center rounded-full border border-[--metis-status-neutral-border] bg-[--metis-status-neutral-bg] px-3 py-2 text-[0.7rem] text-[--metis-status-neutral-fg]">
-                        Neutral metadata chip (experimental)
-                      </span>
-                      <span className="inline-flex items-center rounded-full border border-[--metis-status-info-border] bg-[--metis-status-info-bg] px-3 py-2 text-[0.7rem] text-[--metis-status-info-fg]">
-                        Info context chip (provenance-style)
-                      </span>
+                    <div className="flex flex-wrap items-center gap-[var(--metis-control-gap-md)]">
+                      <Button>Primary action</Button>
+                      <Button variant="outline">Secondary action</Button>
+                      <AiProvenance mode="original" className="max-w-[min(100%,280px)]" />
+                      <AiProvenance mode="ai" helper="Compact chip typography + icon-sm." className="max-w-[min(100%,320px)]" />
                       <Button
                         type="button"
                         variant="outline"
-                        className="h-9 rounded-full border-[--metis-status-info-border] bg-[--metis-status-info-bg] px-3 text-xs font-medium text-[--metis-status-info-fg] shadow-none hover:border-[--metis-status-info-border] hover:bg-[color-mix(in_oklab,var(--metis-status-info-bg)_88%,white)] hover:text-[--metis-status-info-fg]"
+                        size="sm"
+                        className="border-[--metis-status-info-border] bg-[--metis-status-info-bg] text-[--metis-status-info-fg] shadow-none hover:border-[--metis-status-info-border] hover:bg-[color-mix(in_oklab,var(--metis-status-info-bg)_88%,white)] hover:text-[--metis-status-info-fg]"
                       >
                         Info action (subordinate)
                       </Button>
-                      <Button variant="ghost" className="h-10 rounded-full px-5">
-                        Tertiary / link-style
-                      </Button>
-                      <Button disabled className="h-10 rounded-full px-5">
-                        Disabled (primary)
-                      </Button>
-                      <Button disabled variant="outline" className="h-10 rounded-full px-5">
+                      <Button variant="ghost">Tertiary / link-style</Button>
+                      <Button disabled>Disabled (primary)</Button>
+                      <Button disabled variant="outline">
                         Disabled (secondary)
                       </Button>
                     </div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Button className="h-10 rounded-full px-5">
-                        <span className="inline-block h-4 w-4 rounded bg-black/25" aria-hidden />
+                    <div className="flex flex-wrap items-center gap-[var(--metis-control-gap-md)]">
+                      <Button>
+                        <span
+                          className="inline-block shrink-0 rounded bg-black/25"
+                          style={{ width: "var(--metis-icon-size-md)", height: "var(--metis-icon-size-md)" }}
+                          aria-hidden
+                        />
                         Icon + label
                       </Button>
-                      <IconButton label="Icon-only (outline)" icon={<span className="h-4 w-4 rounded bg-white/25" aria-hidden />} />
+                      <IconButton
+                        label="Icon-only sm (outline)"
+                        size="sm"
+                        icon={<span className="size-[var(--metis-icon-size-sm)] rounded bg-white/25" aria-hidden />}
+                      />
+                      <IconButton label="Icon-only md (outline)" icon={<span className="size-[var(--metis-icon-size-md)] rounded bg-white/25" aria-hidden />} />
                       <IconButton
                         disabled
-                        label="Icon-only (outline, disabled)"
-                        icon={<span className="h-4 w-4 rounded bg-white/18" aria-hidden />}
+                        label="Icon-only outline disabled"
+                        icon={<span className="size-[var(--metis-icon-size-md)] rounded bg-white/18" aria-hidden />}
                       />
                       <IconButton
-                        label="Icon-only (primary)"
+                        label="Icon-only md (primary)"
                         variant="default"
-                        icon={<span className="h-4 w-4 rounded bg-black/20" aria-hidden />}
+                        icon={<span className="size-[var(--metis-icon-size-md)] rounded bg-black/20" aria-hidden />}
+                      />
+                      <IconButton
+                        label="Icon-only lg (primary)"
+                        variant="default"
+                        size="lg"
+                        icon={<span className="size-[var(--metis-icon-size-lg)] rounded bg-black/15" aria-hidden />}
                       />
                       <IconButton
                         disabled
-                        label="Icon-only (primary, disabled)"
+                        label="Icon-only md (primary, disabled)"
                         variant="default"
-                        icon={<span className="h-4 w-4 rounded bg-black/15" aria-hidden />}
+                        icon={<span className="size-[var(--metis-icon-size-md)] rounded bg-black/15" aria-hidden />}
                       />
                     </div>
                     <div className="pt-1">
@@ -226,10 +232,19 @@ export default function MetisUiDiagnosticsPage() {
 
                   <div className="space-y-3 rounded-[1.25rem] border border-white/10 bg-black/10 px-4 py-4">
                     <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-text-tertiary]">Sizing system</p>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Button className="h-9 rounded-full px-4 text-sm">Compact</Button>
-                      <Button className="h-10 rounded-full px-5">Default</Button>
-                      <Button className="h-11 rounded-full px-6 text-base">Large</Button>
+                    <div className="flex flex-wrap items-center gap-[var(--metis-control-gap-md)]">
+                      <Button size="sm">sm · compact</Button>
+                      <Button size="md">md · default</Button>
+                      <Button size="lg">lg · large</Button>
+                    </div>
+                    <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-text-tertiary]">Chip vs Copy (alignment)</p>
+                    <div className="flex flex-wrap items-center gap-[var(--metis-control-gap-md)]">
+                      <AiProvenance mode="original" />
+                      <AiProvenance mode="ai" />
+                      <Button type="button" variant="outline" aria-label="Copy markdown preview">
+                        <Copy className="shrink-0" aria-hidden />
+                        Copy markdown
+                      </Button>
                     </div>
                     <div className="grid gap-3 sm:grid-cols-2">
                       <ControlField label="Select" helper="Labels have breathing room; helper text is secondary.">
@@ -395,10 +410,8 @@ export default function MetisUiDiagnosticsPage() {
                   }
                   right={
                     <div className="flex items-center gap-2">
-                      <Button className="h-10 rounded-full px-5">Generate</Button>
-                      <Button variant="outline" className="h-10 rounded-full px-5">
-                        Copy
-                      </Button>
+                      <Button>Generate</Button>
+                      <Button variant="outline">Copy</Button>
                     </div>
                   }
                 />

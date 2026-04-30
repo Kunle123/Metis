@@ -4,8 +4,11 @@ import { cn } from "@/lib/utils";
 
 type ButtonVariant = "default" | "outline" | "ghost";
 
+type ButtonSize = "sm" | "md" | "lg";
+
 type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant;
+  size?: ButtonSize;
   asChild?: boolean;
 };
 
@@ -13,9 +16,28 @@ type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
 const disabledAll =
   "disabled:border-[--metis-action-disabled-border] disabled:bg-[--metis-action-disabled-bg] disabled:text-[--metis-action-disabled-fg] disabled:shadow-none disabled:hover:shadow-none disabled:hover:translate-y-0 disabled:active:translate-y-0 disabled:hover:bg-[--metis-action-disabled-bg] disabled:hover:border-[--metis-action-disabled-border] disabled:hover:text-[--metis-action-disabled-fg] disabled:hover:brightness-100 disabled:[filter:none]";
 
-export function Button({ className, variant = "default", asChild, ...props }: Props) {
+function sizeClasses(s: ButtonSize) {
+  if (s === "sm") {
+    return cn(
+      "min-h-[var(--metis-control-height-sm)] h-[var(--metis-control-height-sm)] px-[var(--metis-control-padding-x-sm)] gap-[var(--metis-control-gap-md)] rounded-[var(--metis-control-radius-pill)] text-sm",
+      "[&_svg:not([class*='size-'])]:h-[var(--metis-icon-size-sm)] [&_svg:not([class*='size-'])]:w-[var(--metis-icon-size-sm)] [&_svg:not([class*='size-'])]:shrink-0",
+    );
+  }
+  if (s === "lg") {
+    return cn(
+      "min-h-[var(--metis-control-height-lg)] h-[var(--metis-control-height-lg)] px-[var(--metis-control-padding-x-lg)] gap-[var(--metis-control-gap-lg)] rounded-[var(--metis-control-radius-pill)] text-base",
+      "[&_svg:not([class*='size-'])]:h-[var(--metis-icon-size-lg)] [&_svg:not([class*='size-'])]:w-[var(--metis-icon-size-lg)] [&_svg:not([class*='size-'])]:shrink-0",
+    );
+  }
+  return cn(
+    "min-h-[var(--metis-control-height-md)] h-[var(--metis-control-height-md)] px-[var(--metis-control-padding-x-md)] gap-[var(--metis-control-gap-md)] rounded-[var(--metis-control-radius-pill)] text-sm",
+    "[&_svg:not([class*='size-'])]:h-[var(--metis-icon-size-md)] [&_svg:not([class*='size-'])]:w-[var(--metis-icon-size-md)] [&_svg:not([class*='size-'])]:shrink-0",
+  );
+}
+
+export function Button({ className, variant = "default", size = "md", asChild, ...props }: Props) {
   const base =
-    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-focus-ring] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0e0f] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-100";
+    "inline-flex items-center justify-center whitespace-nowrap font-medium transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-focus-ring] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0e0f] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-100";
 
   const variantClass =
     variant === "ghost"
@@ -30,17 +52,18 @@ export function Button({ className, variant = "default", asChild, ...props }: Pr
           )
         : cn(
             "border border-[--metis-action-primary-border] bg-[--metis-action-primary-bg] text-[--metis-action-primary-fg]",
-            /* Filled primary: inset top highlight + lifted shadow — clearly not outline */
             "shadow-[inset_0_2px_0_rgba(255,255,255,0.32),inset_0_-1px_0_rgba(0,0,0,0.28),0_14px_34px_-6px_rgba(0,0,0,0.58)] hover:-translate-y-px hover:shadow-[inset_0_2px_0_rgba(255,255,255,0.38),inset_0_-1px_0_rgba(0,0,0,0.22),0_17px_40px_-6px_rgba(0,0,0,0.64)] hover:brightness-[1.03] active:translate-y-0 active:brightness-[1.02]",
             disabledAll,
           );
 
+  const sized = sizeClasses(size);
+
   if (asChild) {
     const child = React.Children.only(props.children) as React.ReactElement<{ className?: string }>;
     return React.cloneElement(child, {
-      className: cn(base, variantClass, className, child.props.className),
+      className: cn(base, sized, variantClass, className, child.props.className),
     });
   }
 
-  return <button className={cn(base, variantClass, className)} {...props} />;
+  return <button className={cn(base, sized, variantClass, className)} {...props} />;
 }

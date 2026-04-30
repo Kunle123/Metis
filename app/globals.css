@@ -92,6 +92,49 @@
   --metis-control-disabled-border: oklch(0.2 0.005 248);
   --metis-control-disabled-fg: oklch(0.45 0.006 95);
 
+  /*
+   * Control sizing & spacing (layout contract — consume in primitives via var()).
+   * Heights align sm/md/lg; chips sit below buttons for lighter visual mass.
+   */
+  --metis-control-height-sm: 2.25rem; /* 36px */
+  --metis-control-height-md: 2.5rem; /* 40px */
+  --metis-control-height-lg: 2.75rem; /* 44px */
+
+  --metis-control-radius-sm: 0.625rem;
+  --metis-control-radius-md: 0.875rem;
+  --metis-control-radius-lg: 1rem;
+  --metis-control-radius-pill: 999px;
+
+  --metis-control-padding-x-sm: 0.75rem;
+  --metis-control-padding-x-md: 1rem;
+  --metis-control-padding-x-lg: 1.25rem;
+
+  --metis-control-gap-sm: 0.375rem;
+  --metis-control-gap-md: 0.5rem;
+  --metis-control-gap-lg: 0.625rem;
+
+  --metis-icon-size-sm: 0.875rem;
+  --metis-icon-size-md: 1rem;
+  --metis-icon-size-lg: 1.125rem;
+
+  --metis-chip-height-sm: 1.75rem; /* 28px */
+  --metis-chip-height-md: 2rem; /* 32px */
+  --metis-chip-padding-x-sm: 0.625rem;
+  --metis-chip-padding-x-md: 0.75rem;
+  --metis-chip-gap: 0.375rem;
+  --metis-chip-dot-size: 0.45rem;
+  --metis-chip-font-size: 0.6875rem;
+
+  /* Segmented: outer rail aligns to md control height; inner segment slots omit rail padding twice. */
+  --metis-segmented-rail-padding: 0.25rem;
+  --metis-segmented-slot-height: calc(var(--metis-control-height-md) - 2 * var(--metis-segmented-rail-padding));
+
+  /* Switch track + knob (fixed dims so on/off/disabled states don’t resize). */
+  --metis-switch-track-height: 2rem;
+  --metis-switch-track-width: 3.25rem;
+  --metis-switch-thumb-size: 1.5rem;
+  --metis-switch-padding: 0.25rem;
+
   /* Semantic/status (markup literal backgrounds + neutral border; fg/borders otherwise unchanged) */
   --metis-status-info-bg: oklch(0.31 0.06 240);
   --metis-status-info-fg: var(--metis-paper);
