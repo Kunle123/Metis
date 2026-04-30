@@ -5,7 +5,10 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Copy } from "lucide-react";
 
+import { AiProvenance } from "@/components/ui/ai-provenance";
 import { Button } from "@/components/ui/button";
+import { ControlField, ControlSelect } from "@/components/ui/control";
+import { SegmentedControl } from "@/components/ui/segmented-control";
 import type { MessageVariantArtifact, MessageVariantTemplateId } from "@metis/shared/messageVariant";
 import { renderMessageVariantMarkdown } from "@/lib/messages/generateExternalCustomerUpdate";
 import { renderInternalStaffUpdateMarkdown } from "@/lib/messages/generateInternalStaffUpdate";
@@ -275,28 +278,26 @@ export function MessagesPanel({
       <div className="min-w-0 space-y-4">
         <div className="rounded-[1.25rem] border border-white/10 bg-[rgba(0,0,0,0.14)] px-4 py-4 sm:px-5">
           <div className="grid gap-3 lg:grid-cols-[minmax(220px,1.2fr)_minmax(220px,1.1fr)_minmax(260px,1fr)]">
-          <label className="space-y-1.5">
-            <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Template</span>
-            <select
+          <ControlField label="Template">
+            <ControlSelect
+              aria-label="Message template"
               value={selectedTemplateId}
               onChange={(e) => navigateToTemplate(e.target.value as MessageVariantTemplateId)}
-              className="h-10 w-full rounded-full border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
             >
               <option value="external_customer_resident_student">External / customer–resident–student update</option>
               <option value="internal_staff_update">Internal / staff update</option>
               <option value="media_holding_line">Media / holding line</option>
-            </select>
-          </label>
+            </ControlSelect>
+          </ControlField>
 
-          <label className="space-y-1.5">
-            <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Audience group</span>
-            <select
+          <ControlField label="Audience group">
+            <ControlSelect
+              aria-label="Audience group"
               value={selectValue}
               onChange={(e) => {
                 const v = e.target.value;
                 navigateToLens(v === "" ? null : v);
               }}
-              className="h-10 w-full rounded-full border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
             >
               <option value="">General (no audience group)</option>
               {audienceGroupOptions.map((o) => (
@@ -304,38 +305,26 @@ export function MessagesPanel({
                   {o.label}
                 </option>
               ))}
-            </select>
-          </label>
+            </ControlSelect>
+          </ControlField>
 
-          <div className="space-y-1.5">
-            <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Output</span>
+          <div className="space-y-2">
+            <SegmentedControl<"original" | "ai">
+              label="Output"
+              disabled={loading}
+              value={aiToggleOn ? "ai" : "original"}
+              options={[
+                { id: "original", label: "Original" },
+                { id: "ai", label: "AI-enhanced", disabled: !canShowAi },
+              ]}
+              onChange={(next) => {
+                if (next === "original") void toggleAi(false);
+                else void toggleAi(true);
+              }}
+              className="min-w-0 lg:max-w-xl"
+            />
             <div className="flex flex-wrap items-center gap-2">
-              <div className="flex h-10 min-w-[240px] flex-1 items-center rounded-full border border-white/12 bg-[rgba(255,255,255,0.04)] p-1">
-                <button
-                  type="button"
-                  disabled={loading}
-                  onClick={() => void toggleAi(false)}
-                  aria-pressed={!aiToggleOn}
-                  className={`h-8 flex-1 rounded-full px-3 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60 ${
-                    !aiToggleOn ? "bg-white/10 text-[--metis-paper]" : "text-[--metis-paper-muted] hover:text-[--metis-paper]"
-                  }`}
-                >
-                  Original
-                </button>
-                <button
-                  type="button"
-                  disabled={!canShowAi || loading}
-                  onClick={() => void toggleAi(true)}
-                  aria-pressed={aiToggleOn}
-                  className={`h-8 flex-1 rounded-full px-3 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60 ${
-                    aiToggleOn
-                      ? "bg-[rgba(224,183,111,0.22)] text-[--metis-paper]"
-                      : "text-[--metis-paper-muted] hover:text-[--metis-paper]"
-                  } ${!canShowAi ? "cursor-not-allowed opacity-60" : ""}`}
-                >
-                  AI-enhanced
-                </button>
-              </div>
+              <AiProvenance mode={aiToggleOn ? "ai" : "original"} />
               <Button type="button" variant="outline" className="h-10 rounded-full" disabled={!markdown} onClick={() => void copyMd()}>
                 <Copy className="mr-2 h-4 w-4" />
                 {copyState === "copied" ? "Copied" : copyState === "error" ? "Copy failed" : "Copy"}
