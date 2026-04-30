@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "tsc -p tsconfig.json --noEmit",
+    "test:message-cleanup": "tsx lib/ai/cleanupMessageDraft.fixtures.runner.ts",
     "smoke:prod": "node scripts/prod-smoke.mjs",
     "prisma": "prisma",
     "db:migrate": "prisma migrate dev",
