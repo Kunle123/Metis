@@ -9,6 +9,8 @@ type ButtonSize = "sm" | "md" | "lg";
 type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant;
   size?: ButtonSize;
+  /** Fully rounded capsule; default controls use `--metis-control-radius-md`. */
+  pill?: boolean;
   asChild?: boolean;
 };
 
@@ -19,25 +21,28 @@ const disabledAll =
 function sizeClasses(s: ButtonSize) {
   if (s === "sm") {
     return cn(
-      "min-h-[var(--metis-control-height-sm)] h-[var(--metis-control-height-sm)] px-[var(--metis-control-padding-x-sm)] gap-[var(--metis-control-gap-md)] rounded-[var(--metis-control-radius-pill)] text-sm",
+      "min-h-[var(--metis-control-height-sm)] h-[var(--metis-control-height-sm)] px-[var(--metis-control-padding-x-sm)] gap-[var(--metis-control-gap-md)] text-sm",
       "[&_svg:not([class*='size-'])]:h-[var(--metis-icon-size-sm)] [&_svg:not([class*='size-'])]:w-[var(--metis-icon-size-sm)] [&_svg:not([class*='size-'])]:shrink-0",
     );
   }
   if (s === "lg") {
     return cn(
-      "min-h-[var(--metis-control-height-lg)] h-[var(--metis-control-height-lg)] px-[var(--metis-control-padding-x-lg)] gap-[var(--metis-control-gap-lg)] rounded-[var(--metis-control-radius-pill)] text-base",
+      "min-h-[var(--metis-control-height-lg)] h-[var(--metis-control-height-lg)] px-[var(--metis-control-padding-x-lg)] gap-[var(--metis-control-gap-lg)] text-base",
       "[&_svg:not([class*='size-'])]:h-[var(--metis-icon-size-lg)] [&_svg:not([class*='size-'])]:w-[var(--metis-icon-size-lg)] [&_svg:not([class*='size-'])]:shrink-0",
     );
   }
   return cn(
-    "min-h-[var(--metis-control-height-md)] h-[var(--metis-control-height-md)] px-[var(--metis-control-padding-x-md)] gap-[var(--metis-control-gap-md)] rounded-[var(--metis-control-radius-pill)] text-sm",
+    "min-h-[var(--metis-control-height-md)] h-[var(--metis-control-height-md)] px-[var(--metis-control-padding-x-md)] gap-[var(--metis-control-gap-md)] text-sm",
     "[&_svg:not([class*='size-'])]:h-[var(--metis-icon-size-md)] [&_svg:not([class*='size-'])]:w-[var(--metis-icon-size-md)] [&_svg:not([class*='size-'])]:shrink-0",
   );
 }
 
-export function Button({ className, variant = "default", size = "md", asChild, ...props }: Props) {
+export function Button({ className, variant = "default", size = "md", pill = false, asChild, ...props }: Props) {
   const base =
     "inline-flex items-center justify-center whitespace-nowrap font-medium transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-focus-ring] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0e0f] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-100";
+
+  const radius =
+    pill === true ? "rounded-[var(--metis-control-radius-pill)]" : "rounded-[var(--metis-control-radius-md)]";
 
   const variantClass =
     variant === "ghost"
@@ -61,9 +66,9 @@ export function Button({ className, variant = "default", size = "md", asChild, .
   if (asChild) {
     const child = React.Children.only(props.children) as React.ReactElement<{ className?: string }>;
     return React.cloneElement(child, {
-      className: cn(base, sized, variantClass, className, child.props.className),
+      className: cn(base, radius, sized, variantClass, className, child.props.className),
     });
   }
 
-  return <button className={cn(base, sized, variantClass, className)} {...props} />;
+  return <button className={cn(base, radius, sized, variantClass, className)} {...props} />;
 }

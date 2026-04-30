@@ -180,6 +180,7 @@ export default function MetisUiDiagnosticsPage() {
                         Info action (subordinate)
                       </Button>
                       <Button variant="ghost">Tertiary / link-style</Button>
+                      <Button pill>Optional pill (opt-in)</Button>
                       <Button disabled>Disabled (primary)</Button>
                       <Button disabled variant="outline">
                         Disabled (secondary)
@@ -467,7 +468,7 @@ export default function MetisUiDiagnosticsPage() {
                 <label className="space-y-1.5">
                   <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-text-tertiary]">Input</span>
                   <input
-                    className="h-10 w-full rounded-full border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
+                    className="h-10 w-full rounded-[var(--metis-control-radius-md)] border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
                     placeholder="Text input"
                     defaultValue="Example value"
                     readOnly
@@ -475,7 +476,7 @@ export default function MetisUiDiagnosticsPage() {
                 </label>
                 <label className="space-y-1.5">
                   <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-text-tertiary]">Select</span>
-                  <select className="h-10 w-full rounded-full border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60">
+                  <select className="h-10 w-full rounded-[var(--metis-control-radius-md)] border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60">
                     <option>Option A</option>
                     <option>Option B</option>
                   </select>

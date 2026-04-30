@@ -30,7 +30,7 @@ export function SegmentedControl<T extends string>({
         role="group"
         aria-label={typeof label === "string" ? label : "Segmented control"}
         className={cn(
-          "flex h-[var(--metis-control-height-md)] items-center rounded-[var(--metis-control-radius-pill)] border border-[--metis-outline-subtle] bg-[--metis-surface-rail] p-[var(--metis-segmented-rail-padding)]",
+          "flex h-[var(--metis-control-height-md)] items-center rounded-[var(--metis-control-radius-lg)] border border-[--metis-outline-subtle] bg-[--metis-surface-rail] p-[var(--metis-segmented-rail-padding)]",
           wholeDisabled && "cursor-not-allowed border-[--metis-control-disabled-border] bg-[--metis-control-disabled-bg]",
         )}
       >
@@ -72,7 +72,7 @@ export function SegmentedControl<T extends string>({
               aria-pressed={isSelected}
               onClick={() => onChange(o.id)}
               className={cn(
-                "relative flex-1 shrink-0 truncate rounded-[var(--metis-control-radius-pill)] transition-[background-color,border-color,color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-focus-ring]",
+                "relative flex-1 shrink-0 truncate rounded-[var(--metis-control-radius-md)] transition-[background-color,border-color,color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-focus-ring]",
                 unavailable && "focus-visible:ring-0",
                 activeSelected,
                 unselectedEnabled,

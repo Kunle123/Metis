@@ -100,6 +100,7 @@
   --metis-control-height-md: 2.5rem; /* 40px */
   --metis-control-height-lg: 2.75rem; /* 44px */
 
+  /* Corner roles: md = default actionable controls; sm = dense; lg = segmented rails/containers; pill = chips/status/badges + opt-in capsules */
   --metis-control-radius-sm: 0.625rem;
   --metis-control-radius-md: 0.875rem;
   --metis-control-radius-lg: 1rem;

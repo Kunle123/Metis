@@ -10,16 +10,16 @@ export type IconButtonSize = "sm" | "md" | "lg";
 function sizeClasses(s: IconButtonSize) {
   if (s === "sm") {
     return cn(
-      "h-[var(--metis-control-height-sm)] min-h-[var(--metis-control-height-sm)] w-[var(--metis-control-height-sm)] min-w-[var(--metis-control-height-sm)] [&_svg]:h-[var(--metis-icon-size-sm)] [&_svg]:w-[var(--metis-icon-size-sm)]",
+      "h-[var(--metis-control-height-sm)] min-h-[var(--metis-control-height-sm)] w-[var(--metis-control-height-sm)] min-w-[var(--metis-control-height-sm)] rounded-[var(--metis-control-radius-sm)] [&_svg]:h-[var(--metis-icon-size-sm)] [&_svg]:w-[var(--metis-icon-size-sm)]",
     );
   }
   if (s === "lg") {
     return cn(
-      "h-[var(--metis-control-height-lg)] min-h-[var(--metis-control-height-lg)] w-[var(--metis-control-height-lg)] min-w-[var(--metis-control-height-lg)] [&_svg]:h-[var(--metis-icon-size-lg)] [&_svg]:w-[var(--metis-icon-size-lg)]",
+      "h-[var(--metis-control-height-lg)] min-h-[var(--metis-control-height-lg)] w-[var(--metis-control-height-lg)] min-w-[var(--metis-control-height-lg)] rounded-[var(--metis-control-radius-md)] [&_svg]:h-[var(--metis-icon-size-lg)] [&_svg]:w-[var(--metis-icon-size-lg)]",
     );
   }
   return cn(
-    "h-[var(--metis-control-height-md)] min-h-[var(--metis-control-height-md)] w-[var(--metis-control-height-md)] min-w-[var(--metis-control-height-md)] [&_svg]:h-[var(--metis-icon-size-md)] [&_svg]:w-[var(--metis-icon-size-md)]",
+    "h-[var(--metis-control-height-md)] min-h-[var(--metis-control-height-md)] w-[var(--metis-control-height-md)] min-w-[var(--metis-control-height-md)] rounded-[var(--metis-control-radius-md)] [&_svg]:h-[var(--metis-icon-size-md)] [&_svg]:w-[var(--metis-icon-size-md)]",
   );
 }
 
@@ -38,7 +38,7 @@ export function IconButton({
 }) {
   const sized = sizeClasses(size);
   const base =
-    "inline-flex shrink-0 items-center justify-center rounded-[var(--metis-control-radius-pill)] p-0 transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-focus-ring] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0e0f] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-100";
+    "inline-flex shrink-0 items-center justify-center p-0 transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-focus-ring] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0e0f] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-100";
 
   const style =
     variant === "ghost"

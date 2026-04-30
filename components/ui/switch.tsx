@@ -63,7 +63,7 @@ export function Switch({
       <span className={cn("flex min-h-[var(--metis-switch-thumb-size)] w-full items-center", checked ? "justify-end" : "justify-start")}>
         <span
           className={cn(
-            "h-[var(--metis-switch-thumb-size)] w-[var(--metis-switch-thumb-size)] shrink-0 rounded-[var(--metis-control-radius-pill)] transition-[background-color,box-shadow] duration-150",
+            "h-[var(--metis-switch-thumb-size)] w-[var(--metis-switch-thumb-size)] shrink-0 rounded-full transition-[background-color,box-shadow] duration-150",
             knob,
           )}
         />
