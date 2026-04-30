@@ -14,9 +14,17 @@ export function AiProvenance({
 }) {
   if (mode === "original") {
     return (
-      <div className={cn("inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-[--metis-paper-muted]", className)}>
-        <span className="h-1.5 w-1.5 rounded-full bg-white/30" aria-hidden />
-        <span className="text-[--metis-paper]">Original deterministic draft</span>
+      <div
+        className={cn(
+          "inline-flex items-center gap-2 rounded-full border border-[--metis-status-neutral-border] bg-[--metis-status-neutral-bg] px-3 py-1 text-[0.6875rem] leading-5 text-[--metis-status-neutral-fg]",
+          className,
+        )}
+      >
+        <span
+          className="h-1.5 w-1.5 shrink-0 rounded-full bg-[color-mix(in_oklab,var(--metis-status-neutral-fg)_55%,transparent)]"
+          aria-hidden
+        />
+        <span className="font-medium">Original deterministic draft</span>
       </div>
     );
   }
@@ -24,15 +32,16 @@ export function AiProvenance({
   return (
     <div
       className={cn(
-        "inline-flex items-center gap-2 rounded-full border border-[--metis-info-border] bg-[--metis-info-bg] px-3 py-1 text-xs text-[--metis-paper-muted]",
+        "inline-flex items-center gap-2 rounded-full border border-[--metis-status-info-border] bg-[--metis-status-info-bg] px-3 py-1 text-[0.6875rem] leading-5 text-[--metis-status-info-fg]",
         className,
       )}
       title={typeof helper === "string" ? helper : undefined}
     >
-      <Sparkles className="h-3.5 w-3.5 text-[--metis-info-soft]" aria-hidden />
-      <span className="text-[--metis-paper]">AI-enhanced draft</span>
-      <span className="hidden sm:inline text-[--metis-paper-muted]">· {helper}</span>
+      <Sparkles className="h-3.5 w-3.5 shrink-0 opacity-90 text-[color-mix(in_oklab,var(--metis-status-info-fg)_92%,transparent)]" aria-hidden />
+      <span className="font-medium">AI-enhanced draft</span>
+      <span className="hidden text-[color-mix(in_oklab,var(--metis-status-info-fg)_88%,transparent)] sm:inline">
+        · {helper}
+      </span>
     </div>
   );
 }
-

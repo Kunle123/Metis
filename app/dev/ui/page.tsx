@@ -1,6 +1,6 @@
 "use client";
 
-import { MetisShell, ConfidencePill, ReadinessPill, SurfaceCard } from "@/components/MetisShell";
+import { MetisShell, ConfidencePill, SurfaceCard } from "@/components/MetisShell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
@@ -89,19 +89,19 @@ function TokenSwatch({ name, sample }: Token) {
 function LayerStackSample() {
   return (
     <div className="grid gap-4 lg:grid-cols-2">
-      <div className="rounded-[1.4rem] border border-white/10 bg-[--background] p-4">
-        <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Page frame</p>
-        <div className="mt-3 rounded-[1.4rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.015),transparent_12%)] p-4">
-          <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">App body</p>
+      <div className="rounded-[1.4rem] border border-[--metis-outline-subtle] bg-[--metis-surface-page] p-4">
+        <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-text-tertiary]">Page frame</p>
+        <div className="mt-3 rounded-[1.4rem] border border-[--metis-outline-subtle] bg-[--metis-surface-card] p-4">
+          <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-text-tertiary]">App body</p>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             <div className="metis-surface metis-primary-surface rounded-[1.4rem] border p-4">
-              <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Primary surface</p>
-              <div className="mt-3 rounded-[1.2rem] border border-white/10 bg-[rgba(0,0,0,0.14)] px-4 py-3">
+              <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-text-tertiary]">Primary surface</p>
+              <div className="mt-3 rounded-[1.2rem] border border-[--metis-outline-subtle] bg-[--metis-surface-toolbar] px-4 py-3">
                 <p className="text-xs text-[--metis-paper-muted]">Nested toolbar panel</p>
               </div>
             </div>
             <div className="metis-surface metis-support-surface rounded-[1.4rem] border p-4">
-              <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Support surface</p>
+              <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-text-tertiary]">Support surface</p>
               <div className="mt-3 rounded-[1.2rem] border border-[--metis-info-border] bg-[--metis-info-bg] px-4 py-3">
                 <p className="text-xs text-[--metis-paper-muted]">Info panel sample</p>
               </div>
@@ -109,12 +109,12 @@ function LayerStackSample() {
           </div>
         </div>
       </div>
-      <div className="space-y-3 rounded-[1.4rem] border border-white/10 bg-black/10 p-4">
-        <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Operable controls</p>
+      <div className="space-y-3 rounded-[1.4rem] border border-[--metis-outline-subtle] bg-[--metis-surface-rail] p-4">
+        <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-brass-soft]">Operable controls</p>
         <div className="grid gap-3">
-          <div className="rounded-[1.2rem] border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 py-3 shadow-[inset_0_1px_0_var(--metis-control-inset)]">
-            <p className="text-xs text-[--metis-paper]">Control background / border</p>
-            <p className="mt-1 text-xs text-[--metis-paper-muted]">Should read as distinct from panels/cards.</p>
+          <div className="rounded-[1.2rem] border border-[--metis-control-border] bg-[--metis-control-bg] px-4 py-3 shadow-[inset_0_1px_0_var(--metis-control-inset)]">
+            <p className="text-xs text-[--metis-text-primary]">Control background / border</p>
+            <p className="mt-1 text-xs text-[--metis-text-secondary]">Operable, but quieter than the Primary button above.</p>
           </div>
           <ReviewBanner tone="warning" title="Warning" body="Amber panel separation check." />
           <ReviewBanner tone="info" title="Info" body="Blue panel separation check." />
@@ -165,22 +165,26 @@ export default function MetisUiDiagnosticsPage() {
               <div className="mt-5 space-y-6">
                 <div className="grid gap-4 lg:grid-cols-2">
                   <div className="space-y-3 rounded-[1.25rem] border border-white/10 bg-black/10 px-4 py-4">
-                    <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Button hierarchy</p>
+                    <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-text-tertiary]">Button hierarchy</p>
                     <div className="flex flex-wrap items-center gap-2">
                       <Button className="h-10 rounded-full px-5">Primary action</Button>
                       <Button variant="outline" className="h-10 rounded-full px-5">
                         Secondary action
                       </Button>
+                      <span className="inline-flex items-center rounded-full border border-[--metis-status-neutral-border] bg-[--metis-status-neutral-bg] px-3 py-2 text-[0.7rem] text-[--metis-status-neutral-fg]">
+                        Neutral metadata chip (experimental)
+                      </span>
+                      <span className="inline-flex items-center rounded-full border border-[--metis-status-info-border] bg-[--metis-status-info-bg] px-3 py-2 text-[0.7rem] text-[--metis-status-info-fg]">
+                        Info context chip (provenance-style)
+                      </span>
                       <Button
+                        type="button"
                         variant="outline"
-                        className="h-10 rounded-full border-[--metis-status-info-border] bg-[--metis-status-info-bg] px-5 text-[--metis-status-info-fg] shadow-none hover:bg-[rgba(77,152,255,0.18)]"
+                        className="h-9 rounded-full border-[--metis-status-info-border] bg-[--metis-status-info-bg] px-3 text-xs font-medium text-[--metis-status-info-fg] shadow-none hover:border-[--metis-status-info-border] hover:bg-[color-mix(in_oklab,var(--metis-status-info-bg)_88%,white)] hover:text-[--metis-status-info-fg]"
                       >
-                        Info action (experimental)
+                        Info action (subordinate)
                       </Button>
-                      <Button
-                        variant="outline"
-                        className="h-10 rounded-full border-[--metis-outline-subtle] bg-transparent px-5 text-[--metis-action-ghost-fg] shadow-none hover:border-[--metis-outline-strong] hover:bg-white/5 hover:text-[--metis-text-primary]"
-                      >
+                      <Button variant="ghost" className="h-10 rounded-full px-5">
                         Tertiary / link-style
                       </Button>
                       <Button disabled className="h-10 rounded-full px-5">
@@ -221,7 +225,7 @@ export default function MetisUiDiagnosticsPage() {
                   </div>
 
                   <div className="space-y-3 rounded-[1.25rem] border border-white/10 bg-black/10 px-4 py-4">
-                    <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Sizing system</p>
+                    <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-text-tertiary]">Sizing system</p>
                     <div className="flex flex-wrap items-center gap-2">
                       <Button className="h-9 rounded-full px-4 text-sm">Compact</Button>
                       <Button className="h-10 rounded-full px-5">Default</Button>
@@ -245,7 +249,7 @@ export default function MetisUiDiagnosticsPage() {
 
                 <div className="grid gap-4 lg:grid-cols-2">
                   <div className="space-y-3 rounded-[1.25rem] border border-white/10 bg-black/10 px-4 py-4">
-                    <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Segmented controls (view/mode)</p>
+                    <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-text-tertiary]">Segmented controls (view/mode)</p>
                     <div className="grid gap-3">
                       <SegmentedControl
                         label="Original / AI-enhanced"
@@ -279,7 +283,7 @@ export default function MetisUiDiagnosticsPage() {
                   </div>
 
                   <div className="space-y-3 rounded-[1.25rem] border border-white/10 bg-black/10 px-4 py-4">
-                    <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Switch (binary state)</p>
+                    <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-text-tertiary]">Switch (binary state)</p>
                     <div className="flex flex-wrap items-center gap-4">
                       <div className="space-y-1">
                         <ControlLabel>Setting</ControlLabel>
@@ -318,7 +322,7 @@ export default function MetisUiDiagnosticsPage() {
 
                 <div className="grid gap-4 lg:grid-cols-2">
                   <div className="space-y-3 rounded-[1.25rem] border border-white/10 bg-black/10 px-4 py-4">
-                    <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">AI provenance motif (subtle)</p>
+                    <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-text-tertiary]">AI provenance motif (subtle)</p>
                     <div className="flex flex-wrap items-center gap-2">
                       <AiProvenance mode="original" />
                       <AiProvenance mode="ai" />
@@ -329,7 +333,7 @@ export default function MetisUiDiagnosticsPage() {
                   </div>
 
                   <div className="space-y-3 rounded-[1.25rem] border border-white/10 bg-black/10 px-4 py-4">
-                    <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Surface hierarchy</p>
+                    <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-text-tertiary]">Surface hierarchy</p>
                     <div className="grid gap-3">
                       <div className="rounded-[1.25rem] border border-white/10 bg-[rgba(0,0,0,0.14)] px-4 py-3">
                         <p className="text-xs text-[--metis-paper-muted]">Controls toolbar surface</p>
@@ -369,7 +373,7 @@ export default function MetisUiDiagnosticsPage() {
               <div className="grid gap-4 lg:grid-cols-2">
                 {Object.entries(tokens).map(([group, groupTokens]) => (
                   <div key={group} className="space-y-3 rounded-[1.2rem] border border-white/10 bg-black/10 px-4 py-4">
-                    <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">{group}</p>
+                    <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-text-tertiary]">{group}</p>
                     <div className="space-y-2.5">
                       {groupTokens.map((t) => (
                         <TokenSwatch key={t.name} {...t} />
@@ -440,13 +444,15 @@ export default function MetisUiDiagnosticsPage() {
                 <ConfidencePill level="Likely" />
                 <ConfidencePill level="Unclear" />
                 <ConfidencePill level="Needs validation" />
-                <ReadinessPill state="Updated since last version" />
-                <ReadinessPill state="Ready for review" />
+                <span className="rounded-full border border-[--metis-status-neutral-border] bg-[--metis-status-neutral-bg] px-3 py-1 text-xs text-[--metis-text-secondary]">
+                  Updated since last version
+                </span>
+                <span className="text-xs text-[--metis-text-secondary]">Ready for review</span>
               </div>
 
               <div className="grid gap-3 lg:grid-cols-2">
                 <label className="space-y-1.5">
-                  <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Input</span>
+                  <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-text-tertiary]">Input</span>
                   <input
                     className="h-10 w-full rounded-full border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
                     placeholder="Text input"
@@ -455,7 +461,7 @@ export default function MetisUiDiagnosticsPage() {
                   />
                 </label>
                 <label className="space-y-1.5">
-                  <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Select</span>
+                  <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-text-tertiary]">Select</span>
                   <select className="h-10 w-full rounded-full border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60">
                     <option>Option A</option>
                     <option>Option B</option>
@@ -471,12 +477,14 @@ export default function MetisUiDiagnosticsPage() {
             <ReviewRailCard title="Mini Brief rail" tone="info" meta={<span>Metadata / sync sample</span>}>
               <div className="space-y-2 text-sm leading-6 text-[--metis-paper-muted]">
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Mode</span>
-                  <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">Executive</Badge>
+                  <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-text-tertiary]">Mode</span>
+                  <span className="rounded-full border border-[--metis-status-neutral-border] bg-[--metis-status-neutral-bg] px-2.5 py-0.5 text-[0.62rem] uppercase tracking-[0.14em] text-[--metis-text-secondary]">
+                    Executive
+                  </span>
                 </div>
                 <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-2">
-                  <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Sync</span>
-                  <span className="rounded-full border border-sky-400/35 bg-[rgba(19,86,118,0.55)] px-3 py-1 text-[0.62rem] font-medium uppercase tracking-[0.18em] text-sky-50">
+                  <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-text-tertiary]">Sync</span>
+                  <span className="rounded-full border border-[--metis-outline-subtle] bg-[--metis-surface-toolbar] px-2.5 py-0.5 text-[0.62rem] uppercase tracking-[0.14em] text-[--metis-text-secondary]">
                     Stale
                   </span>
                 </div>

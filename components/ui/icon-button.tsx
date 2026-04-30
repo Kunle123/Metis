@@ -2,6 +2,9 @@ import type { ButtonHTMLAttributes, ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
+const disabledAll =
+  "disabled:border-[--metis-action-disabled-border] disabled:bg-[--metis-action-disabled-bg] disabled:text-[--metis-action-disabled-fg] disabled:shadow-none disabled:ring-0 disabled:hover:bg-[--metis-action-disabled-bg] disabled:hover:border-[--metis-action-disabled-border] disabled:hover:text-[--metis-action-disabled-fg] disabled:active:translate-y-0 disabled:hover:brightness-100";
+
 export function IconButton({
   label,
   icon,
@@ -11,18 +14,31 @@ export function IconButton({
 }: ButtonHTMLAttributes<HTMLButtonElement> & {
   label: string;
   icon: ReactNode;
-  variant?: "outline" | "default";
+  variant?: "outline" | "default" | "ghost";
 }) {
   const base =
-    "inline-flex h-10 w-10 items-center justify-center rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-focus-ring] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0e0f] disabled:pointer-events-none disabled:cursor-not-allowed";
+    "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-focus-ring] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0e0f] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-100";
+
   const style =
-    variant === "outline"
-      ? "border border-[--metis-action-secondary-border] bg-[--metis-action-secondary-bg] text-[--metis-action-secondary-fg] shadow-none hover:border-[--metis-outline-strong] hover:bg-[rgba(255,255,255,0.05)] disabled:border-[--metis-action-disabled-border] disabled:bg-[--metis-action-disabled-bg] disabled:text-[--metis-action-disabled-fg] disabled:shadow-none disabled:opacity-100"
-      : "border border-[--metis-action-primary-border] bg-[--metis-action-primary-bg] text-[--metis-action-primary-fg] shadow-[0_12px_30px_rgba(0,0,0,0.66)] hover:bg-[--metis-accent-soft] active:translate-y-px disabled:bg-[--metis-action-disabled-bg] disabled:border-[--metis-action-disabled-border] disabled:text-[--metis-action-disabled-fg] disabled:shadow-none disabled:opacity-100 disabled:translate-y-0";
+    variant === "ghost"
+      ? cn(
+          "border border-transparent bg-transparent text-[--metis-action-ghost-fg] shadow-none ring-0 hover:bg-[color-mix(in_oklab,var(--metis-frame)_94%,transparent)] hover:text-[--metis-text-secondary]",
+          disabledAll,
+        )
+      : variant === "outline"
+        ? cn(
+            "border border-[--metis-action-secondary-border] bg-[--metis-action-secondary-bg] text-[--metis-action-secondary-fg] shadow-none ring-0 hover:border-[--metis-outline-strong] hover:bg-[var(--metis-control-hover-bg)]",
+            disabledAll,
+          )
+        : cn(
+            "border border-[--metis-action-primary-border] bg-[--metis-action-primary-bg] text-[--metis-action-primary-fg]",
+            "shadow-[inset_0_2px_0_rgba(255,255,255,0.3),inset_0_-1px_0_rgba(0,0,0,0.26),0_12px_30px_-6px_rgba(0,0,0,0.56)] hover:-translate-y-px hover:shadow-[inset_0_2px_0_rgba(255,255,255,0.36),0_14px_34px_-6px_rgba(0,0,0,0.62)] hover:brightness-[1.03] active:translate-y-0",
+            disabledAll,
+          );
+
   return (
     <button aria-label={label} title={label} className={cn(base, style, className)} {...props}>
       {icon}
     </button>
   );
 }
-

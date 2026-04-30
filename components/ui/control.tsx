@@ -39,7 +39,7 @@ export function ControlSelect(props: SelectHTMLAttributes<HTMLSelectElement>) {
     <select
       {...props}
       className={cn(
-        "h-10 w-full rounded-full border border-[--metis-control-border] bg-[--metis-control-bg] px-4 text-sm text-[--metis-text-primary] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-focus-ring] disabled:cursor-not-allowed disabled:border-[--metis-control-disabled-border] disabled:bg-[--metis-control-disabled-bg] disabled:text-[--metis-control-disabled-fg] disabled:shadow-none disabled:opacity-100",
+        "h-10 w-full cursor-pointer rounded-full border border-[--metis-control-border] bg-[--metis-control-bg] px-4 text-sm text-[--metis-text-primary] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-focus-ring] hover:border-[--metis-control-border-hover] hover:bg-[var(--metis-control-hover-bg)] disabled:cursor-not-allowed disabled:border-[--metis-control-disabled-border] disabled:bg-[--metis-control-disabled-bg] disabled:text-[--metis-control-disabled-fg] disabled:opacity-100 disabled:shadow-none disabled:hover:border-[--metis-control-disabled-border] disabled:hover:bg-[--metis-control-disabled-bg]",
         props.className,
       )}
     />
