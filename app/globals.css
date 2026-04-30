@@ -49,6 +49,72 @@
   --metis-primary-border-disabled: rgb(255 255 255 / 0.12);
   --metis-primary-text-disabled: color-mix(in oklab, var(--metis-paper-muted) 78%, var(--metis-paper));
   --metis-primary-inset-disabled: rgb(255 255 255 / 0.1);
+
+  /*
+   * Slice 1: Role-based hierarchy tokens (minimum viable layer).
+   * Rule: Surface tokens define hierarchy. Action tokens define priority.
+   * Control tokens define state. Semantic tokens define meaning. Focus tokens define accessibility.
+   */
+
+  /* Surface */
+  --metis-surface-page: var(--metis-frame);
+  --metis-surface-card: var(--card);
+  --metis-surface-rail: color-mix(in oklab, var(--card) 78%, black 22%);
+  --metis-surface-toolbar: color-mix(in oklab, var(--card) 68%, black 32%);
+  --metis-surface-elevated: color-mix(in oklab, var(--card) 86%, white 14%);
+  --metis-surface-disabled: rgba(255, 255, 255, 0.03);
+
+  /* Text */
+  --metis-text-primary: var(--metis-paper);
+  --metis-text-secondary: var(--metis-paper-muted);
+  --metis-text-tertiary: var(--metis-ink-soft);
+  --metis-text-disabled: rgba(255, 255, 255, 0.35);
+  --metis-text-on-accent: var(--metis-dark);
+
+  /* Action */
+  --metis-action-primary-bg: var(--metis-brass);
+  --metis-action-primary-fg: var(--metis-text-on-accent);
+  --metis-action-primary-border: rgba(0, 0, 0, 0);
+  --metis-action-secondary-bg: transparent;
+  --metis-action-secondary-fg: var(--metis-text-primary);
+  --metis-action-secondary-border: rgba(255, 255, 255, 0.1);
+  --metis-action-ghost-fg: var(--metis-text-secondary);
+  --metis-action-disabled-bg: rgba(255, 255, 255, 0.02);
+  --metis-action-disabled-fg: var(--metis-text-disabled);
+  --metis-action-disabled-border: rgba(255, 255, 255, 0.08);
+
+  /* Control state */
+  --metis-control-hover-bg: rgb(255 255 255 / 0.22);
+  --metis-control-active-bg: rgba(255, 255, 255, 0.1);
+  --metis-control-active-border: rgba(255, 255, 255, 0.16);
+  --metis-control-thumb: rgba(255, 255, 255, 0.7);
+  --metis-control-disabled-bg: rgba(255, 255, 255, 0.02);
+  --metis-control-disabled-border: rgba(255, 255, 255, 0.1);
+  --metis-control-disabled-fg: var(--metis-text-disabled);
+
+  /* Semantic/status */
+  --metis-status-info-bg: var(--metis-info-bg);
+  --metis-status-info-fg: var(--metis-paper);
+  --metis-status-info-border: var(--metis-info-border);
+  --metis-status-success-bg: rgba(36, 165, 106, 0.14);
+  --metis-status-success-fg: rgba(255, 255, 255, 0.92);
+  --metis-status-success-border: rgba(36, 165, 106, 0.32);
+  --metis-status-warning-bg: rgba(245, 158, 11, 0.14);
+  --metis-status-warning-fg: rgba(255, 255, 255, 0.92);
+  --metis-status-warning-border: rgba(245, 158, 11, 0.34);
+  --metis-status-danger-bg: rgba(244, 63, 94, 0.14);
+  --metis-status-danger-fg: rgba(255, 255, 255, 0.92);
+  --metis-status-danger-border: rgba(244, 63, 94, 0.34);
+  --metis-status-neutral-bg: rgba(255, 255, 255, 0.06);
+  --metis-status-neutral-fg: rgba(255, 255, 255, 0.86);
+  --metis-status-neutral-border: rgba(255, 255, 255, 0.12);
+
+  /* Focus/outline */
+  --metis-focus-ring: color-mix(in oklab, var(--metis-brass) 70%, transparent);
+  --metis-focus-ring-info: var(--metis-info-ring);
+  --metis-focus-ring-danger: color-mix(in oklab, rgb(244 63 94) 62%, transparent);
+  --metis-outline-subtle: rgba(255, 255, 255, 0.08);
+  --metis-outline-strong: rgba(255, 255, 255, 0.16);
   --shadow-card: 0 24px 72px rgba(0, 0, 0, 0.26);
   --background: var(--metis-frame);
   --foreground: var(--metis-paper);

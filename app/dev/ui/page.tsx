@@ -1,6 +1,13 @@
+"use client";
+
 import { MetisShell, ConfidencePill, ReadinessPill, SurfaceCard } from "@/components/MetisShell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/icon-button";
+import { ControlField, ControlHelper, ControlLabel, ControlSelect } from "@/components/ui/control";
+import { SegmentedControl } from "@/components/ui/segmented-control";
+import { Switch } from "@/components/ui/switch";
+import { AiProvenance } from "@/components/ui/ai-provenance";
 import { CollapsibleSection } from "@/components/review/CollapsibleSection";
 import { DenseSection } from "@/components/review/DenseSection";
 import { ReviewBanner } from "@/components/review/ReviewBanner";
@@ -150,6 +157,196 @@ export default function MetisUiDiagnosticsPage() {
           </div>
 
           <div className="space-y-6 px-6 py-6 sm:px-7 sm:py-7">
+            <DenseSection title="Control foundations (Slice 1)">
+              <p className="text-sm leading-7 text-[--metis-paper-muted]">
+                Canonical examples for Metis control sizing, action hierarchy, and provenance motifs. Product pages should converge on these patterns.
+              </p>
+
+              <div className="mt-5 space-y-6">
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <div className="space-y-3 rounded-[1.25rem] border border-white/10 bg-black/10 px-4 py-4">
+                    <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Button hierarchy</p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button className="h-10 rounded-full px-5">Primary action</Button>
+                      <Button variant="outline" className="h-10 rounded-full px-5">
+                        Secondary action
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="h-10 rounded-full border-[--metis-status-info-border] bg-[--metis-status-info-bg] px-5 text-[--metis-status-info-fg] shadow-none hover:bg-[rgba(77,152,255,0.18)]"
+                      >
+                        Info action (experimental)
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="h-10 rounded-full border-[--metis-outline-subtle] bg-transparent px-5 text-[--metis-action-ghost-fg] shadow-none hover:border-[--metis-outline-strong] hover:bg-white/5 hover:text-[--metis-text-primary]"
+                      >
+                        Tertiary / link-style
+                      </Button>
+                      <Button disabled className="h-10 rounded-full px-5">
+                        Disabled (primary)
+                      </Button>
+                      <Button disabled variant="outline" className="h-10 rounded-full px-5">
+                        Disabled (secondary)
+                      </Button>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button className="h-10 rounded-full px-5">
+                        <span className="inline-block h-4 w-4 rounded bg-black/25" aria-hidden />
+                        Icon + label
+                      </Button>
+                      <IconButton label="Icon-only (outline)" icon={<span className="h-4 w-4 rounded bg-white/25" aria-hidden />} />
+                      <IconButton
+                        disabled
+                        label="Icon-only (outline, disabled)"
+                        icon={<span className="h-4 w-4 rounded bg-white/18" aria-hidden />}
+                      />
+                      <IconButton
+                        label="Icon-only (primary)"
+                        variant="default"
+                        icon={<span className="h-4 w-4 rounded bg-black/20" aria-hidden />}
+                      />
+                      <IconButton
+                        disabled
+                        label="Icon-only (primary, disabled)"
+                        variant="default"
+                        icon={<span className="h-4 w-4 rounded bg-black/15" aria-hidden />}
+                      />
+                    </div>
+                    <div className="pt-1">
+                      <ControlHelper>
+                        Brass = primary/high-trust/identity accent. Blue/info = provenance, AI-enhanced indicators, contextual information, and occasional informational actions. Neutral = secondary controls, structure, and artifact content. Amber = warning (not brand brass). Rose-red = critical/destructive/risk. Secondary actions should generally be neutral, not brass. Disabled states use dedicated tokens and should never rely on opacity alone.
+                      </ControlHelper>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3 rounded-[1.25rem] border border-white/10 bg-black/10 px-4 py-4">
+                    <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Sizing system</p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button className="h-9 rounded-full px-4 text-sm">Compact</Button>
+                      <Button className="h-10 rounded-full px-5">Default</Button>
+                      <Button className="h-11 rounded-full px-6 text-base">Large</Button>
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <ControlField label="Select" helper="Labels have breathing room; helper text is secondary.">
+                        <ControlSelect defaultValue="a" aria-label="Example select">
+                          <option value="a">Option A</option>
+                          <option value="b">Option B</option>
+                        </ControlSelect>
+                      </ControlField>
+                      <ControlField label="Select (disabled)">
+                        <ControlSelect disabled defaultValue="a" aria-label="Example select disabled">
+                          <option value="a">Disabled</option>
+                        </ControlSelect>
+                      </ControlField>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <div className="space-y-3 rounded-[1.25rem] border border-white/10 bg-black/10 px-4 py-4">
+                    <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Segmented controls (view/mode)</p>
+                    <div className="grid gap-3">
+                      <SegmentedControl
+                        label="Original / AI-enhanced"
+                        value={"original"}
+                        options={[
+                          { id: "original", label: "Original" },
+                          { id: "ai", label: "AI-enhanced" },
+                        ]}
+                        onChange={() => {}}
+                      />
+                      <SegmentedControl
+                        label="Full / Executive"
+                        value={"full"}
+                        options={[
+                          { id: "full", label: "Full" },
+                          { id: "executive", label: "Executive" },
+                        ]}
+                        onChange={() => {}}
+                      />
+                      <SegmentedControl
+                        label="Disabled example"
+                        value={"original"}
+                        options={[
+                          { id: "original", label: "Original" },
+                          { id: "ai", label: "AI-enhanced" },
+                        ]}
+                        disabled
+                        onChange={() => {}}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-3 rounded-[1.25rem] border border-white/10 bg-black/10 px-4 py-4">
+                    <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Switch (binary state)</p>
+                    <div className="flex flex-wrap items-center gap-4">
+                      <div className="space-y-1">
+                        <ControlLabel>Setting</ControlLabel>
+                        <div className="flex items-center gap-3">
+                          <Switch checked={false} onCheckedChange={() => {}} aria-label="Off switch example" />
+                          <span className="text-sm text-[--metis-paper-muted]">Off</span>
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <ControlLabel>Setting</ControlLabel>
+                        <div className="flex items-center gap-3">
+                          <Switch checked onCheckedChange={() => {}} aria-label="On switch example" />
+                          <span className="text-sm text-[--metis-paper-muted]">On</span>
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <ControlLabel>Setting (disabled)</ControlLabel>
+                        <div className="flex items-center gap-3">
+                          <Switch checked onCheckedChange={() => {}} disabled aria-label="Disabled ON switch example" />
+                          <span className="text-sm text-[--metis-paper-muted]">Disabled (On)</span>
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <ControlLabel>Setting (disabled)</ControlLabel>
+                        <div className="flex items-center gap-3">
+                          <Switch checked={false} onCheckedChange={() => {}} disabled aria-label="Disabled OFF switch example" />
+                          <span className="text-sm text-[--metis-paper-muted]">Disabled (Off)</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="pt-1">
+                      <ControlHelper>Switches are for true on/off state. Segmented controls are for view/mode selection.</ControlHelper>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <div className="space-y-3 rounded-[1.25rem] border border-white/10 bg-black/10 px-4 py-4">
+                    <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">AI provenance motif (subtle)</p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <AiProvenance mode="original" />
+                      <AiProvenance mode="ai" />
+                    </div>
+                    <div className="pt-1">
+                      <ControlHelper>Blue/info is used for provenance and context — not approval. Avoid green badges for AI.</ControlHelper>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3 rounded-[1.25rem] border border-white/10 bg-black/10 px-4 py-4">
+                    <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Surface hierarchy</p>
+                    <div className="grid gap-3">
+                      <div className="rounded-[1.25rem] border border-white/10 bg-[rgba(0,0,0,0.14)] px-4 py-3">
+                        <p className="text-xs text-[--metis-paper-muted]">Controls toolbar surface</p>
+                      </div>
+                      <div className="rounded-[1.25rem] border border-white/10 bg-[rgba(0,0,0,0.10)] px-4 py-3">
+                        <p className="text-xs text-[--metis-paper-muted]">Artifact/output surface</p>
+                      </div>
+                      <div className="rounded-[1.25rem] border border-[--metis-info-border] bg-[--metis-info-bg] px-4 py-3">
+                        <p className="text-xs text-[--metis-paper-muted]">Info/context surface (blue)</p>
+                      </div>
+                      <ReviewBanner tone="warning" title="Warning surface" body="Warning remains amber/red — separate from info blue." />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </DenseSection>
+
             <DenseSection title="Layer stack samples">
               <p className="text-sm leading-7 text-[--metis-paper-muted]">
                 Intended semantic layers: page frame → primary surface → nested panels/controls → rails/info panels.

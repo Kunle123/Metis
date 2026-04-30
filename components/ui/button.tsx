@@ -11,12 +11,12 @@ type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
 
 export function Button({ className, variant = "default", asChild, ...props }: Props) {
   const base =
-    "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0e0f] disabled:pointer-events-none";
+    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-focus-ring] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0e0f] disabled:pointer-events-none disabled:cursor-not-allowed";
 
   const variantClass =
     variant === "outline"
-      ? "border border-[var(--metis-secondary-border)] bg-[var(--metis-secondary-bg)] text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-secondary-inset)] hover:border-[var(--metis-secondary-border-hover)] hover:bg-[var(--metis-secondary-bg-hover)] hover:shadow-[inset_0_1px_0_var(--metis-secondary-inset-hover)] disabled:border-[var(--metis-secondary-border-disabled)] disabled:bg-[var(--metis-secondary-bg-disabled)] disabled:text-[--metis-paper-muted] disabled:shadow-none disabled:opacity-[0.88]"
-      : "border border-transparent bg-[--metis-brass] text-[--metis-dark] shadow-[0_3px_14px_rgba(0,0,0,0.48),0_0_0_1px_rgba(224,183,111,0.22)] ring-1 ring-inset ring-white/18 hover:bg-[--metis-brass-soft] hover:shadow-[0_4px_18px_rgba(0,0,0,0.52),0_0_0_1px_rgba(224,183,111,0.28)] disabled:border-[var(--metis-primary-border-disabled)] disabled:bg-[var(--metis-primary-bg-disabled)] disabled:text-[var(--metis-primary-text-disabled)] disabled:shadow-[inset_0_1px_0_var(--metis-primary-inset-disabled),0_2px_8px_rgba(0,0,0,0.28)] disabled:ring-0 disabled:opacity-100";
+      ? "border border-[--metis-action-secondary-border] bg-[--metis-action-secondary-bg] text-[--metis-action-secondary-fg] shadow-none hover:border-[--metis-outline-strong] hover:bg-[rgba(255,255,255,0.05)] disabled:border-[--metis-action-disabled-border] disabled:bg-[--metis-action-disabled-bg] disabled:text-[--metis-action-disabled-fg] disabled:opacity-100"
+      : "border border-[--metis-action-primary-border] bg-[--metis-action-primary-bg] text-[--metis-action-primary-fg] shadow-[0_12px_30px_rgba(0,0,0,0.66)] hover:bg-[--metis-accent-soft] hover:shadow-[0_16px_36px_rgba(0,0,0,0.72)] active:translate-y-px disabled:bg-[--metis-action-disabled-bg] disabled:border-[--metis-action-disabled-border] disabled:text-[--metis-action-disabled-fg] disabled:shadow-none disabled:opacity-100 disabled:translate-y-0";
 
   if (asChild) {
     // Minimal "asChild" support: allow passing an <a> via children with className applied.
