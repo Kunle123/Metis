@@ -248,7 +248,7 @@ export function generateInternalStaffUpdateArtifact(input: InternalStaffMessageG
     metadata: {
       publicHeadline: cleanText(issue.title) || "Internal staff update",
       lastRevisionLabel: nowLabel(),
-      openGapsLabel: `${open.length} open validation items`,
+      openGapsLabel: `${open.length} open question(s) / validation items`,
       audienceLabel,
       lensSource,
       issueLevelAudienceNote,

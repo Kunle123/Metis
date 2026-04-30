@@ -18,6 +18,12 @@ export type MessageVariantSection = z.infer<typeof MessageVariantSectionSchema>;
 export const MessageVariantWordingPolishSchema = z.enum(["deterministic_only", "ai_polished"]);
 export type MessageVariantWordingPolish = z.infer<typeof MessageVariantWordingPolishSchema>;
 
+/**
+ * Optional back-compat fields to support comparing deterministic vs AI-enhanced copy.
+ * Stored inside the artifact JSON so we avoid DB schema changes.
+ */
+const DeterministicSectionBodiesByIdSchema = z.record(z.string(), z.string());
+
 const CommonArtifactMetadataSchema = z.object({
   publicHeadline: z.string(),
   lastRevisionLabel: z.string(),
@@ -33,6 +39,10 @@ const CommonArtifactMetadataSchema = z.object({
   lensEnrichmentNote: z.string().nullable().optional(),
   /** Set when Messages optional AI wording pass runs; omit on older deterministic-only rows. */
   aiWordingPolish: MessageVariantWordingPolishSchema.optional(),
+  /** True when both deterministic + AI-enhanced bodies are stored for comparison. */
+  aiComparisonAvailable: z.boolean().optional(),
+  /** Snapshot of deterministic section bodies keyed by section id (present when aiComparisonAvailable). */
+  deterministicSectionBodiesById: DeterministicSectionBodiesByIdSchema.optional(),
 });
 
 const GuardrailsSchema = z.object({

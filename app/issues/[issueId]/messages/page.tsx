@@ -5,6 +5,13 @@ import { MetisShell, SurfaceCard } from "@/components/MetisShell";
 import { prisma } from "@/lib/db/prisma";
 import { getIssueById } from "@/lib/issues/getIssueContext";
 import { MessageVariantArtifactSchema, MessageVariantTemplateIdSchema } from "@metis/shared/messageVariant";
+import {
+  buildAudienceSnapshot,
+  generateExternalCustomerResidentStudentArtifact,
+  type ExternalAudienceInput,
+} from "@/lib/messages/generateExternalCustomerUpdate";
+import { generateInternalStaffUpdateArtifact, type AudienceInput as InternalAudienceInput } from "@/lib/messages/generateInternalStaffUpdate";
+import { generateMediaHoldingLineArtifact, type AudienceInput as MediaAudienceInput } from "@/lib/messages/generateMediaHoldingLine";
 
 import { MessagesPanel } from "./messages-panel";
 
@@ -101,6 +108,39 @@ export default async function IssueMessagesPage({
       }
     : null;
 
+  // Deterministic preview is computed from the issue record on every page load.
+  // Saving a MessageVariant row remains an explicit action (history/activity).
+  const stakeholderGroup = selectedStakeholderGroupId ? activeGroups.find((g) => g.id === selectedStakeholderGroupId) ?? null : null;
+  const issueLens = null;
+  const [sources, gaps, internalInputs] = await Promise.all([
+    prisma.source.findMany({ where: { issueId: issue.id }, orderBy: [{ createdAt: "desc" }] }),
+    prisma.gap.findMany({ where: { issueId: issue.id }, orderBy: [{ updatedAt: "desc" }] }),
+    prisma.internalInput.findMany({ where: { issueId: issue.id }, orderBy: [{ createdAt: "desc" }] }),
+  ]);
+
+  let audience: ExternalAudienceInput;
+  let internalAudience: InternalAudienceInput;
+  let mediaAudience: MediaAudienceInput;
+  if (stakeholderGroup) {
+    audience = { kind: "group", group: stakeholderGroup, issueLens };
+    internalAudience = { kind: "group", group: stakeholderGroup, issueLens };
+    mediaAudience = { kind: "group", group: stakeholderGroup, issueLens };
+  } else {
+    audience = { kind: "setup" };
+    internalAudience = { kind: "setup" };
+    mediaAudience = { kind: "setup" };
+  }
+
+  const deterministicPreview = (() => {
+    if (templateId === "external_customer_resident_student") {
+      return generateExternalCustomerResidentStudentArtifact({ issue, sources, gaps, audience });
+    }
+    if (templateId === "media_holding_line") {
+      return generateMediaHoldingLineArtifact({ issue, gaps, audience: mediaAudience });
+    }
+    return generateInternalStaffUpdateArtifact({ issue, sources, gaps, internalInputs, audience: internalAudience });
+  })();
+
   return (
     <MetisShell
       activePath="/messages"
@@ -115,14 +155,13 @@ export default async function IssueMessagesPage({
       }}
     >
       <SurfaceCard className="overflow-hidden">
-        <div className="border-b border-white/8 bg-[rgba(255,255,255,0.025)] px-6 py-5 sm:px-7">
-          <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper]">Messages</h2>
-          <p className="mt-2 max-w-3xl text-sm leading-7 text-[--metis-paper-muted]">
-            This is not a leadership brief. External updates are deterministic copy derived from the issue record, sources, open gaps, and your
-            selected organisation-level audience group defaults (Settings → Audience groups). Internal observations are never quoted or paraphrased here.
-          </p>
+        <div className="border-b border-white/8 bg-[rgba(255,255,255,0.02)] px-6 py-4 sm:px-7 sm:py-4">
+          <div className="flex flex-wrap items-baseline justify-between gap-3">
+            <h2 className="font-[Cormorant_Garamond] text-[1.8rem] leading-none text-[--metis-paper]">Messages</h2>
+            <p className="text-xs text-[--metis-paper-muted]">Deterministic preview + optional AI-enhanced view.</p>
+          </div>
         </div>
-        <div className="px-6 py-6 sm:px-7 sm:py-7">
+        <div className="px-6 py-5 sm:px-7 sm:py-6">
           <MessagesPanel
             issueId={issue.id}
             issueTitle={issue.title}
@@ -133,6 +172,7 @@ export default async function IssueMessagesPage({
             selectedAudienceGroupLabel={selectedAudienceGroupLabel}
             initialLatest={initialLatest}
             messagesAiCleanupEnabled={messagesAiCleanupEnabled}
+            deterministicPreview={deterministicPreview}
           />
           <div className="mt-8 border-t border-white/8 pt-6">
             <Link href={`/issues/${issue.id}/export`} className="text-sm text-[--metis-brass-soft] underline-offset-4 hover:underline">

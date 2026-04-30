@@ -226,7 +226,7 @@ export function generateExternalCustomerResidentStudentArtifact(input: ExternalM
     metadata: {
       publicHeadline: cleanText(issue.title) || "Service update",
       lastRevisionLabel: nowLabel(),
-      openGapsLabel: `${open.length} open on the issue list`,
+      openGapsLabel: `${open.length} open question(s) on the issue list`,
       audienceLabel,
       lensSource,
       issueLevelAudienceNote,

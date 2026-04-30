@@ -163,7 +163,7 @@ export function generateMediaHoldingLineArtifact(input: MediaHoldingLineGenerati
     metadata: {
       publicHeadline: cleanText(issue.title) || "Media holding line",
       lastRevisionLabel: nowLabel(),
-      openGapsLabel: `${open.length} under review`,
+      openGapsLabel: `${open.length} open question(s) under review`,
       audienceLabel,
       lensSource,
       issueLevelAudienceNote,

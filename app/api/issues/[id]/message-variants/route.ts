@@ -36,6 +36,12 @@ function readStoredWordingPolish(artifactUnknown: unknown): MessageVariantWordin
   return p.data.metadata.aiWordingPolish === "ai_polished" ? "ai_polished" : "deterministic_only";
 }
 
+function deterministicBodiesById(artifact: MessageVariantArtifact): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const s of artifact.sections) out[s.id] = s.body;
+  return out;
+}
+
 /** Server flag: defaults OFF unless env is exactly `"true"`. */
 function desiredWordingPolish(improveRequest: boolean | undefined): MessageVariantWordingPolish {
   const wants = Boolean(improveRequest);
@@ -247,6 +253,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     metadata: {
       ...deterministic.metadata,
       aiWordingPolish: "deterministic_only",
+      aiComparisonAvailable: false,
     },
   };
 
@@ -297,6 +304,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
           metadata: {
             ...mergedArtifact.metadata,
             aiWordingPolish: "ai_polished",
+            aiComparisonAvailable: true,
+            deterministicSectionBodiesById: deterministicBodiesById(deterministic),
           },
         });
       }

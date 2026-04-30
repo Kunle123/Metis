@@ -70,6 +70,42 @@ function polishedPreservesUncertaintyBodies(polishedJoin: string) {
 
 const HASH_HEADING_REGEX = /^#{1,6}\s/im;
 
+function normalizeForSimilarity(text: string) {
+  return text
+    .replaceAll("\\n", "\n")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+}
+
+function bigramSet(text: string) {
+  const words = normalizeForSimilarity(text).split(/\s+/).filter(Boolean);
+  const out = new Set<string>();
+  for (let i = 0; i < words.length - 1; i++) {
+    out.add(`${words[i]} ${words[i + 1]}`);
+  }
+  return out;
+}
+
+function jaccard(a: Set<string>, b: Set<string>) {
+  if (a.size === 0 && b.size === 0) return 1;
+  if (a.size === 0 || b.size === 0) return 0;
+  let inter = 0;
+  for (const x of a) if (b.has(x)) inter++;
+  const union = a.size + b.size - inter;
+  return union === 0 ? 1 : inter / union;
+}
+
+function isNearIdentical(detJoined: string, polishedJoined: string) {
+  const det = normalizeForSimilarity(detJoined);
+  const pol = normalizeForSimilarity(polishedJoined);
+  if (!det || !pol) return true;
+  if (det === pol) return true;
+  // Similarity heuristic: bigram Jaccard close to 1 means minimal editorial change.
+  const sim = jaccard(bigramSet(det), bigramSet(pol));
+  return sim > 0.975;
+}
+
 /** Server-only: callers must gate on MESSAGES_AI_CLEANUP_ENABLED and OPENAI_API_KEY */
 export async function cleanupMessageVariantsSections(
   input: MessageDraftCleanupPayload,
@@ -119,18 +155,31 @@ export async function cleanupMessageVariantsSections(
         {
           role: "system",
           content: [
-            `You polish external/internal/media draft message copy for clarity and readability in plain UK English only.`,
+            `You rewrite draft message copy for clarity, flow, and professionalism in plain UK English.`,
             `You must respond with valid JSON matching the user's schema.`,
             "",
             `Hard rules (violations invalidate output):`,
             `- Do NOT add facts, figures, organisations, people's names, dates, causes, impacts, timelines, commitments, or legal conclusions not already present.`,
             `- Do NOT remove or soften uncertainty / open-question acknowledgement when the deterministic section already conveys it.`,
             `- Do NOT answer or resolve itemised open clarifications.`,
-            `- Do NOT change the organisational purpose of any section title or reorder sections.`,
-            `- Preserve bullet structure where the deterministic body clearly uses bullets; do not invent lists that read as commitments.`,
+            `- Do NOT change section IDs, section titles, or section order.`,
+            `- You MAY rewrite sentence structure substantially within a section, reduce repetition, and tighten wording.`,
+            `- You MAY reframe internal/product-like phrasing into audience-facing language appropriate to the template (external / staff / media).`,
+            `- You MAY restructure bullets into fewer clearer bullets if it does not add commitments or new claims.`,
             `- Do NOT add markdown headings (#) unless headings already existed in that section.`,
             `- Do NOT mention AI, GPT, prompting, automation, Metis.`,
-            `- Keep broadly similar combined length (+/- a small margin): do not bloat.`,
+            `- Keep broadly similar combined length; moderate shortening is encouraged when it improves clarity.`,
+            "",
+            `Editorial intent (preferred when present):`,
+            `- Remove robotic/internal phrasing and reduce repetition.`,
+            `- Improve clarity of what is confirmed vs what remains open.`,
+            `- Calm, professional tone; avoid incident/crisis phrasing unless present in input.`,
+            "",
+            `Examples of phrases to improve when present (without changing meaning):`,
+            `- "Our team is actively working on this matter (current status: Active). Posture: Active."`,
+            `- "No specific actions are recorded in the issue template yet."`,
+            `- "Some operational details are still being confirmed."`,
+            `- Repetitive "We are still working to..." bullets.`,
           ].join("\n"),
         },
         {
@@ -188,14 +237,18 @@ export async function cleanupMessageVariantsSections(
 
   if (polishedBodiesJoin.trim().length === 0) return null;
 
-  const maxCombined = Math.round(detJoined.length * 1.45) + 400;
-  if (polishedBodiesJoin.length > maxCombined + 600) return null;
+  // Allow more meaningful rewrites while still preventing runaway expansion.
+  const maxCombined = Math.round(detJoined.length * 1.8) + 600;
+  if (polishedBodiesJoin.length > maxCombined) return null;
 
   if (outputIntroducesNewNumbers(polishedBodiesJoin, allowedNumbers)) return null;
 
   if (deterministicContainedUncertaintyBodies(detJoined) && !polishedPreservesUncertaintyBodies(polishedBodiesJoin)) {
     return null;
   }
+
+  // If the model made only microscopic edits, treat as low-value (do not store as AI-enhanced).
+  if (isNearIdentical(detJoined, polishedBodiesJoin)) return null;
 
   return { sections: merged, notes: safe.data.notes || undefined };
 }

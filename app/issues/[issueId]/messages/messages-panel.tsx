@@ -11,10 +11,8 @@ import { renderMessageVariantMarkdown } from "@/lib/messages/generateExternalCus
 import { renderInternalStaffUpdateMarkdown } from "@/lib/messages/generateInternalStaffUpdate";
 import { renderMediaHoldingLineMarkdown } from "@/lib/messages/generateMediaHoldingLine";
 import { CollapsibleSection } from "@/components/review/CollapsibleSection";
-import { DenseSection } from "@/components/review/DenseSection";
 import { ReviewBanner } from "@/components/review/ReviewBanner";
 import { ReviewRailCard } from "@/components/review/ReviewRailCard";
-import { ReviewToolbar } from "@/components/review/ReviewToolbar";
 
 type AudienceGroupOption = { id: string; label: string };
 
@@ -33,6 +31,10 @@ function normalizeBodyText(text: string) {
   return text.replaceAll("\\n", "\n");
 }
 
+function normalizeForDiff(text: string) {
+  return normalizeBodyText(text).replace(/\s+/g, " ").trim();
+}
+
 export function MessagesPanel({
   issueId,
   issueTitle,
@@ -43,6 +45,7 @@ export function MessagesPanel({
   selectedAudienceGroupLabel,
   initialLatest,
   messagesAiCleanupEnabled,
+  deterministicPreview,
 }: {
   issueId: string;
   issueTitle: string;
@@ -55,13 +58,17 @@ export function MessagesPanel({
   initialLatest: LatestPayload;
   /** Server flag MESSAGES_AI_CLEANUP_ENABLED==="true"; when false, AI toggle hidden. */
   messagesAiCleanupEnabled: boolean;
+  /** Deterministic preview computed from issue record (no DB write). */
+  deterministicPreview: MessageVariantArtifact;
 }) {
   const router = useRouter();
   const pathname = usePathname();
   const [latest, setLatest] = useState<LatestPayload>(initialLatest);
   const [loading, setLoading] = useState(false);
   const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
-  const [improveWithAi, setImproveWithAi] = useState(false);
+  const [aiToggleOn, setAiToggleOn] = useState(false);
+  const [aiRow, setAiRow] = useState<LatestPayload>(null);
+  const [aiNote, setAiNote] = useState<string | null>(null);
 
   const selectValue = selectedStakeholderGroupId === null ? "" : selectedStakeholderGroupId;
 
@@ -77,21 +84,47 @@ export function MessagesPanel({
     selectedTemplateId,
   ]);
 
+  useEffect(() => {
+    // Changing template/audience resets AI view + cached AI row for this selection.
+    setAiToggleOn(false);
+    setAiRow(null);
+    setAiNote(null);
+  }, [selectedTemplateId, selectedStakeholderGroupId]);
+
+  const canShowAi = Boolean(messagesAiCleanupEnabled);
+
+  const compareStats = useMemo(() => {
+    const a = aiRow?.artifact;
+    if (!a) return null;
+    const det = a.metadata.deterministicSectionBodiesById;
+    const canCompare = Boolean(a.metadata.aiComparisonAvailable && det && typeof det === "object");
+    if (!canCompare) return null;
+    const changes = a.sections.filter((s) => normalizeForDiff(s.body) !== normalizeForDiff(String(det?.[s.id] ?? ""))).length;
+    return { changes, total: a.sections.length, veryClose: changes === 0 };
+  }, [aiRow]);
+
+  const visibleArtifact = useMemo(() => {
+    // OFF => always deterministic preview (no DB write required).
+    if (!aiToggleOn) return deterministicPreview;
+    // ON => show AI-enhanced if we have it; otherwise fall back to deterministic while loading/generating.
+    return aiRow?.artifact ?? deterministicPreview;
+  }, [aiToggleOn, aiRow, deterministicPreview]);
+
   const inSync = useMemo(() => {
     if (!latest) return false;
     return new Date(latest.generatedFromIssueUpdatedAt).getTime() === new Date(issueUpdatedAt).getTime();
   }, [latest, issueUpdatedAt]);
 
   const markdown = useMemo(() => {
-    if (!latest) return "";
-    if (latest.artifact.templateId === "internal_staff_update") {
-      return renderInternalStaffUpdateMarkdown(issueTitle, latest.artifact);
+    if (!visibleArtifact) return "";
+    if (visibleArtifact.templateId === "internal_staff_update") {
+      return renderInternalStaffUpdateMarkdown(issueTitle, visibleArtifact);
     }
-    if (latest.artifact.templateId === "media_holding_line") {
-      return renderMediaHoldingLineMarkdown(issueTitle, latest.artifact);
+    if (visibleArtifact.templateId === "media_holding_line") {
+      return renderMediaHoldingLineMarkdown(issueTitle, visibleArtifact);
     }
-    return renderMessageVariantMarkdown(issueTitle, latest.artifact);
-  }, [latest, issueTitle]);
+    return renderMessageVariantMarkdown(issueTitle, visibleArtifact);
+  }, [visibleArtifact, issueTitle]);
 
   function navigateToLens(nextGroupId: string | null) {
     const q = nextGroupId === null ? "issue" : nextGroupId;
@@ -103,7 +136,7 @@ export function MessagesPanel({
     router.push(`${pathname}?template=${encodeURIComponent(nextTemplateId)}&lens=${encodeURIComponent(q)}`);
   }
 
-  async function generate() {
+  async function saveDeterministicVariant() {
     setLoading(true);
     try {
       const res = await fetch(`/api/issues/${issueId}/message-variants`, {
@@ -113,7 +146,6 @@ export function MessagesPanel({
         body: JSON.stringify({
           templateId: selectedTemplateId,
           stakeholderGroupId: selectedStakeholderGroupId,
-          ...(messagesAiCleanupEnabled ? { improveWithAi } : {}),
         }),
       });
       const data = (await res.json().catch(() => ({}))) as unknown;
@@ -139,12 +171,78 @@ export function MessagesPanel({
         artifact: row.artifact,
       });
       router.refresh();
-      setImproveWithAi(false);
     } catch (e) {
       console.error(e);
       alert(e instanceof Error ? e.message : "Generation failed");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function ensureAiEnhanced(): Promise<boolean> {
+    if (!messagesAiCleanupEnabled) return false;
+    // If we already have an AI row for this view state, keep it.
+    if (aiRow?.artifact?.metadata?.aiComparisonAvailable) return true;
+    setLoading(true);
+    setAiNote(null);
+    try {
+      const res = await fetch(`/api/issues/${issueId}/message-variants`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          templateId: selectedTemplateId,
+          stakeholderGroupId: selectedStakeholderGroupId,
+          improveWithAi: true,
+        }),
+      });
+      const data = (await res.json().catch(() => ({}))) as unknown;
+      if (!res.ok) {
+        throw new Error("ai_failed");
+      }
+      const row = data as {
+        id: string;
+        versionNumber: number;
+        generatedFromIssueUpdatedAt: string;
+        stakeholderGroupId: string | null;
+        issueStakeholderId: string | null;
+        artifact: MessageVariantArtifact;
+      };
+      setAiRow({
+        id: row.id,
+        versionNumber: row.versionNumber,
+        generatedFromIssueUpdatedAt: row.generatedFromIssueUpdatedAt,
+        stakeholderGroupId: row.stakeholderGroupId,
+        issueStakeholderId: row.issueStakeholderId,
+        artifact: row.artifact,
+      });
+      router.refresh();
+      const hasCompare = Boolean(row.artifact.metadata.aiComparisonAvailable && row.artifact.metadata.deterministicSectionBodiesById);
+      if (!hasCompare) {
+        setAiNote("AI-enhanced text was very close to the original; showing the original draft.");
+        return false;
+      }
+      return true;
+    } catch (e) {
+      console.error(e);
+      setAiNote("AI-enhanced version was unavailable; showing the original draft.");
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function toggleAi(nextOn: boolean) {
+    setAiNote(null);
+    if (!nextOn) {
+      setAiToggleOn(false);
+      return;
+    }
+    // Turning ON should lazily generate/cached AI-enhanced version.
+    setAiToggleOn(true);
+    const ok = await ensureAiEnhanced();
+    if (!ok) {
+      setAiToggleOn(false);
     }
   }
 
@@ -173,142 +271,138 @@ export function MessagesPanel({
       : "Using the selected audience group defaults from Settings → Audience groups.";
 
   return (
-    <div className="space-y-5">
-      <ReviewToolbar
-        left={
-          <div className="space-y-3">
-            <div className="grid gap-3 lg:grid-cols-2">
-              <label className="space-y-1.5">
-                <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Template</span>
-                <select
-                  value={selectedTemplateId}
-                  onChange={(e) => navigateToTemplate(e.target.value as MessageVariantTemplateId)}
-                  className="h-10 w-full rounded-full border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
-                >
-                  <option value="external_customer_resident_student">External / customer–resident–student update</option>
-                  <option value="internal_staff_update">Internal / staff update</option>
-                  <option value="media_holding_line">Media / holding line</option>
-                </select>
-              </label>
+    <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="min-w-0 space-y-4">
+        <div className="rounded-[1.25rem] border border-white/10 bg-[rgba(0,0,0,0.14)] px-4 py-4 sm:px-5">
+          <div className="grid gap-3 lg:grid-cols-[minmax(220px,1.2fr)_minmax(220px,1.1fr)_minmax(260px,1fr)]">
+          <label className="space-y-1.5">
+            <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Template</span>
+            <select
+              value={selectedTemplateId}
+              onChange={(e) => navigateToTemplate(e.target.value as MessageVariantTemplateId)}
+              className="h-10 w-full rounded-full border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
+            >
+              <option value="external_customer_resident_student">External / customer–resident–student update</option>
+              <option value="internal_staff_update">Internal / staff update</option>
+              <option value="media_holding_line">Media / holding line</option>
+            </select>
+          </label>
 
-              <label className="space-y-1.5">
-                <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">
-                  Audience group
-                </span>
-                <select
-                  value={selectValue}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    navigateToLens(v === "" ? null : v);
-                  }}
-                  className="h-10 w-full rounded-full border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
-                >
-                  <option value="">General (no audience group)</option>
-                  {audienceGroupOptions.map((o) => (
-                    <option key={o.id} value={o.id}>
-                      {o.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
+          <label className="space-y-1.5">
+            <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Audience group</span>
+            <select
+              value={selectValue}
+              onChange={(e) => {
+                const v = e.target.value;
+                navigateToLens(v === "" ? null : v);
+              }}
+              className="h-10 w-full rounded-full border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
+            >
+              <option value="">General (no audience group)</option>
+              {audienceGroupOptions.map((o) => (
+                <option key={o.id} value={o.id}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </label>
 
-            {messagesAiCleanupEnabled ? (
-              <label className="flex cursor-pointer gap-3 rounded-[1rem] border border-white/12 bg-[rgba(0,0,0,0.1)] px-4 py-3">
-                <input
-                  type="checkbox"
-                  className="mt-1 size-4 rounded border-[var(--metis-control-border)] accent-[--metis-brass]"
-                  checked={improveWithAi}
+          <div className="space-y-1.5">
+            <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Output</span>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex h-10 min-w-[240px] flex-1 items-center rounded-full border border-white/12 bg-[rgba(255,255,255,0.04)] p-1">
+                <button
+                  type="button"
                   disabled={loading}
-                  onChange={(e) => setImproveWithAi(e.target.checked)}
-                />
-                <span className="min-w-0 space-y-1">
-                  <span className="text-sm font-medium text-[--metis-paper]">Improve wording with AI</span>
-                  <span className="block text-xs leading-relaxed text-[--metis-paper-muted]">
-                    Keeps the same facts and uncertainty, but polishes wording for clarity. Applies only to the next generated message when selected
-                    (deterministic drafting remains default).
-                  </span>
-                </span>
-              </label>
-            ) : null}
-
-            <div className="text-sm leading-6 text-[--metis-paper-muted]">
-              <span className="text-[--metis-paper]">Shaping context:</span>{" "}
-              <span className="text-[--metis-paper]">{selectedTemplateId.replaceAll("_", " ")}</span> ·{" "}
-              <span className="text-[--metis-paper]">{selectedAudienceGroupLabel}</span>
-              <div className="mt-1 text-[--metis-paper-muted]">{audienceHelperText}</div>
-              <div className="mt-2">
-                <Link href="/stakeholders" className="text-sm text-[--metis-brass-soft] underline-offset-4 hover:underline">
-                  Manage audience groups →
-                </Link>
+                  onClick={() => void toggleAi(false)}
+                  aria-pressed={!aiToggleOn}
+                  className={`h-8 flex-1 rounded-full px-3 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60 ${
+                    !aiToggleOn ? "bg-white/10 text-[--metis-paper]" : "text-[--metis-paper-muted] hover:text-[--metis-paper]"
+                  }`}
+                >
+                  Original
+                </button>
+                <button
+                  type="button"
+                  disabled={!canShowAi || loading}
+                  onClick={() => void toggleAi(true)}
+                  aria-pressed={aiToggleOn}
+                  className={`h-8 flex-1 rounded-full px-3 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60 ${
+                    aiToggleOn
+                      ? "bg-[rgba(224,183,111,0.22)] text-[--metis-paper]"
+                      : "text-[--metis-paper-muted] hover:text-[--metis-paper]"
+                  } ${!canShowAi ? "cursor-not-allowed opacity-60" : ""}`}
+                >
+                  AI-enhanced
+                </button>
               </div>
+              <Button type="button" variant="outline" className="h-10 rounded-full" disabled={!markdown} onClick={() => void copyMd()}>
+                <Copy className="mr-2 h-4 w-4" />
+                {copyState === "copied" ? "Copied" : copyState === "error" ? "Copy failed" : "Copy"}
+              </Button>
             </div>
           </div>
-        }
-        right={
-          <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-            <Button type="button" className="h-10 rounded-full px-5" disabled={loading} onClick={() => void generate()}>
-              {loading
-                ? "Generating…"
-                : latest
-                  ? selectedTemplateId === "internal_staff_update"
-                    ? "Regenerate staff update"
-                    : selectedTemplateId === "media_holding_line"
-                      ? "Regenerate holding line"
-                      : "Regenerate external update"
-                  : selectedTemplateId === "internal_staff_update"
-                    ? "Generate staff update"
-                    : selectedTemplateId === "media_holding_line"
-                      ? "Generate holding line"
-                      : "Generate external update"}
-            </Button>
-            <Button type="button" variant="outline" className="h-10 rounded-full" disabled={!markdown} onClick={() => void copyMd()}>
-              <Copy className="mr-2 h-4 w-4" />
-              {copyState === "copied" ? "Copied" : copyState === "error" ? "Copy failed" : "Copy Markdown"}
-            </Button>
-          </div>
-        }
-      />
-
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="min-w-0">
-          {latest ? (
-            <div className="space-y-4">
-              <div className="rounded-[1.2rem] border border-white/10 bg-[rgba(0,0,0,0.12)] px-4 py-4 sm:px-5">
-                <p className="font-[Cormorant_Garamond] text-2xl text-[--metis-paper]">{latest.artifact.metadata.publicHeadline}</p>
-              </div>
-
-              <div className="space-y-4">
-                {latest.artifact.sections.map((s, idx) => (
-                  <DenseSection key={s.id} title={s.title} className={idx === 0 ? "border-t-0 pt-0" : undefined}>
-                    <p className="max-w-4xl whitespace-pre-line">{normalizeBodyText(s.body)}</p>
-                  </DenseSection>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className="rounded-[1.2rem] border border-white/10 bg-[rgba(0,0,0,0.1)] px-4 py-4 sm:px-5">
-              <p className="text-sm font-medium text-[--metis-paper]">No draft saved for this template + audience yet.</p>
-              <p className="mt-2 text-sm leading-7 text-[--metis-paper-muted]">
-                Click &quot;Generate&quot; to create deterministic copy for{" "}
-                <span className="text-[--metis-paper]">{selectedAudienceGroupLabel}</span>.
-              </p>
-            </div>
-          )}
         </div>
 
-        <div className="space-y-4">
-          <ReviewRailCard
-            title="Draft status"
-            tone="info"
-            meta={
-              <ReviewBanner
-                title="Draft for review"
-                body="Not approved for circulation. Check for sensitive, legal, personal, security, or unverified claims before using this draft in any channel."
-                tone="warning"
-              />
-            }
-          >
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-white/8 pt-3 text-xs text-[--metis-paper-muted]">
+            <div className="min-w-0">
+              <span className="text-[--metis-paper]">Shaping:</span>{" "}
+              <span className="text-[--metis-paper]">{selectedTemplateId.replaceAll("_", " ")}</span> ·{" "}
+              <span className="text-[--metis-paper]">{selectedAudienceGroupLabel}</span>
+              <span className="ml-2">{audienceHelperText}</span>
+              {aiToggleOn && loading ? <span className="ml-2">· Preparing AI-enhanced…</span> : null}
+              {aiNote ? <span className="ml-2">· {aiNote}</span> : null}
+              {aiToggleOn && compareStats?.veryClose ? <span className="ml-2">· AI-enhanced is very close to the original.</span> : null}
+            </div>
+            <Link href="/stakeholders" className="text-xs text-[--metis-brass-soft] underline-offset-4 hover:underline">
+              Manage audience groups →
+            </Link>
+          </div>
+        </div>
+
+        <div className="rounded-[1.25rem] border border-white/10 bg-[rgba(0,0,0,0.12)] px-4 py-4 sm:px-5">
+          <p className="font-[Cormorant_Garamond] text-[1.85rem] leading-tight text-[--metis-paper]">{deterministicPreview.metadata.publicHeadline}</p>
+        </div>
+
+        <article className="rounded-[1.25rem] border border-white/10 bg-[rgba(0,0,0,0.10)] px-4 py-4 sm:px-5">
+          <div className="space-y-5">
+            {visibleArtifact.sections.map((s) => (
+              <section key={s.id} className="border-t border-white/8 pt-4 first:border-t-0 first:pt-0">
+                <h3 className="text-sm font-semibold text-[--metis-paper]">{s.title}</h3>
+                <p className="mt-2 max-w-4xl whitespace-pre-line text-sm leading-7 text-[--metis-paper-muted]">
+                  {normalizeBodyText(s.body)}
+                </p>
+              </section>
+            ))}
+          </div>
+        </article>
+      </div>
+
+      <div className="space-y-4 xl:mt-[0.1rem]">
+        <ReviewRailCard title="Persist" tone="neutral" meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Save the current deterministic draft for history and export.</p>}>
+          <div className="grid gap-2">
+            <Button type="button" variant="outline" className="h-10 rounded-full" disabled={loading} onClick={() => void saveDeterministicVariant()}>
+              {loading ? "Saving…" : latest ? "Save updated draft" : "Save draft"}
+            </Button>
+            {canShowAi && aiToggleOn && aiRow ? (
+              <Button type="button" variant="outline" className="h-10 rounded-full" disabled={loading} onClick={() => void ensureAiEnhanced()}>
+                Refresh AI-enhanced
+              </Button>
+            ) : null}
+          </div>
+        </ReviewRailCard>
+
+        <ReviewRailCard
+          title="Draft status"
+          tone="info"
+          meta={
+            <ReviewBanner
+              title="Draft for review"
+              body="Not approved for circulation. Check for sensitive, legal, personal, security, or unverified claims before using this draft in any channel."
+              tone="warning"
+            />
+          }
+        >
             <div className="space-y-3 text-sm leading-6 text-[--metis-paper-muted]">
               <div className="flex items-center justify-between gap-3">
                 <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Audience group</span>
@@ -335,44 +429,35 @@ export function MessagesPanel({
                   </div>
                   <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-3">
                     <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Open questions</span>
-                    <span className="text-[--metis-paper]">{latest.artifact.metadata.openGapsLabel}</span>
-                  </div>
-                  <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-3">
-                    <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Draft wording</span>
-                    <span className="text-[--metis-paper]">
-                      {latest.artifact.metadata.aiWordingPolish === "ai_polished" ? "AI-polished draft" : "Deterministic draft"}
-                    </span>
+                    <span className="text-[--metis-paper]">{deterministicPreview.metadata.openGapsLabel}</span>
                   </div>
                 </>
               ) : null}
             </div>
-          </ReviewRailCard>
+        </ReviewRailCard>
 
-          {/* Legacy metadata notes suppressed: Messages uses organisation-level audience groups only. */}
+        {/* Legacy metadata notes suppressed: Messages uses organisation-level audience groups only. */}
 
-          {latest ? (
-            <CollapsibleSection
-              className="border-[--metis-info-border] bg-[--metis-info-bg]"
-              summary={
-                <div className="flex items-center justify-between gap-3">
-                  <h3 className="text-[0.7rem] font-medium uppercase tracking-[0.22em] text-[rgba(176,171,160,0.72)]">
-                    Guardrails (internal)
-                  </h3>
-                  <span className="text-xs text-[--metis-paper-muted]">Show</span>
-                </div>
-              }
-            >
-              <div className="space-y-3">
-                <p className="text-sm leading-7 text-[--metis-paper-muted]">{latest.artifact.guardrails.toneNotes}</p>
-                <ul className="list-disc space-y-1 pl-5 text-sm leading-7 text-[--metis-paper-muted]">
-                  {latest.artifact.guardrails.mustAvoid.map((m) => (
-                    <li key={m}>{m}</li>
-                  ))}
-                </ul>
-              </div>
-            </CollapsibleSection>
-          ) : null}
-        </div>
+        <CollapsibleSection
+          className="border-[--metis-info-border] bg-[--metis-info-bg]"
+          summary={
+            <div className="flex items-center justify-between gap-3">
+              <h3 className="text-[0.7rem] font-medium uppercase tracking-[0.22em] text-[rgba(176,171,160,0.72)]">
+                Guardrails (internal)
+              </h3>
+              <span className="text-xs text-[--metis-paper-muted]">Show</span>
+            </div>
+          }
+        >
+          <div className="space-y-3">
+            <p className="text-sm leading-7 text-[--metis-paper-muted]">{deterministicPreview.guardrails.toneNotes}</p>
+            <ul className="list-disc space-y-1 pl-5 text-sm leading-7 text-[--metis-paper-muted]">
+              {deterministicPreview.guardrails.mustAvoid.map((m) => (
+                <li key={m}>{m}</li>
+              ))}
+            </ul>
+          </div>
+        </CollapsibleSection>
       </div>
     </div>
   );
