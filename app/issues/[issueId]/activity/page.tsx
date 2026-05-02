@@ -4,52 +4,11 @@ import { MetisShell, SurfaceCard } from "@/components/MetisShell";
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/db/prisma";
 import { getIssueById } from "@/lib/issues/getIssueContext";
+import type { SerializedActivityRow } from "@/lib/issues/activityTimelineDisplay";
+
+import { ActivityTimelineClient } from "./activity-timeline.client";
 
 export const dynamic = "force-dynamic";
-
-const KIND_LABELS: Record<string, string> = {
-  issue_created: "Issue · created",
-  issue_triage_updated: "Issue · triage updated",
-  brief_version_created: "Brief · new version",
-  gap_created: "Open question · added",
-  gap_resolved: "Open question · answered",
-  gap_reopened: "Open question · reopened",
-  internal_input_created: "Observation · added",
-  source_created: "Source · added",
-  export_created: "Export · created",
-  circulation_event_created: "Circulation · logged",
-  message_variant_created: "Message · generated",
-};
-
-function formatActivityTimestamp(value: Date) {
-  return new Intl.DateTimeFormat("en-GB", {
-    timeZone: "Europe/London",
-    dateStyle: "short",
-    timeStyle: "short",
-  }).format(value);
-}
-
-function kindLabel(kind: string) {
-  return KIND_LABELS[kind] ?? kind.replaceAll("_", " ");
-}
-
-function displaySummary(kind: string, summary: string) {
-  if (kind === "gap_created" && summary === "Gap created") return "Open question added";
-  if (kind === "gap_resolved" && summary === "Gap resolved") return "Open question answered";
-  if (kind === "gap_reopened" && summary === "Gap reopened") return "Open question reopened";
-  return summary;
-}
-
-function displayRefType(refType: string) {
-  if (refType === "Gap") return "Open question";
-  return refType;
-}
-
-function shortRefId(id: string) {
-  const t = id.trim();
-  if (t.length <= 8) return t;
-  return `…${t.slice(-8)}`;
-}
 
 export default async function IssueActivityPage({ params }: { params: Promise<{ issueId: string }> }) {
   const { issueId } = await params;
@@ -70,6 +29,16 @@ export default async function IssueActivityPage({ params }: { params: Promise<{ 
     orderBy: [{ createdAt: "desc" }],
     take: 60,
   });
+
+  const serialized: SerializedActivityRow[] = activities.map((a) => ({
+    id: a.id,
+    kind: a.kind,
+    summary: a.summary,
+    refType: a.refType,
+    refId: a.refId,
+    actorLabel: a.actorLabel,
+    createdAt: a.createdAt.toISOString(),
+  }));
 
   return (
     <MetisShell
@@ -98,52 +67,7 @@ export default async function IssueActivityPage({ params }: { params: Promise<{ 
           </div>
 
           <div className="space-y-4 px-6 py-6 sm:px-7 sm:py-7">
-            {activities.length === 0 ? (
-              <div className="rounded-[1.35rem] border border-white/10 bg-[rgba(255,255,255,0.04)] px-5 py-5 text-sm leading-7 text-[--metis-paper-muted]">
-                No activity recorded yet.
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {activities.map((a) => (
-                  <div
-                    key={a.id}
-                    className="rounded-[1.35rem] border border-white/10 bg-[rgba(255,255,255,0.05)] px-5 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
-                  >
-                    <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-                      <p className="text-[0.62rem] font-medium uppercase tracking-[0.18em] text-[--metis-ink-soft]">
-                        {kindLabel(a.kind)}
-                      </p>
-                      <p className="shrink-0 text-[0.68rem] tabular-nums text-[--metis-ink-soft]" title={a.createdAt.toISOString()}>
-                        {formatActivityTimestamp(a.createdAt)}
-                      </p>
-                    </div>
-                    <p className="mt-2 text-sm font-medium leading-6 text-[--metis-paper]">{displaySummary(a.kind, a.summary)}</p>
-                    {a.actorLabel ? (
-                      <p className="mt-1.5 text-xs leading-5 text-[--metis-paper-muted]">
-                        <span className="text-[--metis-ink-soft]">Actor</span>
-                        {" · "}
-                        {a.actorLabel}
-                      </p>
-                    ) : null}
-                    {a.refType || a.refId ? (
-                      <p className="mt-1 text-xs leading-5 text-[--metis-paper-muted]">
-                        {a.refType ? (
-                          <span className="font-mono text-[0.7rem] text-[rgba(176,171,160,0.85)]">{displayRefType(a.refType)}</span>
-                        ) : (
-                          <span className="font-mono text-[0.7rem] text-[rgba(176,171,160,0.85)]">Ref</span>
-                        )}
-                        {a.refId ? (
-                          <>
-                            {" · "}
-                            <span className="font-mono text-[0.7rem]">{shortRefId(a.refId)}</span>
-                          </>
-                        ) : null}
-                      </p>
-                    ) : null}
-                  </div>
-                ))}
-              </div>
-            )}
+            <ActivityTimelineClient items={serialized} />
           </div>
         </SurfaceCard>
 
@@ -164,4 +88,3 @@ export default async function IssueActivityPage({ params }: { params: Promise<{ 
     </MetisShell>
   );
 }
-
