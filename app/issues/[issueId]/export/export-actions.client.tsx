@@ -11,6 +11,8 @@ import type { ExportFormat } from "@metis/shared/export";
 import type { CirculationChannel, CirculationEventType } from "@metis/shared/circulation";
 import { ArtifactExportResponseSchema } from "@metis/shared/circulation";
 
+import { htmlExportToPlainClipboardFallback } from "@/lib/export/htmlToPlainClipboardFallback";
+
 type PreviewMime = "text/markdown" | "text/plain" | "text/html";
 type DeliverTab = "markdown" | "html";
 
@@ -83,6 +85,31 @@ async function postExport({
   return parsed.success ? parsed.data : null;
 }
 
+type ClipboardHtmlResult = "formatted_html" | "plain_text_fallback" | "plain_text_only";
+
+async function writePackageToClipboard(mimeType: string, content: string): Promise<ClipboardHtmlResult> {
+  if (mimeType !== "text/html") {
+    await navigator.clipboard.writeText(content);
+    return "plain_text_only";
+  }
+  const plain = htmlExportToPlainClipboardFallback(content);
+  if (typeof ClipboardItem !== "undefined" && typeof navigator.clipboard?.write === "function") {
+    try {
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          "text/html": new Blob([content], { type: "text/html" }),
+          "text/plain": new Blob([plain], { type: "text/plain" }),
+        }),
+      ]);
+      return "formatted_html";
+    } catch {
+      /* fall through */
+    }
+  }
+  await navigator.clipboard.writeText(plain);
+  return "plain_text_fallback";
+}
+
 export function ExportActionsClient(props: Props) {
   const router = useRouter();
   const [busy, setBusy] = useState<null | "download" | "copy" | "email">(null);
@@ -102,7 +129,7 @@ export function ExportActionsClient(props: Props) {
 
   const copyLabel = useMemo(() => {
     if (props.selectedFormat === "email-ready") return "Copy email-ready package";
-    if (props.previewMimeType === "text/html") return "Copy HTML source";
+    if (props.previewMimeType === "text/html") return "Copy";
     return "Copy package text";
   }, [props.previewMimeType, props.selectedFormat]);
 
@@ -166,10 +193,16 @@ export function ExportActionsClient(props: Props) {
         logEvent: { eventType: props.eventTypes.copied, channel },
       });
       if (!out) throw new Error("export_failed");
-      await navigator.clipboard.writeText(out.content);
-      setMessage({ tone: "ok", text: "Copied to clipboard." });
+      const result = await writePackageToClipboard(out.mimeType, out.content);
+      if (result === "formatted_html") {
+        setMessage({ tone: "ok", text: "Formatted HTML copied." });
+      } else if (result === "plain_text_fallback") {
+        setMessage({ tone: "ok", text: "Plain text copied." });
+      } else {
+        setMessage({ tone: "ok", text: "Copied to clipboard." });
+      }
     } catch {
-      setMessage({ tone: "bad", text: "Copy failed. Check clipboard permissions." });
+      setMessage({ tone: "bad", text: "Copy failed. Try again or check clipboard permissions." });
     } finally {
       setBusy(null);
     }
