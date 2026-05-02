@@ -1,32 +1,16 @@
 import Link from "next/link";
-import { ArrowRight, Filter, Search, Star, Zap } from "lucide-react";
+import { ArrowRight, Filter, Search, Star } from "lucide-react";
 
+import { DashboardOverviewStrip } from "@/components/dashboard/DashboardOverviewStrip";
+import { DashboardRecentActivity } from "@/components/dashboard/DashboardRecentActivity";
 import { IssueSummaryRow } from "@/components/dashboard/IssueSummaryRow";
 import { MetisShell, SurfaceCard } from "@/components/MetisShell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { prisma } from "@/lib/db/prisma";
+import { getDashboardSnapshot } from "@/lib/dashboard/getDashboardSnapshot";
 
 export const dynamic = "force-dynamic";
-
-const recentUpdates = [
-  {
-    time: "08:52 CET",
-    title: "Legal caution added to executive summary",
-    detail: "A regulatory briefing now distinguishes confirmed points from still-unverified assumptions.",
-  },
-  {
-    time: "08:24 CET",
-    title: "Stakeholder questions now affecting narrative tone",
-    detail: "Feedback shifted toward consultation accessibility and what is genuinely open to change.",
-  },
-  {
-    time: "07:42 CET",
-    title: "Message draft prepared for review",
-    detail: "The draft is held pending evidence checks and leadership sign-off on commitments.",
-  },
-] as const;
 
 const templateCards = [
   {
@@ -52,20 +36,24 @@ const templateCards = [
   },
 ] as const;
 
-const dashboardQuickLinksBase = [{ label: "All issues · Browse brief", href: "/brief" }] as const;
+const dashboardQuickLinksBase = [
+  { label: "Full brief workspace" as const, href: "/brief" },
+  { label: "Settings · Audience groups" as const, href: "/audience-groups" },
+] as const;
 
 export default async function DashboardPage() {
-  const issues = await prisma.issue.findMany({
-    orderBy: { updatedAt: "desc" },
-    include: { _count: { select: { sources: true } } },
-  });
+  const { issues, aggregates, recentActivity } = await getDashboardSnapshot();
 
   const firstIssue = issues[0] ?? null;
   const quickLinks = firstIssue
     ? [
-        { label: "Issue · Workspace" as const, href: `/issues/${firstIssue.id}` },
-        { label: "Issue · Full brief" as const, href: `/issues/${firstIssue.id}/brief?mode=full` },
-        { label: "Issue · Prepare output" as const, href: `/issues/${firstIssue.id}/export` },
+        { label: "Issue workspace" as const, href: `/issues/${firstIssue.id}` },
+        { label: "Open questions (first issue)" as const, href: `/issues/${firstIssue.id}/gaps` },
+        { label: "Sources (first issue)" as const, href: `/issues/${firstIssue.id}/sources` },
+        { label: "Full brief" as const, href: `/issues/${firstIssue.id}/brief?mode=full` },
+        { label: "Messages" as const, href: `/issues/${firstIssue.id}/messages` },
+        { label: "Prepare output" as const, href: `/issues/${firstIssue.id}/export` },
+        ...dashboardQuickLinksBase,
       ]
     : [...dashboardQuickLinksBase];
 
@@ -76,24 +64,40 @@ export default async function DashboardPage() {
           <Button asChild className="rounded-full bg-[--metis-brass] px-5 text-[--metis-dark] hover:bg-[--metis-brass-soft]">
             <Link href="/setup">New issue</Link>
           </Button>
-          <Button variant="outline" className="rounded-full border-white/10 bg-white/[0.03] text-[--metis-paper] hover:bg-white/[0.08]">
-            Templates
+          <Button variant="outline" className="rounded-full border-white/10 bg-white/[0.03] text-[--metis-paper] hover:bg-white/[0.08]" asChild>
+            <Link href="/setup">Templates</Link>
           </Button>
         </div>
 
-        <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(320px,0.8fr)]">
+        <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(280px,0.85fr)]">
           <SurfaceCard className="min-w-0 overflow-hidden">
-            <div className="border-b border-white/10 bg-[rgba(255,255,255,0.03)] px-6 py-5">
+            <div className="border-b border-white/10 bg-[rgba(255,255,255,0.03)] px-4 py-5 sm:px-6">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                 <div>
                   <h3 className="font-[Cormorant_Garamond] text-3xl text-[--metis-paper]">Issues</h3>
+                  <p className="mt-2 max-w-xl text-xs leading-relaxed text-[--metis-paper-muted]">
+                    Each row is one issue record. Use links on the row to work sources, open questions, briefs, Messages, exports, or the
+                    activity timeline.
+                  </p>
                 </div>
                 <div className="flex min-w-0 flex-wrap gap-3">
                   <div className="relative min-w-0 w-full flex-1 sm:min-w-[11rem] lg:w-[260px] lg:flex-none">
                     <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[--metis-ink-soft]" />
-                    <Input value="portal outage" readOnly className="h-11 rounded-full border-white/10 bg-white/[0.04] pl-11 text-[--metis-paper]" />
+                    <Input
+                      placeholder="Search issues"
+                      disabled
+                      title="Search is not available yet"
+                      aria-label="Search issues (coming soon)"
+                      className="h-11 rounded-full border-white/10 bg-white/[0.04] pl-11 text-[--metis-paper] disabled:opacity-60"
+                    />
                   </div>
-                  <Button variant="outline" className="rounded-full border-white/10 bg-white/[0.04] text-[--metis-paper]">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled
+                    title="Filters are not available yet"
+                    className="rounded-full border-white/10 bg-white/[0.04] text-[--metis-paper] disabled:opacity-60"
+                  >
                     <Filter className="mr-2 h-4 w-4" />
                     Filter
                   </Button>
@@ -101,24 +105,35 @@ export default async function DashboardPage() {
               </div>
             </div>
 
+            <DashboardOverviewStrip aggregates={aggregates} />
+
             <div className="space-y-4 p-4 sm:p-5">
-              {issues.map((issue, index) => (
-                <IssueSummaryRow
-                  key={issue.id}
-                  issue={{
-                    ...issue,
-                    sourcesCount: issue._count.sources,
-                  }}
-                  workspaceHref={`/issues/${issue.id}`}
-                />
-              ))}
+              {issues.length === 0 ? (
+                <div className="rounded-[1.45rem] border border-white/10 bg-[rgba(255,255,255,0.02)] px-6 py-10 text-center">
+                  <p className="text-sm font-medium text-[--metis-paper]">No issue records yet</p>
+                  <p className="mt-3 text-sm leading-relaxed text-[--metis-paper-muted]">
+                    Create your first issue to track sources, open questions, briefs, and Messages drafts. Audience groups you reuse live under
+                    Settings → Audience groups.
+                  </p>
+                  <Button asChild className="mt-6 rounded-full bg-[--metis-brass] px-5 text-[--metis-dark] hover:bg-[--metis-brass-soft]">
+                    <Link href="/setup">Create an issue</Link>
+                  </Button>
+                </div>
+              ) : (
+                issues.map((issue) => <IssueSummaryRow key={issue.id} issue={issue} />)
+              )}
             </div>
           </SurfaceCard>
 
           <div className="min-w-0 space-y-6">
             <SurfaceCard className="overflow-hidden">
               <div className="border-b border-white/10 bg-[rgba(255,255,255,0.03)] px-6 py-5">
-                <h3 className="text-[0.78rem] font-medium uppercase tracking-[0.22em] text-[rgba(176,171,160,0.7)]">Templates</h3>
+                <h3 className="text-[0.78rem] font-medium uppercase tracking-[0.22em] text-[rgba(176,171,160,0.7)]">
+                  Scenario templates
+                </h3>
+                <p className="mt-2 text-xs leading-relaxed text-[--metis-paper-muted]">
+                  Illustrative starting shapes — all create a normal Metis issue record, not connected to live monitoring.
+                </p>
               </div>
               <div className="space-y-4 p-6">
                 {templateCards.map((template) => (
@@ -129,7 +144,7 @@ export default async function DashboardPage() {
                     <div className="flex flex-col gap-3 border-b border-white/8 pb-4 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <Star className="h-4 w-4 text-[--metis-brass]" />
+                          <Star className="h-4 w-4 text-[--metis-brass]" aria-hidden />
                           <h4 className="text-base font-medium text-[--metis-paper]">{template.name}</h4>
                         </div>
                         <p className="mt-3 text-sm leading-7 text-[--metis-paper-muted]">{template.description}</p>
@@ -139,8 +154,8 @@ export default async function DashboardPage() {
                     <div className="mt-4 flex flex-col gap-3 text-sm text-[--metis-paper-muted] sm:flex-row sm:items-center sm:justify-between sm:gap-4">
                       <span>{template.issueType}</span>
                       <Link href="/setup" className="inline-flex items-center gap-2 text-[--metis-brass-soft] transition hover:text-white">
-                        Use template
-                        <ArrowRight className="h-4 w-4" />
+                        Start from template
+                        <ArrowRight className="h-4 w-4" aria-hidden />
                       </Link>
                     </div>
                   </div>
@@ -150,44 +165,23 @@ export default async function DashboardPage() {
 
             <SurfaceCard className="overflow-hidden">
               <div className="border-b border-white/10 bg-[rgba(255,255,255,0.03)] px-6 py-5">
-                <h3 className="text-[0.78rem] font-medium uppercase tracking-[0.22em] text-[rgba(176,171,160,0.7)]">Updates</h3>
+                <h3 className="text-[0.78rem] font-medium uppercase tracking-[0.22em] text-[rgba(176,171,160,0.7)]">Recent activity</h3>
               </div>
-              <div className="space-y-4 p-6">
-                {recentUpdates.map((update, index) => (
-                  <div
-                    key={update.time}
-                    className="grid grid-cols-[26px_minmax(0,1fr)] gap-4 rounded-[1.3rem] border border-white/10 bg-[rgba(255,255,255,0.025)] p-4"
-                  >
-                    <div className="flex flex-col items-center pt-1">
-                      <span className="h-2.5 w-2.5 rounded-full bg-[--metis-brass]" />
-                      {index < recentUpdates.length - 1 ? <span className="mt-2 h-full w-px bg-white/10" /> : null}
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-3">
-                        <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{update.time}</Badge>
-                        <span className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.22em] text-[--metis-ink-soft]">
-                          <Zap className="h-3.5 w-3.5 text-[--metis-brass]" />
-                          Brief update
-                        </span>
-                      </div>
-                      <h4 className="text-base font-medium text-[--metis-paper]">{update.title}</h4>
-                      <p className="text-sm leading-7 text-[--metis-paper-muted]">{update.detail}</p>
-                    </div>
-                  </div>
-                ))}
+              <div className="p-6">
+                <DashboardRecentActivity items={recentActivity} />
               </div>
             </SurfaceCard>
           </div>
         </div>
 
         <SurfaceCard className="overflow-hidden">
-          <div className="border-t border-white/8 px-6 py-5">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <p className="text-[0.68rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Open</p>
-              <div className="grid gap-3 sm:grid-cols-2 lg:flex lg:flex-wrap">
+          <div className="border-t border-white/8 px-4 py-5 sm:px-6">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <p className="shrink-0 text-[0.68rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Quick routes</p>
+              <div className="grid min-w-0 gap-3 sm:grid-cols-2 lg:flex lg:flex-wrap">
                 {quickLinks.map((item) => (
                   <Link
-                    key={item.label}
+                    key={item.href + item.label}
                     href={item.href}
                     className="rounded-full border border-white/10 bg-[rgba(255,255,255,0.025)] px-4 py-2.5 text-sm text-[--metis-paper-muted] transition hover:border-white/14 hover:bg-white/[0.05] hover:text-[--metis-paper]"
                   >
@@ -202,4 +196,3 @@ export default async function DashboardPage() {
     </MetisShell>
   );
 }
-
