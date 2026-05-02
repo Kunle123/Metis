@@ -209,10 +209,11 @@ export function MessagesPanel({
         const error = typeof errObj.error === "string" ? errObj.error : undefined;
         const detail = typeof errObj.detail === "string" ? errObj.detail : undefined;
         if (process.env.NODE_ENV === "development") {
-          console.error("[Messages AI] POST /message-variants failed", {
+          console.warn("[Messages AI] POST /message-variants failed", {
             status: res.status,
             error,
             detail,
+            deterministicFallbackAvailable: true,
           });
         }
         setAiNote(MESSAGES_AI_USER_FAILURE_NOTE);
@@ -240,7 +241,11 @@ export function MessagesPanel({
 
       if (row.aiCleanup?.ok === false) {
         if (process.env.NODE_ENV === "development") {
-          console.error("[Messages AI] cleanup unsuccessful (deterministic variant saved)", row.aiCleanup);
+          console.warn("[Messages AI] cleanup unsuccessful (deterministic variant saved)", {
+            error: row.aiCleanup.error,
+            detail: row.aiCleanup.detail,
+            deterministicFallbackAvailable: true,
+          });
         }
         setAiNote(MESSAGES_AI_USER_FAILURE_NOTE);
         router.refresh();
@@ -264,7 +269,10 @@ export function MessagesPanel({
       return true;
     } catch (e) {
       if (process.env.NODE_ENV === "development") {
-        console.error("[Messages AI] ensureAiEnhanced failed", e);
+        console.warn("[Messages AI] ensureAiEnhanced failed", {
+          deterministicFallbackAvailable: true,
+          ...(e instanceof Error ? { errorName: e.name, errorMessage: e.message } : { thrown: typeof e }),
+        });
       }
       setAiNote(MESSAGES_AI_USER_FAILURE_NOTE);
       return false;
