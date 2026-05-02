@@ -147,12 +147,12 @@ function section(title: string, body: string) {
  * “Situation”; Executive-mode uses “Executive summary”. Normalize at export-only time so Markdown
  * matches expectation without persisting mutations.
  */
-function executiveBriefExportBlockLabel(index: number, label: string): string {
+export function executiveBriefExportBlockLabel(index: number, label: string): string {
   if (index !== 0) return label;
   return label.trim() === "Situation" ? "Executive summary" : label;
 }
 
-function normalizeExportTerminology(input: string) {
+export function normalizeExportTerminology(input: string) {
   const s = String(input ?? "");
   if (!s) return s;
   return (

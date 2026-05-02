@@ -1,6 +1,9 @@
 # OS
 .DS_Store
 
+# Spike / local artifacts
+tmp/
+
 # Logs
 *.log
 

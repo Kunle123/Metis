@@ -12,6 +12,7 @@
     "test:message-cleanup": "tsx lib/ai/cleanupMessageDraft.fixtures.runner.ts",
     "test:brief-synthesis": "tsx lib/ai/synthesizeBrief.fixtures.runner.ts",
     "test:export-html": "tsx lib/export/renderExportHtml.fixtures.runner.ts",
+    "spike:export-docx": "tsx lib/export/renderExportDocx.fixtures.runner.ts",
     "test:export-plain-fallback": "tsx lib/export/htmlToPlainClipboardFallback.fixtures.runner.ts",
     "smoke:prod": "node scripts/prod-smoke.mjs",
     "prisma": "prisma",
@@ -28,6 +29,7 @@
   "dependencies": {
     "@prisma/client": "^6.19.3",
     "bcryptjs": "^3.0.3",
+    "docx": "^9.6.1",
     "jose": "^6.2.2",
     "lucide-react": "^1.8.0",
     "next": "^16.2.4",
