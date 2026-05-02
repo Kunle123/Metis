@@ -99,7 +99,7 @@ export default async function IssueBriefPage({
   const title = mode === "full" ? "Full Issue Brief" : "Executive Brief";
   const artifactMetadata = artifact
     ? ([
-        { label: "Audience", value: artifact.metadata.audience ?? "—" },
+        ...(mode === "executive" ? ([] as const) : ([{ label: "Audience", value: artifact.metadata.audience ?? "—" }] as const)),
         { label: "Circulation", value: artifact.metadata.circulation },
         { label: "Last revision", value: artifact.metadata.lastRevisionLabel },
         { label: "Open questions", value: artifact.metadata.openGapsLabel },
@@ -259,6 +259,24 @@ export default async function IssueBriefPage({
               </article>
             ) : (
               <article className="px-5 pb-6 pt-4 sm:px-7 sm:pb-7 sm:pt-5">
+                <header className="mb-6 space-y-4 border-b border-[--metis-outline-subtle] pb-6">
+                  <h2 className="font-[Cormorant_Garamond] text-[1.85rem] leading-tight text-[--metis-text-primary]">{issue.title}</h2>
+                  <p className="max-w-4xl text-sm leading-7 text-[--metis-text-secondary]">{artifact.lede}</p>
+                  <div className="flex flex-wrap gap-x-8 gap-y-2 text-[0.7rem] uppercase tracking-[0.14em] text-[--metis-text-tertiary]">
+                    <span>
+                      Circulation ·{" "}
+                      <span className="normal-case tracking-normal text-[--metis-text-primary]">{artifact.metadata.circulation}</span>
+                    </span>
+                    <span>
+                      Last revision ·{" "}
+                      <span className="normal-case tracking-normal text-[--metis-text-primary]">{artifact.metadata.lastRevisionLabel}</span>
+                    </span>
+                    <span>
+                      Open questions ·{" "}
+                      <span className="normal-case tracking-normal text-[--metis-text-primary]">{artifact.metadata.openGapsLabel}</span>
+                    </span>
+                  </div>
+                </header>
                 <div className="space-y-0 rounded-[1.25rem] border border-[--metis-outline-subtle] bg-[--metis-surface-card] px-4 py-5 sm:px-6 sm:py-6">
                   <div className="space-y-6">
                   {artifact.executive.blocks.map((block, index) => (

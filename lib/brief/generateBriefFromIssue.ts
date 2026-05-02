@@ -1,8 +1,12 @@
-import type { Issue, Source, Gap, InternalInput } from "@prisma/client";
+import type { Issue, Source, Gap, InternalInput, IssueStakeholder, StakeholderGroup } from "@prisma/client";
 
 import type { BriefArtifact, BriefMode } from "@metis/shared/briefVersion";
 
+type IssueStakeholderWithGroup = IssueStakeholder & { stakeholderGroup: StakeholderGroup };
+
 const CAP_EX_SOURCES = 8;
+const MAX_QUESTION_BULLETS = 12;
+const MAX_QUESTION_BULLET_CHARS = 220;
 const CAP_EX_OPEN_GAPS = 8;
 const CAP_EX_OBS = 5;
 const CAP_FULL_GAPS = 20;
@@ -70,11 +74,40 @@ function splitIntakeOpenQuestions(text: string): string[] {
   return [t];
 }
 
+/** Deterministic bullets for intake open questions — caps length and count; preserves multiline splits. Exported for fixtures. */
+export function splitOpenQuestionsToBullets(text: string): string[] {
+  const t = typeof text === "string" ? text.trim() : "";
+  if (!t) return [];
+
+  let parts = splitIntakeOpenQuestions(t);
+  if (
+    parts.length === 1 &&
+    parts[0].length > 120 &&
+    !parts[0].includes("\n") &&
+    !parts[0].includes(";") &&
+    !parts[0].includes("? ")
+  ) {
+    const dotBreaks = (parts[0].match(/\.\s+/g) ?? []).length;
+    if (dotBreaks >= 2) {
+      const raw = parts[0].split(/\.\s+/).map((s) => s.trim()).filter(Boolean);
+      if (raw.length >= 2 && raw.length <= 20) {
+        parts = raw.map((s) => (/[.!?]$/.test(s) ? s : `${stripTrailingPunctuation(s)}.`));
+      }
+    }
+  }
+
+  const clipped = parts
+    .slice(0, MAX_QUESTION_BULLETS)
+    .map((p) => clipAtWordBoundary(p.trim(), MAX_QUESTION_BULLET_CHARS))
+    .filter(Boolean);
+  if (clipped.length) return clipped;
+  const fallback = clipAtWordBoundary(t, MAX_QUESTION_BULLET_CHARS);
+  return fallback ? [fallback] : [];
+}
+
 function intakeOpenQuestionsAsBulletLines(text: string): string {
-  const t = cleanText(text);
-  if (!t) return "";
-  const parts = splitIntakeOpenQuestions(t);
-  if (parts.length <= 1) return parts[0] ?? "";
+  const parts = splitOpenQuestionsToBullets(text);
+  if (!parts.length) return "";
   return parts.map((l) => `- ${l.replace(/^-+\s*/, "")}`).join("\n");
 }
 
@@ -100,7 +133,7 @@ function normalizeNeedText(input: string) {
 }
 
 function dedupeUnassignedNeedsAgainstIntake(openQuestionsRaw: string, unassigned: Gap[]) {
-  const intakeItems = splitIntakeOpenQuestions(openQuestionsRaw)
+  const intakeItems = splitOpenQuestionsToBullets(openQuestionsRaw)
     .map(normalizeNeedText)
     .filter(Boolean);
   const intakeSet = new Set(intakeItems);
@@ -219,7 +252,7 @@ function topOpenQuestionsSummary({
   openGaps: Gap[];
   cap?: number;
 }) {
-  const intakeItems = splitIntakeOpenQuestions(openQuestionsRaw).map((s) => fixMalformedQuestionText(s)).filter(Boolean);
+  const intakeItems = splitOpenQuestionsToBullets(openQuestionsRaw).map((s) => fixMalformedQuestionText(s)).filter(Boolean);
 
   const byKey = new Map<
     string,
@@ -281,6 +314,8 @@ export type BriefGenerationInput = {
   sources: Source[];
   gaps: Gap[];
   internalInputs: InternalInput[];
+  /** Workspace audience groups (Messages); optional — defaults to empty. */
+  issueStakeholders?: IssueStakeholderWithGroup[];
 };
 
 function openGaps(gaps: Gap[]) {
@@ -315,19 +350,6 @@ function formatGapsKeyUnknownsLeadership(open: Gap[], cap: number) {
     return `${lines.join("\n")}\n\n…${open.length - cap} more item(s) on the list.`;
   }
   return lines.join("\n");
-}
-
-function gapToLeadershipDecision(g: Gap): string {
-  const label = (g.prompt || g.title).trim();
-  const topic = label || "the outstanding clarification";
-  const s = (g.severity || "").toLowerCase();
-  if (s === "high" || s === "critical") {
-    return `Assign an owner and deadline to close “${stripTrailingPunctuation(topic)}” before any external line or irreversible commitment.`;
-  }
-  if (s === "medium" || s === "moderate" || s === "med") {
-    return `Set a deadline to resolve “${stripTrailingPunctuation(topic)}”, or explicitly document the interim position and accepted risk.`;
-  }
-  return `Confirm who owns “${stripTrailingPunctuation(topic)}” and by when, or explicitly deprioritise it and why.`;
 }
 
 function formatGapsForFull(gaps: Gap[], cap: number) {
@@ -409,13 +431,36 @@ function formatObsForFull(inputs: InternalInput[], cap: number) {
   return `${lines.join("\n\n")}${tail.length ? `\n\n${tail.join("\n")}` : ""}`;
 }
 
-/** Deterministic audience copy from intake `issue.audience` only (no legacy per-issue stakeholder rows). */
-function formatAudienceImplications(issueAudience: string | null): string {
+function dedupeActionLines(lines: string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const line of lines) {
+    const n = normalizeNeedText(line);
+    const key = n.slice(0, 96);
+    if (!key) continue;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(line);
+  }
+  return out;
+}
+
+function formatAudienceImplications(issueAudience: string | null, issueStakeholders: IssueStakeholderWithGroup[]) {
   const fromIssue = cleanText(issueAudience ?? "");
+  const groupNames = [
+    ...new Set(issueStakeholders.map((r) => cleanText(r.stakeholderGroup.name)).filter(Boolean)),
+  ];
+
+  if (groupNames.length && fromIssue) {
+    return `Messages audience groups on this issue: ${groupNames.join(", ")}.\n\nIssue-level audience note (intake): ${fromIssue}`;
+  }
+  if (groupNames.length) {
+    return `Messages audience groups selected for this issue: ${groupNames.join(", ")}. No intake audience note is recorded — add one in intake if framing should go beyond those groups.`;
+  }
   if (fromIssue) {
     return `Issue-level audience note (intake): ${fromIssue}`;
   }
-  return "No specific audience note is recorded on the issue.";
+  return "No Messages audience groups are selected on this issue, and no intake audience note is recorded. Add either in the workspace or intake if a messaging lens should appear here.";
 }
 
 function evidenceBaseExecutive(sources: Source[], total: number) {
@@ -457,7 +502,7 @@ function sourcesNarrativeFull(sources: Source[], total: number) {
 }
 
 export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefMode): BriefArtifact {
-  const { issue, sources, gaps, internalInputs } = input;
+  const { issue, sources, gaps, internalInputs, issueStakeholders = [] } = input;
   const isExecutive = mode === "executive";
   const updatedAtLabel = nowLabel();
   const confidence = confidenceFromStatus(issue.status);
@@ -564,55 +609,86 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
 
   const recommendedActionsForLeadership: string[] = (() => {
     const out: string[] = [];
-    const oqItems = splitIntakeOpenQuestions(openQuestions);
-    const candidates = [
-      ...openG.map((g) => (g.prompt || g.title || "").trim()),
-      ...splitIntakeOpenQuestions(openQuestions),
-    ].filter(Boolean);
-    const seen = new Set<string>();
-    for (const c of candidates) {
-      const key = normalizeQuestionThemeKey(c) || normalizeQuestionKey(c) || normalizeNeedText(c);
-      if (!key || seen.has(key)) continue;
-      seen.add(key);
-      const q = fixMalformedQuestionText(c);
-      if (!q) continue;
-      if (/\bfollow[- ]?up\b|\bcadence\b|\bnamed owner\b/i.test(q)) {
-        out.push("Confirm follow-up cadence and named owner before the leadership session.");
-      } else if (/\bproof point\b|\bevidence\b|\bcite\b|\bsources?\b/i.test(q)) {
-        out.push("Agree which proof points can be used in the room and which require softer wording or follow-up.");
-      } else if (/\bpartnership\b|\boffers?\b|\bprocurement\b|\bbudget\b|\bcommit(?:ment|ting)\b/i.test(q)) {
-        out.push("Clarify any partnership offers and constraints before they are mentioned externally.");
-      } else if (/\btimeline\b|\bwhen\b|\bdates?\b|\bdecision point\b|\bsign[- ]?off\b/i.test(q)) {
-        out.push("Confirm timeline and decision points, including what can be said publicly vs internally.");
-      } else {
-        const short = clipAtWordBoundary(stripTrailingPunctuation(q), 86);
-        if (short) out.push(`Resolve the open question: ${short}`);
+    const oqBullets = splitOpenQuestionsToBullets(openQuestions);
+    const hasGaps = openG.length > 0;
+    const hasOq = oqBullets.length > 0;
+
+    if (hasGaps) {
+      const gapsSorted = [...openG].sort((a, b) => severityRank(a.severity) - severityRank(b.severity));
+      for (const g of gapsSorted.slice(0, 4)) {
+        const raw = (g.prompt.trim() || g.title).replace(/\s+/g, " ");
+        const prompt = clipAtWordBoundary(stripTrailingPunctuation(raw), 110);
+        if (!prompt) continue;
+        const sev = g.severity ? `[${g.severity}] ` : "";
+        const sec = cleanText(g.linkedSection ?? "");
+        const secBit = sec ? ` (${sec})` : "";
+        out.push(`Assign owner and resolution path for ${sev}open question${secBit}: ${prompt}.`);
       }
-      if (out.length >= 2) break;
+    } else if (hasOq) {
+      const seen = new Set<string>();
+      for (const c of oqBullets) {
+        const q = fixMalformedQuestionText(c);
+        if (!q) continue;
+        const key = normalizeQuestionThemeKey(q) || normalizeQuestionKey(q) || normalizeNeedText(q);
+        if (!key || seen.has(key)) continue;
+        seen.add(key);
+        if (/\bfollow[- ]?up\b|\bcadence\b|\bnamed owner\b/i.test(q)) {
+          out.push("Confirm follow-up cadence and named owner before the leadership session.");
+        } else if (/\bproof point\b|\bevidence\b|\bcite\b|\bsources?\b/i.test(q)) {
+          out.push("Agree which proof points can be used in the room and which require softer wording or follow-up.");
+        } else if (/\bpartnership\b|\boffers?\b|\bprocurement\b|\bbudget\b|\bcommit(?:ment|ting)\b/i.test(q)) {
+          out.push("Clarify any partnership offers and constraints before they are mentioned externally.");
+        } else if (/\btimeline\b|\bwhen\b|\bdates?\b|\bdecision point\b|\bsign[- ]?off\b/i.test(q)) {
+          out.push("Confirm timeline and decision points, including what can be said publicly vs internally.");
+        } else {
+          const short = clipAtWordBoundary(stripTrailingPunctuation(q), 86);
+          if (short) out.push(`Resolve the open question: ${short}`);
+        }
+        if (out.length >= 2) break;
+      }
     }
+
     if (sources.length) {
-      const top = sources.slice(0, 2).map((s) => `${s.title} (${s.tier})`);
-      out.push(
-        `For any external or board-facing line, cite linked sources (${sources.length} on file). Start with: ${top.join("; ")}${sources.length > 2 ? " …" : "."}`,
-      );
-    } else {
-      out.push("Establish at least one linked source so the narrative can be traced to verifiable material.");
+      const counts = new Map<string, number>();
+      for (const s of sources) {
+        const k = cleanText(s.tier) || "Unset";
+        counts.set(k, (counts.get(k) ?? 0) + 1);
+      }
+      const mix = [...counts.entries()]
+        .sort((a, b) => b[1] - a[1])
+        .map(([k, v]) => `${k}×${v}`)
+        .join(", ");
+      const official = counts.get("Official") ?? 0;
+      let tail = "";
+      if (official === 0) tail = " No Official-tier material on file — keep external claims conditional.";
+      else if (sources.length === 1) tail = " Single source on file — cross-check before hard commitments.";
+      out.push(`Cite the evidence base (${sources.length} on file; tier mix: ${mix}).${tail}`);
+    } else if (hasGaps || hasOq) {
+      out.push("Link at least one source so leadership lines can be traced to attributable material.");
     }
+
+    const groupNames = [...new Set(issueStakeholders.map((r) => cleanText(r.stakeholderGroup.name)).filter(Boolean))];
+    if (groupNames.length) {
+      out.push(sentence(`Stress-test external-facing lines for selected audience groups: ${groupNames.join(", ")}`));
+    } else if (cleanText(issue.audience ?? "")) {
+      out.push(sentence(`Calibrate the line against the intake audience note: ${issue.audience?.trim()}`));
+    }
+
     if (cleanText(issue.ownerName ?? "")) {
       out.push(`Accountable owner for the next update and sign-off: ${issue.ownerName}.`);
     } else {
       out.push("Assign a named owner for the next update and sign-off.");
     }
-    if (cleanText(issue.audience ?? "") && out.length < 5) {
-      out.push(sentence(`Stress-test the line against the intended audience: ${issue.audience?.trim()}`));
+
+    let deduped = dedupeActionLines(out);
+    const thin = !hasGaps && !hasOq;
+    if (thin && deduped.length < 2) {
+      deduped = dedupeActionLines([
+        ...deduped,
+        "Confirm what remains under validation before broad or external circulation.",
+      ]);
     }
-    if (out.length < 3 && oqItems.length) {
-      out.push("Work through the open questions in this brief before making firm external commitments.");
-    }
-    if (out.length < 2) {
-      out.push("Validate what is still in motion before broad circulation.");
-    }
-    return out.slice(0, 5);
+    return deduped.slice(0, 5);
   })();
 
   const recommendedBodyForLeadership = recommendedActionsForLeadership.map((x, i) => `${i + 1}) ${x}`).join("\n");
@@ -644,7 +720,7 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
   })();
 
   const situationBodyLeadership = (() => {
-    const hasOq = openG.length > 0 || splitIntakeOpenQuestions(openQuestions).length > 0;
+    const hasOq = openG.length > 0 || splitOpenQuestionsToBullets(openQuestions).length > 0;
     const whyItMatters = (() => {
       const text = [titleLine, summary, context, String(issue.audience ?? "")].join("\n").toLowerCase();
       if (text.includes("roundtable")) {
@@ -670,10 +746,11 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
       return notes.join(" ");
     })();
 
-    const opening = summary ? sentence(summary) : titleLine ? sentence(titleLine) : "Current position is not recorded yet.";
-    const contextLine = context.length ? capLines(context, 3) : "";
+    const contextBlock = context.length
+      ? capLines(sanitizeBriefUserText(context), 8)
+      : "Supplemental context is not recorded on the issue. The working line is in the brief header above.";
 
-    return [opening, whyItMatters, leadershipNotes, contextLine].filter(Boolean).join("\n\n");
+    return [contextBlock, whyItMatters, leadershipNotes].filter(Boolean).join("\n\n");
   })();
 
   const currentAssessment = [
@@ -700,7 +777,7 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
     }
     const summary = topOpenQuestions ? capBulletBlock(topOpenQuestions, 5) : "";
     const note =
-      openG.length > 5 || splitIntakeOpenQuestions(openQuestions).length > 5
+      openG.length > 5 || splitOpenQuestionsToBullets(openQuestions).length > 5
         ? "See the Open questions view for the full register."
         : "";
     return [summary, note].filter(Boolean).join("\n\n");
@@ -716,7 +793,7 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
     return "No confirmed facts are recorded in intake yet.";
   })();
 
-  const audienceBlock = formatAudienceImplications(issue.audience);
+  const audienceBlock = formatAudienceImplications(issue.audience, issueStakeholders);
 
   const executiveBlocks: { label: string; body: string }[] = isExecutive
     ? [
@@ -752,24 +829,7 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
         { label: "What not to say yet / uncertainty guardrails", body: guardrails },
       ];
 
-  const immediateActions = isExecutive
-    ? [
-        "Confirm the working line still matches the latest issue record before forwarding upward.",
-        "If the situation moved materially, update the record and circulate an updated brief.",
-        `Clarification load: ${issue.openGapsCount} on the issue and ${openG.length} on the list. If they diverge materially, pause for alignment before wide circulation.`,
-        sources.length
-          ? "For external or board use, re-read the two most salient sources (by tier and recency) for tension with the working line."
-          : "For external or board use, no sources are linked yet; add and review source material first.",
-        `Internal notes: ${internalInputs.length} on file. If time is short, scan the most recent 1–2 for conflicts with the working line.`,
-      ]
-    : [
-        "Check that the lede in the header still matches the issue record’s working line after the latest edits (or regenerate the brief if the record moved on).",
-        `Open questions: ${issue.openGapsCount} on the issue, ${openG.length} open in the tracker—resolve any mismatch in the Open questions view before a hard send.`,
-        sources.length
-          ? "If this brief is used for external or board use, re-open the two highest-signal sources (by tier and recency) for conflicts with the lede."
-          : "If you plan to use this for external or board use, the evidence register is empty at generation time; add and review sources first.",
-        `Observations: ${internalInputs.length} on file; skim the latest 1–2 for contradictions to the lede if time allows.`,
-      ];
+  const immediateActions: string[] = [];
 
   const backgroundContextBody = (() => {
     const parts: string[] = [];
