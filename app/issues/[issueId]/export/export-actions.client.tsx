@@ -87,6 +87,7 @@ async function postExport({
 
 type ClipboardHtmlResult = "formatted_html" | "plain_text_fallback" | "plain_text_only";
 
+/** HTML export: prefers `ClipboardItem` with both MIME types where supported (e.g. Chromium, Safari); otherwise plain clipboard text. */
 async function writePackageToClipboard(mimeType: string, content: string): Promise<ClipboardHtmlResult> {
   if (mimeType !== "text/html") {
     await navigator.clipboard.writeText(content);
@@ -95,15 +96,17 @@ async function writePackageToClipboard(mimeType: string, content: string): Promi
   const plain = htmlExportToPlainClipboardFallback(content);
   if (typeof ClipboardItem !== "undefined" && typeof navigator.clipboard?.write === "function") {
     try {
+      const htmlBlob = new Blob([content], { type: "text/html" });
+      const plainBlob = new Blob([plain], { type: "text/plain" });
       await navigator.clipboard.write([
         new ClipboardItem({
-          "text/html": new Blob([content], { type: "text/html" }),
-          "text/plain": new Blob([plain], { type: "text/plain" }),
+          "text/html": htmlBlob,
+          "text/plain": plainBlob,
         }),
       ]);
       return "formatted_html";
     } catch {
-      /* fall through */
+      /* e.g. Firefox custom MIME denial — fall through */
     }
   }
   await navigator.clipboard.writeText(plain);
@@ -129,8 +132,8 @@ export function ExportActionsClient(props: Props) {
 
   const copyLabel = useMemo(() => {
     if (props.selectedFormat === "email-ready") return "Copy email-ready package";
-    if (props.previewMimeType === "text/html") return "Copy";
-    return "Copy package text";
+    if (props.previewMimeType === "text/html") return "Copy package (HTML + plain)";
+    return "Copy package (Markdown)";
   }, [props.previewMimeType, props.selectedFormat]);
 
   const PreviewBody = ({
@@ -211,7 +214,7 @@ export function ExportActionsClient(props: Props) {
   return (
     <div className="space-y-4">
       {props.selectedFormat !== "email-ready" ? (
-        <div className="max-w-xl">
+        <div className="max-w-xl space-y-2">
           <SegmentedControl<DeliverTab>
             label="Export output"
             value={props.exportPreviewOutput}
@@ -222,10 +225,16 @@ export function ExportActionsClient(props: Props) {
             ]}
             onChange={(next) => navigateDelivery(next)}
           />
+          <p className="text-xs leading-relaxed text-[--metis-paper-muted]">
+            <span className="text-[--metis-paper]">Markdown</span> — portable source you can move into docs or repositories.{" "}
+            <span className="text-[--metis-paper]">HTML</span> — formatted for browser or rich paste; copy tries HTML with a plain-text
+            fallback.
+          </p>
         </div>
       ) : (
-        <p className="text-xs text-[--metis-paper-muted]">
-          Email-ready uses plain text only. Switch package to unlock HTML output.
+        <p className="text-xs leading-relaxed text-[--metis-paper-muted]">
+          Email-ready is a <span className="text-[--metis-paper]">plain circulation draft</span> (not HTML). Choose a brief package and HTML
+          output to copy formatted layout. DOCX/PDF are not available yet.
         </p>
       )}
 
@@ -291,10 +300,11 @@ export function ExportActionsClient(props: Props) {
                 ? ` · Bookmark mode: ${props.urlMode === "full" ? "Full" : "Executive"}`
                 : ""}
               {props.executiveBriefUsesFullBriefFallback ? " · Full snapshot fallback until Executive regenerates." : ""}
+              {props.selectedFormat === "email-ready" ? " · Email-ready cannot use HTML formatting." : null}
             </p>
           </div>
           <div className="flex items-center gap-2">
-            {props.previewMeta.slice(0, 6).map((m) => (
+            {props.previewMeta.slice(0, 10).map((m) => (
               <Badge key={m.label} className="border-0 bg-white/8 text-[--metis-paper-muted]">
                 {m.label}: {m.value}
               </Badge>
@@ -327,6 +337,7 @@ export function ExportActionsClient(props: Props) {
                   {props.urlMode !== props.briefSourceMode
                     ? ` · Bookmark mode: ${props.urlMode === "full" ? "Full" : "Executive"}`
                     : ""}
+                  {props.selectedFormat === "email-ready" ? " · Email-ready preview is plain text only." : ""}
                 </p>
               </div>
               <div className="flex items-center gap-2">

@@ -36,7 +36,7 @@ export function htmlExportToPlainClipboardFallback(html: string) {
     .replace(/<\s*script\b[^>]*>[\s\S]*?<\/\s*script\s*>/gi, "")
     .replace(/<\s*style\b[^>]*>[\s\S]*?<\/\s*style\s*>/gi, "");
   s = s.replace(/<\s*br\s*\/?>/gi, "\n");
-  s = s.replace(/<\s*h[12]\b[^>]*>/gi, "\n");
+  s = s.replace(/<\s*h[1-6]\b[^>]*>/gi, "\n");
   s = s.replace(/<\/\s*(p|h[1-6]|div|section|header|article)\s*>/gi, "\n\n");
   s = s.replace(/<\s*li\b[^>]*>/gi, "\n• ");
   s = s.replace(/<\/\s*li\s*>/gi, "\n");

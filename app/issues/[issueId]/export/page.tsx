@@ -47,6 +47,13 @@ const packageOptions: Array<{
     audience: "Board chair, company secretary",
     description: "Hold pending exposure wording",
   },
+  {
+    id: "email-ready",
+    label: "Email-ready package",
+    state: "Ready for review",
+    audience: "Circulation drafts",
+    description: "Plain text only — cautious circulation wording without HTML layout.",
+  },
 ];
 
 const packageContents = [
@@ -178,6 +185,27 @@ export default async function IssueExportPage({
     outputType: exportPreviewOutput,
   });
 
+  const downloadExtension =
+    selectedFormat === "email-ready"
+      ? ".txt"
+      : rendered.mimeType === "text/html"
+        ? ".html"
+        : rendered.mimeType === "text/plain"
+          ? ".txt"
+          : ".md";
+
+  const copyBehaviorShort =
+    selectedFormat === "email-ready"
+      ? "Plain text (not HTML)"
+      : rendered.mimeType === "text/html"
+        ? "Rich HTML + plain fallback"
+        : rendered.mimeType === "text/markdown"
+          ? "Markdown plain text"
+          : "Plain text";
+
+  const encodingLabel =
+    rendered.mimeType === "text/html" ? "HTML" : rendered.mimeType === "text/plain" ? "Plain text" : "Markdown";
+
   // Wave 4: strict event semantics for export actions.
   const preparedEvent = CirculationEventTypeSchema.parse("prepared");
   const downloadedEvent = CirculationEventTypeSchema.parse("downloaded");
@@ -208,7 +236,8 @@ export default async function IssueExportPage({
                 <div className="space-y-1">
                   <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper]">Prepare output</h2>
                   <p className="text-sm leading-6 text-[--metis-paper-muted]">
-                    Select a package, then download or copy for circulation.
+                    Select a package, then download or copy. Markdown is portable source text; HTML is a formatted layout (rich copy tries HTML with
+                    plain fallback). Email-ready is a plain circulation draft. DOCX/PDF aren&apos;t available yet.
                   </p>
                 </div>
               }
@@ -345,15 +374,9 @@ export default async function IssueExportPage({
               previewTitle={issue.title}
               previewMeta={[
                 { label: "Export format", value: packageOptions.find((o) => o.id === selectedFormat)?.label ?? "—" },
-                {
-                  label: "Output",
-                  value:
-                    rendered.mimeType === "text/html"
-                      ? "HTML"
-                      : rendered.mimeType === "text/plain"
-                        ? "Plain text"
-                        : "Markdown",
-                },
+                { label: "Encoding", value: encodingLabel },
+                { label: "Download", value: downloadExtension },
+                { label: "Copy", value: copyBehaviorShort },
                 { label: "Brief source", value: `${sourceMode === "full" ? "Full" : "Executive"} (stored)` },
                 { label: "Version", value: `v${briefVersion.versionNumber}` },
                 { label: "Circulation", value: artifact.metadata.circulation },
@@ -459,10 +482,10 @@ export default async function IssueExportPage({
                   <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-[--metis-brass]" />
                   <span>
                     {rendered.mimeType === "text/plain"
-                      ? "Plain text package ready."
+                      ? "Plain text package ready · download ends in .txt; copy is plain text only (no styled HTML)."
                       : rendered.mimeType === "text/html"
-                        ? "HTML package ready."
-                        : "Markdown package ready."}
+                        ? "HTML package ready · download ends in .html; copy tries formatted HTML plus a readable plain fallback if your browser supports it."
+                        : "Markdown package ready · download ends in .md; copy is Markdown plain text."}
                   </span>
                 </div>
               </div>
