@@ -389,7 +389,7 @@ export function MessagesPanel({
               {aiNote ? <span className="ml-2">· {aiNote}</span> : null}
               {aiToggleOn && compareStats?.veryClose ? <span className="ml-2">· AI-enhanced is very close to the original.</span> : null}
             </div>
-            <Link href="/stakeholders" className="text-xs text-[--metis-brass-soft] underline-offset-4 hover:underline">
+            <Link href="/audience-groups" className="text-xs text-[--metis-brass-soft] underline-offset-4 hover:underline">
               Manage audience groups →
             </Link>
           </div>

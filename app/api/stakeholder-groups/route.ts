@@ -69,7 +69,7 @@ export async function POST(request: Request) {
   });
 
   revalidatePath("/");
-  revalidatePath("/stakeholders");
+  revalidatePath("/audience-groups");
 
   return NextResponse.json(serializeGroup(created));
 }

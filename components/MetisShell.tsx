@@ -138,7 +138,7 @@ const workNav = [
 ] as const;
 
 const settingsNav = [
-  { id: "stakeholders", group: "Settings" as GlobalNavGroup, path: "/stakeholders", shortLabel: "Audience groups" },
+  { id: "audience-groups", group: "Settings" as GlobalNavGroup, path: "/audience-groups", shortLabel: "Audience groups" },
 ] as const;
 
 const primaryNav = [...workNav, ...settingsNav] as const;

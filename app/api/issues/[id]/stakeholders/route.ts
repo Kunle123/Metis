@@ -110,7 +110,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   revalidatePath("/");
   revalidatePath(`/issues/${issueId}`);
-  revalidatePath("/stakeholders");
+  revalidatePath("/audience-groups");
 
   return NextResponse.json(serializeIssueStakeholder(created));
 }

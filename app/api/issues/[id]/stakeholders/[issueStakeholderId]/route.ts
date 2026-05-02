@@ -109,7 +109,7 @@ export async function PATCH(
 
   revalidatePath("/");
   revalidatePath(`/issues/${issueId}`);
-  revalidatePath("/stakeholders");
+  revalidatePath("/audience-groups");
 
   return NextResponse.json(serializeIssueStakeholder(updated));
 }
@@ -130,7 +130,7 @@ export async function DELETE(
 
   revalidatePath("/");
   revalidatePath(`/issues/${issueId}`);
-  revalidatePath("/stakeholders");
+  revalidatePath("/audience-groups");
 
   return NextResponse.json({ ok: true });
 }

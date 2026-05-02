@@ -75,7 +75,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   });
 
   revalidatePath("/");
-  revalidatePath("/stakeholders");
+  revalidatePath("/audience-groups");
 
   return NextResponse.json(serializeGroup(updated));
 }
