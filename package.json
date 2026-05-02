@@ -10,6 +10,7 @@
     "lint": "tsc -p tsconfig.json --noEmit",
     "test:message-cleanup": "tsx lib/ai/cleanupMessageDraft.fixtures.runner.ts",
     "test:brief-synthesis": "tsx lib/ai/synthesizeBrief.fixtures.runner.ts",
+    "test:export-html": "tsx lib/export/renderExportHtml.fixtures.runner.ts",
     "smoke:prod": "node scripts/prod-smoke.mjs",
     "prisma": "prisma",
     "db:migrate": "prisma migrate dev",

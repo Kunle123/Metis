@@ -2,13 +2,30 @@ import { NextResponse } from "next/server";
 
 import { BriefModeSchema, BriefArtifactSchema } from "@metis/shared/briefVersion";
 import { CirculationStateSchema } from "@metis/shared/compare";
-import { ExportFormatSchema, ExportPackageResponseSchema } from "@metis/shared/export";
+import {
+  ExportFormatSchema,
+  ExportOutputTypeSchema,
+  ExportPackageResponseSchema,
+  type ExportFormat,
+  type ExportOutputType,
+} from "@metis/shared/export";
 import { ArtifactExportResponseSchema, CreateArtifactExportInputSchema } from "@metis/shared/circulation";
 import { prisma } from "@/lib/db/prisma";
-import { renderExportPackage } from "@/lib/export/renderExportPackage";
+import { renderExportDeliverable } from "@/lib/export/renderExportPackage";
 import { IssueActivityKinds } from "@/lib/issues/activityKinds";
 import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
 import { requireMutation } from "@/lib/governance/requireMutation";
+
+function exportFileExtensionForMime(mimeType: string) {
+  if (mimeType === "text/html") return "html";
+  if (mimeType === "text/plain") return "txt";
+  return "md";
+}
+
+function resolvedOutputTypeForExport(format: ExportFormat, requested: ExportOutputType | undefined): ExportOutputType {
+  if (format === "email-ready") return "plain";
+  return requested ?? "markdown";
+}
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id: issueId } = await params;
@@ -36,22 +53,42 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     return NextResponse.json({ error: "Invalid stored mode" }, { status: 500 });
   }
 
+  const outputRaw = url.searchParams.get("output");
+  let requestedOutputType: ExportOutputType | undefined;
+  if (outputRaw !== null && outputRaw.trim() !== "") {
+    const pOut = ExportOutputTypeSchema.safeParse(outputRaw);
+    if (!pOut.success) {
+      return NextResponse.json({ error: "Invalid output" }, { status: 400 });
+    }
+    requestedOutputType = pOut.data;
+    if (requestedOutputType === "plain" && parsedFormat.data !== "email-ready") {
+      return NextResponse.json({ error: "Plain output applies only to email-ready format" }, { status: 400 });
+    }
+    if (parsedFormat.data === "email-ready" && requestedOutputType === "html") {
+      return NextResponse.json({ error: "HTML output is not available for email-ready format" }, { status: 400 });
+    }
+  }
+
   const artifact = BriefArtifactSchema.parse(briefVersion.artifact);
-  const rendered = renderExportPackage({
+  const ot = resolvedOutputTypeForExport(parsedFormat.data, requestedOutputType);
+  const rendered = renderExportDeliverable({
     issue,
     mode: parsedMode.data,
     format: parsedFormat.data,
     artifact,
+    outputType: ot,
   });
 
   const now = new Date();
-  const filename = `metis-${issueId}-${parsedFormat.data}-v${briefVersion.versionNumber}.md`;
+  const ext = exportFileExtensionForMime(rendered.mimeType);
+  const filename = `metis-${issueId}-${parsedFormat.data}-v${briefVersion.versionNumber}.${ext}`;
 
   const response = {
     issueId,
     briefVersionId: briefVersion.id,
     mode: parsedMode.data,
     format: parsedFormat.data,
+    outputType: ot,
     title: issue.title,
     generatedAt: now.toISOString(),
     filename,
@@ -82,6 +119,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const form = await request.formData();
     const briefVersionId = form.get("briefVersionId");
     const format = form.get("format");
+    const outputTypeField = form.get("outputType");
     const logEventEventType = form.get("logEvent.eventType");
     const logEventChannel = form.get("logEvent.channel");
     const logEventActorLabel = form.get("logEvent.actorLabel");
@@ -91,6 +129,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     body = {
       briefVersionId: typeof briefVersionId === "string" ? briefVersionId : "",
       format: typeof format === "string" ? format : "",
+      outputType: typeof outputTypeField === "string" && outputTypeField.trim() !== "" ? outputTypeField : undefined,
       logEvent:
         typeof logEventEventType === "string"
           ? {
@@ -109,7 +148,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: "Invalid request", issues: parsed.error.issues }, { status: 400 });
   }
 
-  const { briefVersionId, format, logEvent } = parsed.data;
+  const { briefVersionId, format, outputType: outputTypeBody, logEvent } = parsed.data;
 
   const [issue, briefVersion] = await Promise.all([
     prisma.issue.findUnique({ where: { id: issueId } }),
@@ -127,8 +166,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   const postureState = CirculationStateSchema.parse(briefVersion.circulationState);
   const artifact = BriefArtifactSchema.parse(briefVersion.artifact);
-  const rendered = renderExportPackage({ issue, mode: parsedMode.data, format, artifact });
-  const filename = `metis-${issueId}-${format}-v${briefVersion.versionNumber}.${rendered.mimeType === "text/plain" ? "txt" : "md"}`;
+  const ot = resolvedOutputTypeForExport(format, outputTypeBody);
+  const rendered = renderExportDeliverable({ issue, mode: parsedMode.data, format, artifact, outputType: ot });
+  const ext = exportFileExtensionForMime(rendered.mimeType);
+  const filename = `metis-${issueId}-${format}-v${briefVersion.versionNumber}.${ext}`;
 
   const created = await prisma.$transaction(async (tx) => {
     const exportRow = await tx.artifactExport.create({
@@ -186,8 +227,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     briefVersionId: created.briefVersionId,
     mode: parsedMode.data,
     format,
+    outputType: ot,
     filename: created.filename,
-    mimeType: created.mimeType === "text/plain" ? "text/plain" : "text/markdown",
+    mimeType:
+      created.mimeType === "text/plain"
+        ? ("text/plain" as const)
+        : created.mimeType === "text/html"
+          ? ("text/html" as const)
+          : ("text/markdown" as const),
     content: created.content,
     createdAt: created.createdAt.toISOString(),
   };

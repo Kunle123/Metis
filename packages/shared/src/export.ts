@@ -11,15 +11,26 @@ export const ExportFormatSchema = z.union([
 ]);
 export type ExportFormat = z.infer<typeof ExportFormatSchema>;
 
+/** Delivery encoding; logical brief package stays in `ExportFormat`. */
+export const ExportOutputTypeSchema = z.union([z.literal("markdown"), z.literal("plain"), z.literal("html")]);
+export type ExportOutputType = z.infer<typeof ExportOutputTypeSchema>;
+
+export const ExportMimeTypeSchema = z.union([
+  z.literal("text/markdown"),
+  z.literal("text/plain"),
+  z.literal("text/html"),
+]);
+
 export const ExportPackageResponseSchema = z.object({
   issueId: z.string(),
   briefVersionId: z.string(),
   mode: BriefModeSchema,
   format: ExportFormatSchema,
+  outputType: ExportOutputTypeSchema.optional(),
   title: z.string(),
   generatedAt: z.string(),
   filename: z.string(),
-  mimeType: z.union([z.literal("text/markdown"), z.literal("text/plain")]),
+  mimeType: ExportMimeTypeSchema,
   content: z.string(),
   circulationState: CirculationStateSchema,
   circulationNotes: z.string().nullable(),

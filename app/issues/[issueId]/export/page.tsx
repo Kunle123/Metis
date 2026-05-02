@@ -12,9 +12,9 @@ import { CirculationEventTypeSchema, CirculationChannelSchema } from "@metis/sha
 import { prisma } from "@/lib/db/prisma";
 import { getIssueById } from "@/lib/issues/getIssueContext";
 import { BriefModeSchema, BriefArtifactSchema, type BriefMode, type BriefArtifact } from "@metis/shared/briefVersion";
-import { ExportFormatSchema, type ExportFormat } from "@metis/shared/export";
+import { ExportFormatSchema, type ExportFormat, type ExportOutputType } from "@metis/shared/export";
 import { resolveBriefVersionForExport } from "@/lib/export/resolveBriefVersionForExport";
-import { renderExportPackage } from "@/lib/export/renderExportPackage";
+import { renderExportDeliverable } from "@/lib/export/renderExportPackage";
 import { ExportActionsClient } from "@/app/issues/[issueId]/export/export-actions.client";
 
 export const dynamic = "force-dynamic";
@@ -75,6 +75,15 @@ export default async function IssueExportPage({
   const formatRaw = typeof sp.format === "string" ? sp.format : Array.isArray(sp.format) ? sp.format[0] : undefined;
   const parsedFormat = ExportFormatSchema.safeParse(formatRaw ?? "executive-brief");
   const selectedFormat = parsedFormat.success ? parsedFormat.data : ("executive-brief" as const);
+
+  const outputRaw = typeof sp.output === "string" ? sp.output : Array.isArray(sp.output) ? sp.output[0] : undefined;
+  /** Delivery encoding for Markdown vs HTML preview/download (email-ready is always plain text). */
+  const exportPreviewOutput: Exclude<ExportOutputType, "plain"> =
+    selectedFormat === "email-ready"
+      ? "markdown"
+      : outputRaw === "html"
+        ? "html"
+        : "markdown";
 
   const issue = await getIssueById(issueId);
   if (!issue) {
@@ -161,7 +170,13 @@ export default async function IssueExportPage({
   const { briefVersion, sourceMode, executiveBriefUsesFullBriefFallback } = resolved;
 
   const artifact = BriefArtifactSchema.parse(briefVersion.artifact) as BriefArtifact;
-  const rendered = renderExportPackage({ issue, mode: sourceMode, format: selectedFormat, artifact });
+  const rendered = renderExportDeliverable({
+    issue,
+    mode: sourceMode,
+    format: selectedFormat,
+    artifact,
+    outputType: exportPreviewOutput,
+  });
 
   // Wave 4: strict event semantics for export actions.
   const preparedEvent = CirculationEventTypeSchema.parse("prepared");
@@ -236,7 +251,9 @@ export default async function IssueExportPage({
                   return (
                     <Link
                       key={item.id}
-                      href={`/issues/${issue.id}/export?mode=${urlMode}&format=${item.id}`}
+                      href={`/issues/${issue.id}/export?mode=${urlMode}&format=${item.id}${
+                        item.id === "email-ready" ? "" : `&output=${exportPreviewOutput}`
+                      }`}
                       className={`block border-t border-white/10 px-4 py-3 first:border-t-0 sm:px-5 ${
                         isSelected ? "bg-[rgba(224,183,111,0.08)]" : "hover:bg-white/[0.02]"
                       }`}
@@ -321,12 +338,22 @@ export default async function IssueExportPage({
               issueId={issue.id}
               briefVersionId={briefVersion.id}
               selectedFormat={selectedFormat}
+              exportPreviewOutput={exportPreviewOutput}
               urlMode={urlMode}
               briefSourceMode={sourceMode}
               executiveBriefUsesFullBriefFallback={executiveBriefUsesFullBriefFallback}
               previewTitle={issue.title}
               previewMeta={[
                 { label: "Export format", value: packageOptions.find((o) => o.id === selectedFormat)?.label ?? "—" },
+                {
+                  label: "Output",
+                  value:
+                    rendered.mimeType === "text/html"
+                      ? "HTML"
+                      : rendered.mimeType === "text/plain"
+                        ? "Plain text"
+                        : "Markdown",
+                },
                 { label: "Brief source", value: `${sourceMode === "full" ? "Full" : "Executive"} (stored)` },
                 { label: "Version", value: `v${briefVersion.versionNumber}` },
                 { label: "Circulation", value: artifact.metadata.circulation },
@@ -430,7 +457,13 @@ export default async function IssueExportPage({
                 ))}
                 <div className="flex items-start gap-3 border-t border-white/8 pt-4 text-sm leading-6 text-[--metis-paper-muted]">
                   <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-[--metis-brass]" />
-                  <span>{rendered.mimeType === "text/plain" ? "Plain text package ready." : "Markdown package ready."}</span>
+                  <span>
+                    {rendered.mimeType === "text/plain"
+                      ? "Plain text package ready."
+                      : rendered.mimeType === "text/html"
+                        ? "HTML package ready."
+                        : "Markdown package ready."}
+                  </span>
                 </div>
               </div>
             </CollapsibleSection>

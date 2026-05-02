@@ -1,18 +1,25 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { CheckCircle2, Copy, Download, Mail, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { SegmentedControl } from "@/components/ui/segmented-control";
 import type { ExportFormat } from "@metis/shared/export";
 import type { CirculationChannel, CirculationEventType } from "@metis/shared/circulation";
 import { ArtifactExportResponseSchema } from "@metis/shared/circulation";
+
+type PreviewMime = "text/markdown" | "text/plain" | "text/html";
+type DeliverTab = "markdown" | "html";
 
 type Props = {
   issueId: string;
   briefVersionId: string;
   selectedFormat: ExportFormat;
+  /** Resolved delivery for brief packages (Markdown vs HTML preview); email-ready ignores this server-side. */
+  exportPreviewOutput: DeliverTab;
   /** Brief mode preserved in bookmarks / navigation (query param `mode`). */
   urlMode: "full" | "executive";
   /** Stored BriefVersion.mode powering this package preview and download/copy. */
@@ -21,17 +28,24 @@ type Props = {
   previewTitle: string;
   previewMeta: { label: string; value: string }[];
   previewContent: string;
-  previewMimeType: "text/markdown" | "text/plain";
+  previewMimeType: PreviewMime;
   eventTypes: { prepared: CirculationEventType; downloaded: CirculationEventType; copied: CirculationEventType };
   channels: { file: CirculationChannel; copy: CirculationChannel; email: CirculationChannel };
 };
+
+function formatLabel(previewMimeType: PreviewMime) {
+  if (previewMimeType === "text/plain") return "Plain text";
+  if (previewMimeType === "text/html") return "HTML";
+  return "Markdown";
+}
 
 function downloadText({ filename, mimeType, content }: { filename: string; mimeType: string; content: string }) {
   const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = filename || "metis-export.md";
+  const fallbackExt = mimeType === "text/html" ? "metis-export.html" : mimeType === "text/plain" ? "metis-export.txt" : "metis-export.md";
+  a.download = filename || fallbackExt;
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -42,17 +56,26 @@ async function postExport({
   issueId,
   briefVersionId,
   format,
+  outputTypeForBody,
   logEvent,
 }: {
   issueId: string;
   briefVersionId: string;
   format: ExportFormat;
+  /** When omitted, server defaults non-email formats to Markdown. */
+  outputTypeForBody?: DeliverTab;
   logEvent?: { eventType: CirculationEventType; channel?: CirculationChannel };
 }) {
+  const payload: Record<string, unknown> = {
+    briefVersionId,
+    format,
+    ...(format !== "email-ready" ? { outputType: outputTypeForBody ?? "markdown" } : {}),
+    ...(logEvent ? { logEvent } : {}),
+  };
   const res = await fetch(`/api/issues/${issueId}/export`, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ briefVersionId, format, logEvent }),
+    body: JSON.stringify(payload),
   });
   if (!res.ok) return null;
   const json = await res.json();
@@ -61,14 +84,54 @@ async function postExport({
 }
 
 export function ExportActionsClient(props: Props) {
+  const router = useRouter();
   const [busy, setBusy] = useState<null | "download" | "copy" | "email">(null);
   const [message, setMessage] = useState<null | { tone: "ok" | "bad"; text: string }>(null);
   const [expanded, setExpanded] = useState(false);
 
+  const deliveryForPost = props.selectedFormat === "email-ready" ? undefined : props.exportPreviewOutput;
+
+  const navigateDelivery = (next: DeliverTab) => {
+    const q = new URLSearchParams({
+      mode: props.urlMode,
+      format: props.selectedFormat,
+      output: next,
+    });
+    router.push(`/issues/${props.issueId}/export?${q.toString()}`);
+  };
+
   const copyLabel = useMemo(() => {
     if (props.selectedFormat === "email-ready") return "Copy email-ready package";
+    if (props.previewMimeType === "text/html") return "Copy HTML source";
     return "Copy package text";
-  }, [props.selectedFormat]);
+  }, [props.previewMimeType, props.selectedFormat]);
+
+  const PreviewBody = ({
+    mime,
+    title,
+    content,
+    lightOnDark,
+    expanded: isExpanded,
+  }: {
+    mime: PreviewMime;
+    title: string;
+    content: string;
+    lightOnDark: boolean;
+    expanded: boolean;
+  }) => {
+    if (mime === "text/html") {
+      return (
+        <div
+          className={`${isExpanded ? "h-[min(calc(100vh-140px),52rem)]" : "max-h-[52vh]"} min-h-[220px] w-full overflow-hidden rounded-[1rem] border border-white/10 bg-white`}
+        >
+          <iframe title={title} className="h-full min-h-[200px] w-full border-0" srcDoc={content} sandbox="" />
+        </div>
+      );
+    }
+    return (
+      <pre className={`whitespace-pre-wrap text-xs leading-6 ${lightOnDark ? "text-white/90" : "text-[rgba(255,255,255,0.9)]"}`}>{content}</pre>
+    );
+  };
 
   const doDownload = async (format: ExportFormat, channel: CirculationChannel) => {
     setMessage(null);
@@ -78,6 +141,7 @@ export function ExportActionsClient(props: Props) {
         issueId: props.issueId,
         briefVersionId: props.briefVersionId,
         format,
+        outputTypeForBody: format === "email-ready" ? undefined : deliveryForPost,
         logEvent: { eventType: props.eventTypes.downloaded, channel },
       });
       if (!out) throw new Error("export_failed");
@@ -92,12 +156,13 @@ export function ExportActionsClient(props: Props) {
 
   const doCopy = async (format: ExportFormat, channel: CirculationChannel) => {
     setMessage(null);
-    setBusy("copy");
+    setBusy(format === "email-ready" ? "email" : "copy");
     try {
       const out = await postExport({
         issueId: props.issueId,
         briefVersionId: props.briefVersionId,
         format,
+        outputTypeForBody: format === "email-ready" ? undefined : deliveryForPost,
         logEvent: { eventType: props.eventTypes.copied, channel },
       });
       if (!out) throw new Error("export_failed");
@@ -112,6 +177,25 @@ export function ExportActionsClient(props: Props) {
 
   return (
     <div className="space-y-4">
+      {props.selectedFormat !== "email-ready" ? (
+        <div className="max-w-xl">
+          <SegmentedControl<DeliverTab>
+            label="Export output"
+            value={props.exportPreviewOutput}
+            disabled={busy !== null}
+            options={[
+              { id: "markdown", label: "Markdown" },
+              { id: "html", label: "HTML" },
+            ]}
+            onChange={(next) => navigateDelivery(next)}
+          />
+        </div>
+      ) : (
+        <p className="text-xs text-[--metis-paper-muted]">
+          Email-ready uses plain text only. Switch package to unlock HTML output.
+        </p>
+      )}
+
       <section className="grid gap-3 border-t border-white/8 pt-6 sm:grid-cols-3">
         <Button
           type="button"
@@ -169,8 +253,7 @@ export function ExportActionsClient(props: Props) {
           <div className="min-w-0">
             <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Preview</p>
             <p className="mt-1 text-xs text-[--metis-paper-muted]">
-              {props.previewMimeType === "text/plain" ? "Plain text" : "Markdown"} · Brief source:{" "}
-              {props.briefSourceMode === "full" ? "Full" : "Executive"} (stored)
+              {formatLabel(props.previewMimeType)} · Brief source: {props.briefSourceMode === "full" ? "Full" : "Executive"} (stored)
               {props.urlMode !== props.briefSourceMode
                 ? ` · Bookmark mode: ${props.urlMode === "full" ? "Full" : "Executive"}`
                 : ""}
@@ -178,7 +261,7 @@ export function ExportActionsClient(props: Props) {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            {props.previewMeta.slice(0, 5).map((m) => (
+            {props.previewMeta.slice(0, 6).map((m) => (
               <Badge key={m.label} className="border-0 bg-white/8 text-[--metis-paper-muted]">
                 {m.label}: {m.value}
               </Badge>
@@ -190,7 +273,13 @@ export function ExportActionsClient(props: Props) {
         </div>
 
         <div className="mt-4 max-h-[52vh] overflow-auto rounded-[1rem] border border-white/10 bg-[rgba(0,0,0,0.18)] p-4">
-          <pre className="whitespace-pre-wrap text-xs leading-6 text-[rgba(255,255,255,0.9)]">{props.previewContent}</pre>
+          <PreviewBody
+            mime={props.previewMimeType}
+            title={`Preview · ${props.previewTitle}`}
+            content={props.previewContent}
+            lightOnDark={false}
+            expanded={false}
+          />
         </div>
       </section>
 
@@ -201,8 +290,7 @@ export function ExportActionsClient(props: Props) {
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold text-white">{props.previewTitle}</p>
                 <p className="mt-1 text-xs text-white/70">
-                  {props.previewMimeType === "text/plain" ? "Plain text" : "Markdown"} · Brief source:{" "}
-                  {props.briefSourceMode === "full" ? "Full" : "Executive"}
+                  {formatLabel(props.previewMimeType)} · Brief source: {props.briefSourceMode === "full" ? "Full" : "Executive"}
                   {props.urlMode !== props.briefSourceMode
                     ? ` · Bookmark mode: ${props.urlMode === "full" ? "Full" : "Executive"}`
                     : ""}
@@ -223,7 +311,13 @@ export function ExportActionsClient(props: Props) {
               </div>
             </div>
             <div className="flex-1 overflow-auto p-4">
-              <pre className="whitespace-pre-wrap text-xs leading-6 text-white/90">{props.previewContent}</pre>
+              <PreviewBody
+                mime={props.previewMimeType}
+                title={`Expanded preview · ${props.previewTitle}`}
+                content={props.previewContent}
+                lightOnDark
+                expanded
+              />
             </div>
           </div>
         </div>
@@ -231,4 +325,3 @@ export function ExportActionsClient(props: Props) {
     </div>
   );
 }
-
