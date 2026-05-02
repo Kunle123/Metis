@@ -3,7 +3,6 @@ import { AlertTriangle, FileOutput, Library, RefreshCcw, ScanSearch } from "luci
 
 import { ConfidencePill, SurfaceCard, MetisShell } from "@/components/MetisShell";
 import { Badge } from "@/components/ui/badge";
-import { AiProvenance } from "@/components/ui/ai-provenance";
 import { Button } from "@/components/ui/button";
 import { CollapsibleSection } from "@/components/review/CollapsibleSection";
 import { DenseSection } from "@/components/review/DenseSection";
@@ -15,6 +14,7 @@ import { BriefModeSchema, type BriefMode, type BriefConfidence, type BriefArtifa
 import { GenerateBriefButton } from "@/app/brief/generate-brief-button";
 import { IntakeSuggestionsPanel } from "@/app/issues/[issueId]/brief/intake-suggestions-panel";
 import { BriefModeToggle } from "@/app/issues/[issueId]/brief/brief-mode-toggle";
+import { BriefExecutiveSummaryCompare } from "@/app/issues/[issueId]/brief/brief-executive-summary-compare";
 
 export const dynamic = "force-dynamic";
 
@@ -234,9 +234,6 @@ export default async function IssueBriefPage({
                                 {displayTitles(section.id, section.title)}
                               </span>
                               </div>
-                              {briefAiSynthesisEnabled && section.id === "executive-summary" ? (
-                                <AiProvenance mode="ai" variant="synthesis-available" />
-                              ) : null}
                             </div>
                             <span className="shrink-0 text-xs text-[--metis-text-secondary]">
                               {readiness.label} · Updated {section.updatedAtLabel}
@@ -245,7 +242,15 @@ export default async function IssueBriefPage({
                         }
                         className={index === 0 ? "border-t-0 pt-0" : undefined}
                       >
-                        <p className="max-w-4xl whitespace-pre-line leading-7 text-[--metis-text-secondary]">{section.body}</p>
+                        {section.id === "executive-summary" ? (
+                          <BriefExecutiveSummaryCompare
+                            deterministicBody={section.body}
+                            synthesis={artifact.full.executiveSummarySynthesis}
+                            briefAiSynthesisEnabled={briefAiSynthesisEnabled}
+                          />
+                        ) : (
+                          <p className="max-w-4xl whitespace-pre-line leading-7 text-[--metis-text-secondary]">{section.body}</p>
+                        )}
                       </DenseSection>
                     );
                   })}

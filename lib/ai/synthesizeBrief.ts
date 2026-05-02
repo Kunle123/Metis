@@ -46,6 +46,26 @@ function preservesUncertainty(output: string) {
   );
 }
 
+const MAX_REWRITE_CHARS_EXPORT = MAX_REWRITE_CHARS;
+
+/** Validates rewrite text after model output; shared with fixture runner (no API). */
+export function isBriefExecutiveSummaryRewriteSafe(params: {
+  rewritten: string;
+  allowedNumbers: Set<string>;
+  hasOpenQuestions: boolean;
+  maxChars?: number;
+}) {
+  const maxChars = params.maxChars ?? MAX_REWRITE_CHARS_EXPORT;
+  const rewritten = params.rewritten.trim();
+  if (!rewritten) return false;
+  if (rewritten.length > maxChars) return false;
+  if (/^#{1,6}\s/m.test(rewritten)) return false;
+  if (/\b(as an ai|as a language model)\b/i.test(rewritten)) return false;
+  if (outputIntroducesNewNumbers(rewritten, params.allowedNumbers)) return false;
+  if (params.hasOpenQuestions && !preservesUncertainty(rewritten)) return false;
+  return true;
+}
+
 const SYSTEM = `You write leadership-ready briefing prose for a product called Metis.
 
 Safety rules (must follow):
@@ -115,6 +135,7 @@ Constraints:
 - Do not add any new facts. Use only what is present in the input JSON.
 - Do not resolve or answer open questions.
 - If open questions exist, include at least one explicit uncertainty marker (e.g. "open questions remain", "not yet confirmed", "subject to change").
+- If polishing might shift meaning, tighten confidence, remove caveats, or hide ambiguity compared with the deterministic paragraph, omit the rewrite (omit rewrites.full["executive-summary"] or use an unusable placeholder so the system keeps deterministic wording).
 - Keep it under ${MAX_REWRITE_CHARS} characters.
 
 Input JSON:
@@ -143,12 +164,16 @@ ${payload}`,
   if (!safe.success) return null;
 
   const rewritten = safe.data.rewrites.full?.["executive-summary"]?.trim() ?? "";
-  if (!rewritten) return null;
-  if (rewritten.length > MAX_REWRITE_CHARS) return null;
-  if (/^#{1,6}\s/m.test(rewritten)) return null;
-  if (/\b(as an ai|as a language model)\b/i.test(rewritten)) return null;
-  if (outputIntroducesNewNumbers(rewritten, allowedNumbers)) return null;
-  if (hasOpenQuestions && !preservesUncertainty(rewritten)) return null;
+  if (
+    !isBriefExecutiveSummaryRewriteSafe({
+      rewritten,
+      allowedNumbers,
+      hasOpenQuestions,
+      maxChars: MAX_REWRITE_CHARS,
+    })
+  ) {
+    return null;
+  }
 
   return { rewrite: rewritten, limitations: safe.data.limitations ?? "" };
 }

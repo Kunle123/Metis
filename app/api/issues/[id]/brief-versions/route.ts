@@ -48,11 +48,17 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     parsed.data.mode,
   );
 
+  const synthesisEnabled = process.env.BRIEF_AI_SYNTHESIS_ENABLED === "true";
+
   const artifact = await (async () => {
     if (parsed.data.mode !== "full") return artifactDeterministic;
 
     const exec = artifactDeterministic.full.sections.find((s) => s.id === "executive-summary");
     if (!exec?.body?.trim()) return artifactDeterministic;
+
+    if (!synthesisEnabled) return artifactDeterministic;
+
+    const attemptedAtIso = new Date().toISOString();
 
     const internalInputsForBrief = internalInputs.filter((i: any) => !Boolean((i as any).excludedFromBrief));
     const topObservations = internalInputsForBrief.slice(0, 2).map((i) => ({
@@ -106,21 +112,37 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       deterministicExecutiveSummaryBody: exec.body,
     });
 
-    if (!rewrite?.rewrite?.trim()) return artifactDeterministic;
+    if (rewrite?.rewrite?.trim()) {
+      const updated = {
+        ...artifactDeterministic,
+        full: {
+          ...artifactDeterministic.full,
+          executiveSummarySynthesis: {
+            status: "succeeded" as const,
+            attemptedAtIso,
+            aiEnhancedBody: rewrite.rewrite,
+            ...(rewrite.limitations?.trim() ? { limitations: rewrite.limitations.trim() } : {}),
+          },
+        },
+      };
+      const validated = BriefArtifactSchema.safeParse(updated);
+      if (!validated.success) return artifactDeterministic;
+      return validated.data;
+    }
 
-    const updated = {
+    const withFailed = {
       ...artifactDeterministic,
       full: {
         ...artifactDeterministic.full,
-        sections: artifactDeterministic.full.sections.map((s) =>
-          s.id === "executive-summary" ? { ...s, body: rewrite.rewrite } : s,
-        ),
+        executiveSummarySynthesis: {
+          status: "failed" as const,
+          attemptedAtIso,
+        },
       },
     };
-
-    const validated = BriefArtifactSchema.safeParse(updated);
-    if (!validated.success) return artifactDeterministic;
-    return validated.data;
+    const validatedFailed = BriefArtifactSchema.safeParse(withFailed);
+    if (!validatedFailed.success) return artifactDeterministic;
+    return validatedFailed.data;
   })();
 
   const created = await prisma.$transaction(async (tx) => {

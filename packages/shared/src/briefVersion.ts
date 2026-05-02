@@ -11,6 +11,25 @@ export const BriefConfidenceSchema = z.union([
 ]);
 export type BriefConfidence = z.infer<typeof BriefConfidenceSchema>;
 
+/**
+ * Optional executive-summary AI pass metadata (Full brief only). Stored in artifact JSON.
+ * The deterministic paragraph always lives in `full.sections` (id `executive-summary`).body.
+ * When status is `succeeded`, `aiEnhancedBody` holds alternate wording only (no extra claims).
+ */
+export const ExecutiveSummarySynthesisSchema = z.discriminatedUnion("status", [
+  z.object({
+    status: z.literal("succeeded"),
+    attemptedAtIso: z.string(),
+    aiEnhancedBody: z.string(),
+    limitations: z.string().optional(),
+  }),
+  z.object({
+    status: z.literal("failed"),
+    attemptedAtIso: z.string(),
+  }),
+]);
+export type ExecutiveSummarySynthesis = z.infer<typeof ExecutiveSummarySynthesisSchema>;
+
 export const BriefArtifactSchema = z.object({
   lede: z.string(),
   metadata: z.object({
@@ -37,6 +56,7 @@ export const BriefArtifactSchema = z.object({
         evidenceRefs: z.array(z.string()),
       }),
     ),
+    executiveSummarySynthesis: ExecutiveSummarySynthesisSchema.optional(),
   }),
   executive: z.object({
     blocks: z.array(z.object({ label: z.string(), body: z.string() })),
