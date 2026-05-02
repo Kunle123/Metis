@@ -38,6 +38,9 @@ function normalizeForDiff(text: string) {
   return normalizeBodyText(text).replace(/\s+/g, " ").trim();
 }
 
+const MESSAGES_AI_USER_FAILURE_NOTE =
+  "AI-enhanced wording could not be generated. Original draft is still available.";
+
 export function MessagesPanel({
   issueId,
   issueTitle,
@@ -200,9 +203,22 @@ export function MessagesPanel({
         }),
       });
       const data = (await res.json().catch(() => ({}))) as unknown;
+
       if (!res.ok) {
-        throw new Error("ai_failed");
+        const errObj = typeof data === "object" && data !== null ? (data as Record<string, unknown>) : {};
+        const error = typeof errObj.error === "string" ? errObj.error : undefined;
+        const detail = typeof errObj.detail === "string" ? errObj.detail : undefined;
+        if (process.env.NODE_ENV === "development") {
+          console.error("[Messages AI] POST /message-variants failed", {
+            status: res.status,
+            error,
+            detail,
+          });
+        }
+        setAiNote(MESSAGES_AI_USER_FAILURE_NOTE);
+        return false;
       }
+
       const row = data as {
         id: string;
         versionNumber: number;
@@ -210,7 +226,27 @@ export function MessagesPanel({
         stakeholderGroupId: string | null;
         issueStakeholderId: string | null;
         artifact: MessageVariantArtifact;
+        aiCleanup?: { ok: boolean; error?: string; detail?: string };
       };
+
+      setLatest({
+        id: row.id,
+        versionNumber: row.versionNumber,
+        generatedFromIssueUpdatedAt: row.generatedFromIssueUpdatedAt,
+        stakeholderGroupId: row.stakeholderGroupId,
+        issueStakeholderId: row.issueStakeholderId,
+        artifact: row.artifact,
+      });
+
+      if (row.aiCleanup?.ok === false) {
+        if (process.env.NODE_ENV === "development") {
+          console.error("[Messages AI] cleanup unsuccessful (deterministic variant saved)", row.aiCleanup);
+        }
+        setAiNote(MESSAGES_AI_USER_FAILURE_NOTE);
+        router.refresh();
+        return false;
+      }
+
       setAiRow({
         id: row.id,
         versionNumber: row.versionNumber,
@@ -227,8 +263,10 @@ export function MessagesPanel({
       }
       return true;
     } catch (e) {
-      console.error(e);
-      setAiNote("AI-enhanced version was unavailable; showing the original draft.");
+      if (process.env.NODE_ENV === "development") {
+        console.error("[Messages AI] ensureAiEnhanced failed", e);
+      }
+      setAiNote(MESSAGES_AI_USER_FAILURE_NOTE);
       return false;
     } finally {
       setLoading(false);

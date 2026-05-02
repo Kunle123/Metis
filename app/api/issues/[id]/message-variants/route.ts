@@ -81,6 +81,8 @@ const TEMPLATE_LABELS: Record<MessageVariantTemplateId, string> = {
   media_holding_line: "Media — holding line",
 };
 
+type AiCleanupPayload = { ok: true } | { ok: false; error: "ai_failed"; detail: string };
+
 function serializeMessageVariant(row: {
   id: string;
   issueId: string;
@@ -182,11 +184,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const json = await request.json().catch(() => ({}));
   const parsed = CreateMessageVariantInputSchema.safeParse(json);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid request", issues: parsed.error.issues }, { status: 400 });
+    return NextResponse.json(
+      { error: "Invalid request", detail: "validation_failed", issues: parsed.error.issues },
+      { status: 400 },
+    );
   }
 
   const issue = await prisma.issue.findUnique({ where: { id: issueId } });
-  if (!issue) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!issue) return NextResponse.json({ error: "Not found", detail: "issue_not_found" }, { status: 404 });
 
   const stakeholderGroupId = parsed.data.stakeholderGroupId ?? null;
 
@@ -199,7 +204,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   if (stakeholderGroupId) {
     group = await prisma.stakeholderGroup.findFirst({ where: { id: stakeholderGroupId, isActive: true } });
     if (!group) {
-      return NextResponse.json({ error: "Audience group not found or inactive" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Audience group not found or inactive", detail: "audience_group_not_found" },
+        { status: 404 },
+      );
     }
     audience = { kind: "group", group, issueLens };
     internalAudience = { kind: "group", group, issueLens };
@@ -257,6 +265,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     },
   };
 
+  let aiCleanup: AiCleanupPayload | null = null;
+
   if (desiredPolish === "ai_polished") {
     const audiencePathLabel =
       stakeholderGroupId && group
@@ -298,22 +308,35 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     try {
       const polished = await cleanupMessageVariantsSections(payload);
       if (polished) {
-        mergedArtifact = MessageVariantArtifactSchema.parse({
-          ...mergedArtifact,
-          sections: polished.sections,
-          metadata: {
-            ...mergedArtifact.metadata,
-            aiWordingPolish: "ai_polished",
-            aiComparisonAvailable: true,
-            deterministicSectionBodiesById: deterministicBodiesById(deterministic),
-          },
-        });
+        try {
+          mergedArtifact = MessageVariantArtifactSchema.parse({
+            ...mergedArtifact,
+            sections: polished.sections,
+            metadata: {
+              ...mergedArtifact.metadata,
+              aiWordingPolish: "ai_polished",
+              aiComparisonAvailable: true,
+              deterministicSectionBodiesById: deterministicBodiesById(deterministic),
+            },
+          });
+          aiCleanup = { ok: true };
+        } catch {
+          mergedArtifact = MessageVariantArtifactSchema.parse(mergedArtifact);
+          aiCleanup = { ok: false, error: "ai_failed", detail: "artifact_validation_failed" };
+        }
+      } else {
+        mergedArtifact = MessageVariantArtifactSchema.parse(mergedArtifact);
+        aiCleanup = { ok: false, error: "ai_failed", detail: "no_valid_output" };
       }
     } catch {
       mergedArtifact = MessageVariantArtifactSchema.parse(mergedArtifact);
+      aiCleanup = { ok: false, error: "ai_failed", detail: "cleanup_exception" };
     }
   } else {
     mergedArtifact = MessageVariantArtifactSchema.parse(mergedArtifact);
+    if (parsed.data.improveWithAi) {
+      aiCleanup = { ok: false, error: "ai_failed", detail: "ai_cleanup_disabled_or_missing_api_key" };
+    }
   }
 
   const audienceSnapshot = buildAudienceSnapshot(issue, audience);
@@ -349,5 +372,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   revalidatePath(`/issues/${issueId}`);
   revalidatePath("/");
 
-  return NextResponse.json(serializeMessageVariant(created));
+  const body = {
+    ...serializeMessageVariant(created),
+    ...(parsed.data.improveWithAi && aiCleanup ? { aiCleanup } : {}),
+  };
+  return NextResponse.json(body);
 }
