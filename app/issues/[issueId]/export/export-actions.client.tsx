@@ -303,7 +303,7 @@ export function ExportActionsClient(props: Props) {
               {props.selectedFormat === "email-ready" ? " · Email-ready cannot use HTML formatting." : null}
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
             {props.previewMeta.slice(0, 10).map((m) => (
               <Badge key={m.label} className="border-0 bg-white/8 text-[--metis-paper-muted]">
                 {m.label}: {m.value}

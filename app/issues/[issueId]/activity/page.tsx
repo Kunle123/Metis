@@ -53,8 +53,8 @@ export default async function IssueActivityPage({ params }: { params: Promise<{ 
         updatedAt: issue.updatedAt,
       }}
     >
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
-        <SurfaceCard className="overflow-hidden">
+      <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <SurfaceCard className="min-w-0 overflow-hidden">
           <div className="border-b border-white/8 bg-[rgba(255,255,255,0.025)] px-6 py-5 sm:px-7">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="space-y-1">
@@ -71,7 +71,7 @@ export default async function IssueActivityPage({ params }: { params: Promise<{ 
           </div>
         </SurfaceCard>
 
-        <SurfaceCard className="metis-support-surface overflow-hidden">
+        <SurfaceCard className="metis-support-surface min-w-0 overflow-hidden">
           <div className="grid gap-3 px-5 py-5">
             <Button asChild variant="outline" className="w-full rounded-full">
               <Link href={`/issues/${issue.id}/brief?mode=full`}>Open brief</Link>

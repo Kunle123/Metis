@@ -16,7 +16,7 @@ import {
 } from "@/lib/issues/activityTimelineDisplay";
 
 const SELECT_CLASS =
-  "h-[var(--metis-control-height-md)] min-w-[11rem] max-w-full rounded-md border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-3 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60 disabled:opacity-50";
+  "h-[var(--metis-control-height-md)] min-w-0 flex-1 sm:min-w-[11rem] sm:flex-none max-w-full rounded-md border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-3 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60 disabled:opacity-50";
 
 type Props = { items: SerializedActivityRow[] };
 
@@ -86,8 +86,8 @@ export function ActivityTimelineClient({ items }: Props) {
             className="pl-9"
           />
         </div>
-        <div className="flex flex-wrap items-end gap-2">
-          <div className="flex flex-col gap-1">
+        <div className="flex min-w-0 flex-wrap items-end gap-2">
+          <div className="flex min-w-0 flex-col gap-1">
             <label htmlFor="activity-timeline-type" className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">
               Type
             </label>

@@ -30,7 +30,7 @@ export function IssueSummaryRow({ issue, workspaceHref }: { issue: DashboardIssu
   return (
     <Link
       href={workspaceHref}
-      className="group grid gap-5 rounded-[1.65rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.015))] p-5 transition hover:border-white/14 hover:bg-white/[0.05] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60 lg:grid-cols-[1.3fr_0.8fr_minmax(200px,1fr)]"
+      className="group grid min-w-0 gap-5 rounded-[1.65rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.015))] p-5 transition hover:border-white/14 hover:bg-white/[0.05] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60 lg:grid-cols-[1.3fr_0.8fr_minmax(200px,1fr)]"
     >
       <div className="min-w-0 space-y-4">
         <div className="flex flex-wrap items-center gap-2">

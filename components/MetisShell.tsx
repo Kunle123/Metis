@@ -122,9 +122,9 @@ function MetricCard({ label, value, detail }: { label: string; value: string; de
     <div className="metis-surface metis-support-surface relative overflow-hidden rounded-[1.35rem] border px-4 py-4 shadow-[0_16px_42px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.03)]">
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[--metis-brass]/60 to-transparent" />
       <p className="text-[0.68rem] uppercase tracking-[0.24em] text-[--metis-ink-soft]">{label}</p>
-      <div className="mt-4 flex items-end justify-between gap-4 border-t border-white/8 pt-4">
+      <div className="mt-4 flex flex-col gap-2 border-t border-white/8 pt-4 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
         <span className="font-[Cormorant_Garamond] text-[2.35rem] leading-none text-[--metis-paper]">{value}</span>
-        <span className="max-w-[9rem] text-right text-[0.72rem] leading-5 text-[--metis-paper-muted]">{detail}</span>
+        <span className="max-w-none text-[0.72rem] leading-5 text-[--metis-paper-muted] sm:max-w-[9rem] sm:text-right">{detail}</span>
       </div>
     </div>
   );
@@ -467,10 +467,10 @@ export function MetisShell({
         </aside>
 
         <main className="relative min-h-0 min-w-0 px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
-          <div className="mx-auto flex max-w-[1520px] flex-col overflow-x-clip rounded-[2rem] border border-white/8 bg-[linear-gradient(180deg,rgba(18,23,24,0.94),rgba(10,14,15,0.985))] shadow-[0_32px_120px_rgba(0,0,0,0.52)]">
+          <div className="mx-auto flex max-w-[1520px] flex-col overflow-x-clip rounded-[1.35rem] border border-white/8 bg-[linear-gradient(180deg,rgba(18,23,24,0.94),rgba(10,14,15,0.985))] shadow-[0_32px_120px_rgba(0,0,0,0.52)] sm:rounded-[1.65rem] lg:rounded-[2rem]">
             <header className="border-b border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.028),rgba(255,255,255,0.012))] px-5 py-5 sm:px-7 lg:px-8">
               <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-                <div className="space-y-2">
+                <div className="min-w-0 space-y-2">
                   {pageMeta ? <p className="text-[0.68rem] uppercase tracking-[0.28em] text-[--metis-ink-soft]">{pageMeta}</p> : null}
                   {issueRoutePrefix && activeIssue?.title ? (
                     <p className="text-[0.68rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">
@@ -485,7 +485,7 @@ export function MetisShell({
                   ) : null}
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="flex min-w-0 flex-wrap items-center gap-3">
                   <div className="hidden items-center gap-2 text-[0.72rem] leading-5 text-[--metis-paper-muted] md:flex">
                     <Clock3 className="h-3.5 w-3.5 shrink-0 text-[--metis-brass]/65" aria-hidden />
                     <span className="text-[--metis-ink-soft]">Refreshed 12 minutes ago</span>

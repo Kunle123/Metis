@@ -81,15 +81,15 @@ export default async function DashboardPage() {
           </Button>
         </div>
 
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(320px,0.8fr)]">
-          <SurfaceCard className="overflow-hidden">
+        <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(320px,0.8fr)]">
+          <SurfaceCard className="min-w-0 overflow-hidden">
             <div className="border-b border-white/10 bg-[rgba(255,255,255,0.03)] px-6 py-5">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                 <div>
                   <h3 className="font-[Cormorant_Garamond] text-3xl text-[--metis-paper]">Issues</h3>
                 </div>
-                <div className="flex flex-wrap gap-3">
-                  <div className="relative min-w-[230px] flex-1 lg:w-[260px] lg:flex-none">
+                <div className="flex min-w-0 flex-wrap gap-3">
+                  <div className="relative min-w-0 w-full flex-1 sm:min-w-[11rem] lg:w-[260px] lg:flex-none">
                     <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[--metis-ink-soft]" />
                     <Input value="portal outage" readOnly className="h-11 rounded-full border-white/10 bg-white/[0.04] pl-11 text-[--metis-paper]" />
                   </div>
@@ -115,7 +115,7 @@ export default async function DashboardPage() {
             </div>
           </SurfaceCard>
 
-          <div className="space-y-6">
+          <div className="min-w-0 space-y-6">
             <SurfaceCard className="overflow-hidden">
               <div className="border-b border-white/10 bg-[rgba(255,255,255,0.03)] px-6 py-5">
                 <h3 className="text-[0.78rem] font-medium uppercase tracking-[0.22em] text-[rgba(176,171,160,0.7)]">Templates</h3>
@@ -126,17 +126,17 @@ export default async function DashboardPage() {
                     key={template.id}
                     className="rounded-[1.45rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] p-5 transition hover:border-white/14 hover:bg-white/[0.06]"
                   >
-                    <div className="flex items-start justify-between gap-3 border-b border-white/8 pb-4">
-                      <div>
+                    <div className="flex flex-col gap-3 border-b border-white/8 pb-4 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
+                      <div className="min-w-0">
                         <div className="flex items-center gap-2">
                           <Star className="h-4 w-4 text-[--metis-brass]" />
                           <h4 className="text-base font-medium text-[--metis-paper]">{template.name}</h4>
                         </div>
                         <p className="mt-3 text-sm leading-7 text-[--metis-paper-muted]">{template.description}</p>
                       </div>
-                      <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{template.estimatedSetup}</Badge>
+                      <Badge className="w-fit shrink-0 border-0 bg-white/8 text-[--metis-paper-muted]">{template.estimatedSetup}</Badge>
                     </div>
-                    <div className="mt-4 flex items-center justify-between gap-4 text-sm text-[--metis-paper-muted]">
+                    <div className="mt-4 flex flex-col gap-3 text-sm text-[--metis-paper-muted] sm:flex-row sm:items-center sm:justify-between sm:gap-4">
                       <span>{template.issueType}</span>
                       <Link href="/setup" className="inline-flex items-center gap-2 text-[--metis-brass-soft] transition hover:text-white">
                         Use template

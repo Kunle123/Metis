@@ -58,8 +58,8 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
       <div className="space-y-6">
         <SurfaceCard className="overflow-hidden">
           <div className="border-b border-white/8 bg-[rgba(255,255,255,0.025)] px-6 py-5 sm:px-7">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-              <div className="space-y-1">
+            <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between lg:items-end">
+              <div className="min-w-0 space-y-1">
                 <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper]">Workspace</h2>
                 <p className="text-sm leading-6 text-[--metis-paper-muted]">
                   Review the issue record, sources, gaps, and input in one screen.

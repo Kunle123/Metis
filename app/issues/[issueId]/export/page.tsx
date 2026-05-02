@@ -227,8 +227,8 @@ export default async function IssueExportPage({
         updatedAt: issue.updatedAt,
       }}
     >
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
-        <SurfaceCard className="overflow-hidden">
+      <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
+        <SurfaceCard className="min-w-0 overflow-hidden">
           <div className="border-b border-white/8 bg-[rgba(255,255,255,0.025)] px-6 py-5 sm:px-7">
             <ReviewToolbar
               className="border-0 bg-transparent px-0 py-0"
@@ -390,7 +390,7 @@ export default async function IssueExportPage({
           </div>
         </SurfaceCard>
 
-        <SurfaceCard className="metis-support-surface overflow-hidden">
+        <SurfaceCard className="metis-support-surface min-w-0 overflow-hidden">
           <div className="space-y-4 px-5 py-5">
             <ReviewRailCard
               title="Preview"

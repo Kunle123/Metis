@@ -320,10 +320,10 @@ export function MessagesPanel({
       : "Using the selected audience group defaults from Settings → Audience groups.";
 
   return (
-    <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
+    <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
       <div className="min-w-0 space-y-4">
         <div className="rounded-[1.25rem] border border-white/10 bg-[rgba(0,0,0,0.14)] px-4 py-4 sm:px-5">
-          <div className="grid gap-3 lg:grid-cols-[minmax(220px,1.2fr)_minmax(220px,1.1fr)_minmax(260px,1fr)]">
+          <div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-3">
           <ControlField label="Template">
             <ControlSelect
               aria-label="Message template"
@@ -396,7 +396,9 @@ export function MessagesPanel({
         </div>
 
         <div className="rounded-[1.25rem] border border-white/10 bg-[rgba(0,0,0,0.12)] px-4 py-4 sm:px-5">
-          <p className="font-[Cormorant_Garamond] text-[1.85rem] leading-tight text-[--metis-paper]">{deterministicPreview.metadata.publicHeadline}</p>
+          <p className="font-[Cormorant_Garamond] text-[1.55rem] leading-tight text-[--metis-paper] sm:text-[1.85rem]">
+            {deterministicPreview.metadata.publicHeadline}
+          </p>
         </div>
 
         <article className="rounded-[1.25rem] border border-white/10 bg-[rgba(0,0,0,0.10)] px-4 py-4 sm:px-5">
@@ -413,7 +415,7 @@ export function MessagesPanel({
         </article>
       </div>
 
-      <div className="space-y-4 xl:mt-[0.1rem]">
+      <div className="min-w-0 space-y-4 xl:mt-[0.1rem]">
         <ReviewRailCard title="Persist" tone="neutral" meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Save the current deterministic draft for history and export.</p>}>
           <div className="grid gap-2">
             <Button type="button" variant="outline" className="h-10 rounded-full" disabled={loading} onClick={() => void saveDeterministicVariant()}>

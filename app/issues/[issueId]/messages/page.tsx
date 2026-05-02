@@ -154,7 +154,7 @@ export default async function IssueMessagesPage({
         updatedAt: issue.updatedAt,
       }}
     >
-      <SurfaceCard className="overflow-hidden">
+      <SurfaceCard className="min-w-0 overflow-hidden">
         <div className="border-b border-white/8 bg-[rgba(255,255,255,0.02)] px-6 py-4 sm:px-7 sm:py-4">
           <div className="flex flex-wrap items-baseline justify-between gap-3">
             <h2 className="font-[Cormorant_Garamond] text-[1.8rem] leading-none text-[--metis-paper]">Messages</h2>

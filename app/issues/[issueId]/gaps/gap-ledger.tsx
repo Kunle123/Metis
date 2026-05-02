@@ -218,8 +218,8 @@ export function GapLedger({
   };
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_312px]">
-      <SurfaceCard>
+    <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_312px]">
+      <SurfaceCard className="min-w-0 overflow-hidden">
         <div className="border-b border-white/8 bg-[rgba(255,255,255,0.025)] px-6 py-5 sm:px-7">
           <ReviewToolbar
             className="border-0 bg-transparent px-0 py-0"
@@ -330,8 +330,8 @@ export function GapLedger({
                           rowTone[gap.status],
                         )}
                       >
-                        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_252px] xl:gap-6">
-                          <div className="space-y-4">
+                        <div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_252px] xl:gap-6">
+                          <div className="min-w-0 space-y-4">
                             <DenseSection title="Why it matters" titleClassName="text-[0.62rem]" className="border-t-0 pt-0">
                               <p className="text-sm leading-7 text-[--metis-paper-muted]">{why || "—"}</p>
                             </DenseSection>
@@ -366,7 +366,7 @@ export function GapLedger({
                             </DenseSection>
                           </div>
 
-                          <div className="space-y-3 xl:border-l xl:border-white/8 xl:pl-6">
+                          <div className="min-w-0 space-y-3 xl:border-l xl:border-white/8 xl:pl-6">
                             <DenseSection title="Affects / relates to" titleClassName="text-[0.62rem]" className="border-t-0 pt-0">
                               <p className="text-sm leading-6 text-[--metis-paper]">{affects}</p>
                             </DenseSection>
@@ -455,7 +455,7 @@ export function GapLedger({
         </div>
       </SurfaceCard>
 
-      <SurfaceCard className="metis-support-surface">
+      <SurfaceCard className="metis-support-surface min-w-0 overflow-hidden">
         <div className="space-y-4 px-5 py-5">
           <ReviewRailCard
             title="By section"
