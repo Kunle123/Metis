@@ -61,6 +61,17 @@ function clampText(s: string, max = 160) {
   return `${t.slice(0, max).trimEnd()}…`;
 }
 
+/** en-GB + Europe/London so SSR and initial client render match regardless of runtime locale / tz. */
+function formatIsoInstantLondon(iso: string) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/London",
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(d);
+}
+
 function metaParts(parts: Array<string | null | undefined>) {
   return parts.filter((p) => (p ?? "").trim().length > 0) as string[];
 }
@@ -759,7 +770,7 @@ export function WorkspaceSourceCards({
                         s.tier ? `Tier: ${s.tier}` : null,
                         s.section ? `Section: ${s.section}` : null,
                         s.reliability ? `Reliability: ${s.reliability}` : null,
-                        s.observedAt ? `Observed: ${new Date(s.observedAt).toLocaleString()}` : null,
+                        s.observedAt ? `Observed: ${formatIsoInstantLondon(s.observedAt)}` : null,
                       ]}
                     />
                   </div>
@@ -874,7 +885,7 @@ export function WorkspaceObservationCards({ issueId, observations }: { issueId: 
             </div>
           </div>
           <p className="mt-2.5 whitespace-pre-wrap text-sm text-white/85">{o.response}</p>
-          <p className="mt-2 text-xs text-white/45">{new Date(o.createdAt).toLocaleString()}</p>
+          <p className="mt-2 text-xs text-white/45">{formatIsoInstantLondon(o.createdAt)}</p>
         </div>
       ))}
     </div>
