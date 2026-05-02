@@ -1,25 +1,6 @@
 /**
- * DOCX export spike — not wired into production UI or `/api/issues/.../export`.
- *
- * ## Options evaluated (brief)
- *
- * **`docx` (npm, used here)**
- * - Builds OOXML programmatically (~500KB gzipped transitive footprint; moderate risk).
- * - Railway/Node-compatible; no LibreOffice/browser.
- * - Styling fidelity: manual (mirrors Markdown/HTML branching with explicit headings/bullets rather than dumping raw HTML tags).
- *
- * **HTML → DOCX converters**
- * - Reuse {@link renderExportPackageHtml}; conversion via headless LibreOffice/Pandoc is heavy for serverless; JS HTML→DOCX tooling is fragmented and brittle for arbitrary CSS.
- *
- * **On-demand binary response (recommended eventual shape)**
- * - Extend render layer with `{ mimeType: "application/vnd...wordprocessingml...", body: Buffer }` (non-JSON) or parallel download route.
- * - Avoid storing OOXML bytes in `ArtifactExport.content` (typed as string UTF-16 text fields in practice).
- *
- * **base64 in DB string**
- * - Possible stopgap only; wastes space and complicates payloads; inferior to blob storage + URL for production.
- *
- * **Generation source**
- * - Prefer the same semantic branches as Markdown/HTML ({@link renderExportDeliverable}), i.e. structured `BriefArtifact` + normalization, not Markdown round-trip parsing.
+ * Production DOCX export: OOXML buffer from the same semantic branching as Markdown/HTML.
+ * Beta: unsupported for `email-ready` ({@link isExportDocxSupported} guards requests).
  */
 
 import type { Issue } from "@prisma/client";
@@ -28,6 +9,14 @@ import type { ExportFormat } from "@metis/shared/export";
 import { Document, HeadingLevel, Packer, Paragraph, TextRun } from "docx";
 
 import { executiveBriefExportBlockLabel, normalizeExportTerminology } from "./renderExportPackage";
+
+/** Brief packages that beta DOCX targets (matches UI / API guards). */
+export function isExportDocxSupported(format: ExportFormat): boolean {
+  return format === "full-issue-brief" || format === "executive-brief" || format === "board-note";
+}
+
+export const EXPORT_DOCX_MIME =
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document" as const;
 
 function paragraphsFromBody(bodyTrimmed: string): string[] {
   if (!bodyTrimmed) return [];
@@ -62,16 +51,18 @@ function bodyToDocxParagraphs(rawBody: string): Paragraph[] {
   return out;
 }
 
-/**
- * Spike-only POC: OOXML `.docx` buffer from the same branching as Markdown/HTML export.
- */
-export async function renderExportPackageDocxSpike(opts: {
+export async function renderExportPackageDocx(opts: {
   issue: Pick<Issue, "title">;
   mode: BriefMode;
   format: ExportFormat;
   artifact: BriefArtifact;
 }): Promise<Buffer> {
   const { issue, mode, format, artifact } = opts;
+
+  if (format === "email-ready") {
+    throw new Error("DOCX export does not support email-ready format");
+  }
+
   const titlePlain = normalizeExportTerminology(issue.title);
   const body: Paragraph[] = [];
 
@@ -112,27 +103,6 @@ export async function renderExportPackageDocxSpike(opts: {
       }),
     );
     body.push(...bodyToDocxParagraphs(normalizeExportTerminology(artifact.lede)));
-  } else if (format === "email-ready") {
-    body.push(new Paragraph({ children: [new TextRun({ text: `Subject: ${titlePlain}`, bold: true })] }));
-    body.push(
-      new Paragraph({
-        children: [
-          new TextRun({
-            text: `Circulation: ${normalizeExportTerminology(artifact.metadata.circulation)}`,
-          }),
-        ],
-      }),
-    );
-    body.push(...bodyToDocxParagraphs(normalizeExportTerminology(artifact.lede)));
-    body.push(new Paragraph({ children: [new TextRun({ text: "Immediate actions:", bold: true })] }));
-    for (const a of artifact.executive.immediateActions) {
-      body.push(
-        new Paragraph({
-          text: normalizeExportTerminology(a),
-          bullet: { level: 0 },
-        }),
-      );
-    }
   } else {
     body.push(
       new Paragraph({

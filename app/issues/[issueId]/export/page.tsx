@@ -371,6 +371,11 @@ export default async function IssueExportPage({
               urlMode={urlMode}
               briefSourceMode={sourceMode}
               executiveBriefUsesFullBriefFallback={executiveBriefUsesFullBriefFallback}
+              docxBetaDownloadUrl={
+                selectedFormat !== "email-ready"
+                  ? `/api/issues/${issue.id}/export/docx?briefVersionId=${encodeURIComponent(briefVersion.id)}&format=${encodeURIComponent(selectedFormat)}`
+                  : null
+              }
               previewTitle={issue.title}
               previewMeta={[
                 { label: "Export format", value: packageOptions.find((o) => o.id === selectedFormat)?.label ?? "—" },

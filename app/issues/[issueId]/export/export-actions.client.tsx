@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, Copy, Download, Mail, X } from "lucide-react";
+import { CheckCircle2, Copy, Download, FileText, Mail, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -33,6 +33,8 @@ type Props = {
   previewMimeType: PreviewMime;
   eventTypes: { prepared: CirculationEventType; downloaded: CirculationEventType; copied: CirculationEventType };
   channels: { file: CirculationChannel; copy: CirculationChannel; email: CirculationChannel };
+  /** Same-origin GET URL for binary DOCX beta download, or null for email-ready / unavailable. */
+  docxBetaDownloadUrl: string | null;
 };
 
 function formatLabel(previewMimeType: PreviewMime) {
@@ -233,10 +235,25 @@ export function ExportActionsClient(props: Props) {
         </div>
       ) : (
         <p className="text-xs leading-relaxed text-[--metis-paper-muted]">
-          Email-ready is a <span className="text-[--metis-paper]">plain circulation draft</span> (not HTML). Choose a brief package and HTML
-          output to copy formatted layout. DOCX/PDF are not available yet.
+          Email-ready is a <span className="text-[--metis-paper]">plain circulation draft</span> (not HTML). Use Markdown or HTML packages for
+          rich layout and optional <span className="text-[--metis-paper]">DOCX beta</span> download.
         </p>
       )}
+
+      {props.docxBetaDownloadUrl ? (
+        <div className="max-w-xl space-y-2 rounded-[1.1rem] border border-white/10 bg-[rgba(255,255,255,0.04)] px-4 py-3">
+          <p className="text-xs leading-relaxed text-[--metis-paper-muted]">
+            <span className="text-[--metis-paper]">DOCX beta</span> downloads a Word-compatible file. Formatting may differ from the HTML preview.
+            Logging and stored export history apply to Markdown/HTML/plain downloads only.
+          </p>
+          <Button asChild variant="outline" className="h-10 rounded-full">
+            <a href={props.docxBetaDownloadUrl}>
+              <FileText className="mr-2 h-4 w-4" />
+              Download DOCX beta
+            </a>
+          </Button>
+        </div>
+      ) : null}
 
       <section className="grid gap-3 border-t border-white/8 pt-6 sm:grid-cols-3">
         <Button
