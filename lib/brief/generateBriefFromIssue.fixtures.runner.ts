@@ -4,8 +4,13 @@
  */
 import assert from "node:assert/strict";
 
-import { generateBriefFromIssue, splitOpenQuestionsToBullets, type BriefGenerationInput } from "./generateBriefFromIssue";
-import type { Gap, InternalInput, Issue, IssueStakeholder, Source, StakeholderGroup } from "@prisma/client";
+import {
+  generateBriefFromIssue,
+  normalizeMessageAudienceGroupNames,
+  splitOpenQuestionsToBullets,
+  type BriefGenerationInput,
+} from "./generateBriefFromIssue";
+import type { Gap, InternalInput, Issue, Source } from "@prisma/client";
 
 const baseIssue: Issue = {
   id: "issue-1",
@@ -80,7 +85,6 @@ const intakeOnly: BriefGenerationInput = {
   sources: [],
   gaps: [],
   internalInputs: [] as InternalInput[],
-  issueStakeholders: [],
 };
 
 const execEmpty = generateBriefFromIssue(intakeOnly, "executive");
@@ -89,6 +93,13 @@ assert.match(execSituation, /Supplemental context|prior escalation/i);
 assert.ok(!/^Title\s*:/m.test(execSituation), "executive Situation body should not repeat a Title line");
 
 assert.equal(execEmpty.executive.immediateActions.length, 0, "immediate actions folded into recommendations / empty slice");
+
+const audienceThin = execEmpty.executive.blocks.find((b) => b.label === "Audience implications")?.body ?? "";
+assert.match(
+  audienceThin,
+  /No organisation audience groups appear in saved Messages/i,
+  "thin-data audience copy when no Messages groups and no intake audience",
+);
 
 const withGaps: BriefGenerationInput = {
   issue: baseIssue,
@@ -102,37 +113,46 @@ const recBody = execGaps.executive.blocks.find((b) => b.label === "Recommended d
 assert.match(recBody, /\[[^\]]*\]\s*open question\s*\(/i);
 assert.match(recBody, /tier mix/i);
 
-const stakeholderGroup: StakeholderGroup = {
-  id: "sg-1",
-  name: "Executives",
-  description: null,
-  defaultSensitivity: null,
-  defaultChannels: null,
-  defaultToneGuidance: null,
-  displayOrder: 0,
-  isActive: true,
-  createdAt: new Date(),
-  updatedAt: new Date(),
+/** Intake `issue.audience` fallback when Messages has no audience groups recorded. */
+const intakeAudienceOnly: BriefGenerationInput = {
+  ...withGaps,
+  issue: { ...baseIssue, audience: "Board and programme leads only.", openGapsCount: baseIssue.openGapsCount },
 };
+const execIntakeAudience = generateBriefFromIssue(intakeAudienceOnly, "executive");
+const audienceIntakeOnly = execIntakeAudience.executive.blocks.find((b) => b.label === "Audience implications")?.body ?? "";
+assert.match(audienceIntakeOnly, /Issue-level audience note \(intake\)/);
+assert.match(audienceIntakeOnly, /Board and programme leads only/);
 
-const stakeholderRow: IssueStakeholder & { stakeholderGroup: StakeholderGroup } = {
-  id: "is-1",
-  issueId: "issue-1",
-  stakeholderGroupId: stakeholderGroup.id,
-  priority: "Normal",
-  needsToKnow: "",
-  issueRisk: "",
-  channelGuidance: "",
-  toneAdjustment: null,
-  notes: null,
-  createdAt: new Date(),
-  updatedAt: new Date(),
-  stakeholderGroup,
+const withMessageAudience: BriefGenerationInput = {
+  ...withGaps,
+  messageAudienceGroupNames: ["Executives", "Community", "Executives"],
 };
+const normalized = normalizeMessageAudienceGroupNames(["Executives", "Community", "Executives"]);
+assert.deepEqual(normalized, ["Community", "Executives"]);
 
-const withStakeholders: BriefGenerationInput = { ...withGaps, issueStakeholders: [stakeholderRow] };
-const execAudience = generateBriefFromIssue(withStakeholders, "executive");
+const execAudience = generateBriefFromIssue(withMessageAudience, "executive");
 const audBlock = execAudience.executive.blocks.find((b) => b.label === "Audience implications")?.body ?? "";
+assert.match(audBlock, /Audience groups used in Messages/);
+assert.match(audBlock, /Community/);
 assert.match(audBlock, /Executives/);
+assert.ok(
+  audBlock.indexOf("Community") < audBlock.indexOf("Executives"),
+  "audience names should appear in deterministic sort order",
+);
+
+const execRecWithMessages = execAudience.executive.blocks.find((b) => b.label === "Recommended decisions / next actions")?.body ?? "";
+assert.match(execRecWithMessages, /audience groups used in Messages/i);
+assert.match(execRecWithMessages, /Community/);
+
+/** Both Messages groups and intake note. */
+const combined: BriefGenerationInput = {
+  ...withMessageAudience,
+  issue: { ...baseIssue, audience: "Internal circulation only.", openGapsCount: baseIssue.openGapsCount },
+};
+const execCombined = generateBriefFromIssue(combined, "executive");
+const audCombined = execCombined.executive.blocks.find((b) => b.label === "Audience implications")?.body ?? "";
+assert.match(audCombined, /Audience groups used in Messages:/);
+assert.match(audCombined, /Issue-level audience note \(intake\):/);
+assert.match(audCombined, /Internal circulation only/);
 
 console.log("generateBriefFromIssue fixtures: OK");

@@ -1,8 +1,6 @@
-import type { Issue, Source, Gap, InternalInput, IssueStakeholder, StakeholderGroup } from "@prisma/client";
+import type { Issue, Source, Gap, InternalInput } from "@prisma/client";
 
 import type { BriefArtifact, BriefMode } from "@metis/shared/briefVersion";
-
-type IssueStakeholderWithGroup = IssueStakeholder & { stakeholderGroup: StakeholderGroup };
 
 const CAP_EX_SOURCES = 8;
 const MAX_QUESTION_BULLETS = 12;
@@ -31,6 +29,16 @@ function confidenceFromStatus(status: string) {
 function cleanText(value: unknown) {
   if (typeof value !== "string") return "";
   return value.trim();
+}
+
+/** Dedupe trimmed names and sort for deterministic brief output (from Messages `MessageVariant.stakeholderGroupId`). */
+export function normalizeMessageAudienceGroupNames(names: readonly string[]): string[] {
+  const set = new Set<string>();
+  for (const n of names) {
+    const c = cleanText(n);
+    if (c) set.add(c);
+  }
+  return [...set].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
 }
 
 function paragraphOrFallback(text: string, fallback: string) {
@@ -314,8 +322,10 @@ export type BriefGenerationInput = {
   sources: Source[];
   gaps: Gap[];
   internalInputs: InternalInput[];
-  /** Workspace audience groups (Messages); optional — defaults to empty. */
-  issueStakeholders?: IssueStakeholderWithGroup[];
+  /**
+   * Distinct organisation audience group names inferred from Messages (`MessageVariant` rows with `stakeholderGroupId`).
+   */
+  messageAudienceGroupNames?: string[];
 };
 
 function openGaps(gaps: Gap[]) {
@@ -445,22 +455,20 @@ function dedupeActionLines(lines: string[]): string[] {
   return out;
 }
 
-function formatAudienceImplications(issueAudience: string | null, issueStakeholders: IssueStakeholderWithGroup[]) {
+function formatAudienceImplications(issueAudience: string | null, messageAudienceGroupNames: string[]) {
   const fromIssue = cleanText(issueAudience ?? "");
-  const groupNames = [
-    ...new Set(issueStakeholders.map((r) => cleanText(r.stakeholderGroup.name)).filter(Boolean)),
-  ];
+  const groupNames = normalizeMessageAudienceGroupNames(messageAudienceGroupNames);
 
   if (groupNames.length && fromIssue) {
-    return `Messages audience groups on this issue: ${groupNames.join(", ")}.\n\nIssue-level audience note (intake): ${fromIssue}`;
+    return `Audience groups used in Messages: ${groupNames.join(", ")}.\n\nIssue-level audience note (intake): ${fromIssue}`;
   }
   if (groupNames.length) {
-    return `Messages audience groups selected for this issue: ${groupNames.join(", ")}. No intake audience note is recorded — add one in intake if framing should go beyond those groups.`;
+    return `Audience groups used in Messages: ${groupNames.join(", ")}. No intake audience note is recorded — add one in intake if framing should go beyond those groups.`;
   }
   if (fromIssue) {
     return `Issue-level audience note (intake): ${fromIssue}`;
   }
-  return "No Messages audience groups are selected on this issue, and no intake audience note is recorded. Add either in the workspace or intake if a messaging lens should appear here.";
+  return "No organisation audience groups appear in saved Messages for this issue yet, and no intake audience note is recorded. Use Messages for audience-specific drafts when needed, or add an intake audience note.";
 }
 
 function evidenceBaseExecutive(sources: Source[], total: number) {
@@ -502,7 +510,8 @@ function sourcesNarrativeFull(sources: Source[], total: number) {
 }
 
 export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefMode): BriefArtifact {
-  const { issue, sources, gaps, internalInputs, issueStakeholders = [] } = input;
+  const { issue, sources, gaps, internalInputs, messageAudienceGroupNames = [] } = input;
+  const orderedMessageAudienceNames = normalizeMessageAudienceGroupNames(messageAudienceGroupNames);
   const isExecutive = mode === "executive";
   const updatedAtLabel = nowLabel();
   const confidence = confidenceFromStatus(issue.status);
@@ -667,11 +676,12 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
       out.push("Link at least one source so leadership lines can be traced to attributable material.");
     }
 
-    const groupNames = [...new Set(issueStakeholders.map((r) => cleanText(r.stakeholderGroup.name)).filter(Boolean))];
-    if (groupNames.length) {
-      out.push(sentence(`Stress-test external-facing lines for selected audience groups: ${groupNames.join(", ")}`));
+    if (orderedMessageAudienceNames.length) {
+      out.push(
+        sentence(`Stress-test external-facing lines for audience groups used in Messages: ${orderedMessageAudienceNames.join(", ")}`),
+      );
     } else if (cleanText(issue.audience ?? "")) {
-      out.push(sentence(`Calibrate the line against the intake audience note: ${issue.audience?.trim()}`));
+      out.push(sentence(`Calibrate the line against the intake audience note: ${cleanText(issue.audience ?? "")}`));
     }
 
     if (cleanText(issue.ownerName ?? "")) {
@@ -793,7 +803,7 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
     return "No confirmed facts are recorded in intake yet.";
   })();
 
-  const audienceBlock = formatAudienceImplications(issue.audience, issueStakeholders);
+  const audienceBlock = formatAudienceImplications(issue.audience, messageAudienceGroupNames);
 
   const executiveBlocks: { label: string; body: string }[] = isExecutive
     ? [

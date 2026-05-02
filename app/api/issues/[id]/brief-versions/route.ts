@@ -23,16 +23,31 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const issue = await prisma.issue.findUnique({ where: { id: issueId } });
   if (!issue) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const [sources, gaps, internalInputs, issueStakeholders] = await Promise.all([
+  const [sources, gaps, internalInputs, messageVariantsWithAudience] = await Promise.all([
     prisma.source.findMany({ where: { issueId }, orderBy: [{ createdAt: "desc" }] }),
     prisma.gap.findMany({ where: { issueId }, orderBy: [{ updatedAt: "desc" }] }),
     prisma.internalInput.findMany({ where: { issueId }, orderBy: [{ createdAt: "desc" }] }),
-    prisma.issueStakeholder.findMany({
-      where: { issueId },
-      include: { stakeholderGroup: true },
-      orderBy: [{ createdAt: "desc" }],
+    prisma.messageVariant.findMany({
+      where: { issueId, stakeholderGroupId: { not: null } },
+      select: {
+        stakeholderGroupId: true,
+        stakeholderGroup: { select: { name: true } },
+      },
+      orderBy: [{ createdAt: "asc" }],
     }),
   ]);
+
+  const seenStakeholderGroupIds = new Set<string>();
+  const messageAudienceGroupNames: string[] = [];
+  for (const row of messageVariantsWithAudience) {
+    const gid = row.stakeholderGroupId;
+    if (!gid || seenStakeholderGroupIds.has(gid)) continue;
+    seenStakeholderGroupIds.add(gid);
+    const rawName = row.stakeholderGroup?.name;
+    if (typeof rawName !== "string") continue;
+    const trimmed = rawName.trim();
+    if (trimmed) messageAudienceGroupNames.push(trimmed);
+  }
 
   const latest = await prisma.briefVersion.findFirst({
     where: { issueId, mode: parsed.data.mode },
@@ -49,7 +64,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   const versionNumber = (latest?.versionNumber ?? 0) + 1;
   const artifactDeterministic = generateBriefFromIssue(
-    { issue, sources, gaps, internalInputs, issueStakeholders },
+    { issue, sources, gaps, internalInputs, messageAudienceGroupNames },
     parsed.data.mode,
   );
 
