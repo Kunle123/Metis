@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { MetisShell, SurfaceCard } from "@/components/MetisShell";
 import { Badge } from "@/components/ui/badge";
 import { prisma } from "@/lib/db/prisma";
@@ -62,14 +64,29 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
               <div className="min-w-0 space-y-1">
                 <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper]">Workspace</h2>
                 <p className="text-sm leading-6 text-[--metis-paper-muted]">
-                  Review the issue record, sources, gaps, and input in one screen.
+                  Review the issue record, sources, open questions, and input in one screen.
                 </p>
               </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{issue.issueType}</Badge>
-                <Badge className="border-0 bg-rose-900/35 text-rose-100">{issue.severity}</Badge>
-                <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">Sources · {issue.sourcesCount}</Badge>
-                <Badge className="border-0 bg-[rgba(131,82,17,0.72)] text-amber-50">Open questions · {issue.openGapsCount}</Badge>
+              <div className="flex min-w-0 flex-col gap-1.5 md:items-end">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{issue.issueType}</Badge>
+                  <Badge className="border-0 bg-rose-900/35 text-rose-100">{issue.severity}</Badge>
+                  <Link
+                    href={`/issues/${issue.id}/sources`}
+                    className="inline-flex items-center rounded-full border-0 bg-white/8 px-3 py-1 text-[0.72rem] font-medium text-[--metis-paper-muted] transition hover:bg-white/[0.11] hover:text-[--metis-paper] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25 focus-visible:ring-offset-2 focus-visible:ring-offset-[rgba(0,0,0,0.35)]"
+                  >
+                    Sources · {issue.sourcesCount}
+                  </Link>
+                  <Link
+                    href={`/issues/${issue.id}/gaps`}
+                    className="inline-flex items-center rounded-full border-0 bg-[rgba(131,82,17,0.72)] px-3 py-1 text-[0.72rem] font-medium text-amber-50 transition hover:bg-[rgba(131,82,17,0.82)] hover:text-amber-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[rgba(0,0,0,0.35)]"
+                  >
+                    Open questions · {issue.openGapsCount}
+                  </Link>
+                </div>
+                <p className="max-w-[17rem] text-[0.68rem] leading-snug text-[--metis-paper-muted] md:text-right">
+                  Review evidence in Sources or close questions in Open questions.
+                </p>
               </div>
             </div>
             <div className="mt-4 flex flex-wrap gap-2.5">
