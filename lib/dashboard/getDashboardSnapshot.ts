@@ -34,6 +34,15 @@ export type DashboardSnapshot = {
     /** Stored brief exists but predates latest issue edits (regeneration may be needed). */
     issuesNeedingBriefRegeneration: number;
   };
+  /** Header strip KPIs derived from persisted rows (sums / counts — not estimates). */
+  workspacePulse: {
+    /** Sum of `Issue.openGapsCount` across listed issues — same posture field used in the ledger. */
+    totalTrackedOpenQuestionSlots: number;
+    /** Gap rows still Open with severity Critical across those issues. */
+    criticalOpenGapsInWorkspace: number;
+    /** Total `ArtifactExport` rows belonging to tracked issues. */
+    totalStoredExportPackages: number;
+  };
   recentActivity: DashboardActivityVM[];
 };
 
@@ -139,5 +148,25 @@ export async function getDashboardSnapshot(): Promise<DashboardSnapshot> {
     issuesNeedingBriefRegeneration: issues.filter((i) => i.fullBriefStale || i.executiveBriefStale).length,
   };
 
-  return { issues, aggregates, recentActivity };
+  const totalTrackedOpenQuestionSlots = issues.reduce((sum, i) => sum + i.openGapsCount, 0);
+
+  const [criticalOpenGapsInWorkspace, totalStoredExportPackages] =
+    issueIds.length === 0
+      ? [0, 0]
+      : await Promise.all([
+          prisma.gap.count({
+            where: { issueId: { in: issueIds }, status: "Open", severity: "Critical" },
+          }),
+          prisma.artifactExport.count({
+            where: { issueId: { in: issueIds } },
+          }),
+        ]);
+
+  const workspacePulse = {
+    totalTrackedOpenQuestionSlots,
+    criticalOpenGapsInWorkspace,
+    totalStoredExportPackages,
+  };
+
+  return { issues, aggregates, workspacePulse, recentActivity };
 }

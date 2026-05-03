@@ -10,64 +10,68 @@ import { IssueStatTile } from "./IssueStatTile";
 /** @deprecated Prefer `DashboardIssueVM` from `@/lib/dashboard/getDashboardSnapshot`. */
 export type DashboardIssue = DashboardIssueVM;
 
-function actionLinkClass(active?: boolean) {
-  return [
-    "inline-flex max-w-full min-w-0 items-center rounded-full border px-3 py-1.5 text-left text-[0.8rem] font-medium transition",
-    active
-      ? "border-[--metis-brass]/40 bg-[rgba(191,157,107,0.12)] text-[--metis-paper]"
-      : "border-white/10 bg-[rgba(255,255,255,0.04)] text-[--metis-paper-muted] hover:border-white/14 hover:bg-white/[0.07] hover:text-[--metis-paper]",
-  ].join(" ");
+/** Compact secondary actions — at most one `emphasize` for stale brief refresh only. */
+function rowActionClass(emphasize?: boolean) {
+  if (emphasize) {
+    return "rounded-md px-1 py-0.5 text-[0.72rem] font-medium text-[--metis-brass-soft] underline-offset-4 transition hover:text-[--metis-brass] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[rgba(0,0,0,0.35)]";
+  }
+  return "rounded-md px-1 py-0.5 text-[0.72rem] text-[--metis-paper-muted] underline-offset-4 transition hover:text-[--metis-paper] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:ring-offset-2 focus-visible:ring-offset-[rgba(0,0,0,0.35)]";
 }
+
+/** Metric tiles stay neutral — no brass; subtle grouped hover on the tile. */
+const metricTileWrapClass =
+  "group/stat block h-full min-w-0 rounded-[1rem] outline-none ring-offset-2 ring-offset-[rgba(0,0,0,0.2)] focus-visible:ring-2 focus-visible:ring-white/25";
 
 export function IssueSummaryRow({ issue }: { issue: DashboardIssueVM }) {
   const base = `/issues/${issue.id}`;
   const priority = issue.priority;
   const showPriority = priority === "Critical" || priority === "High";
-  const showOpenGaps = issue.openGapsCount > 0;
-  const isRecentlyActive = Date.now() - issue.lastActivityAt.getTime() < 1000 * 60 * 60 * 24;
+  const attention: { href: string; label: string }[] = [];
+  if (issue.sourcesCount === 0) attention.push({ href: `${base}/sources`, label: "Add sources" });
+  if (issue.fullBriefStale || issue.executiveBriefStale) {
+    attention.push({
+      href: issue.fullBriefStale ? `${base}/brief?mode=full` : `${base}/brief?mode=executive`,
+      label: "Refresh brief",
+    });
+  }
+
+  const staleFull = issue.fullBriefStale;
+  const staleExec = issue.executiveBriefStale;
+  const emphasizeFullRefresh = staleFull;
+  const emphasizeExecRefresh = staleExec && !staleFull;
+
+  const fullBriefLabel = staleFull ? "Refresh full brief" : "Open full brief";
+  const execBriefLabel = staleExec ? "Refresh executive brief" : "Open executive brief";
 
   return (
-    <div className="grid min-w-0 gap-5 rounded-[1.65rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.015))] p-5 lg:grid-cols-[1.3fr_0.8fr_minmax(200px,1fr)]">
-      <div className="min-w-0 space-y-4">
-        <div className="flex flex-wrap items-center gap-2">
+    <div className="grid min-w-0 items-start gap-4 rounded-[1.45rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.015))] p-4 sm:p-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(9rem,0.72fr)_minmax(13.5rem,1fr)] lg:gap-x-6">
+      <div className="min-w-0 space-y-3 lg:py-0.5">
+        <div className="flex flex-wrap gap-2">
           <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{issue.issueType}</Badge>
           <Badge className="border-0 bg-rose-900/35 text-rose-100">{issue.severity}</Badge>
           <Badge className="border-0 bg-emerald-950/35 text-emerald-100">{issue.status}</Badge>
           {showPriority ? <Badge className="border-0 bg-amber-950/40 text-amber-100">{priority} priority</Badge> : null}
-          {showOpenGaps ? (
-            <Link
-              href={`${base}/gaps`}
-              className="rounded-full border-0 bg-[rgba(131,82,17,0.72)] px-3 py-1 text-amber-50 text-[0.75rem] font-medium underline-offset-4 hover:underline"
-            >
-              Open questions · {issue.openGapsCount} — review
-            </Link>
-          ) : null}
-          {issue.sourcesCount === 0 ? (
-            <Link
-              href={`${base}/sources`}
-              className="rounded-full border border-amber-500/35 bg-amber-950/25 px-3 py-1 text-[0.75rem] text-amber-50 underline-offset-4 hover:underline"
-            >
-              No sources linked — add evidence
-            </Link>
-          ) : null}
-          {issue.fullBriefStale || issue.executiveBriefStale ? (
-            <Link
-              href={issue.fullBriefStale ? `${base}/brief?mode=full` : `${base}/brief?mode=executive`}
-              className="rounded-full border border-sky-500/30 bg-sky-950/30 px-3 py-1 text-[0.75rem] text-sky-100 underline-offset-4 hover:underline"
-              title="Stored brief was generated before the latest issue edits."
-            >
-              Brief may be out of date — open to refresh
-            </Link>
-          ) : null}
-          {isRecentlyActive ? <Badge className="border-0 bg-sky-900/35 text-sky-100">Recent activity</Badge> : null}
         </div>
+        {attention.length > 0 ? (
+          <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.72rem] text-[--metis-paper-muted]">
+            <span className="text-[--metis-ink-soft]">Needs attention:</span>
+            {attention.map((item, idx) => (
+              <span key={item.href} className="inline-flex items-center gap-x-2">
+                {idx > 0 ? <span className="text-white/25">·</span> : null}
+                <Link href={item.href} className={rowActionClass(false)}>
+                  {item.label}
+                </Link>
+              </span>
+            ))}
+          </p>
+        ) : null}
         <div>
           <Link href={base} className="group/title block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60">
             <h4 className="text-lg font-medium text-[--metis-paper] group-hover/title:text-white">{issue.title}</h4>
-            <p className="mt-3 max-w-3xl text-sm leading-7 text-[--metis-paper-muted]">{issue.summary}</p>
-            <span className="mt-2 inline-flex items-center gap-2 text-sm font-medium text-[--metis-brass-soft] group-hover/title:text-white">
+            <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[--metis-paper-muted]">{issue.summary}</p>
+            <span className="mt-2 inline-flex items-center gap-2 text-[0.8rem] text-[--metis-paper-muted] transition group-hover/title:text-[--metis-paper]">
               Open issue workspace
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="h-4 w-4 opacity-70 group-hover/title:opacity-100" />
             </span>
           </Link>
         </div>
@@ -75,45 +79,59 @@ export function IssueSummaryRow({ issue }: { issue: DashboardIssueVM }) {
 
       <IssueMetaStrip ownerName={issue.ownerName} audience={issue.audience} updatedAt={issue.updatedAt} />
 
-      <div className="flex min-w-0 flex-col rounded-[1.35rem] border border-white/10 bg-[rgba(255,255,255,0.03)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
-        <div className="grid min-w-0 grid-cols-2 gap-3 border-b border-white/8 pb-4">
+      <div className="min-w-0 border-t border-white/8 pt-4 lg:border-l lg:border-t-0 lg:pl-5 lg:pt-0 lg:pb-1">
+        <div className="grid min-h-0 min-w-0 grid-cols-2 gap-2 sm:gap-2.5">
           <Link
             href={`${base}/gaps`}
-            className="block min-h-0 min-w-0 rounded-[1rem] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
+            aria-label={`Open questions (${issue.openGapsCount}), review in workspace`}
+            className={metricTileWrapClass}
           >
-            <IssueStatTile label="Open questions" value={issue.openGapsCount} />
+            <IssueStatTile
+              label="Open questions"
+              value={issue.openGapsCount}
+              className="h-full border-white/[0.08] bg-[rgba(0,0,0,0.12)] transition-colors group-hover/stat:border-white/[0.13]"
+            />
           </Link>
           <Link
             href={`${base}/sources`}
-            className="block min-h-0 min-w-0 rounded-[1rem] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
+            aria-label={`Sources (${issue.sourcesCount}), review in workspace`}
+            className={metricTileWrapClass}
           >
-            <IssueStatTile label="Sources" value={issue.sourcesCount} />
+            <IssueStatTile
+              label="Sources"
+              value={issue.sourcesCount}
+              className="h-full border-white/[0.08] bg-[rgba(0,0,0,0.12)] transition-colors group-hover/stat:border-white/[0.13]"
+            />
           </Link>
         </div>
 
-        <nav className="mt-4 flex min-w-0 flex-wrap gap-2" aria-label={`Actions for issue ${issue.title}`}>
-          <Link href={`${base}/gaps`} className={actionLinkClass(showOpenGaps)}>
-            Review open questions
+        <nav className="mt-2.5 flex min-w-0 flex-wrap items-center gap-x-1 gap-y-1 text-[0.72rem]" aria-label={`Actions for issue ${issue.title}`}>
+          <Link href={`${base}/brief?mode=full`} className={rowActionClass(emphasizeFullRefresh)}>
+            {fullBriefLabel}
           </Link>
-          <Link href={`${base}/sources`} className={actionLinkClass(issue.sourcesCount === 0)}>
-            {issue.sourcesCount === 0 ? "Add sources" : "Manage sources"}
+          <span className="px-1 text-[0.6rem] text-white/22" aria-hidden>
+            ·
+          </span>
+          <Link href={`${base}/brief?mode=executive`} className={rowActionClass(emphasizeExecRefresh)}>
+            {execBriefLabel}
           </Link>
-          <Link href={`${base}/brief?mode=full`} className={actionLinkClass(!issue.hasFullBrief || issue.fullBriefStale)}>
-            {!issue.hasFullBrief ? "Generate full brief" : issue.fullBriefStale ? "Refresh full brief" : "Review full brief"}
+          <span className="px-1 text-[0.6rem] text-white/22" aria-hidden>
+            ·
+          </span>
+          <Link href={`${base}/messages`} className={rowActionClass(false)}>
+            Open messages
+            {issue.messageVariantCount > 0 ? ` (${issue.messageVariantCount})` : ""}
           </Link>
-          <Link
-            href={`${base}/brief?mode=executive`}
-            className={actionLinkClass(!issue.hasExecutiveBrief || issue.executiveBriefStale)}
-          >
-            {!issue.hasExecutiveBrief ? "Executive brief · generate" : issue.executiveBriefStale ? "Executive brief · refresh" : "Executive brief · review"}
-          </Link>
-          <Link href={`${base}/messages`} className={actionLinkClass(issue.messageVariantCount === 0)}>
-            {issue.messageVariantCount > 0 ? `Messages (${issue.messageVariantCount} draft${issue.messageVariantCount === 1 ? "" : "s"})` : "Open Messages"}
-          </Link>
-          <Link href={`${base}/export`} className={actionLinkClass(false)}>
+          <span className="px-1 text-[0.6rem] text-white/22" aria-hidden>
+            ·
+          </span>
+          <Link href={`${base}/export`} className={rowActionClass(false)}>
             Prepare output
           </Link>
-          <Link href={`${base}/activity`} className={actionLinkClass(false)}>
+          <span className="px-1 text-[0.6rem] text-white/22" aria-hidden>
+            ·
+          </span>
+          <Link href={`${base}/activity`} className={rowActionClass(false)}>
             Activity timeline
           </Link>
         </nav>

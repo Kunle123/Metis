@@ -122,9 +122,9 @@ function MetricCard({ label, value, detail }: { label: string; value: string; de
     <div className="metis-surface metis-support-surface relative overflow-hidden rounded-[1.35rem] border px-4 py-4 shadow-[0_16px_42px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.03)]">
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[--metis-brass]/60 to-transparent" />
       <p className="text-[0.68rem] uppercase tracking-[0.24em] text-[--metis-ink-soft]">{label}</p>
-      <div className="mt-4 flex flex-col gap-2 border-t border-white/8 pt-4 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
+      <div className="mt-4 flex flex-col gap-1 border-t border-white/8 pt-4 text-left">
         <span className="font-[Cormorant_Garamond] text-[2.35rem] leading-none text-[--metis-paper]">{value}</span>
-        <span className="max-w-none text-[0.72rem] leading-5 text-[--metis-paper-muted] sm:max-w-[9rem] sm:text-right">{detail}</span>
+        <span className="text-[0.72rem] leading-snug text-[--metis-paper-muted]">{detail}</span>
       </div>
     </div>
   );
@@ -184,12 +184,20 @@ function formatLondonDateTime(value: Date | null | undefined) {
   }).format(value);
 }
 
+export type OperationalSnapshotMetric = {
+  label: string;
+  value: string;
+  detail: string;
+};
+
 export function MetisShell({
   activePath,
   pageTitle,
   pageMeta,
   children,
   showOperationalSnapshot,
+  /** When set (e.g. Issues Dashboard), renders real DB-backed KPI strip. Must not contain placeholder trend copy. */
+  operationalSnapshotMetrics,
   issueRoutePrefix,
   activeIssue,
 }: {
@@ -198,6 +206,7 @@ export function MetisShell({
   pageMeta?: string;
   children: ReactNode;
   showOperationalSnapshot?: boolean;
+  operationalSnapshotMetrics?: OperationalSnapshotMetric[] | null;
   /**
    * When viewing issue-scoped workspace pages, keep left-rail navigation inside the same issue.
    * Example: `/issues/<issueId>`
@@ -224,14 +233,6 @@ export function MetisShell({
   function navHrefForItem(item: (typeof primaryNav)[number]) {
     return item.path;
   }
-
-  // Sprint 0: static operational snapshot and active issue preview to preserve Manus shell layout.
-  const issueStats = [
-    { label: "Active issues", value: "12", detail: "+3 since yesterday" },
-    { label: "Briefs ready to circulate", value: "4", detail: "2 awaiting legal validation" },
-    { label: "Open questions", value: "17", detail: "7 critical across all issues" },
-    { label: "Average time to first draft", value: "18 min", detail: "Target under 20" },
-  ];
 
   function renderNavItem({
     href,
@@ -486,10 +487,16 @@ export function MetisShell({
                 </div>
 
                 <div className="flex min-w-0 flex-wrap items-center gap-3">
-                  <div className="hidden items-center gap-2 text-[0.72rem] leading-5 text-[--metis-paper-muted] md:flex">
-                    <Clock3 className="h-3.5 w-3.5 shrink-0 text-[--metis-brass]/65" aria-hidden />
-                    <span className="text-[--metis-ink-soft]">Refreshed 12 minutes ago</span>
-                  </div>
+                  {operationalSnapshotMetrics && operationalSnapshotMetrics.length > 0 ? (
+                    <p className="hidden max-w-[20rem] text-[0.72rem] leading-snug text-[--metis-paper-muted] md:block">
+                      Totals follow your Metis workspace database at page load — not live external monitoring.
+                    </p>
+                  ) : (
+                    <div className="hidden items-center gap-2 text-[0.72rem] leading-5 text-[--metis-paper-muted] md:flex">
+                      <Clock3 className="h-3.5 w-3.5 shrink-0 text-[--metis-brass]/65" aria-hidden />
+                      <span className="text-[--metis-ink-soft]">Internal workspace</span>
+                    </div>
+                  )}
                   <LogoutButton />
                   {issueRoutePrefix ? (
                     <Button asChild className="rounded-full px-5">
@@ -511,13 +518,19 @@ export function MetisShell({
             {shouldShowOperationalSnapshot ? (
               <div className="border-b border-white/8 bg-[rgba(255,255,255,0.016)] px-5 py-4 sm:px-7 lg:px-8">
                 <div className="mb-2 flex items-center justify-between gap-3">
-                  <p className="text-[0.58rem] uppercase tracking-[0.2em] text-[rgba(176,171,160,0.62)]">Operational snapshot</p>
+                  <p className="text-[0.58rem] uppercase tracking-[0.2em] text-[rgba(176,171,160,0.62)]">Workspace snapshot</p>
                 </div>
-                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                  {issueStats.map((stat) => (
-                    <MetricCard key={stat.label} {...stat} />
-                  ))}
-                </div>
+                {operationalSnapshotMetrics && operationalSnapshotMetrics.length > 0 ? (
+                  <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                    {operationalSnapshotMetrics.map((stat) => (
+                      <MetricCard key={stat.label} {...stat} />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm leading-relaxed text-[--metis-paper-muted]">
+                    Workspace metric strip is only populated on the Issues Dashboard. This page does not show inferred trends or targets.
+                  </p>
+                )}
               </div>
             ) : (
               <div className="border-b border-white/8 bg-[rgba(255,255,255,0.01)] px-5 py-2 sm:px-7 lg:px-8" />
