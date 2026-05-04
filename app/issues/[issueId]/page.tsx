@@ -7,6 +7,7 @@ import { getIssueById } from "@/lib/issues/getIssueContext";
 
 import { SourceEntryForm } from "./sources/source-entry-form";
 import { GapCreateForm } from "./gaps/gap-create-form";
+import { CaptureNotesForm } from "./input/capture-notes-form";
 import { InternalInputCreateForm } from "./input/input-create-form";
 import { WorkspaceGapCards, WorkspaceSourceCards, WorkspaceObservationCards } from "./workspace-cards";
 import { WorkspaceSection } from "./workspace-section";
@@ -95,7 +96,8 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
                 ["facts", "Confirmed vs unclear"],
                 ["sources", "Sources"],
                 ["gaps", "Open questions"],
-                  ["input", "Observations"],
+                ["capture-notes", "Capture notes"],
+                ["input", "Observations"],
               ].map(([id, label]) => sectionNavItem(id, label))}
             </div>
           </div>
@@ -198,6 +200,7 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
             </section>
 
             <section id="input" className="space-y-5 border-t border-white/8 pt-7">
+              <CaptureNotesForm issueId={issue.id} />
               <WorkspaceSection
                 title="Observations"
                 description="Attributable internal observations linked to sections."
