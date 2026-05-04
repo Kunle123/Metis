@@ -155,7 +155,7 @@ export default async function IssueExportPage({
               }
             >
               <div className="grid gap-3">
-                <Button asChild variant="outline" className="w-fit rounded-full">
+                <Button asChild variant="outline" className="w-fit justify-start">
                   <Link href={`/issues/${issue.id}/messages`}>Open Messages</Link>
                 </Button>
               </div>
@@ -289,7 +289,7 @@ export default async function IssueExportPage({
               }
             >
               <div className="grid gap-3">
-                <Button asChild className="w-fit rounded-full">
+                <Button asChild variant="outline" className="w-fit justify-start">
                   <Link href={`/issues/${issue.id}/messages`}>Open Messages</Link>
                 </Button>
               </div>
@@ -380,7 +380,7 @@ export default async function IssueExportPage({
                   </p>
                 }
               >
-                <Button asChild className="w-fit rounded-full">
+                <Button asChild className="w-fit justify-start">
                   <Link href={`/issues/${issue.id}/brief?mode=executive`}>Generate Executive brief</Link>
                 </Button>
               </ReviewRailCard>
@@ -519,13 +519,13 @@ export default async function IssueExportPage({
 
             <ReviewRailCard title="Links" tone="info" meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Jump back to generation and change tracking.</p>}>
               <div className="grid gap-3">
-                <Button asChild variant="outline" className="w-full rounded-full">
+                <Button asChild variant="outline" className="w-full justify-start">
                   <Link href={`/issues/${issue.id}/brief?mode=${sourceMode}`}>
                     <Eye className="mr-2 h-4 w-4" />
                     Open brief
                   </Link>
                 </Button>
-                <Button asChild variant="outline" className="w-full rounded-full">
+                <Button asChild variant="outline" className="w-full justify-start">
                   <Link href={`/issues/${issue.id}/compare?mode=${urlMode}`}>
                     <RefreshCcw className="mr-2 h-4 w-4" />
                     Open delta

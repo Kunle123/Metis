@@ -173,24 +173,39 @@ export default async function IssueBriefPage({
                     <span className="text-[0.7rem] font-medium uppercase tracking-[0.14em]">Brief workspace</span>
                   </div>
                   <BriefModeToggle issueId={issue.id} mode={mode} />
-                  {storedBriefRevisionLabel ? (
-                    <span className="rounded-full border border-[--metis-outline-subtle] bg-[rgba(255,255,255,0.05)] px-3 py-1 text-[0.68rem] font-medium tracking-wide text-[--metis-text-primary]">
-                      {storedBriefRevisionLabel}
-                    </span>
-                  ) : (
-                    <span className="text-[0.72rem] leading-snug text-[--metis-text-secondary]">No stored brief yet</span>
-                  )}
-                  {briefVersion ? (
-                    <span
-                      className={
-                        briefInSync
-                          ? "rounded-full border border-[--metis-status-neutral-border] bg-[--metis-status-neutral-bg] px-3 py-1 text-[0.62rem] font-medium uppercase tracking-[0.18em] text-[--metis-status-neutral-fg]"
-                          : "rounded-full border border-[--metis-status-info-border] bg-[--metis-status-info-bg] px-3 py-1 text-[0.62rem] font-medium uppercase tracking-[0.18em] text-[--metis-status-info-fg]"
-                      }
-                    >
-                      {briefInSync ? "Up to date" : "Stale"}
-                    </span>
-                  ) : null}
+                  <div className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1 text-[0.72rem] leading-snug">
+                    {storedBriefRevisionLabel ? (
+                      <span className="text-[--metis-text-secondary]">
+                        <span className="font-medium uppercase tracking-[0.12em] text-[--metis-text-tertiary]">Revision</span>
+                        <span className="mx-1.5 text-[--metis-text-tertiary]" aria-hidden>
+                          ·
+                        </span>
+                        <span className="font-medium text-[--metis-text-primary]">{storedBriefRevisionLabel}</span>
+                      </span>
+                    ) : (
+                      <span className="text-[--metis-text-secondary]">No stored brief yet</span>
+                    )}
+                    {briefVersion ? (
+                      <>
+                        <span className="hidden text-[--metis-text-tertiary] sm:inline" aria-hidden>
+                          |
+                        </span>
+                        <span className="text-[--metis-text-secondary]">
+                          <span className="font-medium uppercase tracking-[0.12em] text-[--metis-text-tertiary]">Freshness</span>
+                          <span className="mx-1.5 text-[--metis-text-tertiary]" aria-hidden>
+                            ·
+                          </span>
+                          <span
+                            className={
+                              briefInSync ? "font-medium text-[--metis-status-neutral-fg]" : "font-medium text-[--metis-status-info-fg]"
+                            }
+                          >
+                            {briefInSync ? "Up to date" : "Stale"}
+                          </span>
+                        </span>
+                      </>
+                    ) : null}
+                  </div>
                   {briefVersion && !briefInSync ? (
                     <span className="hidden max-w-xl text-[0.8rem] leading-snug text-[--metis-text-secondary] xl:inline">
                       Refresh this brief because the issue changed after it was generated.
@@ -213,7 +228,7 @@ export default async function IssueBriefPage({
                     label={hasBriefForMode ? "Regenerate brief" : "Generate brief"}
                     syncHint={briefSyncHint}
                   />
-                  <Button asChild variant="outline" className="h-9 rounded-full px-4">
+                  <Button asChild variant="outline">
                     <Link
                       href={`/issues/${issue.id}/export?mode=${mode}&format=${mode === "executive" ? "executive-brief" : "full-issue-brief"}`}
                     >
@@ -341,12 +356,12 @@ export default async function IssueBriefPage({
                   </div>
                   {briefVersion ? (
                     <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-2">
-                      <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Sync</span>
+                      <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Freshness</span>
                       <span
                         className={
                           briefInSync
-                            ? "rounded-full border border-[--metis-status-neutral-border] bg-[--metis-status-neutral-bg] px-3 py-1 text-[0.62rem] font-medium uppercase tracking-[0.18em] text-[--metis-status-neutral-fg]"
-                            : "rounded-full border border-[--metis-status-info-border] bg-[--metis-status-info-bg] px-3 py-1 text-[0.62rem] font-medium uppercase tracking-[0.18em] text-[--metis-status-info-fg]"
+                            ? "text-right text-sm font-medium text-[--metis-status-neutral-fg]"
+                            : "text-right text-sm font-medium text-[--metis-status-info-fg]"
                         }
                       >
                         {briefInSync ? "Up to date" : "Stale"}
@@ -508,13 +523,13 @@ export default async function IssueBriefPage({
             </ReviewRailCard>
 
             <div className="grid gap-3">
-              <Button asChild variant="outline" className="w-full rounded-full">
+              <Button asChild variant="outline" className="w-full justify-start">
                 <Link href={`/issues/${issue.id}/sources`}>
                   <ScanSearch className="mr-2 h-4 w-4" />
                   Open sources
                 </Link>
               </Button>
-              <Button asChild variant="outline" className="w-full rounded-full">
+              <Button asChild variant="outline" className="w-full justify-start">
                 <Link href={`/issues/${issue.id}/compare`}>
                   <RefreshCcw className="mr-2 h-4 w-4" />
                   Open delta

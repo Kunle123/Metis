@@ -416,7 +416,7 @@ export function MessagesPanel({
             </p>
             <div className="flex flex-col gap-1.5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2">
               <AiProvenance mode={aiToggleOn ? "ai" : "original"} />
-              <Button type="button" variant="outline" className="h-10 rounded-full" disabled={!markdown} onClick={() => void copyMd()}>
+              <Button type="button" variant="outline" disabled={!markdown} onClick={() => void copyMd()}>
                 <Copy className="mr-2 h-4 w-4" />
                 {copyState === "copied" ? "Copied" : copyState === "error" ? "Copy failed" : "Copy"}
               </Button>
@@ -477,11 +477,11 @@ export function MessagesPanel({
           }
         >
           <div className="grid gap-2">
-            <Button type="button" variant="outline" className="h-10 rounded-full" disabled={loading} onClick={() => void saveDeterministicVariant()}>
+            <Button type="button" variant="outline" disabled={loading} onClick={() => void saveDeterministicVariant()}>
               {loading ? "Saving…" : latest ? "Save updated draft" : "Save draft"}
             </Button>
             {canShowAi && aiToggleOn && aiRow ? (
-              <Button type="button" variant="outline" className="h-10 rounded-full" disabled={loading} onClick={() => void ensureAiEnhanced()}>
+              <Button type="button" variant="outline" disabled={loading} onClick={() => void ensureAiEnhanced()}>
                 Refresh AI-enhanced
               </Button>
             ) : null}
@@ -525,11 +525,11 @@ export function MessagesPanel({
                     <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Freshness</span>
                     <div className="flex flex-col items-end gap-1">
                       <span
-                        className={`rounded-full border px-3 py-1 text-[0.62rem] font-medium uppercase tracking-[0.18em] ${
+                        className={
                           inSync
-                            ? "border-emerald-400/35 bg-[rgba(18,83,58,0.45)] text-emerald-50"
-                            : "border-sky-400/35 bg-[rgba(19,86,118,0.55)] text-sky-50"
-                        }`}
+                            ? "text-right text-sm font-medium text-[--metis-status-neutral-fg]"
+                            : "text-right text-sm font-medium text-[--metis-status-info-fg]"
+                        }
                       >
                         {inSync ? "Up to date" : "Stale"}
                       </span>

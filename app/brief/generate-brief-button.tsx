@@ -31,7 +31,8 @@ export function GenerateBriefButton({
     <div className="flex max-w-[min(100%,18rem)] flex-col items-end gap-1 sm:max-w-[20rem]">
       {syncHint ? <p className="text-right text-[0.65rem] leading-snug text-[--metis-paper-muted]">{syncHint}</p> : null}
       <Button
-        className={cn("h-9 rounded-full px-4", className)}
+        pill
+        className={cn(className)}
         disabled={isLoading}
         onClick={async () => {
           setIsLoading(true);

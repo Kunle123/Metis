@@ -244,13 +244,13 @@ export function ExportActionsClient(props: Props) {
       )}
 
       {props.docxBetaDownloadUrl ? (
-        <div className="max-w-xl space-y-2 rounded-[1.1rem] border border-white/10 bg-[rgba(255,255,255,0.04)] px-4 py-3">
+        <div className="max-w-xl space-y-2 rounded-[var(--metis-control-radius-md)] border border-[--metis-outline-subtle] bg-[rgba(255,255,255,0.03)] px-4 py-3">
           <p className="text-xs leading-relaxed text-[--metis-paper-muted]">
             <span className="text-[--metis-paper]">DOCX beta</span>: Word-compatible file generated on demand from{" "}
             <span className="text-[--metis-paper]">{props.sourceBriefRevisionLabel}</span>. Formatting may differ from the HTML preview. Stored export packages
             and circulation logging apply to Markdown/HTML/plain downloads from this flow — not the DOCX beta file.
           </p>
-          <Button asChild variant="outline" className="h-10 rounded-full">
+          <Button asChild variant="outline" className="w-fit justify-start">
             <a href={props.docxBetaDownloadUrl}>
               <FileText className="mr-2 h-4 w-4" />
               Download DOCX beta
@@ -262,7 +262,7 @@ export function ExportActionsClient(props: Props) {
       <section className="grid gap-3 border-t border-white/8 pt-6 sm:grid-cols-3">
         <Button
           type="button"
-          className="w-full justify-start rounded-[1rem]"
+          className="w-full justify-start"
           disabled={busy !== null}
           onClick={() => doDownload(props.selectedFormat, props.channels.file)}
         >
@@ -273,7 +273,7 @@ export function ExportActionsClient(props: Props) {
         <Button
           type="button"
           variant="outline"
-          className="w-full justify-start rounded-[1rem]"
+          className="w-full justify-start"
           disabled={busy !== null}
           onClick={() => doCopy(props.selectedFormat, props.channels.copy)}
         >
@@ -284,7 +284,7 @@ export function ExportActionsClient(props: Props) {
         <Button
           type="button"
           variant="outline"
-          className="w-full justify-start rounded-[1rem]"
+          className="w-full justify-start"
           disabled={busy !== null}
           onClick={() => doCopy("email-ready", props.channels.email)}
         >
@@ -305,13 +305,13 @@ export function ExportActionsClient(props: Props) {
             {message.tone === "ok" ? <CheckCircle2 className="h-4 w-4" /> : null}
             <span>{message.text}</span>
           </div>
-          <button type="button" className="opacity-80 hover:opacity-100" onClick={() => setMessage(null)} aria-label="Dismiss">
+          <Button type="button" variant="ghost" size="sm" className="shrink-0 px-2 text-current" onClick={() => setMessage(null)} aria-label="Dismiss">
             <X className="h-4 w-4" />
-          </button>
+          </Button>
         </div>
       ) : null}
 
-      <section className="rounded-[1.25rem] border border-white/10 bg-[rgba(255,255,255,0.035)] p-4">
+      <section className="rounded-[var(--metis-control-radius-md)] border border-[--metis-outline-subtle] bg-[rgba(255,255,255,0.035)] p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Preview</p>
@@ -323,7 +323,7 @@ export function ExportActionsClient(props: Props) {
             </p>
           </div>
           <div className="flex shrink-0 items-start">
-            <Button type="button" variant="outline" className="rounded-full" onClick={() => setExpanded(true)}>
+            <Button type="button" variant="outline" size="sm" onClick={() => setExpanded(true)}>
               Expand
             </Button>
           </div>
@@ -363,16 +363,16 @@ export function ExportActionsClient(props: Props) {
                   {props.selectedFormat === "email-ready" ? " · Email-ready preview is plain text only." : ""}
                 </p>
               </div>
-              <div className="flex items-center gap-2">
-                <Button type="button" variant="outline" className="rounded-full" onClick={() => doCopy(props.selectedFormat, props.channels.copy)}>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button type="button" variant="outline" size="sm" onClick={() => doCopy(props.selectedFormat, props.channels.copy)}>
                   <Copy className="mr-2 h-4 w-4" />
                   Copy
                 </Button>
-                <Button type="button" className="rounded-full" onClick={() => doDownload(props.selectedFormat, props.channels.file)}>
+                <Button type="button" size="sm" onClick={() => doDownload(props.selectedFormat, props.channels.file)}>
                   <Download className="mr-2 h-4 w-4" />
                   Download
                 </Button>
-                <Button type="button" variant="outline" className="rounded-full" onClick={() => setExpanded(false)}>
+                <Button type="button" variant="outline" size="sm" onClick={() => setExpanded(false)}>
                   Close
                 </Button>
               </div>
