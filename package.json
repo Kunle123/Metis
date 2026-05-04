@@ -10,6 +10,7 @@
     "lint": "tsc -p tsconfig.json --noEmit",
     "test:brief-generate": "tsx lib/brief/generateBriefFromIssue.fixtures.runner.ts",
     "test:rank-evidence": "tsx lib/evidence/rankEvidence.fixtures.runner.ts",
+    "test:capture-notes-extract": "tsx lib/ai/extractIssueNotes.fixtures.runner.ts",
     "test:message-cleanup": "tsx lib/ai/cleanupMessageDraft.fixtures.runner.ts",
     "test:brief-synthesis": "tsx lib/ai/synthesizeBrief.fixtures.runner.ts",
     "test:export-html": "tsx lib/export/renderExportHtml.fixtures.runner.ts",
