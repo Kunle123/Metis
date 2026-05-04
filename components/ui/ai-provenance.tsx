@@ -6,11 +6,13 @@ import { cn } from "@/lib/utils";
 /** `synthesis-available`: info-style cue that synthesis may touch content on regenerate (no claim it already did). */
 export type AiProvenanceAiVariant = "enhanced-draft" | "synthesis-available";
 
-const chipSurface = cn(
-  "inline-flex max-w-full min-w-0 items-center truncate rounded-[var(--metis-control-radius-pill)] border text-[var(--metis-chip-font-size)] leading-tight font-medium tracking-tight",
-  "gap-[var(--metis-chip-gap)] px-[var(--metis-chip-padding-x-sm)]",
-  /* Shorter & lighter than md buttons — never compete with primary/secondary mass */
+/** Compact badge row only — long copy renders as plain supporting text below (not a giant pill). */
+const chipHeadline = cn(
+  "inline-flex max-w-full min-w-0 items-center rounded-[var(--metis-control-radius-pill)]",
+  "gap-[0.25rem] px-[var(--metis-chip-padding-x-sm)]",
   "min-h-[var(--metis-chip-height-sm)] h-[var(--metis-chip-height-sm)] py-0",
+  "text-[var(--metis-chip-font-size)] font-medium leading-none tracking-tight",
+  "border border-white/[0.07] shadow-none",
 );
 
 export function AiProvenance({
@@ -27,14 +29,19 @@ export function AiProvenance({
 }) {
   if (mode === "original") {
     return (
-      <div
-        className={cn(chipSurface, "border-[--metis-status-neutral-border] bg-[--metis-status-neutral-bg] text-[--metis-status-neutral-fg]", className)}
-      >
-        <span
-          className="h-[var(--metis-chip-dot-size)] w-[var(--metis-chip-dot-size)] shrink-0 rounded-full bg-[color-mix(in_oklab,var(--metis-status-neutral-fg)_55%,transparent)]"
-          aria-hidden
-        />
-        <span className="truncate">Original deterministic draft</span>
+      <div className={cn("max-w-full min-w-0", className)}>
+        <div
+          className={cn(
+            chipHeadline,
+            "bg-[color-mix(in_oklab,var(--metis-status-neutral-bg)_92%,transparent)] text-[--metis-status-neutral-fg]",
+          )}
+        >
+          <span
+            className="h-[0.35rem] w-[0.35rem] shrink-0 rounded-full bg-[color-mix(in_oklab,var(--metis-status-neutral-fg)_45%,transparent)]"
+            aria-hidden
+          />
+          <span className="truncate">Original deterministic draft</span>
+        </div>
       </div>
     );
   }
@@ -50,18 +57,17 @@ export function AiProvenance({
     resolvedAiVariant === "synthesis-available" ? "Synthesis-aware paragraph" : "AI-enhanced draft";
 
   return (
-    <div
-      className={cn(chipSurface, "border-[--metis-status-info-border] bg-[--metis-status-info-bg] text-[--metis-status-info-fg]", className)}
-      title={typeof aiHelper === "string" ? aiHelper : undefined}
-    >
-      <Sparkles
-        className="h-[var(--metis-icon-size-sm)] w-[var(--metis-icon-size-sm)] shrink-0 opacity-90 text-[color-mix(in_oklab,var(--metis-status-info-fg)_92%,transparent)]"
-        aria-hidden
-      />
-      <span className="truncate">{aiHeadline}</span>
-      <span className="hidden min-w-0 truncate text-[color-mix(in_oklab,var(--metis-status-info-fg)_88%,transparent)] sm:inline">
-        · {aiHelper}
-      </span>
+    <div className={cn("max-w-full min-w-0 space-y-1.5", className)} title={typeof aiHelper === "string" ? aiHelper : undefined}>
+      <div
+        className={cn(
+          chipHeadline,
+          "bg-[color-mix(in_oklab,var(--metis-status-info-bg)_85%,transparent)] text-[--metis-status-info-fg]",
+        )}
+      >
+        <Sparkles className="h-3 w-3 shrink-0 text-[color-mix(in_oklab,var(--metis-status-info-fg)_88%,transparent)] opacity-90" aria-hidden />
+        <span className="truncate font-semibold">{aiHeadline}</span>
+      </div>
+      <div className="max-w-[min(100%,28rem)] text-[0.625rem] leading-relaxed text-[--metis-text-tertiary]">{aiHelper}</div>
     </div>
   );
 }

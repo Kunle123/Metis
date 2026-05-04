@@ -14,14 +14,13 @@ export function Switch({
   onCheckedChange: (next: boolean) => void;
 }) {
   const enabledOffTrack =
-    "border-[--metis-control-border] bg-[--metis-control-bg] shadow-[inset_0_1px_0_var(--metis-control-inset)] enabled:hover:bg-[color-mix(in_oklab,var(--metis-control-bg)_93%,white)] enabled:hover:border-[--metis-control-border-hover]";
+    "border-[--metis-control-border] bg-[oklch(0.19_0.018_248)] shadow-[inset_0_2px_5px_rgba(0,0,0,0.55),inset_0_-1px_0_rgba(255,255,255,0.05)] enabled:hover:bg-[oklch(0.21_0.02_248)] enabled:hover:border-[--metis-control-border-hover]";
   const enabledOnTrack =
-    "border-[--metis-action-primary-border] bg-[color-mix(in_oklab,var(--metis-action-primary-bg)_54%,var(--metis-control-bg))] shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] ring-1 ring-[color-mix(in_oklab,var(--metis-action-primary-border)_55%,transparent)] enabled:hover:bg-[color-mix(in_oklab,var(--metis-action-primary-bg)_62%,var(--metis-control-bg))]";
+    "border-[--metis-action-primary-border] bg-[color-mix(in_oklab,var(--metis-action-primary-bg)_58%,var(--metis-control-bg))] shadow-[inset_0_1px_0_rgba(255,255,255,0.26)] ring-1 ring-[color-mix(in_oklab,var(--metis-action-primary-border)_58%,transparent)] enabled:hover:bg-[color-mix(in_oklab,var(--metis-action-primary-bg)_66%,var(--metis-control-bg))]";
   const disabledTrackOff =
-    "border border-[--metis-control-disabled-border] bg-[--metis-control-disabled-bg] shadow-none ring-0";
-  /* Dashed + no brass ring: clearly not the enabled “on” affordance */
+    "border border-[--metis-control-disabled-border] bg-[--metis-control-disabled-bg] shadow-none ring-0 saturate-0";
   const disabledTrackOn =
-    "border border-dashed border-[--metis-control-disabled-border] bg-[--metis-surface-disabled] shadow-none ring-0";
+    "border border-dashed border-[--metis-control-disabled-border] bg-[--metis-surface-disabled] shadow-none ring-0 saturate-0";
 
   const track =
     disabled === true
@@ -35,11 +34,11 @@ export function Switch({
   const knob =
     disabled === true
       ? checked
-        ? "bg-[color-mix(in_oklab,var(--metis-control-disabled-fg)_72%,var(--metis-frame))] shadow-none"
-        : "bg-[--metis-control-disabled-fg] shadow-none"
+        ? "bg-[color-mix(in_oklab,var(--metis-control-disabled-fg)_55%,var(--metis-frame))] shadow-none"
+        : "bg-[--metis-control-disabled-fg] shadow-none opacity-80"
       : checked
-        ? "bg-[--metis-control-thumb] shadow-[0_2px_8px_rgba(0,0,0,0.42)]"
-        : "bg-[--metis-control-thumb] shadow-[0_1px_5px_rgba(0,0,0,0.38)]";
+        ? "bg-[--metis-control-thumb] shadow-[0_2px_8px_rgba(0,0,0,0.48)]"
+        : "bg-[--metis-control-thumb] shadow-[0_1px_5px_rgba(0,0,0,0.42)]";
 
   const trackDims = cn(
     "h-[var(--metis-switch-track-height)] min-h-[var(--metis-switch-track-height)] max-h-[var(--metis-switch-track-height)] w-[var(--metis-switch-track-width)] min-w-[var(--metis-switch-track-width)] max-w-[var(--metis-switch-track-width)] p-[var(--metis-switch-padding)]",
@@ -55,7 +54,7 @@ export function Switch({
       onClick={() => onCheckedChange(!checked)}
       className={cn(
         "inline-flex shrink-0 items-center rounded-[var(--metis-control-radius-pill)] border transition-[background-color,border-color,box-shadow,filter] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-focus-ring]",
-        "disabled:cursor-not-allowed disabled:text-[unset] disabled:opacity-100 disabled:focus-visible:ring-0",
+        "disabled:cursor-not-allowed disabled:text-[unset] disabled:opacity-100 disabled:focus-visible:ring-0 disabled:hover:shadow-none",
         trackDims,
         track,
         className,
@@ -65,7 +64,7 @@ export function Switch({
       <span className={cn("flex min-h-[var(--metis-switch-thumb-size)] w-full items-center", checked ? "justify-end" : "justify-start")}>
         <span
           className={cn(
-            "h-[var(--metis-switch-thumb-size)] w-[var(--metis-switch-thumb-size)] shrink-0 rounded-full transition-[background-color,box-shadow] duration-150",
+            "h-[var(--metis-switch-thumb-size)] w-[var(--metis-switch-thumb-size)] shrink-0 rounded-full transition-[background-color,box-shadow,opacity] duration-150",
             knob,
           )}
         />

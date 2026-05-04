@@ -176,28 +176,38 @@ export default function MetisUiDiagnosticsPage() {
                     </ul>
                   </div>
                   <div className="border-t border-white/8 pt-4">
-                    <p className="text-xs font-medium text-[--metis-text-secondary]">Strict roles (local grouping)</p>
+                    <p className="text-xs font-medium text-[--metis-text-secondary]">Positive visual contracts (must read at a glance)</p>
                     <ul className="mt-2 space-y-1.5 text-xs leading-5 text-[--metis-paper-muted]">
                       <li>
-                        <span className="text-[--metis-paper]">Primary</span> — at most one per local group; filled brass; highest visual weight.
+                        <span className="text-[--metis-paper]">Primary</span>: solid brass fill, dark label, strongest action contrast, tactile brass polish
+                        — unmistakably the lead control; disabled reads as a flat gray slab (no brass polish).
                       </li>
                       <li>
-                        <span className="text-[--metis-paper]">Secondary</span> — neutral framed surface; clearly below primary (no lift/shadow stack).
+                        <span className="text-[--metis-paper]">Secondary</span>: lifted neutral body + clear edge + inset/soft stack — reads as a real
+                        button without competing with primary; hover/focus reinforce clickability.
                       </li>
                       <li>
-                        <span className="text-[--metis-paper]">Ghost / tertiary</span> — text-first; underline on hover; no filled “button” slab.
+                        <span className="text-[--metis-paper]">Ghost</span>: no chassis at rest — readable text + hover underline; never a filled
+                        secondary clone.
                       </li>
                       <li>
-                        <span className="text-[--metis-paper]">Info / context action</span> — blue surface; never the default CTA.
+                        <span className="text-[--metis-paper]">Info action</span>: blue/actionable body (not passive metadata) — weaker than primary,
+                        never brass.
                       </li>
                       <li>
-                        <span className="text-[--metis-paper]">Metadata</span> — plain secondary text or a very light chip; not pill-by-default; not tappable chrome.
+                        <span className="text-[--metis-paper]">Chips / provenance</span>: short badge row, low mass, no button stack; long prose sits as
+                        plain helper text below — not inside a pill.
                       </li>
                       <li>
-                        <span className="text-[--metis-paper]">Provenance chip</span> — compact (below control height); lighter than actions.
+                        <span className="text-[--metis-paper]">Metadata</span>: inline tertiary copy only — zero button chrome.
                       </li>
                       <li>
-                        <span className="text-[--metis-paper]">Status label</span> — communicates state; interactive only when it is explicitly a control.
+                        <span className="text-[--metis-paper]">Segmented</span>: recessed rail; selected = bright neutral slot + bold label + check
+                        glyph (not brass CTA); disabled segments read “off limits.”
+                      </li>
+                      <li>
+                        <span className="text-[--metis-paper]">Switch</span>: on/off energy only when enabled; disabled tracks/knobs are flat and
+                        desaturated even if the knob stays “on-screen.”
                       </li>
                     </ul>
                   </div>
@@ -223,25 +233,69 @@ export default function MetisUiDiagnosticsPage() {
 
                     <div>
                       <p className="text-[0.56rem] font-medium uppercase tracking-[0.18em] text-[--metis-ink-soft]">
-                        Button · chip · metadata
+                        Secondary on page · card · toolbar surfaces
                       </p>
-                      <div className="mt-3 flex flex-wrap items-center gap-[var(--metis-control-gap-md)]">
-                        <Button variant="outline">Secondary button</Button>
-                        <AiProvenance mode="original" />
-                        <AiProvenance mode="ai" helper="Short line for the rail." className="max-w-[min(100%,260px)]" />
-                        <span className="text-xs tabular-nums text-[--metis-text-tertiary]">Last saved · 09:41 UTC · v3</span>
+                      <p className="mt-2 text-xs text-[--metis-text-tertiary]">
+                        Secondary must stay visibly “clickable” (lifted neutral body), not dissolve into panels.
+                      </p>
+                      <div className="mt-4 grid gap-3 lg:grid-cols-3">
+                        <div className="rounded-[1rem] border border-[--metis-outline-subtle] bg-[--metis-surface-page] p-4">
+                          <p className="text-[0.58rem] font-medium uppercase tracking-[0.16em] text-[--metis-text-tertiary]">Page frame</p>
+                          <div className="mt-3 flex flex-wrap items-center gap-2">
+                            <Button size="sm">Publish</Button>
+                            <Button variant="outline" size="sm">
+                              Save draft
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="rounded-[1rem] border border-[--metis-outline-subtle] bg-[--metis-surface-card] p-4">
+                          <p className="text-[0.58rem] font-medium uppercase tracking-[0.16em] text-[--metis-text-tertiary]">Card panel</p>
+                          <div className="mt-3 flex flex-wrap items-center gap-2">
+                            <Button size="sm">Publish</Button>
+                            <Button variant="outline" size="sm">
+                              Save draft
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="rounded-[1rem] border border-[--metis-outline-subtle] bg-[--metis-surface-toolbar] p-4">
+                          <p className="text-[0.58rem] font-medium uppercase tracking-[0.16em] text-[--metis-text-tertiary]">Toolbar slab</p>
+                          <div className="mt-3 flex flex-wrap items-center gap-2">
+                            <Button size="sm">Publish</Button>
+                            <Button variant="outline" size="sm">
+                              Save draft
+                            </Button>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
                     <div>
                       <p className="text-[0.56rem] font-medium uppercase tracking-[0.18em] text-[--metis-ink-soft]">
-                        Info action · AI provenance chip
+                        Button · chip · metadata
                       </p>
-                      <div className="mt-3 flex flex-wrap items-center gap-[var(--metis-control-gap-md)]">
+                      <div className="mt-3 flex flex-wrap items-start gap-x-[var(--metis-control-gap-md)] gap-y-4">
+                        <Button variant="outline">Secondary button</Button>
+                        <AiProvenance mode="original" />
+                        <AiProvenance mode="ai" helper="Short helper under the headline chip — avoids a mega-pill." className="max-w-[240px]" />
+                        <span className="inline-block pt-2 text-xs tabular-nums text-[--metis-text-tertiary]">
+                          Last saved · 09:41 UTC · v3
+                        </span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <p className="text-[0.56rem] font-medium uppercase tracking-[0.18em] text-[--metis-ink-soft]">
+                        Info action · provenance badge · passive helper note
+                      </p>
+                      <p className="mt-2 max-w-xl text-xs leading-5 text-[--metis-text-tertiary]">
+                        This sentence is explanatory copy only (no border, no hover). Scan for the bordered info button vs compact provenance headline +
+                        muted paragraph.
+                      </p>
+                      <div className="mt-3 flex flex-wrap items-start gap-x-[var(--metis-control-gap-md)] gap-y-4">
                         <Button type="button" variant="info" size="sm">
                           View sourcing context
                         </Button>
-                        <AiProvenance mode="ai" variant="synthesis-available" className="max-w-[min(100%,320px)]" />
+                        <AiProvenance mode="ai" variant="synthesis-available" className="max-w-[260px]" />
                       </div>
                     </div>
 

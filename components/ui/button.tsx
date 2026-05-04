@@ -14,9 +14,12 @@ type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   asChild?: boolean;
 };
 
-/** Shared disabled surface: kills variant hovers/shadow/transform for every variant */
-const disabledAll =
-  "disabled:border-[--metis-action-disabled-border] disabled:bg-[--metis-action-disabled-bg] disabled:text-[--metis-action-disabled-fg] disabled:shadow-none disabled:hover:shadow-none disabled:hover:translate-y-0 disabled:active:translate-y-0 disabled:hover:bg-[--metis-action-disabled-bg] disabled:hover:border-[--metis-action-disabled-border] disabled:hover:text-[--metis-action-disabled-fg] disabled:hover:brightness-100 disabled:[filter:none] disabled:no-underline";
+/** Behaviour-only: each variant supplies its own disabled surface tokens */
+const disabledInteract = cn(
+  "disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-100",
+  "disabled:hover:translate-y-0 disabled:active:translate-y-0 disabled:hover:brightness-100 disabled:[filter:none] disabled:no-underline",
+  "disabled:hover:shadow-none",
+);
 
 function sizeClasses(s: ButtonSize) {
   if (s === "sm") {
@@ -40,42 +43,55 @@ function sizeClasses(s: ButtonSize) {
 function variantClassFor(variant: ButtonVariant) {
   if (variant === "ghost") {
     return cn(
-      "border border-transparent bg-transparent font-normal text-[--metis-action-ghost-fg] shadow-none ring-0 underline-offset-[0.22em]",
-      "hover:bg-[color-mix(in_oklab,var(--metis-frame)_97%,transparent)] hover:text-[--metis-text-secondary] hover:underline hover:decoration-[color-mix(in_oklab,var(--metis-text-tertiary)_70%,transparent)]",
-      "active:bg-[color-mix(in_oklab,var(--metis-frame)_92%,transparent)] active:underline",
-      disabledAll,
+      "border border-transparent bg-transparent font-normal text-[--metis-action-ghost-fg] shadow-none ring-0 underline-offset-[0.2em]",
+      "hover:text-[--metis-text-primary] hover:underline hover:decoration-[color-mix(in_oklab,var(--metis-paper-muted)_65%,transparent)]",
+      "active:text-[--metis-text-secondary]",
+      disabledInteract,
+      "disabled:bg-transparent disabled:border-transparent disabled:text-[--metis-action-ghost-disabled-fg] disabled:shadow-none disabled:ring-0",
+      "disabled:hover:bg-transparent disabled:hover:border-transparent disabled:hover:text-[--metis-action-ghost-disabled-fg]",
     );
   }
   if (variant === "outline") {
     return cn(
       "border border-[--metis-action-secondary-border] bg-[--metis-action-secondary-bg] font-medium text-[--metis-action-secondary-fg]",
-      "shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] ring-0",
-      "hover:border-[--metis-outline-strong] hover:bg-[var(--metis-control-hover-bg)]",
-      disabledAll,
+      "shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_1px_0_rgba(0,0,0,0.45),0_8px_22px_-10px_rgba(0,0,0,0.75)] ring-0",
+      "hover:border-[--metis-action-secondary-hover-border] hover:bg-[--metis-action-secondary-hover-bg]",
+      "hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_1px_0_rgba(0,0,0,0.38),0_10px_26px_-8px_rgba(0,0,0,0.78)]",
+      disabledInteract,
+      "disabled:border-[--metis-action-secondary-disabled-border] disabled:bg-[--metis-action-secondary-disabled-bg] disabled:text-[--metis-action-secondary-disabled-fg]",
+      "disabled:shadow-none disabled:ring-0",
+      "disabled:hover:border-[--metis-action-secondary-disabled-border] disabled:hover:bg-[--metis-action-secondary-disabled-bg] disabled:hover:text-[--metis-action-secondary-disabled-fg]",
     );
   }
   if (variant === "info") {
     return cn(
-      "border border-[--metis-info-border] bg-[--metis-info-bg] font-medium text-[--metis-paper-muted]",
-      "shadow-none ring-0",
-      "hover:border-[color-mix(in_oklab,var(--metis-info)_52%,transparent)] hover:bg-[color-mix(in_oklab,var(--metis-info-bg)_92%,black)] hover:text-[--metis-text-primary]",
+      "border border-[--metis-action-info-border] bg-[--metis-action-info-bg] font-medium text-[--metis-action-info-fg]",
+      "shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_1px_0_rgba(0,0,0,0.35),0_6px_18px_-8px_rgba(0,0,0,0.55)] ring-0",
+      "hover:border-[--metis-action-info-hover-border] hover:bg-[--metis-action-info-hover-bg]",
+      "hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_1px_0_rgba(0,0,0,0.28),0_8px_22px_-8px_rgba(0,0,0,0.6)]",
       "focus-visible:ring-[--metis-focus-ring-info]",
-      disabledAll,
+      disabledInteract,
+      "disabled:border-[--metis-action-disabled-border] disabled:bg-[--metis-action-disabled-bg] disabled:text-[--metis-action-disabled-fg]",
+      "disabled:shadow-none disabled:ring-0",
+      "disabled:hover:border-[--metis-action-disabled-border] disabled:hover:bg-[--metis-action-disabled-bg] disabled:hover:text-[--metis-action-disabled-fg]",
     );
   }
   return cn(
     "border border-[--metis-action-primary-border] bg-[--metis-action-primary-bg] font-semibold text-[--metis-action-primary-fg]",
-    "shadow-[inset_0_2px_0_rgba(255,255,255,0.38),inset_0_-1px_0_rgba(0,0,0,0.34),0_14px_34px_-6px_rgba(0,0,0,0.58)]",
-    "ring-1 ring-[color-mix(in_oklab,var(--metis-action-primary-border)_72%,transparent)]",
-    "hover:-translate-y-px hover:shadow-[inset_0_2px_0_rgba(255,255,255,0.44),inset_0_-1px_0_rgba(0,0,0,0.24),0_18px_42px_-6px_rgba(0,0,0,0.66)] hover:brightness-[1.04]",
-    "active:translate-y-0 active:brightness-[1.02]",
-    disabledAll,
+    "shadow-[inset_0_2px_0_rgba(255,255,255,0.42),inset_0_-1px_0_rgba(0,0,0,0.38),0_14px_36px_-6px_rgba(0,0,0,0.62)]",
+    "ring-1 ring-[color-mix(in_oklab,var(--metis-action-primary-border)_76%,transparent)]",
+    "hover:-translate-y-px hover:shadow-[inset_0_2px_0_rgba(255,255,255,0.48),inset_0_-1px_0_rgba(0,0,0,0.26),0_18px_44px_-6px_rgba(0,0,0,0.72)] hover:brightness-[1.045]",
+    "active:translate-y-0 active:brightness-[1.03]",
+    disabledInteract,
+    "disabled:border-[--metis-action-primary-disabled-border] disabled:bg-[--metis-action-primary-disabled-bg] disabled:text-[--metis-action-primary-disabled-fg]",
+    "disabled:shadow-none disabled:ring-0 disabled:brightness-100 disabled:hover:brightness-100",
+    "disabled:hover:border-[--metis-action-primary-disabled-border] disabled:hover:bg-[--metis-action-primary-disabled-bg] disabled:hover:text-[--metis-action-primary-disabled-fg]",
   );
 }
 
 export function Button({ className, variant = "default", size = "md", pill = false, asChild, ...props }: Props) {
   const base =
-    "inline-flex items-center justify-center whitespace-nowrap transition-[background-color,border-color,color,box-shadow,transform,filter,text-decoration] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-focus-ring] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0e0f] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-100";
+    "inline-flex items-center justify-center whitespace-nowrap transition-[background-color,border-color,color,box-shadow,transform,filter,text-decoration] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-focus-ring] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0e0f]";
 
   const radius =
     pill === true ? "rounded-[var(--metis-control-radius-pill)]" : "rounded-[var(--metis-control-radius-md)]";

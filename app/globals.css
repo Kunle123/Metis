@@ -76,21 +76,48 @@
   --metis-action-primary-bg: oklch(0.8 0.12 78);
   --metis-action-primary-border: oklch(0.84 0.1 78);
   /* Stronger than paper-muted on brass for one-glance CTA legibility */
-  --metis-action-primary-fg: oklch(0.14 0.02 255);
-  --metis-action-secondary-bg: oklch(0.21 0.016 250);
+  --metis-action-primary-fg: oklch(0.12 0.022 255);
+  /*
+   * Primary disabled: flat neutral slab — zero brass tint, zero tactile polish (never confused with enabled CTA).
+   */
+  --metis-action-primary-disabled-bg: oklch(0.17 0.004 250);
+  --metis-action-primary-disabled-border: oklch(0.22 0.004 250);
+  --metis-action-primary-disabled-fg: oklch(0.34 0.006 92);
+  /*
+   * Secondary actionable: intentional “button body” on dark UI — lifted vs page + card; not border-only.
+   */
+  --metis-action-secondary-bg: oklch(0.31 0.026 246);
   --metis-action-secondary-fg: var(--metis-text-primary);
-  --metis-action-secondary-border: oklch(0.38 0.022 248);
-  --metis-action-ghost-fg: oklch(0.74 0.01 95);
-  /* Disabled actions: visibly “off”; flatter/dimmer than ghost hover (never mistaken for clickable secondary). */
+  --metis-action-secondary-border: oklch(0.52 0.032 248);
+  --metis-action-secondary-hover-bg: oklch(0.36 0.032 246);
+  --metis-action-secondary-hover-border: oklch(0.58 0.036 248);
+  /* Ghost: readable ink, still below secondary mass */
+  --metis-action-ghost-fg: oklch(0.82 0.015 95);
+  --metis-action-ghost-disabled-fg: oklch(0.38 0.008 92);
+  /* Secondary-disabled: obviously flat vs enabled secondary lift */
+  --metis-action-secondary-disabled-bg: oklch(0.166 0.006 248);
+  --metis-action-secondary-disabled-border: oklch(0.22 0.006 250);
+  --metis-action-secondary-disabled-fg: oklch(0.36 0.008 92);
+  /* Fallback shared disabled for inputs / misc */
   --metis-action-disabled-bg: oklch(0.155 0.004 248);
   --metis-action-disabled-fg: oklch(0.36 0.005 92);
   --metis-action-disabled-border: oklch(0.2 0.004 250);
+  /*
+   * Info *action*: saturated enough to scan as clickable; separate from passive metadata prose.
+   */
+  --metis-action-info-bg: color-mix(in oklab, var(--metis-info) 34%, rgba(0, 0, 0, 0.2));
+  --metis-action-info-border: color-mix(in oklab, var(--metis-info) 72%, rgba(255, 255, 255, 0.12));
+  --metis-action-info-fg: oklch(0.93 0.02 95);
+  --metis-action-info-hover-bg: color-mix(in oklab, var(--metis-info) 44%, rgba(0, 0, 0, 0.18));
+  --metis-action-info-hover-border: color-mix(in oklab, var(--metis-info) 82%, rgba(255, 255, 255, 0.16));
 
   /*
-   * Segmented “selected”: neutral elevated slot — avoid brass fills/rings here or it reads as another primary CTA.
+   * Segmented: recessed rail vs page; selected is a brighter neutral “thumb” slot (still not brass/primary-button).
    */
-  --metis-control-active-bg: oklch(0.33 0.024 246);
-  --metis-control-active-border: oklch(0.44 0.028 248);
+  --metis-segmented-rail-bg: oklch(0.125 0.014 255);
+  --metis-segmented-rail-border: oklch(0.34 0.018 248);
+  --metis-control-active-bg: oklch(0.455 0.042 248);
+  --metis-control-active-border: oklch(0.66 0.048 248);
   --metis-control-thumb: oklch(0.88 0.01 250);
   --metis-control-disabled-bg: oklch(0.17 0.005 248);
   --metis-control-disabled-border: oklch(0.2 0.005 248);
@@ -128,7 +155,7 @@
   --metis-chip-padding-x-md: 0.75rem;
   --metis-chip-gap: 0.375rem;
   --metis-chip-dot-size: 0.45rem;
-  --metis-chip-font-size: 0.6875rem;
+  --metis-chip-font-size: 0.625rem;
 
   /* Segmented: outer rail aligns to md control height; inner segment slots omit rail padding twice. */
   --metis-segmented-rail-padding: 0.25rem;
