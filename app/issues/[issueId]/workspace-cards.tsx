@@ -16,6 +16,7 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 type GapCardData = {
   id: string;
@@ -103,81 +104,6 @@ function Pill({ children, className }: { children: React.ReactNode; className?: 
   );
 }
 
-function ActionButton({
-  onClick,
-  children,
-  disabled,
-  tone = "neutral",
-  className,
-}: {
-  onClick?: () => void;
-  children: React.ReactNode;
-  disabled?: boolean;
-  tone?: "neutral" | "primary" | "danger";
-  className?: string;
-}) {
-  const toneClass =
-    tone === "primary"
-      ? "bg-white/10 hover:bg-white/15 text-white"
-      : tone === "danger"
-        ? "bg-rose-900/25 hover:bg-rose-900/35 text-rose-50 border-rose-200/15"
-        : "bg-white/5 hover:bg-white/10 text-white/80";
-  return (
-    <button
-      type="button"
-      disabled={disabled}
-      onClick={onClick}
-      className={cn(
-        "inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-1.5 text-xs disabled:cursor-not-allowed disabled:opacity-50",
-        toneClass,
-        className,
-      )}
-    >
-      {children}
-    </button>
-  );
-}
-
-function ActionLink({
-  href,
-  children,
-  target,
-}: {
-  href: string;
-  children: React.ReactNode;
-  target?: string;
-}) {
-  return (
-    <Link
-      href={href}
-      target={target}
-      className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/80 hover:bg-white/10"
-    >
-      {children}
-    </Link>
-  );
-}
-
-function TertiaryActionLink({
-  href,
-  children,
-  target,
-}: {
-  href: string;
-  children: React.ReactNode;
-  target?: string;
-}) {
-  return (
-    <Link
-      href={href}
-      target={target}
-      className="inline-flex items-center gap-2 rounded-full border border-white/8 bg-white/[0.02] px-3 py-1.5 text-xs text-white/60 hover:border-white/12 hover:bg-white/[0.04] hover:text-white/80"
-    >
-      {children}
-    </Link>
-  );
-}
-
 function CardShell({
   expanded,
   onToggle,
@@ -191,18 +117,19 @@ function CardShell({
 }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-white/[0.03]">
-      <button
+      <Button
         type="button"
+        variant="ghost"
         onClick={onToggle}
-        className="flex w-full items-start justify-between gap-4 px-4 py-2.5 text-left hover:bg-white/[0.04]"
         aria-expanded={expanded}
+        className="h-auto min-h-0 w-full items-start justify-between gap-4 rounded-none border-0 bg-transparent px-4 py-2.5 text-left font-normal text-[inherit] shadow-none ring-0 hover:bg-white/[0.04] hover:no-underline"
       >
         <div className="min-w-0 flex-1">{summary}</div>
         <div className="mt-0.5 flex shrink-0 items-center gap-2 text-white/40">
           <span className="text-xs">{expanded ? "Hide" : "View details"}</span>
           {expanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
         </div>
-      </button>
+      </Button>
       {expanded && details ? <div className="border-t border-white/10 px-4 pb-3 pt-2.5">{details}</div> : null}
     </div>
   );
@@ -412,8 +339,8 @@ export function WorkspaceGapCards({
                               className="min-h-[120px] w-full rounded-[0.95rem] border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-3 py-3 text-sm leading-6 text-white/90 shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
                             />
                             <div className="flex flex-wrap items-center gap-2">
-                              <ActionButton
-                                tone="primary"
+                              <Button
+                                size="sm"
                                 disabled={busyGapId === g.id || draftPrompt.trim().length === 0}
                                 onClick={async () => {
                                   setBusyGapId(g.id);
@@ -434,8 +361,10 @@ export function WorkspaceGapCards({
                               >
                                 <Save size={14} />
                                 Save
-                              </ActionButton>
-                              <ActionButton
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
                                 disabled={busyGapId === g.id}
                                 onClick={() => {
                                   setEditingId(null);
@@ -448,7 +377,7 @@ export function WorkspaceGapCards({
                               >
                                 <X size={14} />
                                 Cancel
-                              </ActionButton>
+                              </Button>
                             </div>
                           </div>
                         ) : (
@@ -468,16 +397,13 @@ export function WorkspaceGapCards({
                     </div>
 
                     <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-white/10 pt-3">
-                      <ActionButton
-                        className="border-white/8 bg-white/[0.02] text-white/65 hover:bg-white/[0.05]"
-                        disabled={!canEdit || busyGapId === g.id}
-                        onClick={() => beginEdit(g)}
-                      >
+                      <Button variant="outline" size="sm" disabled={!canEdit || busyGapId === g.id} onClick={() => beginEdit(g)}>
                         <PencilLine size={14} />
                         Edit
-                      </ActionButton>
-                      <ActionButton
-                        className="border-white/8 bg-white/[0.02] text-white/65 hover:bg-white/[0.05]"
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={async () => {
                           try {
                             await navigator.clipboard.writeText(g.prompt);
@@ -489,10 +415,11 @@ export function WorkspaceGapCards({
                       >
                         <Copy size={14} />
                         Copy
-                      </ActionButton>
+                      </Button>
                       {isResolved ? (
-                        <ActionButton
-                          className="border-white/8 bg-white/[0.02] text-white/65 hover:bg-white/[0.05]"
+                        <Button
+                          variant="outline"
+                          size="sm"
                           disabled={busyGapId === g.id}
                           onClick={async () => {
                             setBusyGapId(g.id);
@@ -512,11 +439,11 @@ export function WorkspaceGapCards({
                         >
                           <RotateCcw size={14} />
                           Reopen
-                        </ActionButton>
+                        </Button>
                       ) : null}
-                      <TertiaryActionLink href={`/issues/${issueId}/gaps#${g.id}`}>
-                        Advanced view
-                      </TertiaryActionLink>
+                      <Button asChild variant="ghost" size="sm" className="h-auto min-h-0 px-2 py-1.5">
+                        <Link href={`/issues/${issueId}/gaps#${g.id}`}>Advanced view</Link>
+                      </Button>
                     </div>
                   </div>
 
@@ -525,13 +452,15 @@ export function WorkspaceGapCards({
                     <div className="rounded-[1.05rem] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(0,0,0,0.10))] px-3 py-2.5">
                       <p className="whitespace-pre-wrap text-sm leading-6 text-white/70">{whyDisplay}</p>
                       {whyLong ? (
-                        <button
+                        <Button
                           type="button"
+                          variant="ghost"
+                          size="sm"
                           onClick={() => setWhyExpandedById((cur) => ({ ...cur, [g.id]: !whyExpanded }))}
-                          className="mt-2 text-xs font-medium text-[--metis-brass-soft] underline decoration-white/10 underline-offset-4 hover:decoration-white/25"
+                          className="mt-2 h-auto min-h-0 px-0 py-0 text-xs font-medium text-[--metis-brass-soft] hover:text-[--metis-brass-soft]"
                         >
                           {whyExpanded ? "Show less" : "Show more"}
-                        </button>
+                        </Button>
                       ) : null}
                     </div>
                   ) : null}
@@ -572,8 +501,8 @@ export function WorkspaceGapCards({
                                 </option>
                               ))}
                             </select>
-                            <ActionButton
-                              tone="primary"
+                            <Button
+                              size="sm"
                               disabled={busyGapId === g.id || internalInputs.length === 0}
                               onClick={async () => {
                                 const selected = (resolveSelectionById[g.id] ?? "").trim();
@@ -601,7 +530,7 @@ export function WorkspaceGapCards({
                             >
                               <CheckCircle2 size={14} />
                               Mark answered
-                            </ActionButton>
+                            </Button>
                           </div>
                         </div>
 
@@ -611,8 +540,9 @@ export function WorkspaceGapCards({
 
                           <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
                             <p className="text-xs text-white/50">Save, then select it above and mark answered.</p>
-                            <ActionButton
-                              className="border-white/8 bg-white/[0.04] text-white/75 hover:bg-white/[0.08]"
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               onClick={() =>
                                 setAddObsOpenById((cur) => ({
                                   ...cur,
@@ -632,7 +562,7 @@ export function WorkspaceGapCards({
                                   Add
                                 </>
                               )}
-                            </ActionButton>
+                            </Button>
                           </div>
 
                           {addObsOpen ? (
@@ -707,14 +637,14 @@ export function WorkspaceGapCards({
                                   </select>
                                 </label>
                                 <div className="flex justify-end">
-                                  <ActionButton
-                                    tone="primary"
+                                  <Button
+                                    size="sm"
                                     disabled={obsSavingGapId === g.id || obsMissingRequired}
                                     onClick={() => void createObservationForGap(g)}
                                   >
                                     <Save size={14} />
                                     {obsSavingGapId === g.id ? "Saving…" : "Save observation"}
-                                  </ActionButton>
+                                  </Button>
                                 </div>
                               </div>
 
@@ -812,16 +742,20 @@ export function WorkspaceSourceCards({
 
                   <div className="flex flex-wrap items-center gap-2">
                     {s.url ? (
-                      <ActionLink href={s.url} target="_blank">
-                        <ExternalLink size={14} />
-                        Open link
-                      </ActionLink>
+                      <Button asChild variant="outline" size="sm">
+                        <a className="inline-flex items-center gap-2" href={s.url} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink size={14} />
+                          Open link
+                        </a>
+                      </Button>
                     ) : (
                       <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs text-white/45">
                         No link available
                       </span>
                     )}
-                    <ActionLink href={`/issues/${issueId}/sources`}>Advanced view</ActionLink>
+                    <Button asChild variant="outline" size="sm">
+                      <Link href={`/issues/${issueId}/sources`}>Advanced view</Link>
+                    </Button>
                   </div>
                 </div>
               }
@@ -881,18 +815,15 @@ export function WorkspaceObservationCards({ issueId, observations }: { issueId: 
                   Excluded from brief
                 </span>
               ) : null}
-              <button
+              <Button
                 type="button"
+                variant="outline"
+                size="sm"
                 disabled={busyId === o.id}
                 onClick={() => void toggleExcluded(o.id, !excludedById[o.id])}
-                className={cn(
-                  "rounded-full border px-3 py-1.5 text-xs",
-                  busyId === o.id ? "cursor-not-allowed opacity-60" : "hover:bg-white/10",
-                  excludedById[o.id] ? "border-white/10 bg-white/5 text-white/75" : "border-white/10 bg-white/5 text-white/75",
-                )}
               >
                 {excludedById[o.id] ? "Include in briefs" : "Exclude from briefs"}
-              </button>
+              </Button>
             </div>
           </div>
           <p className="mt-2.5 whitespace-pre-wrap text-sm text-white/85">{o.response}</p>

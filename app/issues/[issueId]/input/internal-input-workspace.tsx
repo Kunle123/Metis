@@ -85,11 +85,7 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
               }
             >
               <div className="flex flex-wrap items-center gap-2 lg:justify-center">
-                <Button
-                  asChild
-                  variant="outline"
-                  className="h-10 rounded-full border-white/10 bg-white/[0.03] px-4 text-[--metis-paper] hover:bg-white/[0.08]"
-                >
+                <Button asChild variant="outline" size="sm">
                   <Link href={`/issues/${issueId}`}>Back to workspace</Link>
                 </Button>
               </div>
@@ -158,24 +154,27 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
                                 <Badge className="border-0 bg-rose-900/25 text-rose-50">Excluded from brief output</Badge>
                               ) : null}
                               <ConfidencePill level={input.confidence} />
-                              <button
+                              <Button
                                 type="button"
+                                variant="outline"
+                                size="sm"
                                 disabled={busyId === input.id}
                                 onClick={() => void toggleExcluded(input.id, !isExcluded)}
-                                className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/75 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
                                 title="Excluded notes are kept in the record but omitted from generated briefs."
                               >
                                 {isExcluded ? "Include in briefs" : "Exclude from briefs"}
-                              </button>
-                              <button
+                              </Button>
+                              <Button
                                 type="button"
+                                variant="ghost"
+                                size="sm"
                                 onClick={() => setOpenId((cur) => (cur === input.id ? null : input.id))}
-                                className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs text-white/65 hover:bg-white/[0.06]"
                                 aria-expanded={expanded}
+                                className="h-auto min-h-0 gap-2 hover:no-underline"
                               >
                                 {expanded ? "Hide response" : "Full response"}
                                 {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                              </button>
+                              </Button>
                             </div>
                           </div>
 
@@ -218,7 +217,7 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
                 addLabel="Add observation"
                 form={<InternalInputCreateForm issueId={issueId} />}
                 secondaryAction={
-                  <Button asChild variant="outline" className="h-10 rounded-full px-4">
+                  <Button asChild variant="outline" size="sm">
                     <Link href={`/issues/${issueId}`}>Workspace</Link>
                   </Button>
                 }
@@ -262,16 +261,16 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
 
             <ReviewRailCard title="Next" tone="info" meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Move from notes to brief output and validation.</p>}>
               <div className="grid gap-3">
-                <Button asChild variant="outline" className="w-full rounded-full">
-                  <Link href={`/issues/${issueId}/brief?mode=full`}>
-                    <PlusCircle className="mr-2 h-4 w-4" />
+                <Button asChild variant="outline" size="sm" className="w-full">
+                  <Link className="inline-flex items-center justify-center gap-2" href={`/issues/${issueId}/brief?mode=full`}>
+                    <PlusCircle className="h-4 w-4" />
                     Open brief
                   </Link>
                 </Button>
-                <Button asChild variant="outline" className="w-full rounded-full">
-                  <Link href={`/issues/${issueId}/gaps`}>
+                <Button asChild variant="outline" size="sm" className="w-full">
+                  <Link className="inline-flex items-center justify-center gap-2" href={`/issues/${issueId}/gaps`}>
                     Review clarification gaps
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                    <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>
               </div>
