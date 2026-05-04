@@ -38,16 +38,10 @@ function displayTitles(id: string, fallback: string) {
 }
 
 async function getLatestBriefVersion(issueId: string, mode: BriefMode) {
-  const issue = await prisma.issue.findUnique({ where: { id: issueId } });
-  if (!issue) return null;
-
-  const latest = await prisma.briefVersion.findFirst({
+  return prisma.briefVersion.findFirst({
     where: { issueId, mode },
     orderBy: { createdAt: "desc" },
   });
-
-  if (latest && latest.generatedFromIssueUpdatedAt.getTime() === issue.updatedAt.getTime()) return latest;
-  return latest;
 }
 
 export default async function IssueBriefPage({

@@ -188,7 +188,17 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       actorLabel: user.email ?? null,
     });
 
-    return briefVersion;
+    // `writeIssueActivity` updates `Issue.lastActivityAt`, which bumps `Issue.updatedAt` (@updatedAt).
+    // Align stored freshness with the issue row as it exists after that write so the new brief is not "Stale".
+    const issueRow = await tx.issue.findUniqueOrThrow({
+      where: { id: issueId },
+      select: { updatedAt: true },
+    });
+
+    return tx.briefVersion.update({
+      where: { id: briefVersion.id },
+      data: { generatedFromIssueUpdatedAt: issueRow.updatedAt },
+    });
   });
 
   return NextResponse.json({
