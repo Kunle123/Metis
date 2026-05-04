@@ -441,6 +441,11 @@ export function MessagesPanel({
           }
         >
             <div className="space-y-3 text-sm leading-6 text-[--metis-paper-muted]">
+              {!latest ? (
+                <p className="text-sm leading-6 text-[--metis-paper-muted]">
+                  Choose a template and audience group to preview a draft. Save a draft version when it reads cleanly for your channel.
+                </p>
+              ) : null}
               <div className="flex items-center justify-between gap-3">
                 <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Audience group</span>
                 <span className="text-[--metis-paper]">{selectedAudienceGroupLabel}</span>
@@ -454,20 +459,36 @@ export function MessagesPanel({
                   </div>
                   <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-3">
                     <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Status</span>
-                    <span
-                      className={`rounded-full border px-3 py-1 text-[0.62rem] font-medium uppercase tracking-[0.18em] ${
-                        inSync
-                          ? "border-emerald-400/35 bg-[rgba(18,83,58,0.45)] text-emerald-50"
-                          : "border-sky-400/35 bg-[rgba(19,86,118,0.55)] text-sky-50"
-                      }`}
-                    >
-                      {inSync ? "Up to date" : "Stale"}
-                    </span>
+                    <div className="flex flex-col items-end gap-1">
+                      <span
+                        className={`rounded-full border px-3 py-1 text-[0.62rem] font-medium uppercase tracking-[0.18em] ${
+                          inSync
+                            ? "border-emerald-400/35 bg-[rgba(18,83,58,0.45)] text-emerald-50"
+                            : "border-sky-400/35 bg-[rgba(19,86,118,0.55)] text-sky-50"
+                        }`}
+                      >
+                        {inSync ? "Up to date" : "Stale"}
+                      </span>
+                      {!inSync ? (
+                        <span className="max-w-[14rem] text-right text-[0.72rem] leading-snug text-[--metis-paper-muted]">
+                          Save or regenerate wording because the issue changed after this draft.
+                        </span>
+                      ) : null}
+                    </div>
                   </div>
                   <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-3">
                     <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Open questions</span>
-                    <span className="text-[--metis-paper]">{deterministicPreview.metadata.openGapsLabel}</span>
+                    <Link
+                      href={`/issues/${issueId}/gaps`}
+                      className="text-[--metis-paper] underline-offset-4 hover:underline"
+                      title="Answer, assign, or close open questions in the tracker."
+                    >
+                      {deterministicPreview.metadata.openGapsLabel}
+                    </Link>
                   </div>
+                  <p className="border-t border-white/8 pt-3 text-[0.72rem] leading-snug text-[--metis-paper-muted]">
+                    Answer, assign, or close open questions before circulation.
+                  </p>
                 </>
               ) : null}
             </div>

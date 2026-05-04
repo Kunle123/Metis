@@ -185,6 +185,15 @@ export default async function IssueBriefPage({
                       Not generated
                     </span>
                   )}
+                  {briefVersion && !briefInSync ? (
+                    <span className="hidden max-w-xl text-[0.8rem] leading-snug text-[--metis-text-secondary] xl:inline">
+                      Refresh this brief because the issue changed after it was generated.
+                    </span>
+                  ) : !briefVersion ? (
+                    <span className="hidden max-w-xl text-[0.8rem] leading-snug text-[--metis-text-secondary] xl:inline">
+                      Generate a brief from the current issue record.
+                    </span>
+                  ) : null}
                   {briefSyncHint ? (
                     <span className="hidden max-w-xl text-[0.8rem] leading-snug text-[--metis-text-secondary] xl:inline">{briefSyncHint}</span>
                   ) : null}
