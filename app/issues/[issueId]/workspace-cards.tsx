@@ -544,6 +544,13 @@ export function WorkspaceGapCards({
                       </p>
                     ) : (
                       <div className="grid gap-3 md:grid-cols-2">
+                        <p className="col-span-full text-[0.72rem] leading-snug text-white/55">
+                          Answer, assign, or close on the{" "}
+                          <Link href={`/issues/${issueId}/gaps`} className="font-medium text-[--metis-brass-soft] underline-offset-4 hover:underline">
+                            Open questions
+                          </Link>{" "}
+                          ledger when the thread is settled — use controls below from the workspace shortcut.
+                        </p>
                         <div className="md:pr-3 md:border-r md:border-white/10">
                           <p className="text-xs text-white/55">Existing observation</p>
                           <p className="mt-1 text-sm text-white/70">Select, then mark answered.</p>
@@ -741,11 +748,17 @@ export function WorkspaceSourceCards({
 }) {
   const [openId, setOpenId] = useState<string | null>(null);
 
-  const byId = useMemo(() => {
-    const m = new Map<string, SourceCardData>();
-    for (const s of sources) m.set(s.id, s);
-    return m;
-  }, [sources]);
+  if (sources.length === 0) {
+    return (
+      <p className="text-sm leading-6 text-white/55">
+        No Sources in this workspace preview yet.{" "}
+        <Link href={`/issues/${issueId}/sources`} className="font-medium text-[--metis-brass-soft] underline-offset-4 hover:underline">
+          Open Sources
+        </Link>{" "}
+        to add or review evidence on the full ledger.
+      </p>
+    );
+  }
 
   return (
     <div className="space-y-2.5">
@@ -816,8 +829,6 @@ export function WorkspaceSourceCards({
           </div>
         );
       })}
-      {/* avoid unused var warning if tooling changes; keeping byId for easy future lookup */}
-      {byId.size === -1 ? null : null}
     </div>
   );
 }

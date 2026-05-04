@@ -229,6 +229,10 @@ export function GapLedger({
                 <p className="text-sm leading-6 text-[--metis-paper-muted]">
                   Full list of open and resolved questions. Use the workspace for day-to-day review; this page is for deeper ledger work.
                 </p>
+                <p className="text-[0.72rem] leading-snug text-[--metis-paper-muted]">
+                  For each open row: answer, assign, or close the question when resolved — tie closure to an attributable observation, or reopen if
+                  the facts move again.
+                </p>
               </div>
             }
             right={
@@ -376,7 +380,14 @@ export function GapLedger({
                             <DenseSection title="Resolution" titleClassName="text-[0.62rem]">
                               {gap.status === "Open" ? (
                                 <div className="space-y-2">
-                                  <p className="text-xs text-[--metis-paper-muted]">Resolve with an attributable internal input record.</p>
+                                  <p className="text-xs text-[--metis-paper-muted]">
+                                    Answer, assign, or close this question when resolved — pick an observation, then{" "}
+                                    <span className="text-[--metis-paper]">Mark answered</span>. Need more inputs first? Capture them via{" "}
+                                    <Link href={`/issues/${issueId}/input`} className="font-medium text-[--metis-brass-soft] underline-offset-4 hover:underline">
+                                      Observations
+                                    </Link>
+                                    .
+                                  </p>
                                   <select
                                     value={resolveSelections[gap.id] ?? ""}
                                     onChange={(e) =>
@@ -494,11 +505,11 @@ export function GapLedger({
                 <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{internalInputs.length}</Badge>
               </div>
               <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-3">
-                <span className="text-[--metis-paper]">Resolved gaps</span>
+                <span className="text-[--metis-paper]">Resolved open questions</span>
                 <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{resolvedCount}</Badge>
               </div>
               <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-3">
-                <span className="text-[--metis-paper]">Issue.openGapsCount</span>
+                <span className="text-[--metis-paper]">Open count (issue record)</span>
                 <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{issueOpenGapsCount}</Badge>
               </div>
             </div>

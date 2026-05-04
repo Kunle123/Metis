@@ -107,7 +107,15 @@ export default async function IssueSourcesPage({ params }: { params: Promise<{ i
                 <div className="space-y-1">
                   <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper]">Evidence library</h2>
                   <p className="text-sm leading-6 text-[--metis-paper-muted]">
-                    Full list of sources for this issue. Add new evidence when needed; day-to-day work stays in the workspace.
+                    Full list of sources for this issue. Add or review Sources here before treating brief claims as settled; day-to-day work can
+                    stay in the workspace until you need the full ledger.
+                  </p>
+                  <p className="text-[0.72rem] leading-snug text-[--metis-paper-muted]">
+                    Questions that still block confirmation belong on{" "}
+                    <Link href={`/issues/${issue.id}/gaps`} className="text-[--metis-brass-soft] underline-offset-4 hover:underline">
+                      Open questions
+                    </Link>
+                    .
                   </p>
                 </div>
               }
@@ -134,6 +142,20 @@ export default async function IssueSourcesPage({ params }: { params: Promise<{ i
           </div>
 
           <div className="space-y-6 px-6 py-6 sm:px-7 sm:py-7">
+            {sources.length === 0 ? (
+              <div className="rounded-[1.25rem] border border-white/10 bg-[rgba(255,255,255,0.04)] px-5 py-6 sm:px-6">
+                <p className="text-sm font-medium text-[--metis-paper]">No Sources yet</p>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-[--metis-paper-muted]">
+                  Add evidence on this page so briefs and exports can point to reviewable material. Start with official or internal artifacts, then
+                  layer media or market signals as needed.
+                </p>
+                <Button asChild className="mt-4 w-fit rounded-full px-5">
+                  <Link href="#add-source">Add a source</Link>
+                </Button>
+              </div>
+            ) : null}
+
+            {sources.length > 0 ? (
             <div className="rounded-[1.25rem] border border-[--metis-info-border] bg-[rgba(255,255,255,0.03)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
               {sources.map((item) => {
                 const usageLabel = item.tier === "Major media" || item.tier === "Market signal" ? "Signal" : "In brief";
@@ -242,8 +264,9 @@ export default async function IssueSourcesPage({ params }: { params: Promise<{ i
                 );
               })}
             </div>
+            ) : null}
 
-            <div className="pt-2">
+            <div id="add-source" className="scroll-mt-24 pt-2">
               <CollapsibleFormPanel
                 title="Add source"
                 description="Capture evidence and artifacts for the issue. Sources should be reviewable items, not questions."
@@ -264,36 +287,46 @@ export default async function IssueSourcesPage({ params }: { params: Promise<{ i
         <SurfaceCard className="metis-support-surface min-w-0 overflow-hidden">
           <div className="space-y-4 px-5 py-5">
             <ReviewRailCard
-              title="Review posture"
+              title="Illustrative briefing posture"
               tone="info"
-              meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Quick status signals for the brief sections.</p>}
+              meta={
+                <p className="text-sm leading-6 text-[--metis-paper-muted]">
+                  Examples only — not computed from this issue&apos;s Sources or brief. Real validation happens when you add or review evidence
+                  here and close related items on Open questions.
+                </p>
+              }
             >
               <div className="space-y-3">
                 {sectionPosture.map((item) => (
                   <div key={item.title} className="border-t border-white/8 pt-3 first:border-t-0 first:pt-0">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-[--metis-paper]">{item.title}</p>
-                        <p className="mt-1 text-sm leading-5 text-[--metis-paper-muted]">{item.detail}</p>
-                      </div>
-                      <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{item.badge}</Badge>
-                    </div>
+                    <p className="text-sm font-medium text-[--metis-paper]">{item.title}</p>
+                    <p className="mt-1 text-sm leading-5 text-[--metis-paper-muted]">{item.detail}</p>
+                    <p className="mt-2 text-[0.68rem] leading-snug text-[--metis-ink-soft]">
+                      Example label: <span className="text-[--metis-paper-muted]">{item.badge}</span>
+                    </p>
                   </div>
                 ))}
               </div>
             </ReviewRailCard>
 
             <ReviewRailCard
-              title="Conflicts"
+              title="Tighten the record"
               tone="info"
               meta={
-                <div className="flex items-center gap-2 text-[--metis-paper]">
-                  <ShieldCheck className="h-4 w-4 text-[--metis-brass]" />
-                  <p className="text-sm leading-6 text-[--metis-paper-muted]">2 open conflicts</p>
-                </div>
+                <p className="text-sm leading-6 text-[--metis-paper-muted]">
+                  Thin or informal Sources make “needs validation”-style warnings more likely downstream. Prefer clear tiers, notes, and links
+                  here; escalate unknowns via Open questions—not guesswork.
+                </p>
               }
             >
-              <div />
+              <div className="grid gap-3">
+                <Button asChild variant="outline" className="w-full rounded-full">
+                  <Link href={`/issues/${issue.id}/gaps`}>
+                    <ShieldCheck className="mr-2 h-4 w-4 text-[--metis-brass]" />
+                    Review open questions
+                  </Link>
+                </Button>
+              </div>
             </ReviewRailCard>
 
             <ReviewRailCard title="Next" tone="info" meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Jump to the full brief for output prep.</p>}>
