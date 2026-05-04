@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { CheckCircle2, Copy, Download, FileText, Mail, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import type { ExportFormat } from "@metis/shared/export";
 import type { CirculationChannel, CirculationEventType } from "@metis/shared/circulation";
@@ -234,17 +233,17 @@ export function ExportActionsClient(props: Props) {
           </p>
         </div>
       ) : (
-        <p className="text-xs leading-relaxed text-[--metis-paper-muted]">
-          Email-ready is a <span className="text-[--metis-paper]">plain circulation draft</span> (not HTML). Use Markdown or HTML packages for
-          rich layout and optional <span className="text-[--metis-paper]">DOCX beta</span> download.
-        </p>
+          <p className="text-xs leading-relaxed text-[--metis-paper-muted]">
+            Email-ready is a <span className="text-[--metis-paper]">plain circulation draft</span> (not HTML). Switch to a Markdown or HTML package for
+            rich layout and optional <span className="text-[--metis-paper]">DOCX beta</span> download (on-demand; not the same as stored package history).
+          </p>
       )}
 
       {props.docxBetaDownloadUrl ? (
         <div className="max-w-xl space-y-2 rounded-[1.1rem] border border-white/10 bg-[rgba(255,255,255,0.04)] px-4 py-3">
           <p className="text-xs leading-relaxed text-[--metis-paper-muted]">
-            <span className="text-[--metis-paper]">DOCX beta</span> downloads a Word-compatible file. Formatting may differ from the HTML preview.
-            Logging and stored export history apply to Markdown/HTML/plain downloads only.
+            <span className="text-[--metis-paper]">DOCX beta</span> downloads a Word-compatible file generated on demand. Formatting may differ from the HTML preview.
+            Stored export packages and circulation logging apply to Markdown/HTML/plain downloads from this flow — not the DOCX beta file.
           </p>
           <Button asChild variant="outline" className="h-10 rounded-full">
             <a href={props.docxBetaDownloadUrl}>
@@ -312,25 +311,27 @@ export function ExportActionsClient(props: Props) {
           <div className="min-w-0">
             <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Preview</p>
             <p className="mt-1 text-xs text-[--metis-paper-muted]">
-              {formatLabel(props.previewMimeType)} · Brief source: {props.briefSourceMode === "full" ? "Full" : "Executive"} (stored)
-              {props.urlMode !== props.briefSourceMode
-                ? ` · Bookmark mode: ${props.urlMode === "full" ? "Full" : "Executive"}`
-                : ""}
-              {props.executiveBriefUsesFullBriefFallback ? " · Full snapshot fallback until Executive regenerates." : ""}
-              {props.selectedFormat === "email-ready" ? " · Email-ready cannot use HTML formatting." : null}
+              {props.executiveBriefUsesFullBriefFallback
+                ? "Preview uses Full brief snapshot blocks until you generate or regenerate an Executive brief."
+                : "Encoding, extension, and circulation in the list below match this preview for the current selection."}
+              {props.selectedFormat === "email-ready" ? " Email-ready is plain text only." : null}
             </p>
           </div>
-          <div className="flex min-w-0 flex-wrap items-center gap-2">
-            {props.previewMeta.slice(0, 10).map((m) => (
-              <Badge key={m.label} className="border-0 bg-white/8 text-[--metis-paper-muted]">
-                {m.label}: {m.value}
-              </Badge>
-            ))}
+          <div className="flex shrink-0 items-start">
             <Button type="button" variant="outline" className="rounded-full" onClick={() => setExpanded(true)}>
               Expand
             </Button>
           </div>
         </div>
+
+        <dl className="mt-3 grid gap-x-8 gap-y-3 text-[0.72rem] leading-snug text-[--metis-paper-muted] sm:grid-cols-2">
+          {props.previewMeta.map((m) => (
+            <div key={m.label} className="min-w-0">
+              <dt className="font-medium uppercase tracking-[0.14em] text-[--metis-ink-soft]">{m.label}</dt>
+              <dd className="mt-0.5 text-[--metis-paper]">{m.value}</dd>
+            </div>
+          ))}
+        </dl>
 
         <div className="mt-4 max-h-[52vh] overflow-auto rounded-[1rem] border border-white/10 bg-[rgba(0,0,0,0.18)] p-4">
           <PreviewBody

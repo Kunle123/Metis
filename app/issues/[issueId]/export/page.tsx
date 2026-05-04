@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { CheckCircle2, Copy, Download, Eye, FileText, Mail, RefreshCcw } from "lucide-react";
+import { CheckCircle2, Eye, FileText, RefreshCcw } from "lucide-react";
 
-import { MetisShell, ReadinessPill, SurfaceCard } from "@/components/MetisShell";
+import { MetisShell, SurfaceCard } from "@/components/MetisShell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CollapsibleSection } from "@/components/review/CollapsibleSection";
@@ -22,35 +22,30 @@ export const dynamic = "force-dynamic";
 const packageOptions: Array<{
   id: ExportFormat;
   label: string;
-  state: "Ready for review" | "Needs validation" | "Ready to circulate";
   audience: string;
   description: string;
 }> = [
   {
     id: "full-issue-brief",
     label: "Full issue brief",
-    state: "Ready for review",
     audience: "Corporate Affairs, Legal, COO staff",
     description: "Chronology, evidence, appendix",
   },
   {
     id: "executive-brief",
     label: "Executive brief",
-    state: "Ready for review",
     audience: "CEO, COO, GC",
     description: "Internal",
   },
   {
     id: "board-note",
     label: "Board-note summary",
-    state: "Needs validation",
     audience: "Board chair, company secretary",
     description: "Hold pending exposure wording",
   },
   {
     id: "email-ready",
     label: "Email-ready package",
-    state: "Ready for review",
     audience: "Circulation drafts",
     description: "Plain text only — cautious circulation wording without HTML layout.",
   },
@@ -130,12 +125,7 @@ export default async function IssueExportPage({
                   </p>
                 </div>
               }
-              right={
-                <div className="flex flex-wrap items-center gap-2">
-                  <ReadinessPill state="Ready for review" />
-                  <Badge className="border-0 bg-[--metis-brass]/12 text-[--metis-brass-soft]">—</Badge>
-                </div>
-              }
+              right={null}
             />
           </div>
 
@@ -144,9 +134,17 @@ export default async function IssueExportPage({
             <p className="max-w-3xl text-sm leading-7 text-[--metis-paper-muted]">
               Prepare output requires a stored brief version. Generate the first brief, then return here to package it for circulation.
             </p>
-            <Button asChild className="w-fit rounded-full px-5">
-              <Link href={`/issues/${issue.id}/brief?mode=${urlMode}`}>Open brief</Link>
-            </Button>
+            <div className="flex flex-wrap gap-3">
+              <Button asChild className="w-fit rounded-full px-5">
+                <Link href={`/issues/${issue.id}/brief?mode=${urlMode}`}>Open brief</Link>
+              </Button>
+              <Button asChild variant="outline" className="w-fit rounded-full px-5">
+                <Link href={`/issues/${issue.id}/sources`}>Open sources</Link>
+              </Button>
+              <Button asChild variant="outline" className="w-fit rounded-full px-5">
+                <Link href={`/issues/${issue.id}/gaps`}>Open questions</Link>
+              </Button>
+            </div>
             <ReviewRailCard
               title="Message variants"
               tone="info"
@@ -236,20 +234,33 @@ export default async function IssueExportPage({
                 <div className="space-y-1">
                   <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper]">Prepare output</h2>
                   <p className="text-sm leading-6 text-[--metis-paper-muted]">
-                    Select a package, then download or copy. Markdown is portable source text; HTML is a formatted layout (rich copy tries HTML with
-                    plain fallback). Email-ready is a plain circulation draft. DOCX/PDF aren&apos;t available yet.
+                    Select a package, then download or copy.{" "}
+                    <span className="text-[--metis-paper]">Markdown</span> — portable source package.{" "}
+                    <span className="text-[--metis-paper]">HTML</span> — formatted package; Copy uses rich HTML with a plain-text fallback when supported.{" "}
+                    <span className="text-[--metis-paper]">Email-ready</span> — plain circulation draft (not HTML). DOCX beta: Word-compatible download; formatting may differ from HTML preview and is not stored like Markdown/HTML package logs.
+                  </p>
+                  <p className="text-[0.72rem] leading-snug text-[--metis-paper-muted]">
+                    Update the record first if needed:{" "}
+                    <Link href={`/issues/${issue.id}/sources`} className="text-[--metis-brass-soft] underline-offset-4 hover:underline">
+                      Sources
+                    </Link>
+                    {" · "}
+                    <Link href={`/issues/${issue.id}/gaps`} className="text-[--metis-brass-soft] underline-offset-4 hover:underline">
+                      Open questions
+                    </Link>
+                    {" · "}
+                    <Link href={`/issues/${issue.id}/brief?mode=${sourceMode}`} className="text-[--metis-brass-soft] underline-offset-4 hover:underline">
+                      Brief ({sourceMode === "full" ? "full" : "executive"})
+                    </Link>
+                    .
                   </p>
                 </div>
               }
               right={
-                <div className="flex flex-wrap items-center gap-2">
-                  <ReadinessPill state="Ready for review" />
-                  <Badge className="border-0 bg-white/10 text-[--metis-paper-muted]">
-                    {sourceMode === "full" ? "Full" : "Executive"} brief
-                  </Badge>
-                  <Badge className="border-0 bg-[--metis-brass]/12 text-[--metis-brass-soft]">
-                    {packageOptions.find((o) => o.id === selectedFormat)?.label ?? "—"}
-                  </Badge>
+                <div className="hidden max-w-[16rem] text-right text-[0.72rem] leading-snug text-[--metis-paper-muted] sm:block">
+                  <span className="font-medium text-[--metis-paper]">{packageOptions.find((o) => o.id === selectedFormat)?.label ?? "—"}</span>
+                  <br />
+                  Stored {sourceMode === "full" ? "Full" : "Executive"} brief
                 </div>
               }
             />
@@ -274,6 +285,9 @@ export default async function IssueExportPage({
 
             <section className="space-y-3">
               <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Package options</p>
+              <p className="text-[0.72rem] leading-snug text-[--metis-paper-muted]">
+                Names below describe package shapes only — not live readiness scoring for your issue.
+              </p>
               <div className="rounded-[1.25rem] border border-white/10 bg-[rgba(255,255,255,0.035)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
                 {packageOptions.map((item) => {
                   const isSelected = item.id === selectedFormat;
@@ -305,9 +319,6 @@ export default async function IssueExportPage({
                             <p className="mt-1 text-xs text-[--metis-paper-muted]">
                               <span className="text-[--metis-paper]">Audience:</span> {item.audience}
                             </p>
-                          </div>
-                          <div className="shrink-0">
-                            <ReadinessPill state={item.state} />
                           </div>
                         </div>
                       </DenseSection>
@@ -469,17 +480,14 @@ export default async function IssueExportPage({
               summary={
                 <div className="min-w-0">
                   <p className="text-[0.58rem] uppercase tracking-[0.16em] text-[rgba(176,171,160,0.58)]">Circulation checks</p>
-                  <p className="mt-1 text-xs text-[--metis-paper-muted]">Posture + format readiness.</p>
+                  <p className="mt-1 text-xs text-[--metis-paper-muted]">Illustrative package notes — not authoritative status for this issue.</p>
                 </div>
               }
             >
               <div className="space-y-3">
                 {packageOptions.map((item) => (
                   <div key={item.label} className="space-y-2 border-t border-white/8 pt-4 first:border-t-0 first:pt-0">
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-sm font-medium text-[--metis-paper]">{item.label}</span>
-                      <ReadinessPill state={item.state} />
-                    </div>
+                    <span className="text-sm font-medium text-[--metis-paper]">{item.label}</span>
                     <p className="text-sm leading-6 text-[--metis-paper-muted]">{item.description}</p>
                   </div>
                 ))}
