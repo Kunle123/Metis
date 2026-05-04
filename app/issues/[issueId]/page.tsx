@@ -102,16 +102,16 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
             </div>
           </div>
 
-          <div className="space-y-7 px-6 py-6 sm:px-7 sm:py-7">
+          <div className="space-y-8 px-6 py-6 sm:px-7 sm:py-7">
             <section id="summary" className="space-y-4">
-              <div className="space-y-2">
+              <div className="rounded-[1.35rem] border border-white/10 bg-[rgba(0,0,0,0.14)] px-5 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
                 <p className="text-[0.72rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Issue summary</p>
-                <h3 className="text-[1.35rem] font-medium leading-8 text-[--metis-paper]">{issue.title}</h3>
-                <p className="max-w-4xl text-sm leading-7 text-[--metis-paper] whitespace-pre-wrap">{issue.summary}</p>
+                <h3 className="mt-2 text-[1.35rem] font-medium leading-8 text-[--metis-paper]">{issue.title}</h3>
+                <p className="mt-3 max-w-4xl text-sm leading-7 text-[--metis-paper] whitespace-pre-wrap">{issue.summary}</p>
               </div>
             </section>
 
-            <section id="facts" className="space-y-5 border-t border-white/8 pt-7">
+            <section id="facts" className="space-y-5 border-t border-white/10 pt-8">
               <div className="space-y-2">
                 <p className="text-[0.72rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Confirmed vs unclear</p>
                 <p className="text-sm leading-6 text-[--metis-paper-muted]">Keep facts and unknowns separate.</p>
@@ -127,14 +127,14 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
                 </div>
               </div>
               {issue.context ? (
-                <div className="space-y-2 rounded-[1.25rem] border border-[--metis-info-border] bg-[rgba(0,0,0,0.18)] px-4 py-4 sm:px-5 sm:py-5">
+                <div className="space-y-2 rounded-[1.25rem] border border-[--metis-info-border]/90 bg-[rgba(28,42,58,0.28)] px-4 py-4 sm:px-5 sm:py-5">
                   <p className="text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">Context</p>
                   <p className="text-sm leading-7 text-[--metis-paper-muted] whitespace-pre-wrap">{issue.context}</p>
                 </div>
               ) : null}
             </section>
 
-            <section id="sources" className="space-y-5 border-t border-white/8 pt-7">
+            <section id="sources" className="space-y-5 border-t border-white/10 pt-8">
               <WorkspaceSection
                 title="Sources"
                 description="Evidence and artifacts linked to this issue."
@@ -199,7 +199,7 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
               </WorkspaceSection>
             </section>
 
-            <section id="input" className="space-y-5 border-t border-white/8 pt-7">
+            <section id="input" className="space-y-8 border-t border-white/10 pt-8">
               <CaptureNotesForm issueId={issue.id} />
               <WorkspaceSection
                 title="Observations"
@@ -208,7 +208,7 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
                 advancedHref={`/issues/${issue.id}/input`}
                 form={<InternalInputCreateForm issueId={issue.id} />}
               >
-                <p className="text-sm leading-6 text-[--metis-paper-muted]">
+                <p className="rounded-xl border border-[--metis-info-border]/60 bg-[rgba(28,42,58,0.18)] px-3 py-2.5 text-sm leading-6 text-[--metis-paper-muted]">
                   Observations are attributable internal statements. Sources are external or internal artifacts used as evidence.
                 </p>
                 {inputs.length ? (

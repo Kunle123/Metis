@@ -77,14 +77,16 @@ export function InternalInputCreateForm({ issueId }: { issueId: string }) {
   }
 
   return (
-    <div className="rounded-[1.45rem] border border-white/10 bg-[rgba(255,255,255,0.045)] px-5 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
-      <div className="flex flex-col gap-4">
+    <div className="overflow-hidden rounded-[1.45rem] border border-white/14 bg-[linear-gradient(165deg,rgba(255,255,255,0.08),rgba(0,0,0,0.18))] shadow-[inset_0_1px_0_rgba(255,255,255,0.07)]">
+      <div className="flex flex-col gap-4 border-b border-white/10 px-5 pb-4 pt-5">
         <div>
           <p className="text-[0.58rem] font-medium uppercase tracking-[0.18em] text-[--metis-ink-soft]">Capture internal input</p>
           <p className="mt-1 text-sm text-[--metis-paper-muted]">Stored on the issue record for attribution and gap resolution.</p>
           <p className="mt-1 text-sm text-[--metis-paper-muted]">Fields marked (optional) can be left blank.</p>
         </div>
+      </div>
 
+      <div className="flex flex-col gap-4 px-5 py-4">
         <div className="grid gap-3 md:grid-cols-2">
           <label className="space-y-2">
             <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Confidence</span>
@@ -153,24 +155,24 @@ export function InternalInputCreateForm({ issueId }: { issueId: string }) {
             />
           </label>
         </div>
-
-        <footer className="space-y-3 border-t border-white/10 pt-4">
-          {error ? <p className="text-sm text-rose-200" role="alert">{error}</p> : null}
-          {missingRequired && !isSaving ? (
-            <p className="text-sm leading-6 text-[--metis-paper-muted]">Complete required fields to continue.</p>
-          ) : null}
-          <div className="flex justify-end">
-            <Button
-              type="button"
-              className="rounded-full px-5"
-              disabled={isSaving || !role.trim() || !name.trim() || !response.trim()}
-              onClick={onSubmit}
-            >
-              {isSaving ? "Saving…" : "Save input"}
-            </Button>
-          </div>
-        </footer>
       </div>
+
+      <footer className="space-y-3 border-t border-white/12 bg-[rgba(0,0,0,0.26)] px-5 py-4">
+        {error ? <p className="text-sm text-rose-200" role="alert">{error}</p> : null}
+        {missingRequired && !isSaving ? (
+          <p className="text-sm leading-6 text-[--metis-paper-muted]">Complete required fields to continue.</p>
+        ) : null}
+        <div className="flex justify-end">
+          <Button
+            type="button"
+            className="rounded-full px-5"
+            disabled={isSaving || !role.trim() || !name.trim() || !response.trim()}
+            onClick={onSubmit}
+          >
+            {isSaving ? "Saving…" : "Save input"}
+          </Button>
+        </div>
+      </footer>
     </div>
   );
 }

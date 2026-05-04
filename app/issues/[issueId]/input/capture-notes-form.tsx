@@ -103,21 +103,23 @@ export function CaptureNotesForm({ issueId }: { issueId: string }) {
   return (
     <div
       id="capture-notes"
-      className="scroll-mt-28 rounded-[1.25rem] border border-[--metis-info-border] bg-[rgba(255,255,255,0.03)] px-4 py-4 sm:px-5 sm:py-5"
+      className="scroll-mt-28 overflow-hidden rounded-[1.25rem] border border-[color-mix(in_oklab,var(--metis-info)_42%,rgba(255,255,255,0.14))] bg-[linear-gradient(165deg,rgba(62,110,160,0.14),rgba(0,0,0,0.2))] shadow-[inset_0_1px_0_rgba(255,255,255,0.07)]"
     >
-      <div className="min-w-0 space-y-1">
-        <p className="text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">Capture notes</p>
-        <p className="text-sm leading-6 text-[--metis-paper-muted]">
-          Paste meeting, call, or email notes. They are saved as an internal observation for triage and are excluded from briefs until curated.
+      <div className="border-b border-white/10 px-4 py-4 sm:px-5 sm:py-5">
+        <div className="min-w-0 space-y-1">
+          <p className="text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">Capture notes</p>
+          <p className="text-sm leading-6 text-[--metis-paper-muted]">
+            Paste meeting, call, or email notes. They are saved as an internal observation for triage and are excluded from briefs until curated.
+          </p>
+        </div>
+
+        <p className="mt-3 text-xs leading-5 text-[--metis-paper-muted]">
+          Saved rows are stored as observations with attribution; they stay out of generated briefs unless you edit them later to include them.
+          Important points should be promoted manually into Sources or Open questions — there is no automatic extraction yet.
         </p>
       </div>
 
-      <p className="mt-3 text-xs leading-5 text-[--metis-paper-muted]">
-        Saved rows are stored as observations with attribution; they stay out of generated briefs unless you edit them later to include them.
-        Important points should be promoted manually into Sources or Open questions — there is no automatic extraction yet.
-      </p>
-
-      <div className="mt-4 space-y-3">
+      <div className="space-y-3 px-4 py-4 sm:px-5 sm:py-5">
         <label className="block space-y-2">
           <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">
             Meeting label <span className="font-normal text-[--metis-paper-muted]">(optional)</span>
@@ -144,7 +146,7 @@ export function CaptureNotesForm({ issueId }: { issueId: string }) {
         </label>
       </div>
 
-      <footer className="mt-6 space-y-3 border-t border-white/10 pt-4">
+      <footer className="space-y-3 border-t border-white/12 bg-[rgba(0,0,0,0.28)] px-4 py-4 sm:px-5">
         <div className="flex justify-end">
           <Button type="button" className="rounded-full px-5" disabled={!canSubmit} onClick={onSave}>
             {isSaving ? "Saving…" : "Save notes"}

@@ -116,7 +116,7 @@ function CardShell({
   details?: React.ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.03]">
+    <div className="rounded-2xl border border-white/[0.09] bg-[rgba(0,0,0,0.2)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
       <Button
         type="button"
         variant="ghost"
@@ -800,7 +800,7 @@ export function WorkspaceObservationCards({ issueId, observations }: { issueId: 
       {observations.map((o) => (
         <div
           key={o.id}
-          className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-2.5"
+          className="rounded-2xl border border-white/[0.09] bg-[rgba(0,0,0,0.18)] px-4 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)]"
         >
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">

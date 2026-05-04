@@ -73,14 +73,14 @@ export function GapCreateForm({ issueId }: { issueId: string }) {
   }
 
   return (
-    <div className="rounded-[1.45rem] border border-white/10 bg-[rgba(255,255,255,0.045)] px-5 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
-      <div className="flex flex-col gap-4">
-        <div>
-          <p className="text-[0.58rem] font-medium uppercase tracking-[0.18em] text-[--metis-ink-soft]">Register gap</p>
-          <p className="mt-1 text-sm text-[--metis-paper-muted]">Creates a persisted clarification gap for this issue.</p>
-          <p className="mt-1 text-sm text-[--metis-paper-muted]">All fields below are required to register a gap.</p>
-        </div>
+    <div className="overflow-hidden rounded-[1.45rem] border border-[color-mix(in_oklab,rgba(217,119,6,0.45)_35%,rgba(255,255,255,0.12))] bg-[linear-gradient(165deg,rgba(131,82,17,0.12),rgba(0,0,0,0.2))] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+      <div className="border-b border-white/10 px-5 pb-4 pt-5">
+        <p className="text-[0.58rem] font-medium uppercase tracking-[0.18em] text-[--metis-ink-soft]">Register gap</p>
+        <p className="mt-1 text-sm text-[--metis-paper-muted]">Creates a persisted clarification gap for this issue.</p>
+        <p className="mt-1 text-sm text-[--metis-paper-muted]">All fields below are required to register a gap.</p>
+      </div>
 
+      <div className="flex flex-col gap-4 px-5 py-4">
         <div className="grid gap-3 md:grid-cols-2">
           <label className="space-y-2">
             <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Severity</span>
@@ -152,30 +152,30 @@ export function GapCreateForm({ issueId }: { issueId: string }) {
             placeholder="The exact clarification question"
           />
         </label>
-
-        <footer className="space-y-3 border-t border-white/10 pt-4">
-          {error ? <p className="text-sm text-rose-200" role="alert">{error}</p> : null}
-          {missingRequired && !isSaving ? (
-            <p className="text-sm leading-6 text-[--metis-paper-muted]">Complete required fields to continue.</p>
-          ) : null}
-          <div className="flex justify-end">
-            <Button
-              type="button"
-              className="rounded-full px-5"
-              disabled={
-                isSaving ||
-                !title.trim() ||
-                !whyItMatters.trim() ||
-                !stakeholder.trim() ||
-                !prompt.trim()
-              }
-              onClick={onSubmit}
-            >
-              {isSaving ? "Saving…" : "Add gap"}
-            </Button>
-          </div>
-        </footer>
       </div>
+
+      <footer className="space-y-3 border-t border-white/12 bg-[rgba(0,0,0,0.28)] px-5 py-4">
+        {error ? <p className="text-sm text-rose-200" role="alert">{error}</p> : null}
+        {missingRequired && !isSaving ? (
+          <p className="text-sm leading-6 text-[--metis-paper-muted]">Complete required fields to continue.</p>
+        ) : null}
+        <div className="flex justify-end">
+          <Button
+            type="button"
+            className="rounded-full px-5"
+            disabled={
+              isSaving ||
+              !title.trim() ||
+              !whyItMatters.trim() ||
+              !stakeholder.trim() ||
+              !prompt.trim()
+            }
+            onClick={onSubmit}
+          >
+            {isSaving ? "Saving…" : "Add gap"}
+          </Button>
+        </div>
+      </footer>
     </div>
   );
 }

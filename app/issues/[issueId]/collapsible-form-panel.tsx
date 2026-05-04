@@ -3,6 +3,7 @@
 import { useId, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export function CollapsibleFormPanel({
   title,
@@ -48,10 +49,12 @@ export function CollapsibleFormPanel({
       </div>
 
       <div id={regionId} className={expanded ? "block" : "hidden"} aria-hidden={!expanded}>
-        <div className="rounded-[1.25rem] border border-white/8 bg-[rgba(0,0,0,0.14)] px-4 py-4 sm:px-5 sm:py-5">{form}</div>
+        <div className="overflow-hidden rounded-[1.25rem] border border-white/14 bg-[linear-gradient(180deg,rgba(255,255,255,0.065),rgba(0,0,0,0.16))] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.07)] sm:px-5 sm:py-5">
+          {form}
+        </div>
       </div>
 
-      <div className="space-y-2.5">{children}</div>
+      <div className={cn("space-y-2.5", expanded && "border-t border-white/10 pt-5")}>{children}</div>
     </div>
   );
 }

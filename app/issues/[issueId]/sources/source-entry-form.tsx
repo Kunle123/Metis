@@ -147,15 +147,15 @@ export function SourceEntryForm({ issueId }: { issueId: string }) {
   }
 
   return (
-    <div className="rounded-[1.45rem] border border-white/10 bg-[rgba(255,255,255,0.045)] px-5 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
-      <div className="flex flex-col gap-4">
-        <div>
-          <p className="text-[0.58rem] font-medium uppercase tracking-[0.18em] text-[--metis-ink-soft]">Add source</p>
-          <p className="mt-1 text-sm text-[--metis-paper-muted]">
-            Capture a document, update, or piece of evidence used to support the brief and messages.
-          </p>
-        </div>
+    <div className="overflow-hidden rounded-[1.45rem] border border-white/14 bg-[linear-gradient(165deg,rgba(255,255,255,0.08),rgba(0,0,0,0.18))] shadow-[inset_0_1px_0_rgba(255,255,255,0.07)]">
+      <div className="border-b border-white/10 px-5 pb-4 pt-5">
+        <p className="text-[0.58rem] font-medium uppercase tracking-[0.18em] text-[--metis-ink-soft]">Add source</p>
+        <p className="mt-1 text-sm text-[--metis-paper-muted]">
+          Capture a document, update, or piece of evidence used to support the brief and messages.
+        </p>
+      </div>
 
+      <div className="flex flex-col gap-4 px-5 py-4">
         <div className="grid gap-3 md:grid-cols-2">
           <label className="space-y-2">
             <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Source type</span>
@@ -251,28 +251,28 @@ export function SourceEntryForm({ issueId }: { issueId: string }) {
             placeholder="e.g., https://… (article, doc, ticket, dashboard link)"
           />
         </label>
-
-        <footer className="space-y-3 border-t border-white/10 pt-4">
-          {error ? (
-            <div className="rounded-[1.1rem] border border-rose-400/30 bg-[rgba(118,27,46,0.28)] px-4 py-3 text-sm text-rose-50" role="alert">
-              {error}
-            </div>
-          ) : null}
-          {missingRequired && !isSaving ? (
-            <p className="text-sm leading-6 text-[--metis-paper-muted]">Complete required fields to continue.</p>
-          ) : null}
-          <div className="flex justify-end">
-            <Button
-              type="button"
-              className="rounded-full px-5"
-              disabled={isSaving || !title.trim() || !note.trim()}
-              onClick={onSubmit}
-            >
-              {isSaving ? "Saving…" : "Add source"}
-            </Button>
-          </div>
-        </footer>
       </div>
+
+      <footer className="space-y-3 border-t border-white/12 bg-[rgba(0,0,0,0.26)] px-5 py-4">
+        {error ? (
+          <div className="rounded-[1.1rem] border border-rose-400/30 bg-[rgba(118,27,46,0.28)] px-4 py-3 text-sm text-rose-50" role="alert">
+            {error}
+          </div>
+        ) : null}
+        {missingRequired && !isSaving ? (
+          <p className="text-sm leading-6 text-[--metis-paper-muted]">Complete required fields to continue.</p>
+        ) : null}
+        <div className="flex justify-end">
+          <Button
+            type="button"
+            className="rounded-full px-5"
+            disabled={isSaving || !title.trim() || !note.trim()}
+            onClick={onSubmit}
+          >
+            {isSaving ? "Saving…" : "Add source"}
+          </Button>
+        </div>
+      </footer>
     </div>
   );
 }
