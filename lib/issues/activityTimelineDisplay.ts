@@ -10,6 +10,11 @@ export type SerializedActivityRow = {
   createdAt: string;
 };
 
+/** Activity row with optional join-derived headline (issue activity page). */
+export type ActivityTimelineItem = SerializedActivityRow & {
+  enrichedSummary?: string | null;
+};
+
 export const ACTIVITY_KIND_LABELS: Record<string, string> = {
   issue_created: "Issue · created",
   issue_triage_updated: "Issue · triage updated",
@@ -45,6 +50,13 @@ export function activityDisplaySummary(kind: string, summary: string) {
   return summary;
 }
 
+/** Prefer join-based `enrichedSummary` when present; otherwise legacy/summary rules. */
+export function activityTimelineDisplaySummary(row: ActivityTimelineItem): string {
+  const trimmed = row.enrichedSummary?.trim();
+  if (trimmed) return trimmed;
+  return activityDisplaySummary(row.kind, row.summary);
+}
+
 export function activityDisplayRefType(refType: string | null) {
   if (!refType) return "Ref";
   if (refType === "Gap") return "Open question";
@@ -57,12 +69,15 @@ export function shortActivityRefId(id: string) {
   return `…${t.slice(-8)}`;
 }
 
-export function activitySearchBlob(row: SerializedActivityRow): string {
+export function activitySearchBlob(row: ActivityTimelineItem): string {
+  const display = activityTimelineDisplaySummary(row);
   const parts = [
     activityKindLabel(row.kind),
     row.kind,
+    display,
     activityDisplaySummary(row.kind, row.summary),
     row.summary,
+    row.enrichedSummary ?? "",
     row.actorLabel ?? "",
     row.refType ?? "",
     row.refId ?? "",

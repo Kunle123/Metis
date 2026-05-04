@@ -7,18 +7,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   activityDisplayRefType,
-  activityDisplaySummary,
   activityKindLabel,
   activitySearchBlob,
+  activityTimelineDisplaySummary,
   formatActivityTimestamp,
   shortActivityRefId,
-  type SerializedActivityRow,
+  type ActivityTimelineItem,
 } from "@/lib/issues/activityTimelineDisplay";
 
 const SELECT_CLASS =
   "h-[var(--metis-control-height-md)] min-w-0 flex-1 sm:min-w-[11rem] sm:flex-none max-w-full rounded-md border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-3 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60 disabled:opacity-50";
 
-type Props = { items: SerializedActivityRow[] };
+type Props = { items: ActivityTimelineItem[] };
 
 export function ActivityTimelineClient({ items }: Props) {
   const [query, setQuery] = useState("");
@@ -169,7 +169,7 @@ export function ActivityTimelineClient({ items }: Props) {
                   {formatActivityTimestamp(a.createdAt)}
                 </p>
               </div>
-              <p className="mt-2 text-sm font-medium leading-6 text-[--metis-paper]">{activityDisplaySummary(a.kind, a.summary)}</p>
+              <p className="mt-2 text-sm font-medium leading-6 text-[--metis-paper]">{activityTimelineDisplaySummary(a)}</p>
               {a.actorLabel ? (
                 <p className="mt-1.5 text-xs leading-5 text-[--metis-paper-muted]">
                   <span className="text-[--metis-ink-soft]">Actor</span>

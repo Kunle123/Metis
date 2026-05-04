@@ -178,10 +178,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       },
     });
 
+    const briefModeLabel = parsed.data.mode === "executive" ? "Executive" : "Full";
     await writeIssueActivity(tx, {
       issueId,
       kind: IssueActivityKinds.brief_version_created,
-      summary: `Brief version ${briefVersion.versionNumber} created`,
+      summary: `${briefModeLabel} brief v${briefVersion.versionNumber} created`,
       refType: "BriefVersion",
       refId: briefVersion.id,
       actorLabel: user.email ?? null,

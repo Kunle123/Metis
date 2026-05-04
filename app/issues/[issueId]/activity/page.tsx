@@ -4,6 +4,7 @@ import { MetisShell, SurfaceCard } from "@/components/MetisShell";
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/db/prisma";
 import { getIssueById } from "@/lib/issues/getIssueContext";
+import { enrichActivityRowsForIssue } from "@/lib/issues/enrichActivityTimeline";
 import type { SerializedActivityRow } from "@/lib/issues/activityTimelineDisplay";
 
 import { ActivityTimelineClient } from "./activity-timeline.client";
@@ -40,6 +41,8 @@ export default async function IssueActivityPage({ params }: { params: Promise<{ 
     createdAt: a.createdAt.toISOString(),
   }));
 
+  const timelineItems = await enrichActivityRowsForIssue(issue.id, serialized);
+
   return (
     <MetisShell
       activePath="/activity"
@@ -67,7 +70,7 @@ export default async function IssueActivityPage({ params }: { params: Promise<{ 
           </div>
 
           <div className="space-y-4 px-6 py-6 sm:px-7 sm:py-7">
-            <ActivityTimelineClient items={serialized} />
+            <ActivityTimelineClient items={timelineItems} />
           </div>
         </SurfaceCard>
 
