@@ -149,22 +149,12 @@ export function SourceEntryForm({ issueId }: { issueId: string }) {
   return (
     <div className="rounded-[1.45rem] border border-white/10 bg-[rgba(255,255,255,0.045)] px-5 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
       <div className="flex flex-col gap-4">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <p className="text-[0.58rem] font-medium uppercase tracking-[0.18em] text-[--metis-ink-soft]">Add source</p>
-            <p className="mt-1 text-sm text-[--metis-paper-muted]">
-              Capture a document, update, or piece of evidence used to support the brief and messages.
-            </p>
-          </div>
-          <Button
-            className="rounded-full px-5"
-            disabled={isSaving || !title.trim() || !note.trim()}
-            onClick={onSubmit}
-          >
-            {isSaving ? "Saving…" : "Add source"}
-          </Button>
+        <div>
+          <p className="text-[0.58rem] font-medium uppercase tracking-[0.18em] text-[--metis-ink-soft]">Add source</p>
+          <p className="mt-1 text-sm text-[--metis-paper-muted]">
+            Capture a document, update, or piece of evidence used to support the brief and messages.
+          </p>
         </div>
-        {missingRequired && !isSaving ? <p className="text-sm leading-6 text-[--metis-paper-muted]">Complete required fields to continue.</p> : null}
 
         <div className="grid gap-3 md:grid-cols-2">
           <label className="space-y-2">
@@ -262,11 +252,26 @@ export function SourceEntryForm({ issueId }: { issueId: string }) {
           />
         </label>
 
-        {error ? (
-          <div className="rounded-[1.1rem] border border-rose-400/30 bg-[rgba(118,27,46,0.28)] px-4 py-3 text-sm text-rose-50">
-            {error}
+        <footer className="space-y-3 border-t border-white/10 pt-4">
+          {error ? (
+            <div className="rounded-[1.1rem] border border-rose-400/30 bg-[rgba(118,27,46,0.28)] px-4 py-3 text-sm text-rose-50" role="alert">
+              {error}
+            </div>
+          ) : null}
+          {missingRequired && !isSaving ? (
+            <p className="text-sm leading-6 text-[--metis-paper-muted]">Complete required fields to continue.</p>
+          ) : null}
+          <div className="flex justify-end">
+            <Button
+              type="button"
+              className="rounded-full px-5"
+              disabled={isSaving || !title.trim() || !note.trim()}
+              onClick={onSubmit}
+            >
+              {isSaving ? "Saving…" : "Add source"}
+            </Button>
           </div>
-        ) : null}
+        </footer>
       </div>
     </div>
   );

@@ -75,27 +75,11 @@ export function GapCreateForm({ issueId }: { issueId: string }) {
   return (
     <div className="rounded-[1.45rem] border border-white/10 bg-[rgba(255,255,255,0.045)] px-5 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
       <div className="flex flex-col gap-4">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <p className="text-[0.58rem] font-medium uppercase tracking-[0.18em] text-[--metis-ink-soft]">Register gap</p>
-            <p className="mt-1 text-sm text-[--metis-paper-muted]">Creates a persisted clarification gap for this issue.</p>
-            <p className="mt-1 text-sm text-[--metis-paper-muted]">All fields below are required to register a gap.</p>
-          </div>
-          <Button
-            className="rounded-full px-5"
-            disabled={
-              isSaving ||
-              !title.trim() ||
-              !whyItMatters.trim() ||
-              !stakeholder.trim() ||
-              !prompt.trim()
-            }
-            onClick={onSubmit}
-          >
-            {isSaving ? "Saving…" : "Add gap"}
-          </Button>
+        <div>
+          <p className="text-[0.58rem] font-medium uppercase tracking-[0.18em] text-[--metis-ink-soft]">Register gap</p>
+          <p className="mt-1 text-sm text-[--metis-paper-muted]">Creates a persisted clarification gap for this issue.</p>
+          <p className="mt-1 text-sm text-[--metis-paper-muted]">All fields below are required to register a gap.</p>
         </div>
-        {missingRequired && !isSaving ? <p className="text-sm leading-6 text-[--metis-paper-muted]">Complete required fields to continue.</p> : null}
 
         <div className="grid gap-3 md:grid-cols-2">
           <label className="space-y-2">
@@ -169,7 +153,28 @@ export function GapCreateForm({ issueId }: { issueId: string }) {
           />
         </label>
 
-        {error ? <p className="text-sm text-rose-200">{error}</p> : null}
+        <footer className="space-y-3 border-t border-white/10 pt-4">
+          {error ? <p className="text-sm text-rose-200" role="alert">{error}</p> : null}
+          {missingRequired && !isSaving ? (
+            <p className="text-sm leading-6 text-[--metis-paper-muted]">Complete required fields to continue.</p>
+          ) : null}
+          <div className="flex justify-end">
+            <Button
+              type="button"
+              className="rounded-full px-5"
+              disabled={
+                isSaving ||
+                !title.trim() ||
+                !whyItMatters.trim() ||
+                !stakeholder.trim() ||
+                !prompt.trim()
+              }
+              onClick={onSubmit}
+            >
+              {isSaving ? "Saving…" : "Add gap"}
+            </Button>
+          </div>
+        </footer>
       </div>
     </div>
   );

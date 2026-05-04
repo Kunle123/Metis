@@ -105,17 +105,11 @@ export function CaptureNotesForm({ issueId }: { issueId: string }) {
       id="capture-notes"
       className="scroll-mt-28 rounded-[1.25rem] border border-[--metis-info-border] bg-[rgba(255,255,255,0.03)] px-4 py-4 sm:px-5 sm:py-5"
     >
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0 space-y-1">
-          <p className="text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">Capture notes</p>
-          <p className="text-sm leading-6 text-[--metis-paper-muted]">
-            Paste meeting, call, or email notes. They are saved as an internal observation for triage and are excluded from briefs until
-            curated.
-          </p>
-        </div>
-        <Button type="button" className="rounded-full px-5" disabled={!canSubmit} onClick={onSave}>
-          {isSaving ? "Saving…" : "Save notes"}
-        </Button>
+      <div className="min-w-0 space-y-1">
+        <p className="text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">Capture notes</p>
+        <p className="text-sm leading-6 text-[--metis-paper-muted]">
+          Paste meeting, call, or email notes. They are saved as an internal observation for triage and are excluded from briefs until curated.
+        </p>
       </div>
 
       <p className="mt-3 text-xs leading-5 text-[--metis-paper-muted]">
@@ -150,16 +144,23 @@ export function CaptureNotesForm({ issueId }: { issueId: string }) {
         </label>
       </div>
 
-      {error ? (
-        <p className="mt-3 text-sm text-rose-200" role="alert">
-          {error}
-        </p>
-      ) : null}
-      {success ? (
-        <p className="mt-3 text-sm text-emerald-200/95" role="status">
-          Notes saved as an observation (not in brief outputs until you adjust it).
-        </p>
-      ) : null}
+      <footer className="mt-6 space-y-3 border-t border-white/10 pt-4">
+        <div className="flex justify-end">
+          <Button type="button" className="rounded-full px-5" disabled={!canSubmit} onClick={onSave}>
+            {isSaving ? "Saving…" : "Save notes"}
+          </Button>
+        </div>
+        {error ? (
+          <p className="text-sm text-rose-200" role="alert">
+            {error}
+          </p>
+        ) : null}
+        {success ? (
+          <p className="text-sm text-emerald-200/95" role="status">
+            Notes saved as an observation (not in brief outputs until you adjust it).
+          </p>
+        ) : null}
+      </footer>
     </div>
   );
 }
