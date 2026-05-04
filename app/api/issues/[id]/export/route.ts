@@ -184,10 +184,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       },
     });
 
+    const briefModeLabel = parsedMode.data === "full" ? "Full" : "Executive";
     await writeIssueActivity(tx, {
       issueId,
       kind: IssueActivityKinds.export_created,
-      summary: "Export package created",
+      summary: `Export package created from ${briefModeLabel} brief v${briefVersion.versionNumber}`,
       refType: "ArtifactExport",
       refId: exportRow.id,
       actorLabel: user.email ?? null,

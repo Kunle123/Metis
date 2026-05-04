@@ -25,6 +25,8 @@ type Props = {
   urlMode: "full" | "executive";
   /** Stored BriefVersion.mode powering this package preview and download/copy. */
   briefSourceMode: "full" | "executive";
+  /** e.g. "Full brief v3" — stored source revision for copy (not an export package version). */
+  sourceBriefRevisionLabel: string;
   executiveBriefUsesFullBriefFallback: boolean;
   previewTitle: string;
   previewMeta: { label: string; value: string }[];
@@ -227,6 +229,7 @@ export function ExportActionsClient(props: Props) {
             onChange={(next) => navigateDelivery(next)}
           />
           <p className="text-xs leading-relaxed text-[--metis-paper-muted]">
+            Download and copy create a stored package snapshot from <span className="text-[--metis-paper]">{props.sourceBriefRevisionLabel}</span>.{" "}
             <span className="text-[--metis-paper]">Markdown</span> — portable source you can move into docs or repositories.{" "}
             <span className="text-[--metis-paper]">HTML</span> — formatted for browser or rich paste; copy tries HTML with a plain-text
             fallback.
@@ -234,16 +237,18 @@ export function ExportActionsClient(props: Props) {
         </div>
       ) : (
           <p className="text-xs leading-relaxed text-[--metis-paper-muted]">
-            Email-ready is a <span className="text-[--metis-paper]">plain circulation draft</span> (not HTML). Switch to a Markdown or HTML package for
-            rich layout and optional <span className="text-[--metis-paper]">DOCX beta</span> download (on-demand; not the same as stored package history).
+            Email-ready is a <span className="text-[--metis-paper]">plain circulation draft</span> from{" "}
+            <span className="text-[--metis-paper]">{props.sourceBriefRevisionLabel}</span> (not HTML). Switch to a Markdown or HTML package for rich layout
+            and optional <span className="text-[--metis-paper]">DOCX beta</span> download (on-demand; not the same as stored package history).
           </p>
       )}
 
       {props.docxBetaDownloadUrl ? (
         <div className="max-w-xl space-y-2 rounded-[1.1rem] border border-white/10 bg-[rgba(255,255,255,0.04)] px-4 py-3">
           <p className="text-xs leading-relaxed text-[--metis-paper-muted]">
-            <span className="text-[--metis-paper]">DOCX beta</span> downloads a Word-compatible file generated on demand. Formatting may differ from the HTML preview.
-            Stored export packages and circulation logging apply to Markdown/HTML/plain downloads from this flow — not the DOCX beta file.
+            <span className="text-[--metis-paper]">DOCX beta</span>: Word-compatible file generated on demand from{" "}
+            <span className="text-[--metis-paper]">{props.sourceBriefRevisionLabel}</span>. Formatting may differ from the HTML preview. Stored export packages
+            and circulation logging apply to Markdown/HTML/plain downloads from this flow — not the DOCX beta file.
           </p>
           <Button asChild variant="outline" className="h-10 rounded-full">
             <a href={props.docxBetaDownloadUrl}>
@@ -312,8 +317,8 @@ export function ExportActionsClient(props: Props) {
             <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Preview</p>
             <p className="mt-1 text-xs text-[--metis-paper-muted]">
               {props.executiveBriefUsesFullBriefFallback
-                ? "Preview uses Full brief snapshot blocks until you generate or regenerate an Executive brief."
-                : "Encoding, extension, and circulation in the list below match this preview for the current selection."}
+                ? `Preview uses ${props.sourceBriefRevisionLabel} snapshot blocks until you generate or regenerate an Executive brief.`
+                : `Preview matches the selected package encoding for ${props.sourceBriefRevisionLabel}.`}
               {props.selectedFormat === "email-ready" ? " Email-ready is plain text only." : null}
             </p>
           </div>
@@ -351,7 +356,7 @@ export function ExportActionsClient(props: Props) {
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold text-white">{props.previewTitle}</p>
                 <p className="mt-1 text-xs text-white/70">
-                  {formatLabel(props.previewMimeType)} · Brief source: {props.briefSourceMode === "full" ? "Full" : "Executive"}
+                  {formatLabel(props.previewMimeType)} · {props.sourceBriefRevisionLabel}
                   {props.urlMode !== props.briefSourceMode
                     ? ` · Bookmark mode: ${props.urlMode === "full" ? "Full" : "Executive"}`
                     : ""}

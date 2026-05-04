@@ -11,7 +11,7 @@ import { ReviewToolbar } from "@/components/review/ReviewToolbar";
 import { CirculationEventTypeSchema, CirculationChannelSchema } from "@metis/shared/circulation";
 import { prisma } from "@/lib/db/prisma";
 import { getIssueById } from "@/lib/issues/getIssueContext";
-import { BriefModeSchema, BriefArtifactSchema, type BriefMode, type BriefArtifact } from "@metis/shared/briefVersion";
+import { BriefModeSchema, BriefArtifactSchema, type BriefArtifact } from "@metis/shared/briefVersion";
 import { ExportFormatSchema, type ExportFormat, type ExportOutputType } from "@metis/shared/export";
 import { resolveBriefVersionForExport } from "@/lib/export/resolveBriefVersionForExport";
 import { renderExportDeliverable } from "@/lib/export/renderExportPackage";
@@ -204,6 +204,15 @@ export default async function IssueExportPage({
   const encodingLabel =
     rendered.mimeType === "text/html" ? "HTML" : rendered.mimeType === "text/plain" ? "Plain text" : "Markdown";
 
+  const sourceBriefRevisionLabel = `${sourceMode === "full" ? "Full" : "Executive"} brief v${briefVersion.versionNumber}`;
+  const generatedFromBriefLine = `Generated from ${sourceBriefRevisionLabel}.`;
+  const packageFromBriefDescription =
+    selectedFormat === "email-ready"
+      ? `Plain text package from ${sourceBriefRevisionLabel}`
+      : rendered.mimeType === "text/html"
+        ? `HTML rendering from ${sourceBriefRevisionLabel}`
+        : `Markdown rendering from ${sourceBriefRevisionLabel}`;
+
   // Wave 4: strict event semantics for export actions.
   const preparedEvent = CirculationEventTypeSchema.parse("prepared");
   const downloadedEvent = CirculationEventTypeSchema.parse("downloaded");
@@ -234,10 +243,13 @@ export default async function IssueExportPage({
                 <div className="space-y-1">
                   <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper]">Prepare output</h2>
                   <p className="text-sm leading-6 text-[--metis-paper-muted]">
-                    Select a package, then download or copy.{" "}
+                    <span className="text-[--metis-paper]">{generatedFromBriefLine}</span> Packages here are snapshots rendered from that stored brief — they
+                    are not a separate numbered export version. Select a package, then download or copy.{" "}
                     <span className="text-[--metis-paper]">Markdown</span> — portable source package.{" "}
                     <span className="text-[--metis-paper]">HTML</span> — formatted package; Copy uses rich HTML with a plain-text fallback when supported.{" "}
-                    <span className="text-[--metis-paper]">Email-ready</span> — plain circulation draft (not HTML). DOCX beta: Word-compatible download; formatting may differ from HTML preview and is not stored like Markdown/HTML package logs.
+                    <span className="text-[--metis-paper]">Email-ready</span> — plain circulation draft (not HTML).{" "}
+                    <span className="text-[--metis-paper]">DOCX beta</span>: Word-compatible file generated on demand from {sourceBriefRevisionLabel}; formatting may
+                    differ from HTML preview and is not stored like Markdown/HTML package logs.
                   </p>
                   <p className="text-[0.72rem] leading-snug text-[--metis-paper-muted]">
                     Update the record first if needed:{" "}
@@ -260,7 +272,7 @@ export default async function IssueExportPage({
                 <div className="hidden max-w-[16rem] text-right text-[0.72rem] leading-snug text-[--metis-paper-muted] sm:block">
                   <span className="font-medium text-[--metis-paper]">{packageOptions.find((o) => o.id === selectedFormat)?.label ?? "—"}</span>
                   <br />
-                  Stored {sourceMode === "full" ? "Full" : "Executive"} brief
+                  {generatedFromBriefLine}
                 </div>
               }
             />
@@ -364,7 +376,7 @@ export default async function IssueExportPage({
                 title="Executive brief not generated yet"
                 meta={
                   <p className="text-sm leading-6 text-[--metis-paper-muted]">
-                    This preview uses your latest Full brief snapshot&apos;s excerpt blocks until you generate or regenerate an Executive brief version.
+                    This preview uses {sourceBriefRevisionLabel}&apos;s excerpt blocks until you generate or regenerate an Executive brief revision.
                   </p>
                 }
               >
@@ -381,6 +393,7 @@ export default async function IssueExportPage({
               exportPreviewOutput={exportPreviewOutput}
               urlMode={urlMode}
               briefSourceMode={sourceMode}
+              sourceBriefRevisionLabel={sourceBriefRevisionLabel}
               executiveBriefUsesFullBriefFallback={executiveBriefUsesFullBriefFallback}
               docxBetaDownloadUrl={
                 selectedFormat !== "email-ready"
@@ -393,8 +406,8 @@ export default async function IssueExportPage({
                 { label: "Encoding", value: encodingLabel },
                 { label: "Download", value: downloadExtension },
                 { label: "Copy", value: copyBehaviorShort },
-                { label: "Brief source", value: `${sourceMode === "full" ? "Full" : "Executive"} (stored)` },
-                { label: "Version", value: `v${briefVersion.versionNumber}` },
+                { label: "Source brief", value: sourceBriefRevisionLabel },
+                { label: "Package", value: packageFromBriefDescription },
                 { label: "Circulation", value: artifact.metadata.circulation },
                 ...(urlMode !== sourceMode ? ([{ label: "Bookmark (URL)", value: urlMode === "full" ? "Full" : "Executive" }] as const) : []),
               ]}
@@ -419,8 +432,8 @@ export default async function IssueExportPage({
                   <span className="text-[--metis-paper]">{packageOptions.find((o) => o.id === selectedFormat)?.label ?? "—"}</span>
                 </div>
                 <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-2">
-                  <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Brief source</span>
-                  <span className="text-[--metis-paper]">{sourceMode === "full" ? "Full" : "Executive"} (stored)</span>
+                  <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Source brief</span>
+                  <span className="text-right text-[--metis-paper]">{sourceBriefRevisionLabel}</span>
                 </div>
                 {urlMode !== sourceMode ? (
                   <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-2">
@@ -429,8 +442,8 @@ export default async function IssueExportPage({
                   </div>
                 ) : null}
                 <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-2">
-                  <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Version</span>
-                  <span className="text-[--metis-paper]">v{briefVersion.versionNumber}</span>
+                  <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Package</span>
+                  <span className="text-right text-[--metis-paper]">{packageFromBriefDescription}</span>
                 </div>
               </div>
             </ReviewRailCard>

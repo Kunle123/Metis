@@ -144,6 +144,9 @@ export default async function IssueBriefPage({
 
   const evidenceItems = linkedSources.slice(0, 12);
   const briefAiSynthesisEnabled = process.env.BRIEF_AI_SYNTHESIS_ENABLED === "true";
+  const storedBriefRevisionLabel = briefVersion
+    ? `${mode === "full" ? "Full" : "Executive"} brief v${briefVersion.versionNumber}`
+    : null;
 
   return (
     <MetisShell
@@ -170,6 +173,13 @@ export default async function IssueBriefPage({
                     <span className="text-[0.7rem] font-medium uppercase tracking-[0.14em]">Brief workspace</span>
                   </div>
                   <BriefModeToggle issueId={issue.id} mode={mode} />
+                  {storedBriefRevisionLabel ? (
+                    <span className="rounded-full border border-[--metis-outline-subtle] bg-[rgba(255,255,255,0.05)] px-3 py-1 text-[0.68rem] font-medium tracking-wide text-[--metis-text-primary]">
+                      {storedBriefRevisionLabel}
+                    </span>
+                  ) : (
+                    <span className="text-[0.72rem] leading-snug text-[--metis-text-secondary]">No stored brief yet</span>
+                  )}
                   {briefVersion ? (
                     <span
                       className={
@@ -180,11 +190,7 @@ export default async function IssueBriefPage({
                     >
                       {briefInSync ? "Up to date" : "Stale"}
                     </span>
-                  ) : (
-                    <span className="rounded-full border border-[--metis-outline-subtle] bg-transparent px-3 py-1 text-[0.62rem] font-medium uppercase tracking-[0.18em] text-[--metis-text-tertiary]">
-                      Not generated
-                    </span>
-                  )}
+                  ) : null}
                   {briefVersion && !briefInSync ? (
                     <span className="hidden max-w-xl text-[0.8rem] leading-snug text-[--metis-text-secondary] xl:inline">
                       Refresh this brief because the issue changed after it was generated.
@@ -329,6 +335,10 @@ export default async function IssueBriefPage({
                     <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Mode</span>
                     <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{mode === "full" ? "Full" : "Executive"}</Badge>
                   </div>
+                  <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-2">
+                    <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Stored revision</span>
+                    <span className="text-right text-[--metis-paper]">{storedBriefRevisionLabel ?? "No stored brief yet"}</span>
+                  </div>
                   {briefVersion ? (
                     <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-2">
                       <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Sync</span>
@@ -346,6 +356,11 @@ export default async function IssueBriefPage({
                   {briefSyncHint ? (
                     <p className="border-t border-white/8 pt-2 text-sm leading-6 text-[--metis-paper-muted]">{briefSyncHint}</p>
                   ) : null}
+                  <p className="border-t border-white/8 pt-2 text-[0.72rem] leading-snug text-[--metis-paper-muted]">
+                    <span className="text-[--metis-paper]">Stored revision</span> is the numbered brief on file.{" "}
+                    <span className="text-[--metis-paper]">Up to date / Stale</span> only reflects whether the issue record changed after that revision was
+                    generated — not a different version number.
+                  </p>
                 </div>
               }
             >
