@@ -20,6 +20,7 @@ import {
   generateExternalCustomerResidentStudentArtifact,
   type ExternalAudienceInput,
 } from "@/lib/messages/generateExternalCustomerUpdate";
+import { rankOpenGapsForIssue, rankSourcesForIssue } from "@/lib/evidence/rankEvidence";
 import {
   generateInternalStaffUpdateArtifact,
   type AudienceInput as InternalAudienceInput,
@@ -58,12 +59,14 @@ function cleanSnippet(text: unknown, max: number) {
 }
 
 function summarizeSourcesForAi(sources: Source[]) {
-  return sources.slice(0, 12).map((s) => `${s.sourceCode} (${String(s.tier)}) — ${cleanSnippet(s.title, 240)}`).filter(Boolean);
+  return rankSourcesForIssue(sources)
+    .slice(0, 12)
+    .map((s) => `${s.sourceCode} (${String(s.tier)}) — ${cleanSnippet(s.title, 240)}`)
+    .filter(Boolean);
 }
 
 function summarizeGapsForAi(gaps: Gap[]) {
-  return gaps
-    .filter((g) => g.status === "Open")
+  return rankOpenGapsForIssue(gaps, { onlyOpen: true })
     .slice(0, 14)
     .map((g) => `${g.severity ? `[${String(g.severity)}] ` : ""}${cleanSnippet(g.prompt || g.title, 520)}`)
     .filter(Boolean);

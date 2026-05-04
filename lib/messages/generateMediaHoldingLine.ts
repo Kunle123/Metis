@@ -1,6 +1,7 @@
 import type { Gap, Issue, IssueStakeholder, StakeholderGroup } from "@prisma/client";
 
 import type { MediaHoldingLineArtifact } from "@metis/shared/messageVariant";
+import { rankOpenGapsForIssue } from "@/lib/evidence/rankEvidence";
 
 /** Setup-only audience (issue.audience); no StakeholderGroup. */
 export type SetupAudienceInput = { kind: "setup" };
@@ -30,19 +31,6 @@ function nowLabel() {
   const hh = d.getHours().toString().padStart(2, "0");
   const mm = d.getMinutes().toString().padStart(2, "0");
   return `${hh}:${mm} (generated)`;
-}
-
-function openGaps(gaps: Gap[]) {
-  return gaps.filter((g) => g.status === "Open");
-}
-
-function gapSeverityRank(s: string) {
-  const x = s.toLowerCase();
-  if (x.includes("critical")) return 0;
-  if (x.includes("high")) return 1;
-  if (x.includes("important")) return 2;
-  if (x.includes("normal")) return 3;
-  return 4;
 }
 
 function issueLensHasContent(row: IssueStakeholder) {
@@ -84,7 +72,7 @@ export function generateMediaHoldingLineArtifact(input: MediaHoldingLineGenerati
   const summary = cleanText(issue.summary);
   const confirmed = cleanText(issue.confirmedFacts);
 
-  const open = openGaps(gaps).sort((a, b) => gapSeverityRank(a.severity) - gapSeverityRank(b.severity));
+  const open = rankOpenGapsForIssue(gaps, { onlyOpen: true });
 
   const isSetup = audience.kind === "setup";
   const group = audience.kind === "group" ? audience.group : null;

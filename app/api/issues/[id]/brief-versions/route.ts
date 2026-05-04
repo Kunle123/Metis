@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { BriefArtifactSchema, CreateBriefVersionInputSchema } from "@metis/shared/briefVersion";
 import { prisma } from "@/lib/db/prisma";
 import { generateBriefFromIssue } from "@/lib/brief/generateBriefFromIssue";
+import { rankInternalInputsForIssue, rankOpenGapsForIssue, rankSourcesForIssue } from "@/lib/evidence/rankEvidence";
 import { IssueActivityKinds } from "@/lib/issues/activityKinds";
 import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
 import { requireMutation } from "@/lib/governance/requireMutation";
@@ -80,8 +81,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
     const attemptedAtIso = new Date().toISOString();
 
-    const internalInputsForBrief = internalInputs.filter((i: any) => !Boolean((i as any).excludedFromBrief));
-    const topObservations = internalInputsForBrief.slice(0, 2).map((i) => ({
+    const rankedSources = rankSourcesForIssue(sources);
+    const rankedOpenGaps = rankOpenGapsForIssue(gaps, { onlyOpen: true });
+    const rankedInputsForBrief = rankInternalInputsForIssue(internalInputs, { excludeFromBrief: true });
+    const topObservations = rankedInputsForBrief.slice(0, 2).map((i) => ({
       role: i.role,
       name: i.name,
       confidence: i.confidence ?? null,
@@ -89,15 +92,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       response: String(i.response ?? "").slice(0, 360),
     }));
 
-    const topSources = sources.slice(0, 2).map((s) => ({
+    const topSources = rankedSources.slice(0, 2).map((s) => ({
       sourceCode: s.sourceCode,
       tier: s.tier,
       title: s.title,
       linkedSection: s.linkedSection ?? null,
     }));
 
-    const openTracker = gaps
-      .filter((g) => g.status === "Open")
+    const openTracker = rankedOpenGaps
       .slice(0, 5)
       .map((g) => ({
         severity: g.severity ?? null,

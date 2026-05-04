@@ -1,6 +1,12 @@
 import type { Issue, Source, Gap, InternalInput } from "@prisma/client";
 
 import type { BriefArtifact, BriefMode } from "@metis/shared/briefVersion";
+import {
+  isLowInternalInputConfidence,
+  rankInternalInputsForIssue,
+  rankOpenGapsForIssue,
+  rankSourcesForIssue,
+} from "@/lib/evidence/rankEvidence";
 
 const CAP_EX_SOURCES = 8;
 const MAX_QUESTION_BULLETS = 12;
@@ -234,14 +240,6 @@ function fixMalformedQuestionText(input: string) {
   return `${base}?`;
 }
 
-function severityRank(severity: string | null | undefined) {
-  if (!severity) return 9;
-  if (severity === "Critical") return 0;
-  if (severity === "Important") return 1;
-  if (severity === "Watch") return 2;
-  return 9;
-}
-
 function capBulletBlock(text: string, maxBullets: number) {
   const raw = text.trim();
   if (!raw) return "";
@@ -277,14 +275,8 @@ function topOpenQuestionsSummary({
     }
   }
 
-  const gapsSorted = [...openGaps].sort((a, b) => {
-    const ar = severityRank(a.severity);
-    const br = severityRank(b.severity);
-    if (ar !== br) return ar - br;
-    return String(a.createdAt ?? "").localeCompare(String(b.createdAt ?? ""));
-  });
-
-  for (const g of gapsSorted) {
+  /** Expect `openGaps` in deterministic rank order (severity, recency, id) from `rankOpenGapsForIssue`. */
+  for (const g of openGaps) {
     const raw = fixMalformedQuestionText((g.prompt || g.title || "").trim());
     if (!raw) continue;
     const key = normalizeQuestionThemeKey(raw) || normalizeQuestionKey(raw) || normalizeNeedText(raw);
@@ -327,10 +319,6 @@ export type BriefGenerationInput = {
    */
   messageAudienceGroupNames?: string[];
 };
-
-function openGaps(gaps: Gap[]) {
-  return gaps.filter((g) => g.status === "Open");
-}
 
 function formatSourceForExecutive(s: Source) {
   const bit = [s.tier, s.linkedSection ?? "—", s.reliability ?? "reliability not set"].filter(Boolean).join(" · ");
@@ -378,11 +366,9 @@ function formatGapsForFull(gaps: Gap[], cap: number) {
 function formatObsForExecutive(inputs: InternalInput[], cap: number, options?: { leadership?: boolean }) {
   if (!inputs.length) return "No internal observations recorded yet.";
   const leadership = options?.leadership ?? false;
-  const confidenceRank: Record<string, number> = { High: 3, Medium: 2, Low: 1 };
-  const rankOf = (c: unknown) => (typeof c === "string" && c in confidenceRank ? confidenceRank[c] : 0);
-
-  const sorted = [...inputs].sort((a, b) => rankOf(b.confidence) - rankOf(a.confidence));
-  const preferred = sorted.filter((i) => String(i.confidence) !== "Low");
+  /** Inputs are expected in `rankInternalInputsForIssue` order. */
+  const sorted = inputs;
+  const preferred = sorted.filter((i) => !isLowInternalInputConfidence(i.confidence));
   const shown = (preferred.length ? preferred : sorted).slice(0, cap);
 
   const preface = leadership
@@ -395,8 +381,8 @@ function formatObsForExecutive(inputs: InternalInput[], cap: number, options?: {
     return `• ${i.role} · ${i.name}: ${response}${clipped}`;
   });
 
-  const lowCount = inputs.filter((i) => String(i.confidence) === "Low").length;
-  const lowShownCount = shown.filter((i) => String(i.confidence) === "Low").length;
+  const lowCount = inputs.filter((i) => isLowInternalInputConfidence(i.confidence)).length;
+  const lowShownCount = shown.filter((i) => isLowInternalInputConfidence(i.confidence)).length;
   const lowOmitted = Math.max(0, lowCount - lowShownCount);
 
   const tail: string[] = [];
@@ -415,10 +401,9 @@ function formatObsForExecutive(inputs: InternalInput[], cap: number, options?: {
 
 function formatObsForFull(inputs: InternalInput[], cap: number) {
   if (!inputs.length) return "No internal observations recorded yet.";
-  const confidenceRank: Record<string, number> = { High: 3, Medium: 2, Low: 1 };
-  const rankOf = (c: unknown) => (typeof c === "string" && c in confidenceRank ? confidenceRank[c] : 0);
-  const sorted = [...inputs].sort((a, b) => rankOf(b.confidence) - rankOf(a.confidence));
-  const preferred = sorted.filter((i) => String(i.confidence) !== "Low");
+  /** Inputs are expected in `rankInternalInputsForIssue` order. */
+  const sorted = inputs;
+  const preferred = sorted.filter((i) => !isLowInternalInputConfidence(i.confidence));
   const shown = (preferred.length ? preferred : sorted).slice(0, cap);
 
   const lines = shown.map((i) => {
@@ -426,8 +411,8 @@ function formatObsForFull(inputs: InternalInput[], cap: number) {
     return `- ${i.role} · ${i.name} · ${i.confidence}\n  ${section}${i.response}`;
   });
 
-  const lowCount = inputs.filter((i) => String(i.confidence) === "Low").length;
-  const lowShownCount = shown.filter((i) => String(i.confidence) === "Low").length;
+  const lowCount = inputs.filter((i) => isLowInternalInputConfidence(i.confidence)).length;
+  const lowShownCount = shown.filter((i) => isLowInternalInputConfidence(i.confidence)).length;
   const lowOmitted = Math.max(0, lowCount - lowShownCount);
 
   const tail: string[] = [];
@@ -497,6 +482,7 @@ function evidenceBaseLeadership(sources: Source[], total: number) {
   return out.join("\n");
 }
 
+/** Not referenced by current brief artifact; if wired in, pass `rankSourcesForIssue` output and `total`. */
 function sourcesNarrativeFull(sources: Source[], total: number) {
   if (!total) return "No sources are linked yet. Evidence should be added before broad external lines are taken as settled.";
   const slice = sources.slice(0, CAP_FULL_SOURCES_NARRATIVE);
@@ -516,7 +502,10 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
   const updatedAtLabel = nowLabel();
   const confidence = confidenceFromStatus(issue.status);
   const excludedObsCount = internalInputs.filter((i: any) => Boolean((i as any).excludedFromBrief)).length;
-  const internalInputsForBrief = internalInputs.filter((i: any) => !Boolean((i as any).excludedFromBrief));
+  const rankedSources = rankSourcesForIssue(sources);
+  const rankedOpenGaps = rankOpenGapsForIssue(gaps, { onlyOpen: true });
+  const rankedInternalForBrief = rankInternalInputsForIssue(internalInputs, { excludeFromBrief: true });
+  /** Intentionally raw / not re-ranked: `issue.openGapsCount` (artifact label), `confirmedFactsBlockExecutive` checks `internalInputs.length` (includes excluded), `sourcesNarrativeFull` (dead helper). */
 
   const ledeBase = cleanText(issue.summary);
   const lede =
@@ -534,14 +523,13 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
   );
   const unknownsFromIntake = paragraphOrFallback(intakeOpenQuestionsAsBulletLines(openQuestions), "");
 
-  const openG = openGaps(gaps);
-  const topOpenQuestions = topOpenQuestionsSummary({ openQuestionsRaw: openQuestions, openGaps: openG, cap: 5 });
+  const topOpenQuestions = topOpenQuestionsSummary({ openQuestionsRaw: openQuestions, openGaps: rankedOpenGaps, cap: 5 });
   const keyUnknownsCombined = (() => {
     const a = cleanText(unknownsFromIntake) ? `From intake (open questions)\n${capLines(unknownsFromIntake, 14)}` : "";
-    const withSection = openG.filter((g) => cleanText((g as any).linkedSection));
-    const unassignedAll = openG.filter((g) => !cleanText((g as any).linkedSection));
+    const withSection = rankedOpenGaps.filter((g) => cleanText((g as any).linkedSection));
+    const unassignedAll = rankedOpenGaps.filter((g) => !cleanText((g as any).linkedSection));
     const { kept: unassigned, allWereDuplicates } = dedupeUnassignedNeedsAgainstIntake(openQuestions, unassignedAll);
-    const b = openG.length
+    const b = rankedOpenGaps.length
       ? [
           withSection.length ? `Tagged to an impact area\n${formatGapsForExecutive(withSection, CAP_EX_OPEN_GAPS)}` : "",
           unassigned.length
@@ -577,7 +565,7 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
 
     const candidates = [
       ...splitIntakeOpenQuestions(openQuestions),
-      ...openG.map((g) => (g.prompt || g.title || "").trim()),
+      ...rankedOpenGaps.map((g) => (g.prompt || g.title || "").trim()),
     ].filter(Boolean);
     const seen = new Set<string>();
     for (const c of candidates) {
@@ -589,10 +577,10 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
       if (out.length >= 2) break;
     }
 
-    if (sources.length) {
-      const top = sources.slice(0, 2).map((s) => `${s.title} (${s.tier})`);
+    if (rankedSources.length) {
+      const top = rankedSources.slice(0, 2).map((s) => `${s.title} (${s.tier})`);
       out.push(
-        `Cite the evidence base (${sources.length} on file), starting with: ${top.join("; ")}${sources.length > 2 ? " …" : "."}`,
+        `Cite the evidence base (${rankedSources.length} on file), starting with: ${top.join("; ")}${rankedSources.length > 2 ? " …" : "."}`,
       );
     } else {
       out.push("Link at least one source so any external or leadership line can be traced to verifiable material.");
@@ -619,12 +607,11 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
   const recommendedActionsForLeadership: string[] = (() => {
     const out: string[] = [];
     const oqBullets = splitOpenQuestionsToBullets(openQuestions);
-    const hasGaps = openG.length > 0;
+    const hasGaps = rankedOpenGaps.length > 0;
     const hasOq = oqBullets.length > 0;
 
     if (hasGaps) {
-      const gapsSorted = [...openG].sort((a, b) => severityRank(a.severity) - severityRank(b.severity));
-      for (const g of gapsSorted.slice(0, 4)) {
+      for (const g of rankedOpenGaps.slice(0, 4)) {
         const raw = (g.prompt.trim() || g.title).replace(/\s+/g, " ");
         const prompt = clipAtWordBoundary(stripTrailingPunctuation(raw), 110);
         if (!prompt) continue;
@@ -657,9 +644,9 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
       }
     }
 
-    if (sources.length) {
+    if (rankedSources.length) {
       const counts = new Map<string, number>();
-      for (const s of sources) {
+      for (const s of rankedSources) {
         const k = cleanText(s.tier) || "Unset";
         counts.set(k, (counts.get(k) ?? 0) + 1);
       }
@@ -670,8 +657,8 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
       const official = counts.get("Official") ?? 0;
       let tail = "";
       if (official === 0) tail = " No Official-tier material on file — keep external claims conditional.";
-      else if (sources.length === 1) tail = " Single source on file — cross-check before hard commitments.";
-      out.push(`Cite the evidence base (${sources.length} on file; tier mix: ${mix}).${tail}`);
+      else if (rankedSources.length === 1) tail = " Single source on file — cross-check before hard commitments.";
+      out.push(`Cite the evidence base (${rankedSources.length} on file; tier mix: ${mix}).${tail}`);
     } else if (hasGaps || hasOq) {
       out.push("Link at least one source so leadership lines can be traced to attributable material.");
     }
@@ -705,16 +692,16 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
 
   const guardrails = [
     "Do not state causes, scope, or impact that are not supported by confirmed facts, linked sources, or attributable observations.",
-    openG.length
-      ? `There are ${openG.length} open question(s) in the tracker; treat them as open until answered with attributable input.`
+    rankedOpenGaps.length
+      ? `There are ${rankedOpenGaps.length} open question(s) in the tracker; treat them as open until answered with attributable input.`
       : "If new unknowns appear, record them as open questions before treating them as settled.",
     "Avoid speculative or escalatory language; align any external line with the recorded audience notes and validation posture.",
   ].join("\n\n");
 
   const guardrailsLeadership = [
     "Do not state causes, scope, or impact that are not supported by confirmed facts, linked sources, or attributable observations.",
-    openG.length
-      ? `There are ${openG.length} open question(s) on the list; treat them as open until attributable input or confirmed intake updates answer them.`
+    rankedOpenGaps.length
+      ? `There are ${rankedOpenGaps.length} open question(s) on the list; treat them as open until attributable input or confirmed intake updates answer them.`
       : "If new material unknowns appear, record them as open questions before treating them as settled for leadership or external use.",
     "Avoid speculative or escalatory language; align any external line with audience notes and the issue’s validation posture.",
   ].join("\n\n");
@@ -730,7 +717,7 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
   })();
 
   const situationBodyLeadership = (() => {
-    const hasOq = openG.length > 0 || splitOpenQuestionsToBullets(openQuestions).length > 0;
+    const hasOq = rankedOpenGaps.length > 0 || splitOpenQuestionsToBullets(openQuestions).length > 0;
     const whyItMatters = (() => {
       const text = [titleLine, summary, context, String(issue.audience ?? "")].join("\n").toLowerCase();
       if (text.includes("roundtable")) {
@@ -750,8 +737,8 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
 
     const leadershipNotes = (() => {
       const notes: string[] = [];
-      if (hasOq) notes.push(`Open questions remain (${openG.length} on the tracker). Treat details as provisional where not yet confirmed.`);
-      if (!sources.length) notes.push("Evidence base is thin (no linked sources yet). Avoid specific claims until evidence is on file.");
+      if (hasOq) notes.push(`Open questions remain (${rankedOpenGaps.length} on the tracker). Treat details as provisional where not yet confirmed.`);
+      if (!rankedSources.length) notes.push("Evidence base is thin (no linked sources yet). Avoid specific claims until evidence is on file.");
       if (cleanText(issue.ownerName ?? "")) notes.push(`Named owner: ${issue.ownerName}.`);
       return notes.join(" ");
     })();
@@ -768,7 +755,7 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
     `Severity: ${issue.severity}`,
     `Urgency: ${issue.priority}`,
     `Briefing posture: ${issue.operatorPosture}`,
-    `Open questions: ${issue.openGapsCount} (tracker: ${openG.length} open)`,
+    `Open questions: ${issue.openGapsCount} (tracker: ${rankedOpenGaps.length} open)`,
     cleanText(issue.ownerName ?? "") ? `Issue owner: ${issue.ownerName}` : "Issue owner: not recorded yet.",
   ].join("\n");
 
@@ -777,17 +764,17 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
     `Severity: ${issue.severity}`,
     `Urgency: ${issue.priority}`,
     `Briefing posture: ${issue.operatorPosture}`,
-    `Open questions: ${issue.openGapsCount} on the issue record · ${openG.length} open in tracker`,
+    `Open questions: ${issue.openGapsCount} on the issue record · ${rankedOpenGaps.length} open in tracker`,
     cleanText(issue.ownerName ?? "") ? `Issue owner: ${issue.ownerName}` : "Issue owner: not recorded yet.",
   ].join("\n");
 
   const keyUnknownsLeadership = (() => {
-    if (!cleanText(openQuestions) && openG.length === 0) {
+    if (!cleanText(openQuestions) && rankedOpenGaps.length === 0) {
       return "No open questions are recorded yet.";
     }
     const summary = topOpenQuestions ? capBulletBlock(topOpenQuestions, 5) : "";
     const note =
-      openG.length > 5 || splitOpenQuestionsToBullets(openQuestions).length > 5
+      rankedOpenGaps.length > 5 || splitOpenQuestionsToBullets(openQuestions).length > 5
         ? "See the Open questions view for the full register."
         : "";
     return [summary, note].filter(Boolean).join("\n\n");
@@ -811,11 +798,11 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
         { label: "Current assessment", body: currentAssessmentLeadership },
         { label: "Confirmed facts", body: confirmedFactsBlockExecutive },
         { label: "Open questions and unresolved needs", body: keyUnknownsLeadership },
-        { label: "Evidence base", body: evidenceBaseLeadership(sources, sources.length) },
+        { label: "Evidence base", body: evidenceBaseLeadership(rankedSources, rankedSources.length) },
         {
           label: "Observations",
           body:
-            formatObsForExecutive(internalInputsForBrief, CAP_EX_OBS, { leadership: true }) +
+            formatObsForExecutive(rankedInternalForBrief, CAP_EX_OBS, { leadership: true }) +
             (excludedObsCount ? `\n\n${excludedObsCount} observation(s) are excluded from brief output.` : ""),
         },
         { label: "Audience implications", body: audienceBlock },
@@ -827,11 +814,11 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
         { label: "Current assessment", body: currentAssessment },
         { label: "Confirmed facts", body: confirmedBlock },
         { label: "Key unknowns / open questions", body: keyUnknownsCombined },
-        { label: "Evidence base", body: evidenceBaseExecutive(sources, sources.length) },
+        { label: "Evidence base", body: evidenceBaseExecutive(rankedSources, rankedSources.length) },
         {
           label: "Observations",
           body:
-            formatObsForExecutive(internalInputsForBrief, CAP_EX_OBS) +
+            formatObsForExecutive(rankedInternalForBrief, CAP_EX_OBS) +
             (excludedObsCount ? `\n\n${excludedObsCount} observation(s) are excluded from brief output.` : ""),
         },
         { label: "Audience implications", body: audienceBlock },
@@ -858,15 +845,15 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
       parts.push(`Current framing:\n${sentence(titleLine)}`);
     }
 
-    const developments = internalInputsForBrief.slice(0, 2);
+    const developments = rankedInternalForBrief.slice(0, 2);
     if (developments.length) {
       parts.push(
         `Recent developments (from observations)\n${formatObsForExecutive(developments, 2)}`,
       );
-    } else if (sources.length) {
-      const top = sources.slice(0, 2).map((s) => `${s.title} (${s.tier})`);
+    } else if (rankedSources.length) {
+      const top = rankedSources.slice(0, 2).map((s) => `${s.title} (${s.tier})`);
       parts.push(
-        `Recent developments (from sources)\n- ${top.join("\n- ")}${sources.length > 2 ? "\n- …see Sources for the full register." : ""}`,
+        `Recent developments (from sources)\n- ${top.join("\n- ")}${rankedSources.length > 2 ? "\n- …see Sources for the full register." : ""}`,
       );
     }
 
@@ -881,8 +868,8 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
         ? `Open questions (summary)\n${openSummary}\n\nSee Workspace → Open questions for the full register.`
         : "Open questions (summary)\nNo open questions recorded yet.";
     const note =
-      openG.length > 0
-        ? `Tracker note: ${openG.length} open question(s) are recorded in the open-questions tracker.`
+      rankedOpenGaps.length > 0
+        ? `Tracker note: ${rankedOpenGaps.length} open question(s) are recorded in the open-questions tracker.`
         : "Tracker note: no open questions are recorded in the tracker.";
     return ["Confirmed facts", confirmed, "", openLine, "", note].join("\n");
   })();
@@ -902,12 +889,10 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
       ? "This section highlights messaging sensitivities for the intake audience note recorded on this issue."
       : "No specific audience note is recorded on the issue.";
 
-    const obsLines = formatObsForExecutive(internalInputsForBrief, 2).split(/\r?\n/).filter((l) => l.trim().startsWith("•")).slice(0, 2);
+    const obsLines = formatObsForExecutive(rankedInternalForBrief, 2).split(/\r?\n/).filter((l) => l.trim().startsWith("•")).slice(0, 2);
     const obsBlock = obsLines.length ? obsLines.join("\n") : "No observation excerpts available.";
 
-    const sourceRank = (s: Source) => (s.tier === "Official" ? 0 : s.tier === "Internal" ? 1 : 2);
-    const sourceRefs = [...sources]
-      .sort((a, b) => sourceRank(a) - sourceRank(b))
+    const sourceRefs = rankedSources
       .slice(0, 2)
       .map((s) => `- ${s.sourceCode} — ${s.title} (${s.tier})`);
     const evidenceBlock = sourceRefs.length ? sourceRefs.join("\n") : "";
@@ -931,7 +916,7 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
   const implicationsBody = (() => {
     const text = [titleLine, summary, context, openQuestions, String(issue.audience ?? "")].join("\n").toLowerCase();
     const risks: string[] = [];
-    if (openG.length || cleanText(openQuestions)) {
+    if (rankedOpenGaps.length || cleanText(openQuestions)) {
       risks.push("Risk of over-claiming while open questions remain; keep language explicitly conditional where needed.");
     }
     if (text.includes("consultation")) {
@@ -943,7 +928,7 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
     if (/\bfollow[- ]?up\b|\bcadence\b|\bnamed owner\b/i.test(text)) {
       risks.push("Follow-up commitments: avoid promising timelines or actions without a named owner and agreed cadence.");
     }
-    if (!sources.length) {
+    if (!rankedSources.length) {
       risks.push("Evidence thin: avoid specific claims until at least one attributable source is linked and reviewed.");
     }
     if (!risks.length) {
@@ -956,7 +941,7 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
     const parts: string[] = [];
     if (titleLine) parts.push(`Issue: ${titleLine}`);
     parts.push(summary ? sentence(summary) : "No issue summary recorded yet.");
-    if (openG.length) parts.push(`Leadership attention: ${openG.length} open question(s) remain.`);
+    if (rankedOpenGaps.length) parts.push(`Leadership attention: ${rankedOpenGaps.length} open question(s) remain.`);
     return parts.filter(Boolean).join("\n\n");
   })();
 
@@ -990,7 +975,7 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
           id: "confirmed-vs-unclear",
           title: "Current position and open questions",
           body: confirmedVsBody,
-          confidence: openQuestions.length || openG.length ? "Unclear" : confidence,
+          confidence: openQuestions.length || rankedOpenGaps.length ? "Unclear" : confidence,
           updatedAtLabel,
           evidenceRefs: [],
         },
@@ -1007,7 +992,7 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
           id: "implications",
           title: "Risks and sensitivities",
           body: implicationsBody,
-          confidence: openG.length && !confirmedFacts.length ? "Unclear" : confidence,
+          confidence: rankedOpenGaps.length && !confirmedFacts.length ? "Unclear" : confidence,
           updatedAtLabel,
           evidenceRefs: [],
         },

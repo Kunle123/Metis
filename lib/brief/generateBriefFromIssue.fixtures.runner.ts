@@ -155,4 +155,30 @@ assert.match(audCombined, /Audience groups used in Messages:/);
 assert.match(audCombined, /Issue-level audience note \(intake\):/);
 assert.match(audCombined, /Internal circulation only/);
 
+const officialFirst: Source = {
+  ...sampleSource,
+  id: "src-off",
+  sourceCode: "SRC-OFF",
+  title: "Official line",
+  tier: "Official",
+  createdAt: new Date("2020-01-01T00:00:00.000Z"),
+};
+const internalNewer: Source = {
+  ...sampleSource,
+  id: "src-in",
+  sourceCode: "SRC-IN",
+  title: "Internal note",
+  tier: "Internal",
+  createdAt: new Date("2025-06-01T00:00:00.000Z"),
+};
+const tierOrderExec = generateBriefFromIssue(
+  { issue: baseIssue, sources: [internalNewer, officialFirst], gaps: [], internalInputs: [] as InternalInput[] },
+  "executive",
+);
+const evBody = tierOrderExec.executive.blocks.find((b) => b.label === "Evidence base")?.body ?? "";
+assert.ok(
+  evBody.indexOf("Official line") >= 0 && evBody.indexOf("Internal note") >= 0 && evBody.indexOf("Official line") < evBody.indexOf("Internal note"),
+  "executive evidence base orders Official before Internal despite recency",
+);
+
 console.log("generateBriefFromIssue fixtures: OK");

@@ -1,6 +1,7 @@
 import type { Gap, InternalInput, Issue, IssueStakeholder, Source, StakeholderGroup } from "@prisma/client";
 
 import type { InternalStaffUpdateArtifact } from "@metis/shared/messageVariant";
+import { rankInternalInputsForIssue, rankOpenGapsForIssue, rankSourcesForIssue } from "@/lib/evidence/rankEvidence";
 
 /** Setup-only audience (issue.audience); no StakeholderGroup. */
 export type SetupAudienceInput = { kind: "setup" };
@@ -32,19 +33,6 @@ function nowLabel() {
   const hh = d.getHours().toString().padStart(2, "0");
   const mm = d.getMinutes().toString().padStart(2, "0");
   return `${hh}:${mm} (generated)`;
-}
-
-function openGaps(gaps: Gap[]) {
-  return gaps.filter((g) => g.status === "Open");
-}
-
-function gapSeverityRank(s: string) {
-  const x = s.toLowerCase();
-  if (x.includes("critical")) return 0;
-  if (x.includes("high")) return 1;
-  if (x.includes("important")) return 2;
-  if (x.includes("normal")) return 3;
-  return 4;
 }
 
 function bulletsFromParagraph(text: string) {
@@ -140,11 +128,11 @@ export function generateInternalStaffUpdateArtifact(input: InternalStaffMessageG
   const toneFromIssue = issueLens ? cleanText(issueLens.toneAdjustment) : "";
   const toneFromGroup = group ? cleanText(group.defaultToneGuidance) : "";
 
-  const open = openGaps(gaps).sort((a, b) => gapSeverityRank(a.severity) - gapSeverityRank(b.severity));
+  const open = rankOpenGapsForIssue(gaps, { onlyOpen: true });
   const topOpen = open.slice(0, 8);
 
-  const nonExcludedInputs = internalInputs.filter((i) => !i.excludedFromBrief);
-  const topInputs = nonExcludedInputs.slice(0, 12);
+  const rankedNonExcludedInputs = rankInternalInputsForIssue(internalInputs, { excludeFromBrief: true });
+  const topInputs = rankedNonExcludedInputs.slice(0, 12);
 
   const whatIsHappening = (() => {
     const base = summary || "Staff update prepared from the current issue record.";
@@ -161,7 +149,10 @@ export function generateInternalStaffUpdateArtifact(input: InternalStaffMessageG
       return "No non-excluded internal observations have been recorded yet.";
     }
     const lines = topInputs.map(formatInternalInputLine).filter(Boolean);
-    const extra = nonExcludedInputs.length > topInputs.length ? `\n\n(${nonExcludedInputs.length - topInputs.length} more internal notes not shown.)` : "";
+    const extra =
+      rankedNonExcludedInputs.length > topInputs.length
+        ? `\n\n(${rankedNonExcludedInputs.length - topInputs.length} more internal notes not shown.)`
+        : "";
     return (
       "Internal notes (not confirmed facts):\nThese notes may be incomplete, sensitive, or wrong. Do not treat as confirmed facts.\n\n" +
       lines.map((l) => `- ${l}`).join("\n") +
@@ -171,11 +162,7 @@ export function generateInternalStaffUpdateArtifact(input: InternalStaffMessageG
 
   const evidence = (() => {
     if (!sources.length) return "No evidence references recorded yet.";
-    const sorted = [...sources].sort((a, b) => {
-      const d = b.createdAt.getTime() - a.createdAt.getTime();
-      if (d !== 0) return d;
-      return cleanText(a.sourceCode).localeCompare(cleanText(b.sourceCode));
-    });
+    const sorted = rankSourcesForIssue(sources);
     const top = sorted.slice(0, 12);
     const lines = top.map(formatSourceLine).filter(Boolean);
     const extra = sources.length > top.length ? `\n\n(${sources.length - top.length} more evidence items not shown.)` : "";
