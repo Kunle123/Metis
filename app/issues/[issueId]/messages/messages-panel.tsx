@@ -72,6 +72,7 @@ export function MessagesPanel({
   const [latest, setLatest] = useState<LatestPayload>(initialLatest);
   const [loading, setLoading] = useState(false);
   const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
+  const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
   const [aiToggleOn, setAiToggleOn] = useState(false);
   const [aiRow, setAiRow] = useState<LatestPayload>(null);
   const [aiNote, setAiNote] = useState<string | null>(null);
@@ -120,6 +121,12 @@ export function MessagesPanel({
     if (!latest) return false;
     return new Date(latest.generatedFromIssueUpdatedAt).getTime() === new Date(issueUpdatedAt).getTime();
   }, [latest, issueUpdatedAt]);
+
+  const savedDraftLabel = latest ? `Message draft v${latest.versionNumber}` : null;
+
+  const viewingAiPolishedWording = useMemo(() => {
+    return Boolean(visibleArtifact.metadata?.aiWordingPolish === "ai_polished" && aiToggleOn);
+  }, [visibleArtifact.metadata?.aiWordingPolish, aiToggleOn]);
 
   const markdown = useMemo(() => {
     if (!visibleArtifact) return "";
@@ -300,9 +307,22 @@ export function MessagesPanel({
     try {
       await navigator.clipboard.writeText(markdown);
       setCopyState("copied");
-      setTimeout(() => setCopyState("idle"), 2000);
+      if (!latest) {
+        setCopyFeedback("Copied preview is not a saved draft version.");
+      } else {
+        setCopyFeedback(
+          viewingAiPolishedWording
+            ? `Copied AI-enhanced wording for ${savedDraftLabel}. Alternate wording only — not a separate draft or higher-truth version.`
+            : `Copied original wording for ${savedDraftLabel}.`,
+        );
+      }
+      setTimeout(() => {
+        setCopyState("idle");
+        setCopyFeedback(null);
+      }, 3200);
     } catch {
       setCopyState("error");
+      setCopyFeedback(null);
       setTimeout(() => setCopyState("idle"), 2000);
     }
   }
@@ -369,12 +389,42 @@ export function MessagesPanel({
               }}
               className="min-w-0 lg:max-w-xl"
             />
-            <div className="flex flex-wrap items-center gap-2">
+            <p className="text-[0.72rem] leading-snug text-[--metis-paper-muted]">
+              {savedDraftLabel ? (
+                <>
+                  <span className="text-[--metis-paper]">{savedDraftLabel}</span>
+                  {viewingAiPolishedWording ? (
+                    <>
+                      {" "}
+                      — <span className="text-[--metis-paper]">AI-enhanced</span> is alternate wording for this same saved draft, not a separate version or
+                      higher-truth text.
+                    </>
+                  ) : (
+                    <>
+                      {" "}
+                      — <span className="text-[--metis-paper]">Original</span> and <span className="text-[--metis-paper]">AI-enhanced</span> switch wording
+                      views for the same saved row when AI polish exists.
+                    </>
+                  )}
+                </>
+              ) : (
+                <>
+                  <span className="text-[--metis-paper]">Unsaved preview — no draft version yet.</span> Save a draft to create a numbered{" "}
+                  <span className="text-[--metis-paper]">Message draft vN</span> for this issue and template.
+                </>
+              )}
+            </p>
+            <div className="flex flex-col gap-1.5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2">
               <AiProvenance mode={aiToggleOn ? "ai" : "original"} />
               <Button type="button" variant="outline" className="h-10 rounded-full" disabled={!markdown} onClick={() => void copyMd()}>
                 <Copy className="mr-2 h-4 w-4" />
                 {copyState === "copied" ? "Copied" : copyState === "error" ? "Copy failed" : "Copy"}
               </Button>
+              {copyFeedback ? (
+                <span className="text-[0.72rem] leading-snug text-[--metis-paper-muted]" role="status">
+                  {copyFeedback}
+                </span>
+              ) : null}
             </div>
           </div>
         </div>
@@ -416,7 +466,16 @@ export function MessagesPanel({
       </div>
 
       <div className="min-w-0 space-y-4 xl:mt-[0.1rem]">
-        <ReviewRailCard title="Persist" tone="neutral" meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Save the current deterministic draft for history and export.</p>}>
+        <ReviewRailCard
+          title="Persist"
+          tone="neutral"
+          meta={
+            <p className="text-sm leading-6 text-[--metis-paper-muted]">
+              Save the current deterministic draft for history and export. Saving assigns the next <span className="text-[--metis-paper]">Message draft vN</span>{" "}
+              for this issue and template (per template, not per audience group).
+            </p>
+          }
+        >
           <div className="grid gap-2">
             <Button type="button" variant="outline" className="h-10 rounded-full" disabled={loading} onClick={() => void saveDeterministicVariant()}>
               {loading ? "Saving…" : latest ? "Save updated draft" : "Save draft"}
@@ -443,22 +502,27 @@ export function MessagesPanel({
             <div className="space-y-3 text-sm leading-6 text-[--metis-paper-muted]">
               {!latest ? (
                 <p className="text-sm leading-6 text-[--metis-paper-muted]">
-                  Choose a template and audience group to preview a draft. Save a draft version when it reads cleanly for your channel.
+                  <span className="text-[--metis-paper]">Unsaved preview — no draft version yet.</span> Choose a template and audience, then save when the
+                  wording is ready — that creates a numbered message draft for this issue and template.
                 </p>
               ) : null}
               <div className="flex items-center justify-between gap-3">
                 <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Audience group</span>
-                <span className="text-[--metis-paper]">{selectedAudienceGroupLabel}</span>
+                <span className="text-right text-[--metis-paper]">{selectedAudienceGroupLabel}</span>
               </div>
               <div className="border-t border-white/8 pt-3 text-sm leading-6 text-[--metis-paper-muted]">{templateHelperText}</div>
               {latest ? (
                 <>
                   <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-3">
-                    <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Version</span>
-                    <span className="text-[--metis-paper]">{latest.versionNumber}</span>
+                    <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Saved draft</span>
+                    <span className="text-right text-[--metis-paper]">{savedDraftLabel}</span>
                   </div>
+                  <p className="text-[0.72rem] leading-snug text-[--metis-paper-muted]">
+                    Draft numbers are assigned per issue and template (not per audience group). Shaping above shows which template and audience you are
+                    previewing.
+                  </p>
                   <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-3">
-                    <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Status</span>
+                    <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Freshness</span>
                     <div className="flex flex-col items-end gap-1">
                       <span
                         className={`rounded-full border px-3 py-1 text-[0.62rem] font-medium uppercase tracking-[0.18em] ${
@@ -473,7 +537,11 @@ export function MessagesPanel({
                         <span className="max-w-[14rem] text-right text-[0.72rem] leading-snug text-[--metis-paper-muted]">
                           Save or regenerate wording because the issue changed after this draft.
                         </span>
-                      ) : null}
+                      ) : (
+                        <span className="max-w-[14rem] text-right text-[0.72rem] leading-snug text-[--metis-paper-muted]">
+                          Compares the issue record to when this draft was saved — not the draft number.
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-3">

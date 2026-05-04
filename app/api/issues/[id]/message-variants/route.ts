@@ -361,7 +361,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     await writeIssueActivity(tx, {
       issueId,
       kind: IssueActivityKinds.message_variant_created,
-      summary: `Message variant ${row.versionNumber} (${row.templateId})`,
+      summary: `Message draft v${row.versionNumber} created (${row.templateId})`,
       refType: "MessageVariant",
       refId: row.id,
       actorLabel: user.email ?? null,
