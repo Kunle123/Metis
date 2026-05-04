@@ -163,28 +163,200 @@ export default function MetisUiDiagnosticsPage() {
               </p>
 
               <div className="mt-5 space-y-6">
+                <div className="space-y-5 rounded-[1.25rem] border border-white/10 bg-black/10 px-4 py-4 sm:px-5 sm:py-5">
+                  <div>
+                    <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-text-tertiary]">
+                      Control hierarchy (acceptance checks)
+                    </p>
+                    <ul className="mt-3 list-disc space-y-1.5 pl-5 text-sm leading-6 text-[--metis-paper-muted]">
+                      <li>A user should identify the primary action in under one second.</li>
+                      <li>Metadata should not look like an action.</li>
+                      <li>Disabled is unavailable; off/unselected is still available.</li>
+                      <li>Status labels describe state; action links tell the user what to do.</li>
+                    </ul>
+                  </div>
+                  <div className="border-t border-white/8 pt-4">
+                    <p className="text-xs font-medium text-[--metis-text-secondary]">Strict roles (local grouping)</p>
+                    <ul className="mt-2 space-y-1.5 text-xs leading-5 text-[--metis-paper-muted]">
+                      <li>
+                        <span className="text-[--metis-paper]">Primary</span> — at most one per local group; filled brass; highest visual weight.
+                      </li>
+                      <li>
+                        <span className="text-[--metis-paper]">Secondary</span> — neutral framed surface; clearly below primary (no lift/shadow stack).
+                      </li>
+                      <li>
+                        <span className="text-[--metis-paper]">Ghost / tertiary</span> — text-first; underline on hover; no filled “button” slab.
+                      </li>
+                      <li>
+                        <span className="text-[--metis-paper]">Info / context action</span> — blue surface; never the default CTA.
+                      </li>
+                      <li>
+                        <span className="text-[--metis-paper]">Metadata</span> — plain secondary text or a very light chip; not pill-by-default; not tappable chrome.
+                      </li>
+                      <li>
+                        <span className="text-[--metis-paper]">Provenance chip</span> — compact (below control height); lighter than actions.
+                      </li>
+                      <li>
+                        <span className="text-[--metis-paper]">Status label</span> — communicates state; interactive only when it is explicitly a control.
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div className="space-y-5 border-t border-white/8 pt-4">
+                    <div>
+                      <p className="text-[0.56rem] font-medium uppercase tracking-[0.18em] text-[--metis-ink-soft]">
+                        Primary · Secondary · Ghost · Disabled
+                      </p>
+                      <div className="mt-3 flex flex-wrap items-center gap-[var(--metis-control-gap-md)]">
+                        <Button>Primary action</Button>
+                        <Button variant="outline">Secondary action</Button>
+                        <Button variant="ghost">Tertiary / ghost</Button>
+                        <Button disabled>Disabled primary</Button>
+                        <Button variant="outline" disabled>
+                          Disabled secondary
+                        </Button>
+                        <Button variant="ghost" disabled>
+                          Disabled ghost
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <p className="text-[0.56rem] font-medium uppercase tracking-[0.18em] text-[--metis-ink-soft]">
+                        Button · chip · metadata
+                      </p>
+                      <div className="mt-3 flex flex-wrap items-center gap-[var(--metis-control-gap-md)]">
+                        <Button variant="outline">Secondary button</Button>
+                        <AiProvenance mode="original" />
+                        <AiProvenance mode="ai" helper="Short line for the rail." className="max-w-[min(100%,260px)]" />
+                        <span className="text-xs tabular-nums text-[--metis-text-tertiary]">Last saved · 09:41 UTC · v3</span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <p className="text-[0.56rem] font-medium uppercase tracking-[0.18em] text-[--metis-ink-soft]">
+                        Info action · AI provenance chip
+                      </p>
+                      <div className="mt-3 flex flex-wrap items-center gap-[var(--metis-control-gap-md)]">
+                        <Button type="button" variant="info" size="sm">
+                          View sourcing context
+                        </Button>
+                        <AiProvenance mode="ai" variant="synthesis-available" className="max-w-[min(100%,320px)]" />
+                      </div>
+                    </div>
+
+                    <div>
+                      <p className="text-[0.56rem] font-medium uppercase tracking-[0.18em] text-[--metis-ink-soft]">
+                        Segmented · selected · unselected · disabled
+                      </p>
+                      <div className="mt-3 grid gap-4 md:grid-cols-3">
+                        <div className="space-y-1">
+                          <p className="text-[0.62rem] uppercase tracking-[0.14em] text-[--metis-text-tertiary]">Selected A</p>
+                          <SegmentedControl
+                            label="Mode"
+                            value="a"
+                            options={[
+                              { id: "a", label: "Alpha" },
+                              { id: "b", label: "Beta" },
+                            ]}
+                            onChange={() => {}}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-[0.62rem] uppercase tracking-[0.14em] text-[--metis-text-tertiary]">Selected B (contrast)</p>
+                          <SegmentedControl
+                            label="Mode"
+                            value="b"
+                            options={[
+                              { id: "a", label: "Alpha" },
+                              { id: "b", label: "Beta" },
+                            ]}
+                            onChange={() => {}}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-[0.62rem] uppercase tracking-[0.14em] text-[--metis-text-tertiary]">
+                            Whole disabled / per-option off
+                          </p>
+                          <SegmentedControl
+                            label="Frozen"
+                            value="x"
+                            disabled
+                            options={[
+                              { id: "x", label: "One" },
+                              { id: "y", label: "Two" },
+                            ]}
+                            onChange={() => {}}
+                          />
+                          <SegmentedControl
+                            className="pt-1"
+                            label="Middle option disabled"
+                            value="a"
+                            options={[
+                              { id: "a", label: "Alpha" },
+                              { id: "b", label: "Beta", disabled: true },
+                              { id: "c", label: "Gamma" },
+                            ]}
+                            onChange={() => {}}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <p className="text-[0.56rem] font-medium uppercase tracking-[0.18em] text-[--metis-ink-soft]">
+                        Switch · enabled off / on · disabled off / on
+                      </p>
+                      <div className="mt-3 flex flex-wrap items-end gap-6">
+                        <div className="flex flex-col items-center gap-2">
+                          <Switch checked={false} onCheckedChange={() => {}} aria-label="Enabled off" />
+                          <span className="text-[0.62rem] uppercase tracking-[0.14em] text-[--metis-text-tertiary]">Enabled off</span>
+                        </div>
+                        <div className="flex flex-col items-center gap-2">
+                          <Switch checked onCheckedChange={() => {}} aria-label="Enabled on" />
+                          <span className="text-[0.62rem] uppercase tracking-[0.14em] text-[--metis-text-tertiary]">Enabled on</span>
+                        </div>
+                        <div className="flex flex-col items-center gap-2">
+                          <Switch checked={false} onCheckedChange={() => {}} disabled aria-label="Disabled off" />
+                          <span className="text-[0.62rem] uppercase tracking-[0.14em] text-[--metis-text-tertiary]">Disabled off</span>
+                        </div>
+                        <div className="flex flex-col items-center gap-2">
+                          <Switch checked onCheckedChange={() => {}} disabled aria-label="Disabled on" />
+                          <span className="text-[0.62rem] uppercase tracking-[0.14em] text-[--metis-text-tertiary]">Disabled on</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <p className="text-[0.56rem] font-medium uppercase tracking-[0.18em] text-[--metis-ink-soft]">
+                        Action label · status label
+                      </p>
+                      <div className="mt-3 flex flex-wrap items-center gap-6">
+                        <Button type="button" variant="ghost" className="px-0">
+                          Open evidence trail
+                        </Button>
+                        <span
+                          className="inline-flex items-center rounded-md border border-[--metis-status-success-border] bg-[color-mix(in_oklab,var(--metis-status-success-bg)_55%,transparent)] px-2 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-[--metis-status-success-fg]"
+                          title="Describes sync state — not an instruction"
+                        >
+                          Synced
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="grid gap-4 lg:grid-cols-2">
                   <div className="space-y-3 rounded-[1.25rem] border border-white/10 bg-black/10 px-4 py-4">
-                    <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-text-tertiary]">Button hierarchy</p>
+                    <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-text-tertiary]">Button patterns (dense)</p>
                     <div className="flex flex-wrap items-center gap-[var(--metis-control-gap-md)]">
-                      <Button>Primary action</Button>
-                      <Button variant="outline">Secondary action</Button>
-                      <AiProvenance mode="original" className="max-w-[min(100%,280px)]" />
-                      <AiProvenance mode="ai" helper="Compact chip typography + icon-sm." className="max-w-[min(100%,320px)]" />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="border-[--metis-status-info-border] bg-[--metis-status-info-bg] text-[--metis-status-info-fg] shadow-none hover:border-[--metis-status-info-border] hover:bg-[color-mix(in_oklab,var(--metis-status-info-bg)_88%,white)] hover:text-[--metis-status-info-fg]"
-                      >
-                        Info action (subordinate)
+                      <Button>Primary</Button>
+                      <Button variant="outline">Secondary</Button>
+                      <Button variant="info" size="sm">
+                        Info action
                       </Button>
-                      <Button variant="ghost">Tertiary / link-style</Button>
-                      <Button pill>Optional pill (opt-in)</Button>
-                      <Button disabled>Disabled (primary)</Button>
-                      <Button disabled variant="outline">
-                        Disabled (secondary)
-                      </Button>
+                      <Button variant="ghost">Ghost</Button>
+                      <Button pill>Optional pill shape</Button>
                     </div>
                     <div className="flex flex-wrap items-center gap-[var(--metis-control-gap-md)]">
                       <Button>
@@ -205,6 +377,11 @@ export default function MetisUiDiagnosticsPage() {
                         disabled
                         label="Icon-only outline disabled"
                         icon={<span className="size-[var(--metis-icon-size-md)] rounded bg-white/18" aria-hidden />}
+                      />
+                      <IconButton
+                        label="Icon-only info"
+                        variant="info"
+                        icon={<span className="size-[var(--metis-icon-size-md)] rounded bg-white/12" aria-hidden />}
                       />
                       <IconButton
                         label="Icon-only md (primary)"
@@ -458,9 +635,7 @@ export default function MetisUiDiagnosticsPage() {
                 <ConfidencePill level="Likely" />
                 <ConfidencePill level="Unclear" />
                 <ConfidencePill level="Needs validation" />
-                <span className="rounded-full border border-[--metis-status-neutral-border] bg-[--metis-status-neutral-bg] px-3 py-1 text-xs text-[--metis-text-secondary]">
-                  Updated since last version
-                </span>
+                <span className="text-xs text-[--metis-text-tertiary]">Updated since last version · metadata as plain text</span>
                 <span className="text-xs text-[--metis-text-secondary]">Ready for review</span>
               </div>
 

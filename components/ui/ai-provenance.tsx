@@ -8,9 +8,9 @@ export type AiProvenanceAiVariant = "enhanced-draft" | "synthesis-available";
 
 const chipSurface = cn(
   "inline-flex max-w-full min-w-0 items-center truncate rounded-[var(--metis-control-radius-pill)] border text-[var(--metis-chip-font-size)] leading-tight font-medium tracking-tight",
-  "gap-[var(--metis-chip-gap)] px-[var(--metis-chip-padding-x-md)]",
-  /* Visually lighter than `--metis-control-height-md`; aligns in flex rows via items-center without matching button mass */
-  "min-h-[var(--metis-chip-height-md)] h-[var(--metis-chip-height-md)] py-0",
+  "gap-[var(--metis-chip-gap)] px-[var(--metis-chip-padding-x-sm)]",
+  /* Shorter & lighter than md buttons — never compete with primary/secondary mass */
+  "min-h-[var(--metis-chip-height-sm)] h-[var(--metis-chip-height-sm)] py-0",
 );
 
 export function AiProvenance({

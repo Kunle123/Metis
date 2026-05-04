@@ -43,7 +43,8 @@ export function SegmentedControl<T extends string>({
             isSelected &&
             !unavailable &&
             cn(
-              "border-[--metis-control-active-border] bg-[--metis-control-active-bg] text-[--metis-text-primary] shadow-[inset_0_2px_0_rgba(255,255,255,0.14),inset_0_-1px_0_rgba(0,0,0,0.35)] ring-1 ring-[color-mix(in_oklab,var(--metis-control-active-border)_35%,transparent)]",
+              "border border-[--metis-control-active-border] bg-[--metis-control-active-bg] text-[--metis-text-primary]",
+              "shadow-[inset_0_1px_0_rgba(255,255,255,0.1),inset_0_-1px_0_rgba(0,0,0,0.22)]",
               "min-h-[var(--metis-segmented-slot-height)] h-[var(--metis-segmented-slot-height)] max-h-[var(--metis-segmented-slot-height)] px-[var(--metis-control-padding-x-sm)] text-sm leading-none font-semibold",
             );
 
@@ -80,15 +81,7 @@ export function SegmentedControl<T extends string>({
                 mutedDisabledOption,
               )}
             >
-              <span className="relative z-[1] flex items-center justify-center gap-[var(--metis-chip-gap)] truncate">
-                {isSelected && !unavailable ? (
-                  <span
-                    className="h-[var(--metis-chip-dot-size)] w-[var(--metis-chip-dot-size)] shrink-0 rounded-full bg-[--metis-action-primary-bg] shadow-[0_0_0_1px_color-mix(in_oklab,var(--metis-frame)_70%,transparent)]"
-                    aria-hidden
-                  />
-                ) : null}
-                {o.label}
-              </span>
+              <span className="relative z-[1] flex items-center justify-center gap-[var(--metis-chip-gap)] truncate">{o.label}</span>
             </button>
           );
         })}

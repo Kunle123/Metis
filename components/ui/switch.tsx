@@ -17,9 +17,11 @@ export function Switch({
     "border-[--metis-control-border] bg-[--metis-control-bg] shadow-[inset_0_1px_0_var(--metis-control-inset)] enabled:hover:bg-[color-mix(in_oklab,var(--metis-control-bg)_93%,white)] enabled:hover:border-[--metis-control-border-hover]";
   const enabledOnTrack =
     "border-[--metis-action-primary-border] bg-[color-mix(in_oklab,var(--metis-action-primary-bg)_54%,var(--metis-control-bg))] shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] ring-1 ring-[color-mix(in_oklab,var(--metis-action-primary-border)_55%,transparent)] enabled:hover:bg-[color-mix(in_oklab,var(--metis-action-primary-bg)_62%,var(--metis-control-bg))]";
-  const disabledTrackOff = "border-[--metis-control-disabled-border] bg-[--metis-control-disabled-bg] shadow-none ring-0";
+  const disabledTrackOff =
+    "border border-[--metis-control-disabled-border] bg-[--metis-control-disabled-bg] shadow-none ring-0";
+  /* Dashed + no brass ring: clearly not the enabled “on” affordance */
   const disabledTrackOn =
-    "border-[--metis-control-disabled-border] bg-[color-mix(in_oklab,var(--metis-control-disabled-bg)_82%,var(--metis-frame))] shadow-none ring-0";
+    "border border-dashed border-[--metis-control-disabled-border] bg-[--metis-surface-disabled] shadow-none ring-0";
 
   const track =
     disabled === true
@@ -33,8 +35,8 @@ export function Switch({
   const knob =
     disabled === true
       ? checked
-        ? "bg-[--metis-control-disabled-fg]"
-        : "bg-[--metis-control-disabled-fg]"
+        ? "bg-[color-mix(in_oklab,var(--metis-control-disabled-fg)_72%,var(--metis-frame))] shadow-none"
+        : "bg-[--metis-control-disabled-fg] shadow-none"
       : checked
         ? "bg-[--metis-control-thumb] shadow-[0_2px_8px_rgba(0,0,0,0.42)]"
         : "bg-[--metis-control-thumb] shadow-[0_1px_5px_rgba(0,0,0,0.38)]";
