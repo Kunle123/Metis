@@ -247,11 +247,7 @@ export function GapLedger({
             }
           >
             <div className="flex flex-wrap items-center gap-2 lg:justify-center">
-              <Button
-                asChild
-                variant="outline"
-                className="h-10 rounded-full border-white/10 bg-white/[0.03] px-4 text-[--metis-paper] hover:bg-white/[0.08]"
-              >
+              <Button asChild variant="outline" className="justify-start">
                 <Link href={`/issues/${issueId}`}>Back to workspace</Link>
               </Button>
             </div>
@@ -265,7 +261,7 @@ export function GapLedger({
             addLabel="Add open question"
             form={<GapCreateForm issueId={issueId} />}
             secondaryAction={
-              <Button asChild variant="outline" className="h-10 rounded-full px-4">
+              <Button asChild variant="outline">
                 <Link href={`/issues/${issueId}`}>Workspace</Link>
               </Button>
             }
@@ -354,11 +350,11 @@ export function GapLedger({
                                     className="min-h-[140px] w-full rounded-[1rem] border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 py-4 text-sm leading-7 text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
                                   />
                                   <div className="flex flex-wrap gap-2">
-                                    <Button onClick={() => void saveQuestion(gap.id)} disabled={busyGapId === gap.id} className="rounded-full">
+                                    <Button onClick={() => void saveQuestion(gap.id)} disabled={busyGapId === gap.id}>
                                       <Save className="mr-2 h-4 w-4" />
                                       Save
                                     </Button>
-                                    <Button variant="outline" onClick={() => setEditingId(null)} className="rounded-full">
+                                    <Button variant="outline" onClick={() => setEditingId(null)}>
                                       <X className="mr-2 h-4 w-4" />
                                       Cancel
                                     </Button>
@@ -396,7 +392,7 @@ export function GapLedger({
                                         [gap.id]: e.target.value,
                                       }))
                                     }
-                                    className="h-11 w-full rounded-full border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
+                                    className="h-11 w-full rounded-md border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
                                   >
                                     <option value="">Select an input record…</option>
                                     {internalInputs.map((i) => (
@@ -409,7 +405,7 @@ export function GapLedger({
                                     variant="outline"
                                     disabled={busyGapId === gap.id || internalInputs.length === 0}
                                     onClick={() => void resolveGap(gap.id)}
-                                    className="w-full rounded-full"
+                                    className="w-full justify-start"
                                   >
                                     <CheckCircle2 className="mr-2 h-4 w-4" />
                                     Mark answered
@@ -424,7 +420,7 @@ export function GapLedger({
                                     variant="outline"
                                     disabled={busyGapId === gap.id}
                                     onClick={() => void reopenGap(gap.id)}
-                                    className="w-full rounded-full"
+                                    className="w-full justify-start"
                                   >
                                     <RotateCcw className="mr-2 h-4 w-4" />
                                     Reopen question
@@ -434,7 +430,7 @@ export function GapLedger({
                             </DenseSection>
 
                             <div className="grid gap-2 pt-1">
-                              <Button asChild variant="outline" className="w-full rounded-full">
+                              <Button asChild variant="outline" className="w-full justify-start">
                                 <Link href={`/issues/${issueId}/input`}>
                                   <MessageSquareText className="mr-2 h-4 w-4" />
                                   Add manual input
@@ -444,12 +440,12 @@ export function GapLedger({
                                 variant="outline"
                                 onClick={() => startEditing(gap)}
                                 disabled={gap.status === "Resolved"}
-                                className="w-full rounded-full"
+                                className="w-full justify-start"
                               >
                                 <PencilLine className="mr-2 h-4 w-4" />
                                 Edit question
                               </Button>
-                              <Button variant="outline" onClick={() => void copyQuestion(gap)} className="w-full rounded-full">
+                              <Button variant="outline" onClick={() => void copyQuestion(gap)} className="w-full justify-start">
                                 <Copy className="mr-2 h-4 w-4" />
                                 {copiedId === gap.id ? "Copied" : "Copy question"}
                               </Button>
@@ -517,7 +513,7 @@ export function GapLedger({
 
           <ReviewRailCard title="Next" tone="info" meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Add attributable observations used to resolve gaps.</p>}>
             <div className="grid gap-3">
-              <Button asChild variant="outline" className="w-full rounded-full">
+              <Button asChild variant="outline" className="w-full justify-start">
                 <Link href={`/issues/${issueId}/input`}>Add attributable input</Link>
               </Button>
             </div>

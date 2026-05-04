@@ -151,11 +151,7 @@ export function StakeholderLibrary({ initialGroups }: { initialGroups: Group[] }
             <p className="text-[0.68rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Add audience group</p>
             <p className="mt-1 text-sm text-[--metis-paper-muted]">Reusable organisation-level audiences used by Messages.</p>
           </div>
-          <Button
-            onClick={() => void createGroup()}
-            disabled={creating || !draft.name.trim()}
-            className="rounded-full"
-          >
+          <Button onClick={() => void createGroup()} disabled={creating || !draft.name.trim()}>
             {creating ? "Saving…" : "Add group"}
           </Button>
         </div>
@@ -169,7 +165,7 @@ export function StakeholderLibrary({ initialGroups }: { initialGroups: Group[] }
             <select
               value={draft.defaultSensitivity}
               onChange={(e) => setDraft((d) => ({ ...d, defaultSensitivity: e.target.value as any }))}
-              className="h-11 w-full rounded-full border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
+              className="h-11 w-full rounded-md border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
             >
               <option value="">—</option>
               {sensitivityOptions.map((s) => (
@@ -246,7 +242,6 @@ export function StakeholderLibrary({ initialGroups }: { initialGroups: Group[] }
                 <div className="flex flex-wrap items-center gap-2">
                   <Button
                     variant="outline"
-                    className="rounded-full"
                     onClick={() => {
                       if (isEditing) {
                         setEditId(null);
@@ -278,7 +273,7 @@ export function StakeholderLibrary({ initialGroups }: { initialGroups: Group[] }
                             d ? { ...d, defaultSensitivity: e.target.value as any } : d,
                           )
                         }
-                        className="h-11 w-full rounded-full border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
+                        className="h-11 w-full rounded-md border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
                       >
                         <option value="">—</option>
                         {sensitivityOptions.map((s) => (
@@ -324,21 +319,21 @@ export function StakeholderLibrary({ initialGroups }: { initialGroups: Group[] }
                   </label>
 
                   <div className="flex flex-wrap items-center justify-between gap-3">
-                    <button
+                    <Button
                       type="button"
+                      variant="ghost"
                       onClick={() =>
                         setEditDraft((d) => (d ? { ...d, isActive: !d.isActive } : d))
                       }
-                      className="inline-flex items-center gap-2 text-sm text-[--metis-paper-muted] hover:text-[--metis-paper]"
+                      className="h-auto min-h-0 justify-start gap-2 px-2 py-1.5 text-sm text-[--metis-paper-muted] hover:bg-white/[0.06] hover:text-[--metis-paper]"
                     >
                       {editDraft.isActive ? <ToggleRight className="h-5 w-5 text-[--metis-brass-soft]" /> : <ToggleLeft className="h-5 w-5 text-white/50" />}
                       {editDraft.isActive ? "Active" : "Inactive"}
-                    </button>
+                    </Button>
 
                     <Button
                       onClick={() => void saveEdit(g.id)}
                       disabled={savingId === g.id || !editDraft.name.trim()}
-                      className="rounded-full"
                     >
                       <Save className="mr-2 h-4 w-4" />
                       {savingId === g.id ? "Saving…" : "Save changes"}

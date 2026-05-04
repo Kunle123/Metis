@@ -148,9 +148,15 @@ export function ActivityTimelineClient({ items }: Props) {
           <p className="mt-2">
             Nothing in this timeline matches your search or filters. This timeline only shows key briefing actions — it is not a full edit history.
             Adjust filters or{" "}
-            <button type="button" className="text-[--metis-brass-soft] underline underline-offset-2 hover:opacity-90" onClick={reset}>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="inline h-auto min-h-0 px-0 py-0 font-normal text-[--metis-brass-soft] underline underline-offset-2 hover:bg-transparent hover:text-[--metis-brass-soft] hover:opacity-90"
+              onClick={reset}
+            >
               clear filters
-            </button>
+            </Button>
             .
           </p>
         </div>

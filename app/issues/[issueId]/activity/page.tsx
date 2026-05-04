@@ -76,13 +76,13 @@ export default async function IssueActivityPage({ params }: { params: Promise<{ 
 
         <SurfaceCard className="metis-support-surface min-w-0 overflow-hidden">
           <div className="grid gap-3 px-5 py-5">
-            <Button asChild variant="outline" className="w-full rounded-full">
+            <Button asChild variant="outline" className="w-full justify-start">
               <Link href={`/issues/${issue.id}/brief?mode=full`}>Open brief</Link>
             </Button>
-            <Button asChild variant="outline" className="w-full rounded-full">
+            <Button asChild variant="outline" className="w-full justify-start">
               <Link href={`/issues/${issue.id}/sources`}>Open sources</Link>
             </Button>
-            <Button asChild variant="outline" className="w-full rounded-full">
+            <Button asChild variant="outline" className="w-full justify-start">
               <Link href={`/issues/${issue.id}/compare?mode=full`}>Open delta</Link>
             </Button>
           </div>

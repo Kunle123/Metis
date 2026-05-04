@@ -130,11 +130,7 @@ export default async function IssueSourcesPage({ params }: { params: Promise<{ i
               }
             >
               <div className="flex flex-wrap items-center gap-2 lg:justify-center">
-                <Button
-                  asChild
-                  variant="outline"
-                  className="h-10 rounded-full border-white/10 bg-white/[0.03] px-4 text-[--metis-paper] hover:bg-white/[0.08]"
-                >
+                <Button asChild variant="outline" className="justify-start">
                   <Link href={`/issues/${issue.id}`}>Back to workspace</Link>
                 </Button>
               </div>
@@ -149,7 +145,7 @@ export default async function IssueSourcesPage({ params }: { params: Promise<{ i
                   Add evidence on this page so briefs and exports can point to reviewable material. Start with official or internal artifacts, then
                   layer media or market signals as needed.
                 </p>
-                <Button asChild className="mt-4 w-fit rounded-full px-5">
+                <Button asChild className="mt-4 w-fit">
                   <Link href="#add-source">Add a source</Link>
                 </Button>
               </div>
@@ -202,19 +198,14 @@ export default async function IssueSourcesPage({ params }: { params: Promise<{ i
 
                         <div className="flex shrink-0 flex-wrap items-center gap-2">
                           {item.url ? (
-                            <a
-                              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/80 hover:bg-white/10"
-                              href={item.url}
-                              target="_blank"
-                              rel="noreferrer"
-                            >
-                              <ExternalLink className="h-4 w-4" />
-                              Open link
-                            </a>
+                            <Button asChild variant="outline" size="sm" className="w-fit shrink-0">
+                              <a href={item.url} target="_blank" rel="noreferrer">
+                                <ExternalLink className="mr-2 h-4 w-4" />
+                                Open link
+                              </a>
+                            </Button>
                           ) : (
-                            <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs text-white/45">
-                              No link
-                            </span>
+                            <span className="text-xs text-[--metis-paper-muted]">No link</span>
                           )}
                         </div>
                       </div>
@@ -273,7 +264,7 @@ export default async function IssueSourcesPage({ params }: { params: Promise<{ i
                 addLabel="Add source"
                 form={<SourceEntryForm issueId={issue.id} />}
                 secondaryAction={
-                  <Button asChild variant="outline" className="h-10 rounded-full px-4">
+                  <Button asChild variant="outline">
                     <Link href={`/issues/${issue.id}`}>Workspace</Link>
                   </Button>
                 }
@@ -320,7 +311,7 @@ export default async function IssueSourcesPage({ params }: { params: Promise<{ i
               }
             >
               <div className="grid gap-3">
-                <Button asChild variant="outline" className="w-full rounded-full">
+                <Button asChild variant="outline" className="w-full justify-start">
                   <Link href={`/issues/${issue.id}/gaps`}>
                     <ShieldCheck className="mr-2 h-4 w-4 text-[--metis-brass]" />
                     Review open questions
@@ -331,7 +322,7 @@ export default async function IssueSourcesPage({ params }: { params: Promise<{ i
 
             <ReviewRailCard title="Next" tone="info" meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Jump to the full brief for output prep.</p>}>
               <div className="grid gap-3">
-                <Button asChild variant="outline" className="w-full rounded-full">
+                <Button asChild variant="outline" className="w-full justify-start">
                   <Link href={`/issues/${issue.id}/brief?mode=full`}>
                     Open brief
                     <ArrowRight className="ml-2 h-4 w-4" />
