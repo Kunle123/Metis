@@ -45,6 +45,8 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
     prisma.internalInput.findMany({ where: { issueId: issue.id }, orderBy: [{ createdAt: "desc" }] }),
   ]);
 
+  const captureNotesAiEnabled = process.env.NOTES_CAPTURE_AI_ENABLED?.trim() === "true";
+
   return (
     <MetisShell
       activePath="/workspace"
@@ -200,7 +202,7 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
             </section>
 
             <section id="input" className="space-y-8 border-t border-white/10 pt-8">
-              <CaptureNotesForm issueId={issue.id} />
+              <CaptureNotesForm issueId={issue.id} captureNotesAiEnabled={captureNotesAiEnabled} />
               <WorkspaceSection
                 title="Observations"
                 description="Attributable internal observations linked to sections."

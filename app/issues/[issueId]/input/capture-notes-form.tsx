@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
+import { CaptureNotesExtractPanel } from "./capture-notes-extract-panel";
+
 type MeUser = { id: string; email: string; role: string };
 
 /** Prefer a readable label from login email before @ ; otherwise fallback for `name`. */
@@ -19,7 +21,14 @@ function attributionNameFromEmail(email: string | null | undefined): string {
   return base.includes(".") ? base.replace(/\./g, " ") : base;
 }
 
-export function CaptureNotesForm({ issueId }: { issueId: string }) {
+export function CaptureNotesForm({
+  issueId,
+  captureNotesAiEnabled = false,
+}: {
+  issueId: string;
+  /** From server env `NOTES_CAPTURE_AI_ENABLED`; never expose secrets. */
+  captureNotesAiEnabled?: boolean;
+}) {
   const router = useRouter();
   const [notes, setNotes] = useState("");
   const [meetingLabel, setMeetingLabel] = useState("");
@@ -115,7 +124,15 @@ export function CaptureNotesForm({ issueId }: { issueId: string }) {
 
         <p className="mt-3 text-xs leading-5 text-[--metis-paper-muted]">
           Saved rows are stored as observations with attribution; they stay out of generated briefs unless you edit them later to include them.
-          Important points should be promoted manually into Sources or Open questions — there is no automatic extraction yet.
+          {captureNotesAiEnabled ? (
+            <>
+              {" "}
+              Optional structured suggestions can be generated from your notes (review required); nothing is created until you accept a suggestion or
+              save notes.
+            </>
+          ) : (
+            <> Important points should be promoted manually into Sources or Open questions.</>
+          )}
         </p>
       </div>
 
@@ -145,6 +162,8 @@ export function CaptureNotesForm({ issueId }: { issueId: string }) {
           />
         </label>
       </div>
+
+      {captureNotesAiEnabled ? <CaptureNotesExtractPanel issueId={issueId} rawNotes={notes} meetingLabel={meetingLabel} /> : null}
 
       <footer className="space-y-3 border-t border-white/12 bg-[rgba(0,0,0,0.28)] px-4 py-4 sm:px-5">
         <div className="flex justify-end">
