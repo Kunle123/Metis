@@ -91,7 +91,7 @@ function variantClassFor(variant: ButtonVariant) {
 
 export function Button({ className, variant = "default", size = "md", pill = false, asChild, ...props }: Props) {
   const base =
-    "inline-flex items-center justify-center whitespace-nowrap transition-[background-color,border-color,color,box-shadow,transform,filter,text-decoration] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-focus-ring] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0e0f]";
+    "inline-flex items-center justify-center whitespace-nowrap transition-[background-color,border-color,color,box-shadow,transform,filter,text-decoration] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-focus-ring] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--metis-ring-offset)]";
 
   const radius =
     pill === true ? "rounded-[var(--metis-control-radius-pill)]" : "rounded-[var(--metis-control-radius-md)]";

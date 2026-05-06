@@ -12,7 +12,7 @@ const chipHeadline = cn(
   "gap-[0.25rem] px-[var(--metis-chip-padding-x-sm)]",
   "min-h-[var(--metis-chip-height-sm)] h-[var(--metis-chip-height-sm)] py-0",
   "text-[var(--metis-chip-font-size)] font-medium leading-none tracking-tight",
-  "border border-white/[0.07] shadow-none",
+  "border border-[--metis-outline-strong] shadow-none",
 );
 
 export function AiProvenance({

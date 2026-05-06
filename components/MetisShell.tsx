@@ -322,8 +322,9 @@ export function MetisShell({
     return (
       <div
         key={group}
+        data-metis-shell-nav-active={groupIsActive ? "true" : "false"}
         className={cn(
-          "space-y-2 rounded-[1.55rem] border px-3 py-3 transition duration-300",
+          "metis-shell-nav-group space-y-2 rounded-[1.55rem] border px-3 py-3 transition duration-300",
           groupIsActive
             ? "border-[rgba(224,183,111,0.24)] bg-[linear-gradient(180deg,rgba(224,183,111,0.09),rgba(224,183,111,0.018))] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
             : "border-white/6 bg-[rgba(255,255,255,0.015)]",
@@ -367,10 +368,10 @@ export function MetisShell({
   }
 
   return (
-    <div className="min-h-screen bg-[--background] text-[--foreground]">
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top_left,rgba(164,132,82,0.08),transparent_28%),radial-gradient(circle_at_top_right,rgba(56,84,103,0.06),transparent_18%),radial-gradient(circle_at_bottom_right,rgba(27,59,55,0.09),transparent_24%)]" />
+    <div className="metis-shell-root min-h-screen bg-[--background] text-[--foreground]">
+      <div className="metis-shell-vignette pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top_left,rgba(164,132,82,0.08),transparent_28%),radial-gradient(circle_at_top_right,rgba(56,84,103,0.06),transparent_18%),radial-gradient(circle_at_bottom_right,rgba(27,59,55,0.09),transparent_24%)]" />
       <div className="relative grid lg:grid-cols-[286px_minmax(0,1fr)]">
-        <aside className="hidden border-r border-white/6 bg-[linear-gradient(180deg,rgba(7,10,11,0.99),rgba(11,15,16,0.985))] px-6 py-8 lg:flex lg:flex-col lg:justify-between">
+        <aside className="metis-shell-aside hidden border-r border-white/6 bg-[linear-gradient(180deg,rgba(7,10,11,0.99),rgba(11,15,16,0.985))] px-6 py-8 lg:flex lg:flex-col lg:justify-between">
           <div className="space-y-8">
             <div className="space-y-4 border-b border-white/8 pb-7">
               <div className="inline-flex items-center gap-3">
@@ -469,8 +470,8 @@ export function MetisShell({
         </aside>
 
         <main className="relative min-h-0 min-w-0 px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
-          <div className="mx-auto flex max-w-[1520px] flex-col overflow-x-clip rounded-[1.35rem] border border-white/8 bg-[linear-gradient(180deg,rgba(18,23,24,0.94),rgba(10,14,15,0.985))] shadow-[0_32px_120px_rgba(0,0,0,0.52)] sm:rounded-[1.65rem] lg:rounded-[2rem]">
-            <header className="border-b border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.028),rgba(255,255,255,0.012))] px-5 py-5 sm:px-7 lg:px-8">
+          <div className="metis-shell-stage mx-auto flex max-w-[1520px] flex-col overflow-x-clip rounded-[1.35rem] border border-white/8 bg-[linear-gradient(180deg,rgba(18,23,24,0.94),rgba(10,14,15,0.985))] shadow-[0_32px_120px_rgba(0,0,0,0.52)] sm:rounded-[1.65rem] lg:rounded-[2rem]">
+            <header className="metis-shell-band border-b border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.028),rgba(255,255,255,0.012))] px-5 py-5 sm:px-7 lg:px-8">
               <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
                 <div className="min-w-0 space-y-2">
                   {pageMeta ? <p className="text-[0.68rem] uppercase tracking-[0.28em] text-[--metis-ink-soft]">{pageMeta}</p> : null}
@@ -517,7 +518,7 @@ export function MetisShell({
             </header>
 
             {shouldShowOperationalSnapshot ? (
-              <div className="border-b border-white/8 bg-[rgba(255,255,255,0.016)] px-5 py-4 sm:px-7 lg:px-8">
+              <div className="metis-shell-band border-b border-white/8 bg-[rgba(255,255,255,0.016)] px-5 py-4 sm:px-7 lg:px-8">
                 <div className="mb-2 flex items-center justify-between gap-3">
                   <p className="text-[0.58rem] uppercase tracking-[0.2em] text-[rgba(176,171,160,0.62)]">Workspace snapshot</p>
                 </div>
@@ -534,14 +535,14 @@ export function MetisShell({
                 )}
               </div>
             ) : (
-              <div className="border-b border-white/8 bg-[rgba(255,255,255,0.01)] px-5 py-2 sm:px-7 lg:px-8" />
+              <div className="metis-shell-band border-b border-white/8 bg-[rgba(255,255,255,0.01)] px-5 py-2 sm:px-7 lg:px-8" />
             )}
 
-            <div className="min-w-0 flex-1 bg-[linear-gradient(180deg,rgba(255,255,255,0.015),transparent_12%)] px-5 py-6 sm:px-7 lg:px-8">
+            <div className="metis-shell-body min-w-0 flex-1 bg-[linear-gradient(180deg,rgba(255,255,255,0.015),transparent_12%)] px-5 py-6 sm:px-7 lg:px-8">
               {children}
             </div>
 
-            <div className="border-t border-white/8 bg-[rgba(255,255,255,0.01)] px-5 py-3 sm:px-7 lg:px-8">
+            <div className="metis-shell-band border-t border-white/8 bg-[rgba(255,255,255,0.01)] px-5 py-3 sm:px-7 lg:px-8">
               <div className="text-right text-[0.78rem] uppercase tracking-[0.24em] text-[--metis-ink-soft]">Internal</div>
             </div>
           </div>

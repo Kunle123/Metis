@@ -14,7 +14,7 @@ export function Switch({
   onCheckedChange: (next: boolean) => void;
 }) {
   const enabledOffTrack =
-    "border-[--metis-control-border] bg-[oklch(0.19_0.018_248)] shadow-[inset_0_2px_5px_rgba(0,0,0,0.55),inset_0_-1px_0_rgba(255,255,255,0.05)] enabled:hover:bg-[oklch(0.21_0.02_248)] enabled:hover:border-[--metis-control-border-hover]";
+    "border-[--metis-control-border] bg-[var(--metis-switch-track-off-bg)] shadow-[inset_0_2px_5px_rgba(0,0,0,0.55),inset_0_-1px_0_rgba(255,255,255,0.05)] enabled:hover:bg-[var(--metis-switch-track-off-hover-bg)] enabled:hover:border-[--metis-control-border-hover]";
   const enabledOnTrack =
     "border-[--metis-action-primary-border] bg-[color-mix(in_oklab,var(--metis-action-primary-bg)_58%,var(--metis-control-bg))] shadow-[inset_0_1px_0_rgba(255,255,255,0.26)] ring-1 ring-[color-mix(in_oklab,var(--metis-action-primary-border)_58%,transparent)] enabled:hover:bg-[color-mix(in_oklab,var(--metis-action-primary-bg)_66%,var(--metis-control-bg))]";
   const disabledTrackOff =

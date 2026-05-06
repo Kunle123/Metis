@@ -86,7 +86,7 @@ export function IconButton({
 }) {
   const sized = sizeClasses(size);
   const base =
-    "inline-flex shrink-0 items-center justify-center p-0 transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-focus-ring] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0e0f]";
+    "inline-flex shrink-0 items-center justify-center p-0 transition-[background-color,border-color,color,box-shadow,transform,filter] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-focus-ring] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--metis-ring-offset)]";
 
   const style = variantStyle(variant);
 
