@@ -9,6 +9,7 @@ import {
   generateBriefFromIssue,
   normalizeMessageAudienceGroupNames,
   splitOpenQuestionsToBullets,
+  trimForExecutiveClause,
   type BriefGenerationInput,
 } from "./generateBriefFromIssue";
 import type { Gap, InternalInput, Issue, Source } from "@prisma/client";
@@ -111,7 +112,7 @@ const withGaps: BriefGenerationInput = {
 
 const execGaps = generateBriefFromIssue(withGaps, "executive");
 const recBody = execGaps.executive.blocks.find((b) => b.label === "Recommended decisions / next actions")?.body ?? "";
-assert.match(recBody, /Agree the approval route for/i);
+assert.match(recBody, /Agree procurement and approval sequencing/i);
 assert.ok(
   !/Assign owner and resolution path/i.test(recBody),
   "Executive recommendations should be decision-framed, not repetitive tracker owner assignment",
@@ -152,6 +153,15 @@ assert.ok(
 const execRecWithMessages = execAudience.executive.blocks.find((b) => b.label === "Recommended decisions / next actions")?.body ?? "";
 assert.match(execRecWithMessages, /audience groups used in Messages/i);
 assert.match(execRecWithMessages, /Community/);
+const stressMsgLine =
+  execRecWithMessages.split("\n").find((line) => /Stress-test external-facing/i.test(line)) ??
+  execRecWithMessages.split("\n").find((line) => /Messages/i.test(line)) ??
+  "";
+assert.match(
+  stressMsgLine,
+  /Messages \(Community, Executives\)\./,
+  "parenthetical around Messages audience lists must close before the sentence period",
+);
 
 /** Both Messages groups and intake note. */
 const combined: BriefGenerationInput = {
@@ -180,14 +190,35 @@ const internalNewer: Source = {
   tier: "Internal",
   createdAt: new Date("2025-06-01T00:00:00.000Z"),
 };
+
+const execEvReliabilityTwo = generateBriefFromIssue(
+  {
+    issue: baseIssue,
+    sources: [
+      { ...officialFirst, id: "rel-a", sourceCode: "SC-REL-A", title: "Published line", reliability: null },
+      { ...internalNewer, id: "rel-b", sourceCode: "SC-REL-B", title: "Working note", reliability: null },
+      { ...sampleSource, id: "rel-c", sourceCode: "SC-REL-C", tier: "Major media", title: "Local coverage", reliability: "Low" },
+      { ...sampleSource, id: "rel-d", sourceCode: "SC-REL-D", tier: "Internal", title: "Workstream note", reliability: "High" },
+      { ...sampleSource, id: "rel-e", sourceCode: "SC-REL-E", tier: "Official", title: "Published FAQ", reliability: "Medium" },
+    ],
+    gaps: [],
+    internalInputs: [] as InternalInput[],
+  },
+  "executive",
+).executive.blocks.find((b) => b.label === "Evidence base")?.body ?? "";
+assert.match(execEvReliabilityTwo, /\. Two linked .* lack/i, "sentence after a period should capitalise the spelled-out count");
+assert.match(execEvReliabilityTwo, /major-tier (media or broadcast|third-party)/i);
+assert.ok(!/Major media record/i.test(execEvReliabilityTwo), "avoid raw Major/media tier concatenations in prose");
+
 const tierOrderExec = generateBriefFromIssue(
   { issue: baseIssue, sources: [internalNewer, officialFirst], gaps: [], internalInputs: [] as InternalInput[] },
   "executive",
 );
 const evBody = tierOrderExec.executive.blocks.find((b) => b.label === "Evidence base")?.body ?? "";
-assert.match(evBody, /substantive linked record/i);
-assert.match(evBody, /Official/i);
-assert.match(evBody, /Internal/i);
+assert.match(evBody, /^The evidence base is/m);
+assert.ok(!/linked record\(s\)/i.test(evBody), "Executive evidence should read in natural prose, not system-style tallies");
+assert.match(evBody, /official or public-facing/i);
+assert.match(evBody, /internal/i);
 assert.ok(!evBody.includes("SRC-"), "Executive evidence stays free of SRC codes despite ranked ordering");
 
 /** Full artifact evidence panel retains per-source SRC listing for auditability. */
@@ -226,5 +257,69 @@ const execSmoke = generateBriefFromIssue(
 const evSmoke = execSmoke.executive.blocks.find((b) => b.label === "Evidence base")?.body ?? "";
 assert.ok(!evSmoke.includes("SRC-SMOKE"));
 assert.ok(!/smoke test/i.test(evSmoke), "Executive evidence should not surface smoke-test titles");
+
+const clipped = trimForExecutiveClause(
+  "Phase funding across operating envelopes (budget/planning/safety and environment teams) so each gate lines up with consultations",
+  72,
+);
+assert.ok(!/\([^)]*$/.test(clipped.trim()), "Executive trimming should not leave an unclosed parenthetical");
+assert.match(clipped, /…$/);
+
+const consultationLegal: BriefGenerationInput = {
+  issue: {
+    ...baseIssue,
+    title: "Harbourway redevelopment consultation",
+    summary: "Structured consultation on options before the next resident workshop.",
+    context: "Clarify what is open versus fixed before external lines harden.",
+  },
+  sources: [],
+  gaps: [
+    gap({
+      id: "g-legal",
+      severity: "Important",
+      linkedSection: "Legal",
+      prompt: "Has legal confirmed whether customer notices are required prior to public statements.",
+      title: "Notice check",
+    }),
+    gap({
+      id: "g-material",
+      severity: "Critical",
+      linkedSection: "Programme",
+      prompt: "Confirm the material-change threshold after consultation feedback is incorporated.",
+      title: "Material changes",
+    }),
+  ],
+  internalInputs: [] as InternalInput[],
+};
+const execConsult = generateBriefFromIssue(consultationLegal, "executive");
+const recConsult = execConsult.executive.blocks.find((b) => b.label === "Recommended decisions / next actions")?.body ?? "";
+assert.match(recConsult, /notice obligations apply/i);
+assert.match(recConsult, /sign-off route for material changes driven by consultation feedback/i);
+const openConsult = execConsult.executive.blocks.find((b) => b.label === "Open questions and unresolved needs")?.body ?? "";
+assert.match(openConsult, /legal notice question is applicable/i);
+
+const longParenGap = gap({
+  id: "gap-paren",
+  severity: "Important",
+  prompt:
+    "Phase funding across operating envelopes (budget/planning/safety and environment teams) so each consultation gate stays aligned with statutory checkpoints and sign-off windows.",
+  title: "Funding envelope",
+});
+const execParenStress = generateBriefFromIssue(
+  { issue: baseIssue, sources: [], gaps: [longParenGap], internalInputs: [] as InternalInput[] },
+  "executive",
+);
+const assertNoDanglingOpenParen = (label: string, text: string) => {
+  for (const raw of text.split("\n")) {
+    const line = raw.trim();
+    if (!line.startsWith("-")) continue;
+    assert.ok(!/\([^)]*$/.test(line), `${label} should not end a bullet with an unclosed parenthetical`);
+  }
+};
+assertNoDanglingOpenParen("Open questions", execParenStress.executive.blocks.find((b) => b.label === "Open questions and unresolved needs")?.body ?? "");
+assertNoDanglingOpenParen("Recommendations", execParenStress.executive.blocks.find((b) => b.label === "Recommended decisions / next actions")?.body ?? "");
+
+const fullKeyUnknowns = fullTierEvidence.executive.blocks.find((b) => b.label === "Key unknowns / open questions")?.body ?? "";
+assert.match(fullKeyUnknowns, /Key unknowns|open questions|No open questions/i);
 
 console.log("generateBriefFromIssue fixtures: OK");
