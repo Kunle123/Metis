@@ -20,8 +20,35 @@ export type PlanSuggestion = {
   item: CreateCommsPlanItemInput;
 };
 
-function uid(prefix: string) {
-  return `${prefix}-${Math.random().toString(16).slice(2)}-${Date.now().toString(16)}`;
+export type ValidationRejectedRow = { why: string; item: unknown };
+
+/** Stable key for comparing template-derived rows across suggestions and saved plan items. Order is fixed and deterministic. */
+export function commsPlanTemplateFingerprint(item: CreateCommsPlanItemInput): string {
+  const stakeholderGroupId = item.stakeholderGroupId ?? "";
+  const messageTemplateId = item.messageTemplateId ?? "";
+  const briefMode = item.briefMode ?? "";
+  const exportFormat = item.exportFormat ?? "";
+  const cadenceMinutes = item.cadenceMinutes ?? "";
+  const triggerType = item.triggerType ?? "";
+  return [
+    item.outputType,
+    stakeholderGroupId,
+    messageTemplateId,
+    briefMode,
+    exportFormat,
+    item.channel.trim(),
+    item.scheduleType,
+    String(cadenceMinutes),
+    String(triggerType),
+    item.title.trim(),
+  ].join("\u0001");
+}
+
+function deterministicSuggestionId(fingerprint: string) {
+  let h = 5381;
+  for (let i = 0; i < fingerprint.length; i++) h = ((h << 5) + h) ^ fingerprint.charCodeAt(i);
+  const u = (h >>> 0).toString(16);
+  return `sugg-${u}`;
 }
 
 function includesAny(name: string, needles: string[]) {
@@ -134,16 +161,26 @@ function nextDueFromCadence(now: Date, minutes: number) {
   return new Date(now.getTime() + minutes * 60_000).toISOString();
 }
 
-function dedupeByKey<T>(rows: T[], key: (row: T) => string) {
+function dedupeByKeyWithDroppedCount<T>(rows: T[], key: (row: T) => string): { rows: T[]; droppedDuplicateCount: number } {
   const out: T[] = [];
   const seen = new Set<string>();
+  let droppedDuplicateCount = 0;
   for (const r of rows) {
     const k = key(r);
-    if (seen.has(k)) continue;
+    if (seen.has(k)) {
+      droppedDuplicateCount++;
+      continue;
+    }
     seen.add(k);
     out.push(r);
   }
-  return out;
+  return { rows: out, droppedDuplicateCount };
+}
+
+/** Exposed for deterministic fixture checks — counts how many trailing rows share a fingerprint with an earlier row. */
+export function countDuplicateTemplateFingerprintsDropped(items: CreateCommsPlanItemInput[]): number {
+  const pseudo = items.map((item) => ({ item }));
+  return dedupeByKeyWithDroppedCount(pseudo, (r) => commsPlanTemplateFingerprint(r.item)).droppedDuplicateCount;
 }
 
 export function generateCommsPlanSuggestions(params: {
@@ -152,7 +189,11 @@ export function generateCommsPlanSuggestions(params: {
   audienceGroups: AudienceGroupLite[];
   now?: Date;
   defaultOwner?: string | null;
-}): { suggestions: PlanSuggestion[]; rejected: { why: string; item: unknown }[] } {
+}): {
+  suggestions: PlanSuggestion[];
+  validationRejected: ValidationRejectedRow[];
+  duplicateShapesHiddenInSuggestionBatch: number;
+} {
   const now = params.now ?? new Date();
   const defaultOwner = params.defaultOwner ?? null;
 
@@ -364,27 +405,30 @@ export function generateCommsPlanSuggestions(params: {
     }
   }
 
-  const deduped = dedupeByKey(base, (r) => {
-    const a = r.item.stakeholderGroupId ?? "general";
-    const b = r.item.outputType;
-    const c = r.item.messageTemplateId ?? r.item.exportFormat ?? r.item.briefMode ?? "none";
-    const d = r.item.scheduleType;
-    const e = r.item.triggerType ?? String(r.item.cadenceMinutes ?? "");
-    return [a, b, c, d, e].join("|");
-  });
+  const { rows: deduped, droppedDuplicateCount: duplicateShapesHiddenInSuggestionBatch } = dedupeByKeyWithDroppedCount(base, (r) =>
+    commsPlanTemplateFingerprint(r.item),
+  );
 
   const accepted: PlanSuggestion[] = [];
-  const rejected: { why: string; item: unknown }[] = [];
+  const validationRejected: ValidationRejectedRow[] = [];
+  const usedSuggestionIds = new Set<string>();
 
   for (const row of deduped) {
     const parsed = CreateCommsPlanItemInputSchema.safeParse(row.item);
     if (!parsed.success) {
-      rejected.push({ why: `Rejected by schema validation: ${parsed.error.issues.map((i) => i.message).join(" · ")}`, item: row.item });
+      validationRejected.push({
+        why: `Rejected by schema validation: ${parsed.error.issues.map((i) => i.message).join(" · ")}`,
+        item: row.item,
+      });
       continue;
     }
-    accepted.push({ id: uid("suggestion"), why: row.why, item: parsed.data });
+    const fp = commsPlanTemplateFingerprint(parsed.data);
+    let id = deterministicSuggestionId(fp);
+    if (usedSuggestionIds.has(id)) id = `${id}-${accepted.length}`;
+    usedSuggestionIds.add(id);
+    accepted.push({ id, why: row.why, item: parsed.data });
   }
 
-  return { suggestions: accepted, rejected };
+  return { suggestions: accepted, validationRejected, duplicateShapesHiddenInSuggestionBatch };
 }
 

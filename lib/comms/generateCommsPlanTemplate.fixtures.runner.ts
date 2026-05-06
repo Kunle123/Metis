@@ -4,13 +4,19 @@
  */
 import assert from "node:assert/strict";
 
-import { generateCommsPlanSuggestions } from "./generateCommsPlanTemplate";
+import {
+  commsPlanTemplateFingerprint,
+  countDuplicateTemplateFingerprintsDropped,
+  generateCommsPlanSuggestions,
+} from "./generateCommsPlanTemplate";
 
+/** RFC 4122 UUIDs (fixture-only) — Zod `stakeholderGroupId` rejects malformed UUID nibbles such as `-2222-2222—`. */
 const audienceGroups = [
-  { id: "11111111-1111-1111-1111-111111111111", name: "Board / Trustees" },
-  { id: "22222222-2222-2222-2222-222222222222", name: "Internal staff" },
-  { id: "33333333-3333-3333-3333-333333333333", name: "Students" },
-  { id: "44444444-4444-4444-4444-444444444444", name: "Media / Press" },
+  { id: "a0000001-0001-4001-8001-000000000001", name: "Board / Trustees" },
+  { id: "a0000001-0002-4002-8002-000000000002", name: "Internal staff" },
+  { id: "a0000001-0003-4003-8003-000000000003", name: "Students" },
+  { id: "a0000001-0004-4004-8004-000000000004", name: "Media / Press" },
+  { id: "a0000001-0005-4005-8005-000000000005", name: "Community residents" },
 ] as const;
 
 const operational = generateCommsPlanSuggestions({
@@ -21,6 +27,16 @@ const operational = generateCommsPlanSuggestions({
 });
 
 assert.ok(operational.suggestions.length >= 4, "operational incident should produce a baseline plan");
+assert.equal(operational.validationRejected.length, 0, "operational baseline should not emit schema validation rejects");
+assert.equal(
+  new Set(operational.suggestions.map((s) => commsPlanTemplateFingerprint(s.item))).size,
+  operational.suggestions.length,
+  "suggestion batch should not contain duplicate template fingerprints",
+);
+assert.ok(
+  operational.duplicateShapesHiddenInSuggestionBatch >= 0,
+  "duplicate hidden count should be exposed",
+);
 assert.ok(
   operational.suggestions.some((s) => s.item.outputType === "brief" && s.item.briefMode === "executive"),
   "should include executive brief cadence",
@@ -76,6 +92,23 @@ assert.ok(
   ),
   "student/customer/resident audience selection should map to external update template",
 );
+
+const staffAndCommunity = generateCommsPlanSuggestions({
+  eventType: "operational_incident",
+  selectedAudienceGroupIds: [audienceGroups[1].id, audienceGroups[4].id],
+  audienceGroups: [...audienceGroups],
+  now: new Date("2026-05-06T10:00:00.000Z"),
+});
+assert.equal(
+  staffAndCommunity.validationRejected.length,
+  0,
+  "staff + community audiences should not produce misleading schema validation rejects",
+);
+assert.ok(staffAndCommunity.suggestions.length >= 4, "staff + community should still yield a workable suggestion set");
+
+const sampleSuggestion = operational.suggestions[0];
+assert.ok(sampleSuggestion, "operational should yield at least one valid row for duplicate helper test");
+assert.equal(countDuplicateTemplateFingerprintsDropped([sampleSuggestion.item, sampleSuggestion.item]), 1);
 
 console.log("generateCommsPlanTemplate fixtures: OK");
 

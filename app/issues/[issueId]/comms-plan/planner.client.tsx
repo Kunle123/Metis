@@ -23,7 +23,12 @@ import { MessageVariantTemplateIdSchema, type MessageVariantTemplateId } from "@
 import { BriefModeSchema, type BriefMode } from "@metis/shared/briefVersion";
 import { ExportFormatSchema, type ExportFormat } from "@metis/shared/export";
 import type { CreateCommsPlanItemInput } from "@metis/shared/commsPlan";
-import { generateCommsPlanSuggestions, type CommsPlanEventType, type PlanSuggestion } from "@/lib/comms/generateCommsPlanTemplate";
+import {
+  generateCommsPlanSuggestions,
+  commsPlanTemplateFingerprint,
+  type CommsPlanEventType,
+  type PlanSuggestion,
+} from "@/lib/comms/generateCommsPlanTemplate";
 
 type AudienceGroup = { id: string; name: string };
 
@@ -53,6 +58,58 @@ function toDatetimeLocal(iso: string | null) {
   if (Number.isNaN(d.getTime())) return "";
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function fingerprintFromPlanItem(item: CommsPlanItem): string {
+  const payload: CreateCommsPlanItemInput = {
+    stakeholderGroupId: item.stakeholderGroupId ?? null,
+    title: item.title,
+    outputType: item.outputType,
+    messageTemplateId: item.messageTemplateId ?? undefined,
+    briefMode: item.briefMode ?? undefined,
+    exportFormat: item.exportFormat ?? undefined,
+    channel: item.channel,
+    scheduleType: item.scheduleType,
+    cadenceMinutes: item.cadenceMinutes ?? undefined,
+    triggerType: item.triggerType ?? undefined,
+    nextDueAt: item.nextDueAt ?? undefined,
+    owner: item.owner ?? undefined,
+    notes: item.notes ?? undefined,
+  };
+  return commsPlanTemplateFingerprint(payload);
+}
+
+function formatSuggestionListCount(n: number) {
+  if (n === 0) return "No suggestions";
+  if (n === 1) return "1 suggestion";
+  return `${n} suggestions`;
+}
+
+function buildSuggestionFeedbackLines(opts: {
+  duplicateShapesHiddenInSuggestionBatch: number;
+  hiddenAsAlreadyInPlan: number;
+  validationFailed: number;
+}): string[] {
+  const lines: string[] = [];
+  if (opts.duplicateShapesHiddenInSuggestionBatch > 0) {
+    const n = opts.duplicateShapesHiddenInSuggestionBatch;
+    lines.push(
+      `${n} duplicate suggestion row${n === 1 ? "" : "s"} hidden in this set — another row with the same template shape was kept.`,
+    );
+  }
+  if (opts.hiddenAsAlreadyInPlan > 0) {
+    const n = opts.hiddenAsAlreadyInPlan;
+    lines.push(`${n} duplicate suggestion${n === 1 ? "" : "s"} hidden because similar items are already in the active plan.`);
+  }
+  if (opts.validationFailed > 0) {
+    const n = opts.validationFailed;
+    lines.push(
+      n === 1
+        ? "1 template suggestion could not be used because it did not pass validation."
+        : `${n} template suggestions could not be used because they did not pass validation.`,
+    );
+  }
+  return lines;
 }
 
 function prepareHref(issueId: string, item: CommsPlanItem) {
@@ -100,7 +157,7 @@ export function CommsPlanClient({ issueId, initialItems, audienceGroups, default
   const [suggestEventType, setSuggestEventType] = useState<CommsPlanEventType>("operational_incident");
   const [suggestSelectedAudienceIds, setSuggestSelectedAudienceIds] = useState<Record<string, boolean>>({});
   const [suggestions, setSuggestions] = useState<PlanSuggestion[]>([]);
-  const [suggestRejected, setSuggestRejected] = useState<string | null>(null);
+  const [suggestNoticeLines, setSuggestNoticeLines] = useState<string[]>([]);
   const [addingSuggestionId, setAddingSuggestionId] = useState<string | null>(null);
   const [addingAll, setAddingAll] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -234,7 +291,7 @@ export function CommsPlanClient({ issueId, initialItems, audienceGroups, default
   }
 
   function generateSuggestedPlan() {
-    setSuggestRejected(null);
+    setSuggestNoticeLines([]);
     const selectedAudienceGroupIds = Object.entries(suggestSelectedAudienceIds)
       .filter(([, on]) => on)
       .map(([id]) => id);
@@ -246,10 +303,26 @@ export function CommsPlanClient({ issueId, initialItems, audienceGroups, default
       defaultOwner,
     });
 
-    setSuggestions(out.suggestions);
-    if (out.rejected.length) {
-      setSuggestRejected(`Some suggestions were rejected by validation (${out.rejected.length}).`);
+    const existingFp = new Set(items.map((i) => fingerprintFromPlanItem(i)));
+    let hiddenAsAlreadyInPlan = 0;
+    const filtered: typeof out.suggestions = [];
+    for (const s of out.suggestions) {
+      const fp = commsPlanTemplateFingerprint(s.item);
+      if (existingFp.has(fp)) {
+        hiddenAsAlreadyInPlan++;
+        continue;
+      }
+      filtered.push(s);
     }
+
+    setSuggestions(filtered);
+    setSuggestNoticeLines(
+      buildSuggestionFeedbackLines({
+        duplicateShapesHiddenInSuggestionBatch: out.duplicateShapesHiddenInSuggestionBatch,
+        hiddenAsAlreadyInPlan,
+        validationFailed: out.validationRejected.length,
+      }),
+    );
   }
 
   return (
@@ -318,13 +391,28 @@ export function CommsPlanClient({ issueId, initialItems, audienceGroups, default
           </div>
         </div>
 
-        {suggestRejected ? <p className="mt-3 text-sm text-amber-100/90">{suggestRejected}</p> : null}
+        {suggestNoticeLines.length ? (
+          <div className="mt-3 space-y-1.5">
+            {suggestNoticeLines.map((line, idx) => (
+              <p
+                key={idx}
+                className={cn(
+                  "text-sm leading-relaxed",
+                  line.includes("pass validation") ? "text-amber-100/90" : "text-[--metis-paper-muted]",
+                )}
+              >
+                {line}
+              </p>
+            ))}
+          </div>
+        ) : null}
 
         {suggestions.length ? (
           <div className="mt-4 space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="text-sm text-[--metis-paper-muted]">
-                {suggestions.length} suggested row{suggestions.length === 1 ? "" : "s"}
+                {formatSuggestionListCount(suggestions.length)}
+                {" — "}review below before adding to the active plan.
               </p>
               <Button
                 onClick={() => {
@@ -669,9 +757,17 @@ export function CommsPlanClient({ issueId, initialItems, audienceGroups, default
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
-                  <Button asChild variant="outline" disabled={isBusy}>
-                    <Link href={href}>Prepare</Link>
-                  </Button>
+                  {isBusy ? (
+                    <Button type="button" variant="outline" disabled>
+                      Prepare
+                    </Button>
+                  ) : (
+                    <Button asChild variant="outline">
+                      <Link href={href} prefetch={false}>
+                        Prepare
+                      </Link>
+                    </Button>
+                  )}
                   <Button
                     variant="outline"
                     disabled={isBusy || !canEditStatus}
