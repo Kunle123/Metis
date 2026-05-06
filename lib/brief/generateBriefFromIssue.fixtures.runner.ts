@@ -14,6 +14,16 @@ import {
 } from "./generateBriefFromIssue";
 import type { Gap, InternalInput, Issue, Source } from "@prisma/client";
 
+/** Executive Evidence base block avoids internal jargon and keeps an audit trail pointer. */
+function assertExecutiveEvidencePointerLanguage(which: string, body: string) {
+  assert.ok(!/placeholder/i.test(body), `${which}: avoid placeholder wording in Executive evidence`);
+  assert.ok(!/\bstub\b/i.test(body), `${which}: avoid stub wording in Executive evidence`);
+  assert.ok(!/\bsmoke\b/i.test(body), `${which}: avoid smoke wording in Executive evidence`);
+  assert.match(body, /complete source register/i, `${which}: should point reviewers to full register wording`);
+  assert.match(body, /Sources page/i, `${which}: should cite Sources page`);
+  assert.match(body, /Full brief/i, `${which}: should cite Full brief`);
+}
+
 const baseIssue: Issue = {
   id: "issue-1",
   title: "Sample board brief",
@@ -121,7 +131,7 @@ assert.ok(
 const execEvWithGaps = execGaps.executive.blocks.find((b) => b.label === "Evidence base")?.body ?? "";
 assert.ok(!execEvWithGaps.includes("SRC-"), "Executive evidence summary should not expose source codes");
 assert.ok(!execEvWithGaps.toLowerCase().includes("reliability not set"), 'Executive evidence should not surface "reliability not set"');
-assert.match(execEvWithGaps, /Full brief/i);
+assertExecutiveEvidencePointerLanguage("exec evidence with gaps", execEvWithGaps);
 
 /** Intake `issue.audience` fallback when Messages has no audience groups recorded. */
 const intakeAudienceOnly: BriefGenerationInput = {
@@ -209,6 +219,7 @@ const execEvReliabilityTwo = generateBriefFromIssue(
 assert.match(execEvReliabilityTwo, /\. Two linked .* lack/i, "sentence after a period should capitalise the spelled-out count");
 assert.match(execEvReliabilityTwo, /major-tier (media or broadcast|third-party)/i);
 assert.ok(!/Major media record/i.test(execEvReliabilityTwo), "avoid raw Major/media tier concatenations in prose");
+assertExecutiveEvidencePointerLanguage("exec evidence reliability mix", execEvReliabilityTwo);
 
 const tierOrderExec = generateBriefFromIssue(
   { issue: baseIssue, sources: [internalNewer, officialFirst], gaps: [], internalInputs: [] as InternalInput[] },
@@ -220,6 +231,7 @@ assert.ok(!/linked record\(s\)/i.test(evBody), "Executive evidence should read i
 assert.match(evBody, /official or public-facing/i);
 assert.match(evBody, /internal/i);
 assert.ok(!evBody.includes("SRC-"), "Executive evidence stays free of SRC codes despite ranked ordering");
+assertExecutiveEvidencePointerLanguage("exec evidence tier ordering", evBody);
 
 /** Full artifact evidence panel retains per-source SRC listing for auditability. */
 const fullTierEvidence = generateBriefFromIssue(
@@ -256,7 +268,13 @@ const execSmoke = generateBriefFromIssue(
 );
 const evSmoke = execSmoke.executive.blocks.find((b) => b.label === "Evidence base")?.body ?? "";
 assert.ok(!evSmoke.includes("SRC-SMOKE"));
-assert.ok(!/smoke test/i.test(evSmoke), "Executive evidence should not surface smoke-test titles");
+assertExecutiveEvidencePointerLanguage("exec evidence with mixed non-summarised links", evSmoke);
+
+const execNoSubstantiveSummary = generateBriefFromIssue(
+  { issue: baseIssue, sources: [smokeSource], gaps: [], internalInputs: [] as InternalInput[] },
+  "executive",
+).executive.blocks.find((b) => b.label === "Evidence base")?.body ?? "";
+assertExecutiveEvidencePointerLanguage("exec evidence without summarised substantive rows", execNoSubstantiveSummary);
 
 const clipped = trimForExecutiveClause(
   "Phase funding across operating envelopes (budget/planning/safety and environment teams) so each gate lines up with consultations",

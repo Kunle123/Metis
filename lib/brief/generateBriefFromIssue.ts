@@ -839,7 +839,7 @@ function evidenceExecutiveConfidenceSummary(rankedSources: Source[], totalLinked
   let body: string;
   if (!nSub) {
     body =
-      "Linked titles look like smoke or test scaffolding rather than substantive evidence—treat any leadership claim as unattributed until proper sources are uploaded.";
+      "Nothing in the current link set is summarised here as attributable evidence—treat leadership claims as provisional until Sources holds appropriate records for review.";
   } else {
     const strength = evidenceStrengthWord(nSub);
     const listClause = buildExecutiveTierQualityClause(counts);
@@ -857,13 +857,13 @@ function evidenceExecutiveConfidenceSummary(rankedSources: Source[], totalLinked
     } else body += " Reliability tags exist, but they do not imply causal proof—continue pairing them with tiers and reviewer judgement.";
 
     if (excludedSmoke && substantive.length)
-      body += ` ${englishNumberCapitalizedForSentenceStart(excludedSmoke)} additional linked ${excludedSmoke === 1 ? "title reads" : "titles read"} like a placeholder stub and stays out of this narrative; audit trails stay intact elsewhere.`;
+      body += ` ${englishNumberCapitalizedForSentenceStart(excludedSmoke)} additional linked ${excludedSmoke === 1 ? "record is" : "records are"} not summarised here; they remain in the registry for reviewers but are omitted from this high-level summary.`;
 
     body = body.trim();
   }
 
   const tail =
-    "\n\nFor source codes, snippets, placeholders, and the complete register—including anything omitted here—review the Sources page or the Evidence base panel in the Full brief.";
+    "\n\nFor source codes, excerpts, and the complete source register, review the Sources page or the Evidence base panel in the Full brief.";
 
   return `${body}\n\nThis summary is directional only; it does not establish facts beyond what intake and Sources themselves record.${tail}`;
 }
@@ -1092,7 +1092,9 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
     }
 
     if ((!rankedSources.length && (hasGaps || hasOq)) || rankedSources.every((s) => isSmokeOrTestLikeSourceTitle(s.title))) {
-      out.push("Link substantive sources so approvals can cite attributable material—not smoke-test placeholders—in the Sources register.");
+      out.push(
+        "Link substantive sources into the Sources register so approvals rest on attributable material reviewers can inspect line by line.",
+      );
     }
 
     if (orderedMessageAudienceNames.length) {
