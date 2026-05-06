@@ -7,7 +7,7 @@ import { rankInternalInputsForIssue, rankOpenGapsForIssue, rankSourcesForIssue }
 import { IssueActivityKinds } from "@/lib/issues/activityKinds";
 import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
 import { requireMutation } from "@/lib/governance/requireMutation";
-import { synthesizeBriefExecutiveSummary } from "@/lib/ai/synthesizeBrief";
+import { synthesizeBriefAlternateWording, synthesizeBriefExecutiveSummary } from "@/lib/ai/synthesizeBrief";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const user = await requireMutation(request);
@@ -72,10 +72,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const synthesisEnabled = process.env.BRIEF_AI_SYNTHESIS_ENABLED === "true";
 
   const artifact = await (async () => {
-    if (parsed.data.mode !== "full") return artifactDeterministic;
-
-    const exec = artifactDeterministic.full.sections.find((s) => s.id === "executive-summary");
-    if (!exec?.body?.trim()) return artifactDeterministic;
+    if (parsed.data.mode !== "full" && parsed.data.mode !== "executive") return artifactDeterministic;
 
     if (!synthesisEnabled) return artifactDeterministic;
 
@@ -119,7 +116,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       ? `Audience note: ${audienceNote}`
       : "No specific audience note is recorded on the issue.";
 
-    const rewrite = await synthesizeBriefExecutiveSummary({
+    const synthesisInput = {
       issue: {
         title: issue.title,
         summary: issue.summary,
@@ -131,40 +128,93 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       topTrackerOpenQuestions: openTracker,
       topSources,
       topObservations,
-      deterministicExecutiveSummaryBody: exec.body,
-    });
+      deterministicExecutiveSummaryBody: "",
+    };
 
-    if (rewrite?.rewrite?.trim()) {
+    const items = [];
+
+    if (parsed.data.mode === "full") {
+      const exec = artifactDeterministic.full.sections.find((s) => s.id === "executive-summary");
+      if (!exec?.body?.trim()) return artifactDeterministic;
+
+      synthesisInput.deterministicExecutiveSummaryBody = exec.body;
+      const rewrite = await synthesizeBriefExecutiveSummary(synthesisInput);
+
+      const fullTarget = { mode: "full" as const, kind: "section" as const, id: "executive-summary" };
+      if (rewrite?.rewrite?.trim()) {
+        items.push({
+          target: fullTarget,
+          status: "succeeded" as const,
+          attemptedAtIso,
+          aiAlternateBody: rewrite.rewrite,
+          ...(rewrite.limitations?.trim() ? { limitations: rewrite.limitations.trim() } : {}),
+        });
+      } else {
+        items.push({
+          target: fullTarget,
+          status: "failed" as const,
+          attemptedAtIso,
+        });
+      }
+
       const updated = {
         ...artifactDeterministic,
+        alternateWording: { items },
         full: {
           ...artifactDeterministic.full,
-          executiveSummarySynthesis: {
-            status: "succeeded" as const,
-            attemptedAtIso,
-            aiEnhancedBody: rewrite.rewrite,
-            ...(rewrite.limitations?.trim() ? { limitations: rewrite.limitations.trim() } : {}),
-          },
+          // Legacy: keep existing Full-only field for back-compat while also writing unified metadata.
+          executiveSummarySynthesis: rewrite?.rewrite?.trim()
+            ? {
+                status: "succeeded" as const,
+                attemptedAtIso,
+                aiEnhancedBody: rewrite.rewrite,
+                ...(rewrite.limitations?.trim() ? { limitations: rewrite.limitations.trim() } : {}),
+              }
+            : {
+                status: "failed" as const,
+                attemptedAtIso,
+              },
         },
       };
+
       const validated = BriefArtifactSchema.safeParse(updated);
       if (!validated.success) return artifactDeterministic;
       return validated.data;
     }
 
-    const withFailed = {
+    const execBlock = artifactDeterministic.executive.blocks.find((b) => b.label.trim() === "Executive summary");
+    if (!execBlock?.body?.trim()) return artifactDeterministic;
+
+    synthesisInput.deterministicExecutiveSummaryBody = execBlock.body;
+    const rewrite = await synthesizeBriefAlternateWording({
+      input: synthesisInput,
+      targetLabel: 'Executive brief “Executive summary” block',
+    });
+
+    const execTarget = { mode: "executive" as const, kind: "block" as const, id: "Executive summary" };
+    if (rewrite?.rewrite?.trim()) {
+      items.push({
+        target: execTarget,
+        status: "succeeded" as const,
+        attemptedAtIso,
+        aiAlternateBody: rewrite.rewrite,
+        ...(rewrite.limitations?.trim() ? { limitations: rewrite.limitations.trim() } : {}),
+      });
+    } else {
+      items.push({
+        target: execTarget,
+        status: "failed" as const,
+        attemptedAtIso,
+      });
+    }
+
+    const updated = {
       ...artifactDeterministic,
-      full: {
-        ...artifactDeterministic.full,
-        executiveSummarySynthesis: {
-          status: "failed" as const,
-          attemptedAtIso,
-        },
-      },
+      alternateWording: { items },
     };
-    const validatedFailed = BriefArtifactSchema.safeParse(withFailed);
-    if (!validatedFailed.success) return artifactDeterministic;
-    return validatedFailed.data;
+    const validated = BriefArtifactSchema.safeParse(updated);
+    if (!validated.success) return artifactDeterministic;
+    return validated.data;
   })();
 
   const created = await prisma.$transaction(async (tx) => {

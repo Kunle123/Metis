@@ -30,6 +30,37 @@ export const ExecutiveSummarySynthesisSchema = z.discriminatedUnion("status", [
 ]);
 export type ExecutiveSummarySynthesis = z.infer<typeof ExecutiveSummarySynthesisSchema>;
 
+export const BriefAlternateWordingTargetSchema = z.object({
+  mode: BriefModeSchema,
+  kind: z.union([z.literal("section"), z.literal("block")]),
+  id: z.string(),
+});
+export type BriefAlternateWordingTarget = z.infer<typeof BriefAlternateWordingTargetSchema>;
+
+export const BriefAlternateWordingItemSchema = z.discriminatedUnion("status", [
+  z.object({
+    target: BriefAlternateWordingTargetSchema,
+    status: z.literal("succeeded"),
+    attemptedAtIso: z.string(),
+    aiAlternateBody: z.string(),
+    limitations: z.string().optional(),
+    deterministicFingerprint: z.string().optional(),
+  }),
+  z.object({
+    target: BriefAlternateWordingTargetSchema,
+    status: z.literal("failed"),
+    attemptedAtIso: z.string(),
+    limitations: z.string().optional(),
+    deterministicFingerprint: z.string().optional(),
+  }),
+]);
+export type BriefAlternateWordingItem = z.infer<typeof BriefAlternateWordingItemSchema>;
+
+export const BriefAlternateWordingSchema = z.object({
+  items: z.array(BriefAlternateWordingItemSchema),
+});
+export type BriefAlternateWording = z.infer<typeof BriefAlternateWordingSchema>;
+
 export const BriefArtifactSchema = z.object({
   lede: z.string(),
   metadata: z.object({
@@ -38,6 +69,7 @@ export const BriefArtifactSchema = z.object({
     lastRevisionLabel: z.string(),
     openGapsLabel: z.string(),
   }),
+  alternateWording: BriefAlternateWordingSchema.optional(),
   full: z.object({
     sections: z.array(
       z.object({

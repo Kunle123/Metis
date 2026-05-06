@@ -3,7 +3,7 @@ import { z } from "zod";
 const OPENAI_DEFAULT_MODEL = "gpt-4o-mini";
 const MAX_REWRITE_CHARS = 1200;
 
-const BriefSynthesisResponseSchema = z.object({
+const BriefSynthesisResponseV1Schema = z.object({
   rewrites: z.object({
     full: z
       .object({
@@ -14,7 +14,28 @@ const BriefSynthesisResponseSchema = z.object({
   limitations: z.string().optional().default(""),
 });
 
-export type BriefSynthesisResponse = z.infer<typeof BriefSynthesisResponseSchema>;
+const BriefSynthesisResponseV2Schema = z.object({
+  rewrite: z.string().optional(),
+  limitations: z.string().optional().default(""),
+});
+
+type ParsedRewrite = { rewrite: string; limitations: string };
+
+function parseRewritePayload(input: unknown): ParsedRewrite | null {
+  const v2 = BriefSynthesisResponseV2Schema.safeParse(input);
+  if (v2.success) {
+    const rewrite = (v2.data.rewrite ?? "").trim();
+    return { rewrite, limitations: v2.data.limitations ?? "" };
+  }
+
+  const v1 = BriefSynthesisResponseV1Schema.safeParse(input);
+  if (v1.success) {
+    const rewrite = (v1.data.rewrites.full?.["executive-summary"] ?? "").trim();
+    return { rewrite, limitations: v1.data.limitations ?? "" };
+  }
+
+  return null;
+}
 
 function parseJsonObjectFromAssistantContent(content: string): unknown {
   const trimmed = content.trim();
@@ -78,7 +99,7 @@ Safety rules (must follow):
 - Do not mention that you are an AI or refer to models/prompting.`;
 
 const USER_SCHEMA = `Return a single JSON object with exactly these keys:
-- rewrites: { full: { "executive-summary": string } }
+- rewrite: string
 - limitations: string`;
 
 export type BriefSynthesisInput = {
@@ -96,9 +117,10 @@ export type BriefSynthesisInput = {
   deterministicExecutiveSummaryBody: string;
 };
 
-export async function synthesizeBriefExecutiveSummary(
-  input: BriefSynthesisInput,
-): Promise<{ rewrite: string; limitations: string } | null> {
+export async function synthesizeBriefAlternateWording(params: {
+  input: BriefSynthesisInput;
+  targetLabel: string;
+}): Promise<{ rewrite: string; limitations: string } | null> {
   const enabled = process.env.BRIEF_AI_SYNTHESIS_ENABLED === "true";
   if (!enabled) return null;
 
@@ -107,9 +129,10 @@ export async function synthesizeBriefExecutiveSummary(
 
   const model = process.env.OPENAI_MODEL?.trim() || OPENAI_DEFAULT_MODEL;
 
-  const payload = JSON.stringify(input);
+  const payload = JSON.stringify(params.input);
   const allowedNumbers = collectAllowedNumberTokens(payload);
-  const hasOpenQuestions = input.issue.openQuestionsIntake.length > 0 || input.topTrackerOpenQuestions.length > 0;
+  const hasOpenQuestions =
+    params.input.issue.openQuestionsIntake.length > 0 || params.input.topTrackerOpenQuestions.length > 0;
 
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
@@ -129,13 +152,13 @@ export async function synthesizeBriefExecutiveSummary(
           content: `${USER_SCHEMA}
 
 Task:
-Rewrite ONLY the Full brief executive summary body as a single concise paragraph (optionally 2 short paragraphs max). It must read like a leadership briefing note.
+Rewrite ONLY the ${params.targetLabel} as a single concise paragraph (optionally 2 short paragraphs max). It must read like a leadership briefing note.
 
 Constraints:
 - Do not add any new facts. Use only what is present in the input JSON.
 - Do not resolve or answer open questions.
 - If open questions exist, include at least one explicit uncertainty marker (e.g. "open questions remain", "not yet confirmed", "subject to change").
-- If polishing might shift meaning, tighten confidence, remove caveats, or hide ambiguity compared with the deterministic paragraph, omit the rewrite (omit rewrites.full["executive-summary"] or use an unusable placeholder so the system keeps deterministic wording).
+- If polishing might shift meaning, tighten confidence, remove caveats, or hide ambiguity compared with the deterministic paragraph, omit the rewrite (return an empty or unusable rewrite so the system keeps deterministic wording).
 - Keep it under ${MAX_REWRITE_CHARS} characters.
 
 Input JSON:
@@ -160,10 +183,10 @@ ${payload}`,
     return null;
   }
 
-  const safe = BriefSynthesisResponseSchema.safeParse(parsed);
-  if (!safe.success) return null;
+  const safe = parseRewritePayload(parsed);
+  if (!safe) return null;
 
-  const rewritten = safe.data.rewrites.full?.["executive-summary"]?.trim() ?? "";
+  const rewritten = safe.rewrite.trim();
   if (
     !isBriefExecutiveSummaryRewriteSafe({
       rewritten,
@@ -175,6 +198,15 @@ ${payload}`,
     return null;
   }
 
-  return { rewrite: rewritten, limitations: safe.data.limitations ?? "" };
+  return { rewrite: rewritten, limitations: safe.limitations ?? "" };
+}
+
+export async function synthesizeBriefExecutiveSummary(
+  input: BriefSynthesisInput,
+): Promise<{ rewrite: string; limitations: string } | null> {
+  return synthesizeBriefAlternateWording({
+    input,
+    targetLabel: "Full brief executive summary body",
+  });
 }
 

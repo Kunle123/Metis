@@ -15,6 +15,7 @@ import { GenerateBriefButton } from "@/app/brief/generate-brief-button";
 import { IntakeSuggestionsPanel } from "@/app/issues/[issueId]/brief/intake-suggestions-panel";
 import { BriefModeToggle } from "@/app/issues/[issueId]/brief/brief-mode-toggle";
 import { BriefExecutiveSummaryCompare } from "@/app/issues/[issueId]/brief/brief-executive-summary-compare";
+import { getAlternateWordingForTarget } from "@/lib/brief/alternateWording";
 
 export const dynamic = "force-dynamic";
 
@@ -72,6 +73,16 @@ export default async function IssueBriefPage({
   const briefVersion = await getLatestBriefVersion(issue.id, mode);
   const artifact = (briefVersion?.artifact ?? null) as BriefArtifact | null;
   const hasBriefForMode = Boolean(artifact);
+  const fullExecAlternateWording = getAlternateWordingForTarget(artifact, {
+    mode: "full",
+    kind: "section",
+    id: "executive-summary",
+  });
+  const executiveExecAlternateWording = getAlternateWordingForTarget(artifact, {
+    mode: "executive",
+    kind: "block",
+    id: "Executive summary",
+  });
   const briefSyncHint = (() => {
     if (!hasBriefForMode) {
       return "No stored brief for this mode.";
@@ -269,7 +280,7 @@ export default async function IssueBriefPage({
                         {section.id === "executive-summary" ? (
                           <BriefExecutiveSummaryCompare
                             deterministicBody={section.body}
-                            synthesis={artifact.full.executiveSummarySynthesis}
+                            alternateWording={fullExecAlternateWording}
                             briefAiSynthesisEnabled={briefAiSynthesisEnabled}
                           />
                         ) : (
@@ -309,7 +320,15 @@ export default async function IssueBriefPage({
                       title={<span className="text-base font-semibold leading-6 text-[--metis-text-primary]">{block.label}</span>}
                       className={index === 0 ? "border-t-0 pt-0" : undefined}
                     >
-                      <p className="max-w-4xl whitespace-pre-line leading-7 text-[--metis-text-secondary]">{block.body}</p>
+                      {block.label.trim() === "Executive summary" ? (
+                        <BriefExecutiveSummaryCompare
+                          deterministicBody={block.body}
+                          alternateWording={executiveExecAlternateWording}
+                          briefAiSynthesisEnabled={briefAiSynthesisEnabled}
+                        />
+                      ) : (
+                        <p className="max-w-4xl whitespace-pre-line leading-7 text-[--metis-text-secondary]">{block.body}</p>
+                      )}
                     </DenseSection>
                   ))}
                   </div>
