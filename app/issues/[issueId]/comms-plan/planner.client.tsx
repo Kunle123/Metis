@@ -93,6 +93,8 @@ export function CommsPlanClient({ issueId, initialItems, audienceGroups, default
   const [items, setItems] = useState<CommsPlanItem[]>(initialItems);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [skipOpenId, setSkipOpenId] = useState<string | null>(null);
+  const [skipDraftById, setSkipDraftById] = useState<Record<string, string>>({});
   const [creating, setCreating] = useState(false);
   const [createDraft, setCreateDraft] = useState({
     title: "",
@@ -186,6 +188,13 @@ export function CommsPlanClient({ issueId, initialItems, audienceGroups, default
     } finally {
       setBusyId(null);
     }
+  }
+
+  async function confirmSkip(id: string) {
+    const reason = (skipDraftById[id] ?? "").trim();
+    if (!reason) return;
+    await patchItem(id, { status: "skipped" as CommsPlanStatus, skipReason: reason });
+    setSkipOpenId(null);
   }
 
   async function deleteItem(id: string) {
@@ -421,6 +430,9 @@ export function CommsPlanClient({ issueId, initialItems, audienceGroups, default
           const due = dueState(item, now);
           const href = prepareHref(issueId, item);
           const isBusy = busyId === item.id;
+          const skipOpen = skipOpenId === item.id;
+          const skipDraft = skipDraftById[item.id] ?? "";
+          const canEditStatus = item.status !== "sent" && item.status !== "skipped";
           const owner = item.owner?.trim() || "—";
           const audience = item.stakeholderGroupName ?? (item.stakeholderGroupId ? "Audience group" : "General (no audience group)");
 
@@ -458,24 +470,24 @@ export function CommsPlanClient({ issueId, initialItems, audienceGroups, default
                   </Button>
                   <Button
                     variant="outline"
-                    disabled={isBusy || item.status === "sent" || item.status === "skipped"}
+                    disabled={isBusy || !canEditStatus}
                     onClick={() => void patchItem(item.id, { status: "prepared" as CommsPlanStatus })}
                   >
                     Mark prepared
                   </Button>
                   <Button
                     variant="outline"
-                    disabled={isBusy || item.status === "sent" || item.status === "skipped"}
+                    disabled={isBusy || !canEditStatus}
                     onClick={() => void patchItem(item.id, { status: "sent" as CommsPlanStatus })}
                   >
                     Mark sent
                   </Button>
                   <Button
                     variant="outline"
-                    disabled={isBusy || item.status === "sent" || item.status === "skipped"}
+                    disabled={isBusy || !canEditStatus}
                     onClick={() => {
-                      const reason = prompt("Skip reason (required):") ?? "";
-                      void patchItem(item.id, { status: "skipped" as CommsPlanStatus, skipReason: reason });
+                      setSkipOpenId((cur) => (cur === item.id ? null : item.id));
+                      setSkipDraftById((cur) => ({ ...cur, [item.id]: cur[item.id] ?? item.skipReason ?? "" }));
                     }}
                   >
                     Skip
@@ -485,6 +497,44 @@ export function CommsPlanClient({ issueId, initialItems, audienceGroups, default
                   </Button>
                 </div>
               </div>
+
+              {skipOpen ? (
+                <div className="mt-4 rounded-[1.15rem] border border-white/10 bg-[rgba(0,0,0,0.18)] px-4 py-4">
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                    <div className="min-w-0 flex-1">
+                      <label className="block space-y-2">
+                        <span className="text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">Skip reason</span>
+                        <Textarea
+                          value={skipDraft}
+                          onChange={(e) => setSkipDraftById((cur) => ({ ...cur, [item.id]: e.target.value }))}
+                          placeholder="Explain why this communication is being skipped."
+                        />
+                      </label>
+                      <p className="mt-2 text-xs text-[--metis-paper-muted]">Explain why this communication is being skipped.</p>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button disabled={isBusy || skipDraft.trim().length === 0} onClick={() => void confirmSkip(item.id)}>
+                        Confirm skip
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        disabled={isBusy}
+                        onClick={() => {
+                          setSkipOpenId(null);
+                          setSkipDraftById((cur) => {
+                            const next = { ...cur };
+                            delete next[item.id];
+                            return next;
+                          });
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
             </div>
           );
         })}
