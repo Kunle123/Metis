@@ -258,20 +258,28 @@ export function MetisShell({
     const Wrap: any = disabled ? "div" : Link;
     const wrapProps = disabled ? { role: "link", "aria-disabled": "true" as const } : { href };
 
+    const navState = disabled ? "disabled" : isActive ? "active" : "inactive";
+
     return (
       <Wrap
         {...wrapProps}
-        className={cn(base, disabled ? disabledCls : isActive ? active : inactive, disabled && "cursor-not-allowed")}
+        data-metis-shell-nav-item-state={navState}
+        className={cn(
+          "metis-shell-nav-item",
+          base,
+          disabled ? disabledCls : isActive ? active : inactive,
+          disabled && "cursor-not-allowed",
+        )}
       >
         <span
           className={cn(
-            "absolute inset-y-2 left-1 w-[5px] rounded-full bg-transparent transition duration-300",
+            "metis-shell-nav-rail-accent absolute inset-y-2 left-1 w-[5px] rounded-full bg-transparent transition duration-300",
             isActive && !disabled && "bg-[--metis-brass-soft] shadow-[0_0_24px_rgba(224,183,111,0.5)]",
           )}
         />
         <span
           className={cn(
-            "mt-0.5 h-2 w-2 shrink-0 rounded-full border border-white/10 bg-white/10 shadow-[0_0_0_3px_rgba(255,255,255,0.02)]",
+            "metis-shell-nav-bullet mt-0.5 h-2 w-2 shrink-0 rounded-full border border-white/10 bg-white/10 shadow-[0_0_0_3px_rgba(255,255,255,0.02)]",
             isActive &&
               !disabled &&
               "border-[--metis-brass-soft]/70 bg-[--metis-brass-soft] shadow-[0_0_0_4px_rgba(224,183,111,0.16)]",
@@ -282,7 +290,7 @@ export function MetisShell({
           <div className="flex items-center justify-between gap-2">
             <span
               className={cn(
-                "text-sm font-medium text-[--metis-paper]",
+                "metis-shell-nav-label text-sm font-medium text-[--metis-paper]",
                 disabled && "text-[--metis-paper-muted]",
                 isActive && !disabled && "text-white",
               )}
@@ -291,7 +299,7 @@ export function MetisShell({
             </span>
             <ChevronRight
               className={cn(
-                "h-3.5 w-3.5 shrink-0 text-[--metis-ink-soft] transition duration-300",
+                "metis-shell-nav-chevron h-3.5 w-3.5 shrink-0 text-[--metis-ink-soft] transition duration-300",
                 disabled
                   ? "opacity-15"
                   : isActive
@@ -341,8 +349,9 @@ export function MetisShell({
           </p>
           {metaPill ? (
             <span
+              data-metis-shell-nav-pill-tone={metaPill === "Select issue" ? "muted" : "brass"}
               className={cn(
-                "rounded-full border px-2 py-0.5 text-[0.52rem] uppercase tracking-[0.26em]",
+                "metis-shell-nav-pill rounded-full border px-2 py-0.5 text-[0.52rem] uppercase tracking-[0.26em]",
                 metaPill === "Select issue"
                   ? "border-white/10 bg-white/5 text-[--metis-ink-soft]"
                   : "border-[--metis-brass]/20 bg-[--metis-brass]/10 text-[--metis-brass-soft]",
@@ -351,7 +360,10 @@ export function MetisShell({
               {metaPill}
             </span>
           ) : activeGroupLabel && group === activeGroupLabel ? (
-            <span className="rounded-full border border-[--metis-brass]/20 bg-[--metis-brass]/10 px-2 py-0.5 text-[0.52rem] uppercase tracking-[0.26em] text-[--metis-brass-soft]">
+            <span
+              data-metis-shell-nav-pill-tone="brass"
+              className="metis-shell-nav-pill rounded-full border border-[--metis-brass]/20 bg-[--metis-brass]/10 px-2 py-0.5 text-[0.52rem] uppercase tracking-[0.26em] text-[--metis-brass-soft]"
+            >
               Active
             </span>
           ) : null}
@@ -373,9 +385,9 @@ export function MetisShell({
       <div className="relative grid lg:grid-cols-[286px_minmax(0,1fr)]">
         <aside className="metis-shell-aside hidden border-r border-white/6 bg-[linear-gradient(180deg,rgba(7,10,11,0.99),rgba(11,15,16,0.985))] px-6 py-8 lg:flex lg:flex-col lg:justify-between">
           <div className="space-y-8">
-            <div className="space-y-4 border-b border-white/8 pb-7">
+            <div className="metis-shell-aside-header space-y-4 border-b border-white/8 pb-7">
               <div className="inline-flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-white/5 shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
+                <div className="metis-shell-aside-brand-mark flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-white/5 shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
                   <span className="font-[Cormorant_Garamond] text-2xl text-[--metis-paper]">M</span>
                 </div>
                 <div>
