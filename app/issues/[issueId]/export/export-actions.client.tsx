@@ -1,10 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, Copy, Download, FileText, Mail, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { ReviewRailCard } from "@/components/review/ReviewRailCard";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import type { ExportFormat } from "@metis/shared/export";
 import type { CirculationChannel, CirculationEventType } from "@metis/shared/circulation";
@@ -29,7 +31,6 @@ type Props = {
   sourceBriefRevisionLabel: string;
   executiveBriefUsesFullBriefFallback: boolean;
   previewTitle: string;
-  previewMeta: { label: string; value: string }[];
   previewContent: string;
   previewMimeType: PreviewMime;
   eventTypes: { prepared: CirculationEventType; downloaded: CirculationEventType; copied: CirculationEventType };
@@ -114,6 +115,37 @@ async function writePackageToClipboard(mimeType: string, content: string): Promi
   }
   await navigator.clipboard.writeText(plain);
   return "plain_text_fallback";
+}
+
+/** Shared shells — surface rhythm only; does not change structure or behavior. */
+const STEP_PANEL =
+  "rounded-[1.25rem] border border-white/[0.08] bg-[rgba(255,255,255,0.025)] px-4 py-4 sm:px-5 sm:py-4 border-l-[3px] border-l-[rgba(224,183,111,0.45)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]";
+
+const SECONDARY_PATH =
+  "rounded-[var(--metis-control-radius-md)] border border-dashed border-white/15 bg-[rgba(18,86,118,0.12)] px-4 py-3";
+
+const ADDITIONAL_DOWNLOAD =
+  "rounded-[var(--metis-control-radius-md)] border border-white/[0.1] bg-[rgba(255,255,255,0.03)] px-4 py-3 border-l-2 border-l-white/25";
+
+const PREVIEW_SHELL =
+  "rounded-[var(--metis-control-radius-md)] border border-white/12 bg-[rgba(0,0,0,0.14)] px-4 py-4 sm:px-5 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]";
+
+/** Wraps optional email-ready + DOCX; not numbered like steps 1–4. */
+const OPTIONAL_OUTPUTS_GROUP =
+  "rounded-[var(--metis-control-radius-md)] border border-white/[0.06] bg-[rgba(255,255,255,0.015)] px-4 py-4 space-y-4 max-w-xl";
+
+function stepLabel(n: string, title: string) {
+  return (
+    <div className="flex items-center gap-2.5">
+      <span
+        className="inline-flex h-6 min-w-6 shrink-0 items-center justify-center rounded-md border border-white/10 bg-[rgba(255,255,255,0.07)] text-[0.65rem] font-semibold tabular-nums text-[--metis-brass-soft]"
+        aria-hidden
+      >
+        {n}
+      </span>
+      <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">{title}</p>
+    </div>
+  );
 }
 
 export function ExportActionsClient(props: Props) {
@@ -214,88 +246,74 @@ export function ExportActionsClient(props: Props) {
     }
   };
 
+  const showEmailReadySecondary = props.selectedFormat !== "email-ready";
+  const showOptionalOutputsSection = showEmailReadySecondary || Boolean(props.docxBetaDownloadUrl);
+
   return (
-    <div className="space-y-4">
-      {props.selectedFormat !== "email-ready" ? (
-        <div className="max-w-xl space-y-2">
-          <SegmentedControl<DeliverTab>
-            label="Export output"
-            value={props.exportPreviewOutput}
-            disabled={busy !== null}
-            options={[
-              { id: "markdown", label: "Markdown" },
-              { id: "html", label: "HTML" },
-            ]}
-            onChange={(next) => navigateDelivery(next)}
-          />
-          <p className="text-xs leading-relaxed text-[--metis-paper-muted]">
-            Download and copy create a stored package snapshot from <span className="text-[--metis-paper]">{props.sourceBriefRevisionLabel}</span>.{" "}
-            <span className="text-[--metis-paper]">Markdown</span> — portable source you can move into docs or repositories.{" "}
-            <span className="text-[--metis-paper]">HTML</span> — formatted for browser or rich paste; copy tries HTML with a plain-text
-            fallback.
-          </p>
+    <div className="space-y-6">
+      <div className={`${STEP_PANEL} space-y-5`}>
+        {/* Step 2 — Output format */}
+        <div className="space-y-2">
+          {stepLabel("2", "Output format")}
+          {props.selectedFormat !== "email-ready" ? (
+            <div className="max-w-xl space-y-2">
+              <SegmentedControl<DeliverTab>
+                label="Output format"
+                value={props.exportPreviewOutput}
+                disabled={busy !== null}
+                options={[
+                  { id: "markdown", label: "Markdown" },
+                  { id: "html", label: "HTML" },
+                ]}
+                onChange={(next) => navigateDelivery(next)}
+              />
+              <p className="text-xs leading-relaxed text-[--metis-paper-muted]">
+                Download and copy create a stored package snapshot from <span className="text-[--metis-paper]">{props.sourceBriefRevisionLabel}</span>.{" "}
+                <span className="text-[--metis-paper]">Markdown</span> — portable source.{" "}
+                <span className="text-[--metis-paper]">HTML</span> — formatted for browser or rich paste; copy tries HTML with a plain-text fallback.
+              </p>
+            </div>
+          ) : (
+            <p className="max-w-xl text-xs leading-relaxed text-[--metis-paper-muted]">
+              This package is <span className="text-[--metis-paper]">plain text only</span> (not Markdown/HTML encoding). Copy and download use the email-ready
+              circulation draft from <span className="text-[--metis-paper]">{props.sourceBriefRevisionLabel}</span>.
+            </p>
+          )}
         </div>
-      ) : (
-          <p className="text-xs leading-relaxed text-[--metis-paper-muted]">
-            Email-ready is a <span className="text-[--metis-paper]">plain circulation draft</span> from{" "}
-            <span className="text-[--metis-paper]">{props.sourceBriefRevisionLabel}</span> (not HTML). Switch to a Markdown or HTML package for rich layout
-            and optional <span className="text-[--metis-paper]">DOCX beta</span> download (on-demand; not the same as stored package history).
-          </p>
-      )}
 
-      {props.docxBetaDownloadUrl ? (
-        <div className="max-w-xl space-y-2 rounded-[var(--metis-control-radius-md)] border border-[--metis-outline-subtle] bg-[rgba(255,255,255,0.03)] px-4 py-3">
-          <p className="text-xs leading-relaxed text-[--metis-paper-muted]">
-            <span className="text-[--metis-paper]">DOCX beta</span>: Word-compatible file generated on demand from{" "}
-            <span className="text-[--metis-paper]">{props.sourceBriefRevisionLabel}</span>. Formatting may differ from the HTML preview. Stored export packages
-            and circulation logging apply to Markdown/HTML/plain downloads from this flow — not the DOCX beta file.
-          </p>
-          <Button asChild variant="outline" className="w-fit justify-start">
-            <a href={props.docxBetaDownloadUrl}>
-              <FileText className="mr-2 h-4 w-4" />
-              Download DOCX beta
-            </a>
-          </Button>
+        <div className="border-t border-white/[0.08]" aria-hidden />
+
+        {/* Step 3 — Copy / download (current package only) */}
+        <div className="space-y-2">
+          {stepLabel("3", "Copy / download")}
+          <section className="grid max-w-xl gap-3 sm:grid-cols-2">
+            <Button
+              type="button"
+              className="w-full justify-start"
+              disabled={busy !== null}
+              onClick={() => doDownload(props.selectedFormat, props.channels.file)}
+            >
+              <Download className="mr-2 h-4 w-4" />
+              {busy === "download" ? "Preparing…" : "Download package file"}
+            </Button>
+
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full justify-start"
+              disabled={busy !== null}
+              onClick={() => doCopy(props.selectedFormat, props.channels.copy)}
+            >
+              <Copy className="mr-2 h-4 w-4 text-[--metis-brass]" />
+              {busy === "copy" || (props.selectedFormat === "email-ready" && busy === "email") ? "Copying…" : copyLabel}
+            </Button>
+          </section>
         </div>
-      ) : null}
-
-      <section className="grid gap-3 border-t border-white/8 pt-6 sm:grid-cols-3">
-        <Button
-          type="button"
-          className="w-full justify-start"
-          disabled={busy !== null}
-          onClick={() => doDownload(props.selectedFormat, props.channels.file)}
-        >
-          <Download className="mr-2 h-4 w-4" />
-          {busy === "download" ? "Preparing…" : "Download package file"}
-        </Button>
-
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full justify-start"
-          disabled={busy !== null}
-          onClick={() => doCopy(props.selectedFormat, props.channels.copy)}
-        >
-          <Copy className="mr-2 h-4 w-4 text-[--metis-brass]" />
-          {busy === "copy" ? "Copying…" : copyLabel}
-        </Button>
-
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full justify-start"
-          disabled={busy !== null}
-          onClick={() => doCopy("email-ready", props.channels.email)}
-        >
-          <Mail className="mr-2 h-4 w-4 text-[--metis-brass]" />
-          {busy === "email" ? "Preparing…" : "Copy email-ready package"}
-        </Button>
-      </section>
+      </div>
 
       {message ? (
         <div
-          className={`flex items-center justify-between gap-3 rounded-[1rem] border px-4 py-3 text-sm ${
+          className={`flex max-w-xl items-center justify-between gap-3 rounded-[1rem] border px-4 py-3 text-sm ${
             message.tone === "ok"
               ? "border-emerald-400/25 bg-[rgba(18,83,58,0.35)] text-emerald-50"
               : "border-rose-400/25 bg-[rgba(118,27,46,0.35)] text-rose-50"
@@ -311,15 +329,88 @@ export function ExportActionsClient(props: Props) {
         </div>
       ) : null}
 
-      <section className="rounded-[var(--metis-control-radius-md)] border border-[--metis-outline-subtle] bg-[rgba(255,255,255,0.035)] p-4">
+      {showOptionalOutputsSection ? (
+        <section className={OPTIONAL_OUTPUTS_GROUP} aria-label="Additional output options">
+          <div className="space-y-1">
+            <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Additional output options</p>
+            <p className="text-xs leading-relaxed text-[--metis-paper-muted]">
+              <span className="text-[--metis-paper]">Optional</span> — you have already finished the main flow after copy or download. Use these only if you need an
+              extra format.
+            </p>
+          </div>
+
+          {/* Email-ready: optional plain-text alternative package */}
+          {showEmailReadySecondary ? (
+            <div className={`${SECONDARY_PATH} space-y-2`}>
+              <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Email-ready · plain circulation draft</p>
+              <p className="text-xs leading-relaxed text-[--metis-paper-muted]">
+                <span className="text-[--metis-paper]">Optional alternative</span> — copies plain text from the separate{" "}
+                <span className="text-[--metis-paper]">Email-ready package</span>, not another encoding of your current Markdown/HTML selection. Same clipboard
+                action as switching to that package in step 1; skip this if your current package is enough.
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full justify-start sm:w-fit"
+                disabled={busy !== null}
+                onClick={() => doCopy("email-ready", props.channels.email)}
+              >
+                <Mail className="mr-2 h-4 w-4 text-[--metis-brass]" />
+                {busy === "email" && showEmailReadySecondary ? "Preparing…" : "Copy email-ready package"}
+              </Button>
+            </div>
+          ) : null}
+
+          {/* DOCX: optional on-demand Word file — outside main package flow */}
+          {props.docxBetaDownloadUrl ? (
+            <div className={`${ADDITIONAL_DOWNLOAD} space-y-2`}>
+              <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Word · DOCX beta (on-demand)</p>
+              <p className="text-xs leading-relaxed text-[--metis-paper-muted]">
+                <span className="text-[--metis-paper]">Optional additional download</span> — Word-compatible file built on demand from{" "}
+                <span className="text-[--metis-paper]">{props.sourceBriefRevisionLabel}</span>.{" "}
+                <span className="text-[--metis-paper]">Not part of</span> the main Markdown/HTML copy and download path on this page; formatting may differ from
+                previews.
+                Stored export packages and circulation logging for this page apply to Markdown/HTML/plain actions —{" "}
+                <span className="text-[--metis-paper]">not</span> this beta file.
+              </p>
+              <Button asChild variant="outline" className="w-fit justify-start">
+                <a href={props.docxBetaDownloadUrl}>
+                  <FileText className="mr-2 h-4 w-4" />
+                  Download DOCX beta
+                </a>
+              </Button>
+            </div>
+          ) : null}
+        </section>
+      ) : null}
+
+      {props.executiveBriefUsesFullBriefFallback ? (
+        <ReviewRailCard
+          tone="info"
+          title="Executive brief not generated yet"
+          meta={
+            <p className="text-sm leading-6 text-[--metis-paper-muted]">
+              This preview uses {props.sourceBriefRevisionLabel}&apos;s excerpt blocks until you generate or regenerate an Executive brief revision.
+            </p>
+          }
+        >
+          <Button asChild className="w-fit justify-start">
+            <Link href={`/issues/${props.issueId}/brief?mode=executive`}>Generate Executive brief</Link>
+          </Button>
+        </ReviewRailCard>
+      ) : null}
+
+      {/* Step 4 — recommended review before circulating */}
+      <section className={PREVIEW_SHELL} aria-labelledby="export-review-heading">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="min-w-0">
-            <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Preview</p>
-            <p className="mt-1 text-xs text-[--metis-paper-muted]">
+          <div className="min-w-0 space-y-1">
+            <div id="export-review-heading">{stepLabel("4", "Review before circulating")}</div>
+            <p className="text-xs text-[--metis-paper-muted]">
+              <span className="text-[--metis-paper]">Recommended:</span> check this preview matches what you intend to circulate{props.selectedFormat === "email-ready" ? " (plain text for this package)" : ""}.{` `}
               {props.executiveBriefUsesFullBriefFallback
-                ? `Preview uses ${props.sourceBriefRevisionLabel} snapshot blocks until you generate or regenerate an Executive brief.`
-                : `Preview matches the selected package encoding for ${props.sourceBriefRevisionLabel}.`}
-              {props.selectedFormat === "email-ready" ? " Email-ready is plain text only." : null}
+                ? `Shown from ${props.sourceBriefRevisionLabel} snapshot blocks until you generate or regenerate an Executive brief.`
+                : `Matches the package and format you chose for ${props.sourceBriefRevisionLabel}.`}{` `}
+              Export details remain in the summary panel →
             </p>
           </div>
           <div className="flex shrink-0 items-start">
@@ -329,19 +420,10 @@ export function ExportActionsClient(props: Props) {
           </div>
         </div>
 
-        <dl className="mt-3 grid gap-x-8 gap-y-3 text-[0.72rem] leading-snug text-[--metis-paper-muted] sm:grid-cols-2">
-          {props.previewMeta.map((m) => (
-            <div key={m.label} className="min-w-0">
-              <dt className="font-medium uppercase tracking-[0.14em] text-[--metis-ink-soft]">{m.label}</dt>
-              <dd className="mt-0.5 text-[--metis-paper]">{m.value}</dd>
-            </div>
-          ))}
-        </dl>
-
-        <div className="mt-4 max-h-[52vh] overflow-auto rounded-[1rem] border border-white/10 bg-[rgba(0,0,0,0.18)] p-4">
+        <div className="mt-4 max-h-[52vh] overflow-auto rounded-[1rem] border border-white/15 bg-[rgba(0,0,0,0.22)] p-4 shadow-[inset_0_2px_12px_rgba(0,0,0,0.35)]">
           <PreviewBody
             mime={props.previewMimeType}
-            title={`Preview · ${props.previewTitle}`}
+            title={`Review · ${props.previewTitle}`}
             content={props.previewContent}
             lightOnDark={false}
             expanded={false}
@@ -357,9 +439,7 @@ export function ExportActionsClient(props: Props) {
                 <p className="truncate text-sm font-semibold text-white">{props.previewTitle}</p>
                 <p className="mt-1 text-xs text-white/70">
                   {formatLabel(props.previewMimeType)} · {props.sourceBriefRevisionLabel}
-                  {props.urlMode !== props.briefSourceMode
-                    ? ` · Bookmark mode: ${props.urlMode === "full" ? "Full" : "Executive"}`
-                    : ""}
+                  {props.urlMode !== props.briefSourceMode ? ` · Bookmark mode: ${props.urlMode === "full" ? "Full" : "Executive"}` : ""}
                   {props.selectedFormat === "email-ready" ? " · Email-ready preview is plain text only." : ""}
                 </p>
               </div>
@@ -380,7 +460,7 @@ export function ExportActionsClient(props: Props) {
             <div className="flex-1 overflow-auto p-4">
               <PreviewBody
                 mime={props.previewMimeType}
-                title={`Expanded preview · ${props.previewTitle}`}
+                title={`Expanded review · ${props.previewTitle}`}
                 content={props.previewContent}
                 lightOnDark
                 expanded

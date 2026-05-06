@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CheckCircle2, Eye, FileText, RefreshCcw } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 
 import { MetisShell, SurfaceCard } from "@/components/MetisShell";
 import { Badge } from "@/components/ui/badge";
@@ -221,6 +221,17 @@ export default async function IssueExportPage({
   const copyChannel = CirculationChannelSchema.parse("copy");
   const emailChannel = CirculationChannelSchema.parse("email");
 
+  const exportSummaryMeta: { label: string; value: string }[] = [
+    { label: "Export format", value: packageOptions.find((o) => o.id === selectedFormat)?.label ?? "—" },
+    { label: "Encoding", value: encodingLabel },
+    { label: "Download", value: downloadExtension },
+    { label: "Copy", value: copyBehaviorShort },
+    { label: "Source brief", value: sourceBriefRevisionLabel },
+    { label: "Package", value: packageFromBriefDescription },
+    { label: "Circulation", value: artifact.metadata.circulation },
+    ...(urlMode !== sourceMode ? ([{ label: "Bookmark (URL)", value: urlMode === "full" ? "Full" : "Executive" }] as const) : []),
+  ];
+
   return (
     <MetisShell
       activePath="/export"
@@ -243,13 +254,8 @@ export default async function IssueExportPage({
                 <div className="space-y-1">
                   <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper]">Prepare output</h2>
                   <p className="text-sm leading-6 text-[--metis-paper-muted]">
-                    <span className="text-[--metis-paper]">{generatedFromBriefLine}</span> Packages here are snapshots rendered from that stored brief — they
-                    are not a separate numbered export version. Select a package, then download or copy.{" "}
-                    <span className="text-[--metis-paper]">Markdown</span> — portable source package.{" "}
-                    <span className="text-[--metis-paper]">HTML</span> — formatted package; Copy uses rich HTML with a plain-text fallback when supported.{" "}
-                    <span className="text-[--metis-paper]">Email-ready</span> — plain circulation draft (not HTML).{" "}
-                    <span className="text-[--metis-paper]">DOCX beta</span>: Word-compatible file generated on demand from {sourceBriefRevisionLabel}; formatting may
-                    differ from HTML preview and is not stored like Markdown/HTML package logs.
+                    <span className="text-[--metis-paper]">{generatedFromBriefLine}</span> Circulation packages are snapshots from that stored brief — not a separate
+                    numbered export. Choose a package, an output format where applicable, then copy or download; review the preview before circulating.
                   </p>
                   <p className="text-[0.72rem] leading-snug text-[--metis-paper-muted]">
                     Update the record first if needed:{" "}
@@ -279,28 +285,20 @@ export default async function IssueExportPage({
           </div>
 
           <div className="space-y-6 px-6 py-6 sm:px-7 sm:py-7">
-            <ReviewRailCard
-              title="Message variants"
-              tone="info"
-              meta={
-                <p className="text-sm leading-6 text-[--metis-paper-muted]">
-                  Draft a reviewable external update from the issue record and organisation audience group defaults (selected in Messages)—separate from briefs.
-                </p>
-              }
-            >
-              <div className="grid gap-3">
-                <Button asChild variant="outline" className="w-fit justify-start">
-                  <Link href={`/issues/${issue.id}/messages`}>Open Messages</Link>
-                </Button>
+            <section className="space-y-3 rounded-[1.25rem] border border-white/[0.08] bg-[rgba(255,255,255,0.025)] px-4 py-4 sm:px-5 sm:py-4 border-l-[3px] border-l-[rgba(224,183,111,0.45)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+              <div className="flex items-center gap-2.5">
+                <span
+                  className="inline-flex h-6 min-w-6 shrink-0 items-center justify-center rounded-md border border-white/10 bg-[rgba(255,255,255,0.07)] text-[0.65rem] font-semibold tabular-nums text-[--metis-brass-soft]"
+                  aria-hidden
+                >
+                  1
+                </span>
+                <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Choose package</p>
               </div>
-            </ReviewRailCard>
-
-            <section className="space-y-3">
-              <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Package options</p>
               <p className="text-[0.72rem] leading-snug text-[--metis-paper-muted]">
-                Names below describe package shapes only — not live readiness scoring for your issue.
+                Names describe package shapes only — not live readiness scoring for your issue.
               </p>
-              <div className="rounded-[1.25rem] border border-white/10 bg-[rgba(255,255,255,0.035)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+              <div className="rounded-[1.1rem] border border-white/[0.09] bg-[rgba(0,0,0,0.08)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
                 {packageOptions.map((item) => {
                   const isSelected = item.id === selectedFormat;
                   return (
@@ -309,16 +307,20 @@ export default async function IssueExportPage({
                       href={`/issues/${issue.id}/export?mode=${urlMode}&format=${item.id}${
                         item.id === "email-ready" ? "" : `&output=${exportPreviewOutput}`
                       }`}
-                      className={`block border-t border-white/10 px-4 py-3 first:border-t-0 sm:px-5 ${
-                        isSelected ? "bg-[rgba(224,183,111,0.08)]" : "hover:bg-white/[0.02]"
+                      className={`block border-t border-white/10 px-4 py-3.5 first:border-t-0 sm:px-5 ${
+                        isSelected
+                          ? "bg-[rgba(224,183,111,0.12)] ring-2 ring-[--metis-brass]/35 ring-inset"
+                          : "hover:bg-white/[0.02]"
                       }`}
                     >
                       <DenseSection
                         title={
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="text-sm font-medium text-[--metis-paper]">{item.label}</span>
+                            <span className="text-sm font-medium text-[--metis-paper]">
+                              {item.label}
+                            </span>
                             {isSelected ? (
-                              <Badge className="border-0 bg-[--metis-brass]/15 text-[--metis-brass-soft]">Selected</Badge>
+                              <Badge className="border-0 bg-[--metis-brass]/25 text-[--metis-brass-soft]">Selected package</Badge>
                             ) : null}
                           </div>
                         }
@@ -338,53 +340,37 @@ export default async function IssueExportPage({
                   );
                 })}
               </div>
-            </section>
 
-            <CollapsibleSection
-              defaultOpen={false}
-              summary={
-                <div className="flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Package contents</p>
-                    <p className="mt-1 text-xs text-[--metis-paper-muted]">What’s included in the selected package.</p>
+              <div className="mt-4 rounded-[var(--metis-control-radius-md)] border border-dashed border-white/10 bg-transparent px-3 py-2">
+                <CollapsibleSection
+                  defaultOpen={false}
+                  summary={
+                    <div className="min-w-0">
+                      <p className="text-[0.58rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">What&apos;s included</p>
+                      <p className="mt-0.5 text-[0.7rem] leading-snug text-[--metis-paper-muted]">Reference only — not a step in export. Illustrative inclusion list for package shapes.</p>
+                    </div>
+                  }
+                >
+                  <div className="grid gap-2 pt-2 sm:grid-cols-2">
+                    {packageContents.map((item) => (
+                      <div
+                        key={item.label}
+                        className="flex items-center justify-between rounded-[0.875rem] border border-white/8 bg-[rgba(255,255,255,0.03)] px-3 py-2"
+                      >
+                        <span className="text-xs text-[--metis-paper]">{item.label}</span>
+                        <Badge
+                          className={`border-0 text-[0.65rem] ${
+                            item.included ? "bg-[rgba(18,84,58,0.62)] text-emerald-50" : "bg-white/8 text-[--metis-paper-muted]"
+                          }`}
+                        >
+                          {item.included ? "Included" : "Hidden"}
+                        </Badge>
+                      </div>
+                    ))}
                   </div>
-                </div>
-              }
-            >
-              <div className="grid gap-3 sm:grid-cols-2">
-                {packageContents.map((item) => (
-                  <div
-                    key={item.label}
-                    className="flex items-center justify-between rounded-[1.1rem] border border-white/10 bg-[rgba(255,255,255,0.05)] px-4 py-3"
-                  >
-                    <span className="text-sm text-[--metis-paper]">{item.label}</span>
-                    <Badge
-                      className={`border-0 ${
-                        item.included ? "bg-[rgba(18,84,58,0.62)] text-emerald-50" : "bg-white/8 text-[--metis-paper-muted]"
-                      }`}
-                    >
-                      {item.included ? "Included" : "Hidden"}
-                    </Badge>
-                  </div>
-                ))}
+                </CollapsibleSection>
               </div>
-            </CollapsibleSection>
-
-            {executiveBriefUsesFullBriefFallback ? (
-              <ReviewRailCard
-                tone="info"
-                title="Executive brief not generated yet"
-                meta={
-                  <p className="text-sm leading-6 text-[--metis-paper-muted]">
-                    This preview uses {sourceBriefRevisionLabel}&apos;s excerpt blocks until you generate or regenerate an Executive brief revision.
-                  </p>
-                }
-              >
-                <Button asChild className="w-fit justify-start">
-                  <Link href={`/issues/${issue.id}/brief?mode=executive`}>Generate Executive brief</Link>
-                </Button>
-              </ReviewRailCard>
-            ) : null}
+            </section>
 
             <ExportActionsClient
               issueId={issue.id}
@@ -401,51 +387,43 @@ export default async function IssueExportPage({
                   : null
               }
               previewTitle={issue.title}
-              previewMeta={[
-                { label: "Export format", value: packageOptions.find((o) => o.id === selectedFormat)?.label ?? "—" },
-                { label: "Encoding", value: encodingLabel },
-                { label: "Download", value: downloadExtension },
-                { label: "Copy", value: copyBehaviorShort },
-                { label: "Source brief", value: sourceBriefRevisionLabel },
-                { label: "Package", value: packageFromBriefDescription },
-                { label: "Circulation", value: artifact.metadata.circulation },
-                ...(urlMode !== sourceMode ? ([{ label: "Bookmark (URL)", value: urlMode === "full" ? "Full" : "Executive" }] as const) : []),
-              ]}
               previewContent={rendered.content}
               previewMimeType={rendered.mimeType}
               eventTypes={{ prepared: preparedEvent, downloaded: downloadedEvent, copied: copiedEvent }}
               channels={{ file: fileChannel, copy: copyChannel, email: emailChannel }}
             />
+
+            <div className="rounded-[1rem] border border-dashed border-white/12 bg-[rgba(255,255,255,0.015)] px-4 py-3">
+              <p className="text-[0.58rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Related</p>
+              <p className="mt-2 text-[0.72rem] leading-relaxed text-[--metis-paper-muted]">
+                Need message copy instead? Message variants live outside this export workflow.{" "}
+                <Link className="text-[--metis-brass-soft] underline-offset-4 hover:underline" href={`/issues/${issue.id}/messages`}>
+                  Open Messages
+                </Link>
+              </p>
+            </div>
           </div>
         </SurfaceCard>
 
         <SurfaceCard className="metis-support-surface min-w-0 overflow-hidden">
           <div className="space-y-4 px-5 py-5">
             <ReviewRailCard
-              title="Preview"
+              title="Export summary"
               tone="info"
-              meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Preview is shown in the main panel for readability.</p>}
+              meta={
+                <p className="text-sm leading-6 text-[--metis-paper-muted]">
+                  Context for the current URL selection. Live preview stays in the main column.
+                </p>
+              }
             >
-              <div className="space-y-2 text-sm leading-6 text-[--metis-paper-muted]">
-                <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-2 first:border-t-0 first:pt-0">
-                  <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Export format</span>
-                  <span className="text-[--metis-paper]">{packageOptions.find((o) => o.id === selectedFormat)?.label ?? "—"}</span>
-                </div>
-                <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-2">
-                  <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Source brief</span>
-                  <span className="text-right text-[--metis-paper]">{sourceBriefRevisionLabel}</span>
-                </div>
-                {urlMode !== sourceMode ? (
-                  <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-2">
-                    <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Bookmark (URL)</span>
-                    <span className="text-[--metis-paper]">{urlMode === "full" ? "Full" : "Executive"}</span>
+              <dl className="divide-y divide-white/[0.06] text-[0.68rem] leading-snug text-[--metis-paper-muted]">
+                {exportSummaryMeta.map((row) => (
+                  <div key={row.label} className="py-2.5 first:pt-0 last:pb-0">
+                    <dt className="font-medium uppercase tracking-[0.12em] text-[--metis-ink-soft]">{row.label}</dt>
+                    <dd className="mt-1 text-[--metis-paper]">{row.value}</dd>
                   </div>
-                ) : null}
-                <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-2">
-                  <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Package</span>
-                  <span className="text-right text-[--metis-paper]">{packageFromBriefDescription}</span>
-                </div>
-              </div>
+                ))}
+              </dl>
             </ReviewRailCard>
 
             <CollapsibleSection
@@ -517,22 +495,18 @@ export default async function IssueExportPage({
               </div>
             </CollapsibleSection>
 
-            <ReviewRailCard title="Links" tone="info" meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Jump back to generation and change tracking.</p>}>
-              <div className="grid gap-3">
-                <Button asChild variant="outline" className="w-full justify-start">
-                  <Link href={`/issues/${issue.id}/brief?mode=${sourceMode}`}>
-                    <Eye className="mr-2 h-4 w-4" />
-                    Open brief
-                  </Link>
-                </Button>
-                <Button asChild variant="outline" className="w-full justify-start">
-                  <Link href={`/issues/${issue.id}/compare?mode=${urlMode}`}>
-                    <RefreshCcw className="mr-2 h-4 w-4" />
-                    Open delta
-                  </Link>
-                </Button>
+            <div className="rounded-[1.25rem] border border-white/8 bg-[rgba(255,255,255,0.02)] px-4 py-3">
+              <p className="text-[0.58rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Related</p>
+              <p className="mt-1 text-xs text-[--metis-paper-muted]">Generation and change tracking.</p>
+              <div className="mt-3 flex flex-col gap-2 text-sm">
+                <Link className="text-[--metis-brass-soft] underline-offset-4 hover:underline" href={`/issues/${issue.id}/brief?mode=${sourceMode}`}>
+                  Open brief
+                </Link>
+                <Link className="text-[--metis-brass-soft] underline-offset-4 hover:underline" href={`/issues/${issue.id}/compare?mode=${urlMode}`}>
+                  Open delta
+                </Link>
               </div>
-            </ReviewRailCard>
+            </div>
           </div>
         </SurfaceCard>
       </div>
