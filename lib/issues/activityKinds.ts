@@ -12,5 +12,10 @@ export const IssueActivityKinds = {
   export_created: IssueActivityKindSchema.parse("export_created"),
   circulation_event_created: IssueActivityKindSchema.parse("circulation_event_created"),
   message_variant_created: IssueActivityKindSchema.parse("message_variant_created"),
+  comms_plan_item_created: IssueActivityKindSchema.parse("comms_plan_item_created"),
+  comms_plan_item_updated: IssueActivityKindSchema.parse("comms_plan_item_updated"),
+  comms_plan_item_prepared: IssueActivityKindSchema.parse("comms_plan_item_prepared"),
+  comms_plan_item_sent: IssueActivityKindSchema.parse("comms_plan_item_sent"),
+  comms_plan_item_skipped: IssueActivityKindSchema.parse("comms_plan_item_skipped"),
 } as const;
 

@@ -45,6 +45,7 @@ model Issue {
   internalInputs InternalInput[]
   issueStakeholders IssueStakeholder[]
   messageVariants MessageVariant[]
+  commsPlanItems CommsPlanItem[]
 
   @@index([updatedAt])
   @@index([lastActivityAt])
@@ -64,6 +65,7 @@ model StakeholderGroup {
 
   issueStakeholders IssueStakeholder[]
   messageVariants   MessageVariant[]
+  commsPlanItems    CommsPlanItem[]
 
   @@index([displayOrder])
   @@index([isActive, displayOrder])
@@ -108,11 +110,53 @@ model MessageVariant {
   issue              Issue              @relation(fields: [issueId], references: [id], onDelete: Cascade)
   stakeholderGroup   StakeholderGroup?  @relation(fields: [stakeholderGroupId], references: [id], onDelete: SetNull)
   issueStakeholder   IssueStakeholder?  @relation(fields: [issueStakeholderId], references: [id], onDelete: SetNull)
+  preparedCommsPlanItems CommsPlanItem[] @relation("CommsPlanItemPreparedMessageVariant")
 
   @@unique([issueId, templateId, versionNumber])
   @@index([issueId, templateId, createdAt])
   @@index([issueId, templateId, stakeholderGroupId])
   @@index([issueStakeholderId])
+}
+
+model CommsPlanItem {
+  id                       String   @id @default(uuid())
+  issueId                   String
+  stakeholderGroupId        String?
+  title                     String
+  outputType                String
+  messageTemplateId         String?
+  briefMode                 String?
+  exportFormat              String?
+  channel                   String
+  scheduleType              String
+  cadenceMinutes            Int?
+  triggerType               String?
+  nextDueAt                 DateTime?
+  owner                     String?
+  status                    String   @default("planned")
+  notes                     String?
+  lastPreparedAt            DateTime?
+  lastSentAt                DateTime?
+  lastSkippedAt             DateTime?
+  skipReason                String?
+  preparedFromMessageVariantId String?
+  preparedFromBriefVersionId   String?
+  preparedFromExportId         String?
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+
+  issue            Issue            @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  stakeholderGroup StakeholderGroup? @relation(fields: [stakeholderGroupId], references: [id], onDelete: SetNull)
+  preparedFromMessageVariant MessageVariant? @relation("CommsPlanItemPreparedMessageVariant", fields: [preparedFromMessageVariantId], references: [id], onDelete: SetNull)
+  preparedFromBriefVersion   BriefVersion?   @relation("CommsPlanItemPreparedBriefVersion", fields: [preparedFromBriefVersionId], references: [id], onDelete: SetNull)
+  preparedFromExport         ArtifactExport? @relation("CommsPlanItemPreparedExport", fields: [preparedFromExportId], references: [id], onDelete: SetNull)
+
+  @@index([issueId, createdAt])
+  @@index([issueId, status, nextDueAt])
+  @@index([stakeholderGroupId])
+  @@index([preparedFromMessageVariantId])
+  @@index([preparedFromBriefVersionId])
+  @@index([preparedFromExportId])
 }
 
 model BriefVersion {
@@ -134,6 +178,7 @@ model BriefVersion {
   comparisonsTo          BriefComparison[] @relation("BriefComparisonTo")
   artifactExports        ArtifactExport[]
   circulationEvents      CirculationEvent[]
+  preparedCommsPlanItems CommsPlanItem[] @relation("CommsPlanItemPreparedBriefVersion")
 
   @@index([issueId, mode, createdAt])
   @@unique([issueId, mode, versionNumber])
@@ -172,6 +217,7 @@ model ArtifactExport {
   issue        Issue       @relation(fields: [issueId], references: [id], onDelete: Cascade)
   briefVersion BriefVersion @relation(fields: [briefVersionId], references: [id], onDelete: Cascade)
   circulationEvents CirculationEvent[]
+  preparedCommsPlanItems CommsPlanItem[] @relation("CommsPlanItemPreparedExport")
 
   @@index([issueId, createdAt])
   @@index([briefVersionId, createdAt])

@@ -27,6 +27,11 @@ export const ACTIVITY_KIND_LABELS: Record<string, string> = {
   export_created: "Export · created",
   circulation_event_created: "Circulation · logged",
   message_variant_created: "Message · generated",
+  comms_plan_item_created: "Comms plan · added",
+  comms_plan_item_updated: "Comms plan · updated",
+  comms_plan_item_prepared: "Comms plan · marked prepared",
+  comms_plan_item_sent: "Comms plan · marked sent",
+  comms_plan_item_skipped: "Comms plan · skipped",
 };
 
 export function formatActivityTimestamp(iso: string) {

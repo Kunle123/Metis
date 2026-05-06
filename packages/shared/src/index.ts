@@ -11,4 +11,5 @@ export * from "./activity";
 export * from "./auth";
 export * from "./stakeholder";
 export * from "./captureNotesExtract";
+export * from "./commsPlan";
 

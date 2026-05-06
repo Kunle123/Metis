@@ -150,6 +150,7 @@ const issueOutputToolsNav = [
   { id: "messages" as const, path: "/messages" as const, shortLabel: "Messages" },
   { id: "compare" as const, path: "/compare" as const, shortLabel: "Compare" },
   { id: "export" as const, path: "/export" as const, shortLabel: "Export" },
+  { id: "comms-plan" as const, path: "/comms-plan" as const, shortLabel: "Comms plan" },
   { id: "activity" as const, path: "/activity" as const, shortLabel: "Activity" },
 ] as const;
 
