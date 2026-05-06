@@ -25,16 +25,16 @@ export function BriefExecutiveSummaryCompare({
 
   const visibleBody = canCompare && variant === "alternate" ? alternateBody : deterministicBody;
 
-  return (
-    <div className="space-y-3">
+  const inner = (
+    <>
       {canCompare ? (
         <>
           <SegmentedControl<CompareVariant>
-            label="Executive summary wording"
+            label="Wording comparison"
             value={variant}
             options={[
-              { id: "original", label: "Original" },
-              { id: "alternate", label: "Alternate wording" },
+              { id: "original", label: "Stored wording" },
+              { id: "alternate", label: "Alternate draft" },
             ]}
             onChange={setVariant}
           />
@@ -59,6 +59,22 @@ export function BriefExecutiveSummaryCompare({
       ) : null}
 
       <p className="max-w-4xl whitespace-pre-line leading-7 text-[--metis-text-secondary]">{visibleBody}</p>
+    </>
+  );
+
+  if (!briefAiSynthesisEnabled) {
+    return <div className="space-y-3">{inner}</div>;
+  }
+
+  return (
+    <div className="space-y-3 rounded-[var(--metis-control-radius-md)] border border-dashed border-[--metis-outline-subtle] bg-[rgba(255,255,255,0.015)] px-3 py-3 sm:px-4">
+      <p className="text-[0.58rem] font-medium uppercase tracking-[0.18em] text-[--metis-text-tertiary]">
+        Optional · Compare alternate wording
+      </p>
+      <p className="text-[0.75rem] leading-snug text-[--metis-text-tertiary]">
+        Same stored brief and facts as below — optional drafting comparison only, not a separate source of truth or export snapshot.
+      </p>
+      {inner}
     </div>
   );
 }

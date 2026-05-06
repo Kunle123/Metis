@@ -45,6 +45,24 @@ async function getLatestBriefVersion(issueId: string, mode: BriefMode) {
   });
 }
 
+/** Restrained step band — hierarchy without form-like heaviness */
+const WORKFLOW_STEP =
+  "space-y-3 rounded-[1.05rem] border border-white/[0.07] bg-[rgba(255,255,255,0.018)] px-4 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] sm:px-5";
+
+function briefStepLabel(n: string, title: string) {
+  return (
+    <div className="flex items-center gap-2.5">
+      <span
+        className="inline-flex h-6 min-w-6 shrink-0 items-center justify-center rounded-md border border-[--metis-outline-subtle] bg-[rgba(255,255,255,0.05)] text-[0.65rem] font-semibold tabular-nums text-[--metis-brass-soft]"
+        aria-hidden
+      >
+        {n}
+      </span>
+      <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-text-tertiary]">{title}</p>
+    </div>
+  );
+}
+
 export default async function IssueBriefPage({
   params,
   searchParams,
@@ -152,6 +170,9 @@ export default async function IssueBriefPage({
   const storedBriefRevisionLabel = briefVersion
     ? `${mode === "full" ? "Full" : "Executive"} brief v${briefVersion.versionNumber}`
     : null;
+  const exportPrepareHref = `/issues/${issue.id}/export?mode=${mode}&format=${mode === "executive" ? "executive-brief" : "full-issue-brief"}`;
+  /** Shown only under Generate (Step 3); Step 2 holds definitions only. */
+  const generationSyncHint = hasBriefForMode && briefInSync ? null : briefSyncHint;
 
   return (
     <MetisShell
@@ -168,188 +189,209 @@ export default async function IssueBriefPage({
     >
       <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <SurfaceCard className="min-w-0 overflow-hidden">
-          <div className="border-b border-white/8 bg-[rgba(255,255,255,0.015)] px-5 py-2.5 sm:px-6">
+          <div className="border-b border-white/8 bg-[rgba(255,255,255,0.015)] px-5 py-3 sm:px-6">
             <ReviewToolbar
               className="border-0 bg-transparent px-0 py-0"
               left={
-                <div className="flex min-w-0 flex-col gap-2 lg:flex-row lg:flex-wrap lg:items-center lg:gap-x-3 lg:gap-y-2">
+                <div className="flex min-w-0 flex-col gap-1 sm:flex-row sm:items-center sm:gap-3">
                   <div className="flex items-center gap-2 text-[--metis-text-secondary]">
                     <Library className="h-4 w-4 shrink-0 opacity-85" aria-hidden />
                     <span className="text-[0.7rem] font-medium uppercase tracking-[0.14em]">Brief workspace</span>
                   </div>
-                  <BriefModeToggle issueId={issue.id} mode={mode} />
-                  <div className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1 text-[0.72rem] leading-snug">
-                    {storedBriefRevisionLabel ? (
-                      <span className="text-[--metis-text-secondary]">
-                        <span className="font-medium uppercase tracking-[0.12em] text-[--metis-text-tertiary]">Revision</span>
-                        <span className="mx-1.5 text-[--metis-text-tertiary]" aria-hidden>
-                          ·
-                        </span>
-                        <span className="font-medium text-[--metis-text-primary]">{storedBriefRevisionLabel}</span>
-                      </span>
-                    ) : (
-                      <span className="text-[--metis-text-secondary]">No stored brief yet</span>
-                    )}
-                    {briefVersion ? (
-                      <>
-                        <span className="hidden text-[--metis-text-tertiary] sm:inline" aria-hidden>
-                          |
-                        </span>
-                        <span className="text-[--metis-text-secondary]">
-                          <span className="font-medium uppercase tracking-[0.12em] text-[--metis-text-tertiary]">Freshness</span>
-                          <span className="mx-1.5 text-[--metis-text-tertiary]" aria-hidden>
-                            ·
-                          </span>
-                          <span
-                            className={
-                              briefInSync ? "font-medium text-[--metis-status-neutral-fg]" : "font-medium text-[--metis-status-info-fg]"
-                            }
-                          >
-                            {briefInSync ? "Up to date" : "Stale"}
-                          </span>
-                        </span>
-                      </>
-                    ) : null}
-                  </div>
-                  {briefVersion && !briefInSync ? (
-                    <span className="hidden max-w-xl text-[0.8rem] leading-snug text-[--metis-text-secondary] xl:inline">
-                      Refresh this brief because the issue changed after it was generated.
-                    </span>
-                  ) : !briefVersion ? (
-                    <span className="hidden max-w-xl text-[0.8rem] leading-snug text-[--metis-text-secondary] xl:inline">
-                      Generate a brief from the current issue record.
-                    </span>
-                  ) : null}
-                  {briefSyncHint ? (
-                    <span className="hidden max-w-xl text-[0.8rem] leading-snug text-[--metis-text-secondary] xl:inline">{briefSyncHint}</span>
-                  ) : null}
+                  <p className="max-w-3xl text-[0.72rem] leading-snug text-[--metis-text-tertiary]">
+                    Review the stored brief for this issue. Workflow steps below: choose mode, check revision, generate if needed, read, then prepare output.
+                  </p>
                 </div>
               }
-              right={
-                <div className="mt-3 flex flex-wrap items-center gap-2 sm:justify-end lg:mt-0">
-                  <GenerateBriefButton
-                    issueId={issue.id}
-                    mode={mode}
-                    label={hasBriefForMode ? "Regenerate brief" : "Generate brief"}
-                    syncHint={briefSyncHint}
-                  />
-                  <Button asChild variant="outline">
-                    <Link
-                      href={`/issues/${issue.id}/export?mode=${mode}&format=${mode === "executive" ? "executive-brief" : "full-issue-brief"}`}
-                    >
-                      <FileOutput className="mr-2 h-4 w-4" />
-                      Prepare output
-                    </Link>
-                  </Button>
-                </div>
-              }
+              right={null}
             />
           </div>
 
-          {fromSetup === "setup" ? <IntakeSuggestionsPanel issueId={issue.id} /> : null}
+          <div className="space-y-5 px-5 py-5 sm:px-7 sm:py-6">
+            <section className={WORKFLOW_STEP} aria-labelledby="brief-step-1">
+              <div id="brief-step-1">{briefStepLabel("1", "Choose brief mode")}</div>
+              <p className="text-[0.8rem] leading-relaxed text-[--metis-text-secondary]">
+                Switching mode loads a different <span className="text-[--metis-text-primary]">stored artifact</span> for this issue (full vs executive). It does not
+                generate a new revision by itself.
+              </p>
+              <BriefModeToggle issueId={issue.id} mode={mode} />
+            </section>
 
-          {artifact ? (
-            mode === "full" ? (
-              <article className="px-5 pb-6 pt-4 sm:px-7 sm:pb-7 sm:pt-5">
-                <div className="space-y-0 rounded-[1.25rem] border border-[--metis-outline-subtle] bg-[--metis-surface-card] px-4 py-5 sm:px-6 sm:py-6">
-                  <div className="space-y-6">
-                  {artifact.full.sections.map((section, index) => {
-                    const readiness = readinessFromConfidence(section.confidence);
-                    return (
-                      <DenseSection
-                        key={section.id}
-                        title={
-                          <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
-                            <div className="min-w-0 space-y-2">
-                              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                              <span className="text-[0.55rem] uppercase tracking-[0.18em] text-[--metis-text-tertiary]">
-                                {String(index + 1).padStart(2, "0")}
-                              </span>
-                              <span className="text-base font-semibold leading-6 text-[--metis-text-primary]">
-                                {displayTitles(section.id, section.title)}
-                              </span>
-                              </div>
-                            </div>
-                            <span className="shrink-0 text-xs text-[--metis-text-secondary]">
-                              {readiness.label} · Updated {section.updatedAtLabel}
-                            </span>
-                          </div>
-                        }
-                        className={index === 0 ? "border-t-0 pt-0" : undefined}
-                      >
-                        {section.id === "executive-summary" ? (
-                          <BriefExecutiveSummaryCompare
-                            deterministicBody={section.body}
-                            alternateWording={fullExecAlternateWording}
-                            briefAiSynthesisEnabled={briefAiSynthesisEnabled}
-                          />
-                        ) : (
-                          <p className="max-w-4xl whitespace-pre-line leading-7 text-[--metis-text-secondary]">{section.body}</p>
-                        )}
-                      </DenseSection>
-                    );
-                  })}
-                  </div>
+            <section className={WORKFLOW_STEP} aria-labelledby="brief-step-2">
+              <div id="brief-step-2">{briefStepLabel("2", "Stored revision & freshness")}</div>
+              <dl className="grid gap-2 text-[0.8rem] leading-relaxed text-[--metis-text-secondary]">
+                <div className="flex flex-wrap gap-x-2 gap-y-0.5">
+                  <dt className="font-medium uppercase tracking-[0.1em] text-[--metis-text-tertiary]">Stored revision</dt>
+                  <dd className="text-[--metis-text-primary]">{storedBriefRevisionLabel ?? "No stored brief yet"}</dd>
                 </div>
-              </article>
-            ) : (
-              <article className="px-5 pb-6 pt-4 sm:px-7 sm:pb-7 sm:pt-5">
-                <header className="mb-6 space-y-4 border-b border-[--metis-outline-subtle] pb-6">
-                  <h2 className="font-[Cormorant_Garamond] text-[1.85rem] leading-tight text-[--metis-text-primary]">{issue.title}</h2>
-                  <p className="max-w-4xl text-sm leading-7 text-[--metis-text-secondary]">{artifact.lede}</p>
-                  <div className="flex flex-wrap gap-x-8 gap-y-2 text-[0.7rem] uppercase tracking-[0.14em] text-[--metis-text-tertiary]">
-                    <span>
-                      Circulation ·{" "}
-                      <span className="normal-case tracking-normal text-[--metis-text-primary]">{artifact.metadata.circulation}</span>
-                    </span>
-                    <span>
-                      Last revision ·{" "}
-                      <span className="normal-case tracking-normal text-[--metis-text-primary]">{artifact.metadata.lastRevisionLabel}</span>
-                    </span>
-                    <span>
-                      Open questions ·{" "}
-                      <span className="normal-case tracking-normal text-[--metis-text-primary]">{artifact.metadata.openGapsLabel}</span>
-                    </span>
-                  </div>
-                </header>
-                <div className="space-y-0 rounded-[1.25rem] border border-[--metis-outline-subtle] bg-[--metis-surface-card] px-4 py-5 sm:px-6 sm:py-6">
-                  <div className="space-y-6">
-                  {artifact.executive.blocks.map((block, index) => (
-                    <DenseSection
-                      key={`${block.label}-${index}`}
-                      title={<span className="text-base font-semibold leading-6 text-[--metis-text-primary]">{block.label}</span>}
-                      className={index === 0 ? "border-t-0 pt-0" : undefined}
+                {briefVersion ? (
+                  <div className="flex flex-wrap gap-x-2 gap-y-0.5">
+                    <dt className="font-medium uppercase tracking-[0.1em] text-[--metis-text-tertiary]">Freshness</dt>
+                    <dd
+                      className={
+                        briefInSync ? "font-medium text-[--metis-status-neutral-fg]" : "font-medium text-[--metis-status-info-fg]"
+                      }
                     >
-                      {block.label.trim() === "Executive summary" ? (
-                        <BriefExecutiveSummaryCompare
-                          deterministicBody={block.body}
-                          alternateWording={executiveExecAlternateWording}
-                          briefAiSynthesisEnabled={briefAiSynthesisEnabled}
-                        />
-                      ) : (
-                        <p className="max-w-4xl whitespace-pre-line leading-7 text-[--metis-text-secondary]">{block.body}</p>
-                      )}
-                    </DenseSection>
-                  ))}
+                      {briefInSync ? "Up to date" : "Stale"}
+                    </dd>
                   </div>
-                </div>
-              </article>
-            )
-          ) : (
-            <article className="space-y-6 px-6 py-6 sm:px-7 sm:py-7">
-              <header className="space-y-3 border-b border-white/8 pb-6">
-                <h2 className="font-[Cormorant_Garamond] text-[2.15rem] leading-none text-[--metis-paper]">No brief version yet</h2>
-                <p className="max-w-3xl text-sm leading-7 text-[--metis-paper-muted]">
-                  {fromSetup === "setup"
-                    ? "This issue record has been created. Use Generate brief in the control bar above to build from the issue record, sources, open questions, observations, and Messages audience group selection (organisation-level audiences from Settings → Audience groups)."
-                    : "Use Generate brief in the control bar above. Metis will create a stored brief for this mode from the issue record, sources, open questions, observations, and Messages audience group selection (organisation-level audiences from Settings → Audience groups)."}
+                ) : null}
+              </dl>
+              <p className="text-[0.72rem] leading-snug text-[--metis-text-tertiary]">
+                <span className="text-[--metis-text-secondary]">Stored revision</span> is the numbered brief on file for this mode.{" "}
+                <span className="text-[--metis-text-secondary]">Freshness</span> is whether the issue record changed after that revision was generated — not a
+                different version number.
+              </p>
+            </section>
+
+            <section className={WORKFLOW_STEP} aria-labelledby="brief-step-3">
+              <div id="brief-step-3">{briefStepLabel("3", "Generate or regenerate")}</div>
+              {hasBriefForMode && briefInSync ? (
+                <p className="text-[0.8rem] leading-relaxed text-[--metis-text-tertiary]">
+                  This revision matches the current issue record. Regenerate only if you want a <span className="text-[--metis-text-secondary]">new stored revision</span>{" "}
+                  (for example after substantive edits).
                 </p>
-              </header>
-              <div className="text-[0.68rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">
-                Mode · <span className="text-[--metis-paper]">{mode === "full" ? "Full issue brief" : "Executive brief"}</span>
-              </div>
-            </article>
-          )}
+              ) : null}
+              <GenerateBriefButton
+                issueId={issue.id}
+                mode={mode}
+                label={hasBriefForMode ? "Regenerate brief" : "Generate brief"}
+                syncHint={generationSyncHint}
+                hintAlign="start"
+                variant={hasBriefForMode && briefInSync ? "outline" : "default"}
+              />
+            </section>
+
+            {fromSetup === "setup" ? <IntakeSuggestionsPanel issueId={issue.id} /> : null}
+
+            <section className={WORKFLOW_STEP} id="brief-step-4" aria-labelledby="brief-step-4-label">
+              <div id="brief-step-4-label">{briefStepLabel("4", "Read brief")}</div>
+              <p className="text-[0.72rem] leading-snug text-[--metis-text-tertiary]">
+                Stored brief text for the mode you selected. Optional alternate executive wording (when enabled) appears only inside the executive summary area as a
+                comparison.
+              </p>
+
+              {artifact ? (
+                mode === "full" ? (
+                  <div className="rounded-[1.15rem] border border-[--metis-outline-subtle] bg-[rgba(0,0,0,0.12)] px-3 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:px-5 sm:py-5">
+                    <div className="rounded-[1rem] border border-[--metis-outline-subtle] bg-[--metis-surface-card] px-3 py-4 sm:px-5 sm:py-5">
+                      <div className="space-y-6">
+                        {artifact.full.sections.map((section, index) => {
+                          const readiness = readinessFromConfidence(section.confidence);
+                          return (
+                            <DenseSection
+                              key={section.id}
+                              title={
+                                <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+                                  <div className="min-w-0 space-y-2">
+                                    <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                                      <span className="text-[0.55rem] uppercase tracking-[0.18em] text-[--metis-text-tertiary]">
+                                        {String(index + 1).padStart(2, "0")}
+                                      </span>
+                                      <span className="text-base font-semibold leading-6 text-[--metis-text-primary]">
+                                        {displayTitles(section.id, section.title)}
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <span className="shrink-0 text-xs text-[--metis-text-secondary]">
+                                    {readiness.label} · Updated {section.updatedAtLabel}
+                                  </span>
+                                </div>
+                              }
+                              className={index === 0 ? "border-t-0 pt-0" : undefined}
+                            >
+                              {section.id === "executive-summary" ? (
+                                <BriefExecutiveSummaryCompare
+                                  deterministicBody={section.body}
+                                  alternateWording={fullExecAlternateWording}
+                                  briefAiSynthesisEnabled={briefAiSynthesisEnabled}
+                                />
+                              ) : (
+                                <p className="max-w-4xl whitespace-pre-line leading-7 text-[--metis-text-secondary]">{section.body}</p>
+                              )}
+                            </DenseSection>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="rounded-[1.15rem] border border-[--metis-outline-subtle] bg-[rgba(0,0,0,0.12)] px-3 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:px-5 sm:py-5">
+                    <header className="mb-6 space-y-4 border-b border-[--metis-outline-subtle] pb-6">
+                      <h2 className="font-[Cormorant_Garamond] text-[1.85rem] leading-tight text-[--metis-text-primary]">{issue.title}</h2>
+                      <p className="max-w-4xl text-sm leading-7 text-[--metis-text-secondary]">{artifact.lede}</p>
+                      <div className="flex flex-wrap gap-x-8 gap-y-2 text-[0.7rem] uppercase tracking-[0.14em] text-[--metis-text-tertiary]">
+                        <span>
+                          Circulation ·{" "}
+                          <span className="normal-case tracking-normal text-[--metis-text-primary]">{artifact.metadata.circulation}</span>
+                        </span>
+                        <span>
+                          Last revision ·{" "}
+                          <span className="normal-case tracking-normal text-[--metis-text-primary]">{artifact.metadata.lastRevisionLabel}</span>
+                        </span>
+                        <span>
+                          Open questions ·{" "}
+                          <span className="normal-case tracking-normal text-[--metis-text-primary]">{artifact.metadata.openGapsLabel}</span>
+                        </span>
+                      </div>
+                    </header>
+                    <div className="rounded-[1rem] border border-[--metis-outline-subtle] bg-[--metis-surface-card] px-3 py-4 sm:px-5 sm:py-5">
+                      <div className="space-y-6">
+                        {artifact.executive.blocks.map((block, index) => (
+                          <DenseSection
+                            key={`${block.label}-${index}`}
+                            title={<span className="text-base font-semibold leading-6 text-[--metis-text-primary]">{block.label}</span>}
+                            className={index === 0 ? "border-t-0 pt-0" : undefined}
+                          >
+                            {block.label.trim() === "Executive summary" ? (
+                              <BriefExecutiveSummaryCompare
+                                deterministicBody={block.body}
+                                alternateWording={executiveExecAlternateWording}
+                                briefAiSynthesisEnabled={briefAiSynthesisEnabled}
+                              />
+                            ) : (
+                              <p className="max-w-4xl whitespace-pre-line leading-7 text-[--metis-text-secondary]">{block.body}</p>
+                            )}
+                          </DenseSection>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )
+              ) : (
+                <div className="space-y-4 border-t border-[--metis-outline-subtle] pt-4">
+                  <header className="space-y-2">
+                    <h2 className="font-[Cormorant_Garamond] text-xl leading-tight text-[--metis-paper] md:text-[1.65rem]">No brief to read yet</h2>
+                    <p className="max-w-3xl text-sm leading-7 text-[--metis-paper-muted]">
+                      {fromSetup === "setup"
+                        ? "Use Generate or regenerate above to build from the issue record, sources, open questions, observations, and Messages audience group selection (organisation-level audiences from Settings → Audience groups)."
+                        : "Use step 3 to generate a stored brief for this mode from the issue record, sources, open questions, observations, and Messages audience group selection (organisation-level audiences from Settings → Audience groups)."}
+                    </p>
+                  </header>
+                </div>
+              )}
+            </section>
+
+            <section
+              className={`${WORKFLOW_STEP} border-dashed border-white/[0.1]`}
+              aria-label="Next · Prepare output"
+            >
+              <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-text-tertiary]">Next · Prepare output</p>
+              <p className="text-[0.8rem] leading-relaxed text-[--metis-text-secondary]">
+                After you review the brief, package it for circulation on the Export flow. This does not create a new stored revision.
+              </p>
+              {hasBriefForMode ? (
+                <Button asChild variant="outline" className="w-full justify-start sm:w-fit">
+                  <Link href={exportPrepareHref}>
+                    <FileOutput className="mr-2 h-4 w-4" />
+                    Prepare output
+                  </Link>
+                </Button>
+              ) : (
+                <p className="text-sm leading-6 text-[--metis-paper-muted]">Generate a stored brief first — then Prepare output unlocks packaging for circulation.</p>
+              )}
+            </section>
+          </div>
         </SurfaceCard>
 
         <SurfaceCard className="metis-support-surface min-w-0 overflow-hidden">
@@ -381,13 +423,8 @@ export default async function IssueBriefPage({
                       </span>
                     </div>
                   ) : null}
-                  {briefSyncHint ? (
-                    <p className="border-t border-white/8 pt-2 text-sm leading-6 text-[--metis-paper-muted]">{briefSyncHint}</p>
-                  ) : null}
-                  <p className="border-t border-white/8 pt-2 text-[0.72rem] leading-snug text-[--metis-paper-muted]">
-                    <span className="text-[--metis-paper]">Stored revision</span> is the numbered brief on file.{" "}
-                    <span className="text-[--metis-paper]">Up to date / Stale</span> only reflects whether the issue record changed after that revision was
-                    generated — not a different version number.
+                  <p className="border-t border-white/8 pt-2 text-[0.7rem] leading-snug text-[--metis-paper-muted]">
+                    See the main column for what revision vs freshness means and when to regenerate.
                   </p>
                 </div>
               }

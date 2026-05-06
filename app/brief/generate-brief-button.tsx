@@ -14,6 +14,10 @@ type GenerateBriefButtonProps = {
   label?: string;
   /** One line of status (e.g. in sync with issue vs. stale). */
   syncHint?: string | null;
+  /** Align hint + button for toolbar (end) vs workflow step bands (start). */
+  hintAlign?: "start" | "end";
+  /** Outline when regenerate is optional so reading the brief stays visually primary. */
+  variant?: "default" | "outline";
   className?: string;
 };
 
@@ -22,16 +26,27 @@ export function GenerateBriefButton({
   mode,
   label = "Generate brief",
   syncHint = null,
+  hintAlign = "end",
+  variant = "default",
   className,
 }: GenerateBriefButtonProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const isStart = hintAlign === "start";
 
   return (
-    <div className="flex max-w-[min(100%,18rem)] flex-col items-end gap-1 sm:max-w-[20rem]">
-      {syncHint ? <p className="text-right text-[0.65rem] leading-snug text-[--metis-paper-muted]">{syncHint}</p> : null}
+    <div
+      className={cn(
+        "flex max-w-xl flex-col gap-1",
+        isStart ? "items-start [&_button]:self-start" : "max-w-[min(100%,18rem)] items-end sm:max-w-[20rem]",
+      )}
+    >
+      {syncHint ? (
+        <p className={cn("text-[0.65rem] leading-snug text-[--metis-paper-muted]", isStart ? "text-left" : "text-right")}>{syncHint}</p>
+      ) : null}
       <Button
         pill
+        variant={variant === "outline" ? "outline" : "default"}
         className={cn(className)}
         disabled={isLoading}
         onClick={async () => {
