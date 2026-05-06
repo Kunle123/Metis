@@ -13,6 +13,7 @@
     "test:capture-notes-extract": "tsx lib/ai/extractIssueNotes.fixtures.runner.ts",
     "test:message-cleanup": "tsx lib/ai/cleanupMessageDraft.fixtures.runner.ts",
     "test:brief-synthesis": "tsx lib/ai/synthesizeBrief.fixtures.runner.ts",
+    "test:comms-plan-template": "tsx lib/comms/generateCommsPlanTemplate.fixtures.runner.ts",
     "test:export-html": "tsx lib/export/renderExportHtml.fixtures.runner.ts",
     "test:export-docx": "tsx lib/export/renderExportDocx.fixtures.runner.ts",
     "test:export-plain-fallback": "tsx lib/export/htmlToPlainClipboardFallback.fixtures.runner.ts",

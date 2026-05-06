@@ -22,6 +22,8 @@ import {
 import { MessageVariantTemplateIdSchema, type MessageVariantTemplateId } from "@metis/shared/messageVariant";
 import { BriefModeSchema, type BriefMode } from "@metis/shared/briefVersion";
 import { ExportFormatSchema, type ExportFormat } from "@metis/shared/export";
+import type { CreateCommsPlanItemInput } from "@metis/shared/commsPlan";
+import { generateCommsPlanSuggestions, type CommsPlanEventType, type PlanSuggestion } from "@/lib/comms/generateCommsPlanTemplate";
 
 type AudienceGroup = { id: string; name: string };
 
@@ -95,6 +97,12 @@ export function CommsPlanClient({ issueId, initialItems, audienceGroups, default
   const [busyId, setBusyId] = useState<string | null>(null);
   const [skipOpenId, setSkipOpenId] = useState<string | null>(null);
   const [skipDraftById, setSkipDraftById] = useState<Record<string, string>>({});
+  const [suggestEventType, setSuggestEventType] = useState<CommsPlanEventType>("operational_incident");
+  const [suggestSelectedAudienceIds, setSuggestSelectedAudienceIds] = useState<Record<string, boolean>>({});
+  const [suggestions, setSuggestions] = useState<PlanSuggestion[]>([]);
+  const [suggestRejected, setSuggestRejected] = useState<string | null>(null);
+  const [addingSuggestionId, setAddingSuggestionId] = useState<string | null>(null);
+  const [addingAll, setAddingAll] = useState(false);
   const [creating, setCreating] = useState(false);
   const [createDraft, setCreateDraft] = useState({
     title: "",
@@ -171,6 +179,16 @@ export function CommsPlanClient({ issueId, initialItems, audienceGroups, default
     }
   }
 
+  async function createItemFromSuggestion(input: CreateCommsPlanItemInput) {
+    const res = await fetch(`/api/issues/${issueId}/comms-plan`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(input),
+    });
+    if (!res.ok) throw new Error(await res.text());
+  }
+
   async function patchItem(id: string, patch: any) {
     setError(null);
     setBusyId(id);
@@ -215,8 +233,194 @@ export function CommsPlanClient({ issueId, initialItems, audienceGroups, default
     }
   }
 
+  function generateSuggestedPlan() {
+    setSuggestRejected(null);
+    const selectedAudienceGroupIds = Object.entries(suggestSelectedAudienceIds)
+      .filter(([, on]) => on)
+      .map(([id]) => id);
+
+    const out = generateCommsPlanSuggestions({
+      eventType: suggestEventType,
+      selectedAudienceGroupIds,
+      audienceGroups,
+      defaultOwner,
+    });
+
+    setSuggestions(out.suggestions);
+    if (out.rejected.length) {
+      setSuggestRejected(`Some suggestions were rejected by validation (${out.rejected.length}).`);
+    }
+  }
+
   return (
     <div className="space-y-6">
+      <div className="rounded-[1.25rem] border border-white/10 bg-[rgba(255,255,255,0.03)] px-5 py-5">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="text-[0.68rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Suggested plan</p>
+            <p className="mt-1 text-sm text-[--metis-paper-muted]">
+              Generate a suggested set of communications based on event type and selected audiences. Nothing becomes active until you add it.
+            </p>
+          </div>
+          <Button variant="outline" onClick={generateSuggestedPlan}>
+            Generate suggested plan
+          </Button>
+        </div>
+
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          <label className="space-y-2">
+            <span className="text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">Event type</span>
+            <select
+              className="h-11 w-full rounded-md border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
+              value={suggestEventType}
+              onChange={(e) => setSuggestEventType(e.target.value as CommsPlanEventType)}
+            >
+              <option value="operational_incident">Operational incident</option>
+              <option value="reputational_crisis">Reputational crisis</option>
+              <option value="regulatory_legal">Regulatory/legal</option>
+              <option value="proactive_comms">Proactive comms</option>
+              <option value="media_inquiry">Media inquiry</option>
+              <option value="internal_change">Internal change</option>
+              <option value="leadership_only">Leadership only</option>
+            </select>
+          </label>
+
+          <div className="space-y-2">
+            <span className="text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">Audiences to include</span>
+            <div className="rounded-[1rem] border border-white/10 bg-black/10 px-3 py-2">
+              <div className="grid gap-1.5">
+                {audienceGroups.map((g) => {
+                  const on = Boolean(suggestSelectedAudienceIds[g.id]);
+                  return (
+                    <label key={g.id} className="flex items-center gap-2 text-sm text-[--metis-paper-muted]">
+                      <input
+                        type="checkbox"
+                        checked={on}
+                        onChange={(e) =>
+                          setSuggestSelectedAudienceIds((cur) => ({
+                            ...cur,
+                            [g.id]: e.target.checked,
+                          }))
+                        }
+                      />
+                      <span className="text-[--metis-paper]">{g.name}</span>
+                    </label>
+                  );
+                })}
+                {audienceGroups.length === 0 ? (
+                  <p className="text-sm text-[--metis-paper-muted]">No audience groups found.</p>
+                ) : null}
+              </div>
+              <p className="mt-2 text-xs text-[--metis-paper-muted]">
+                Leave blank to generate general rows (no audience group) where sensible.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {suggestRejected ? <p className="mt-3 text-sm text-amber-100/90">{suggestRejected}</p> : null}
+
+        {suggestions.length ? (
+          <div className="mt-4 space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-sm text-[--metis-paper-muted]">
+                {suggestions.length} suggested row{suggestions.length === 1 ? "" : "s"}
+              </p>
+              <Button
+                onClick={() => {
+                  void (async () => {
+                    setError(null);
+                    setAddingAll(true);
+                    try {
+                      const results = await Promise.allSettled(
+                        suggestions.map(async (s) => {
+                          await createItemFromSuggestion(s.item);
+                          return s.id;
+                        }),
+                      );
+                      const failed = results.filter((r) => r.status === "rejected");
+                      if (failed.length) {
+                        setError(`Some suggested rows failed to add (${failed.length}). Add individually to see specific errors.`);
+                      } else {
+                        setSuggestions([]);
+                      }
+                      await refresh();
+                    } catch (e) {
+                      setError(e instanceof Error ? e.message : "Unknown error");
+                    } finally {
+                      setAddingAll(false);
+                    }
+                  })();
+                }}
+                disabled={addingAll}
+              >
+                {addingAll ? "Adding…" : "Add all to active plan"}
+              </Button>
+            </div>
+
+            {suggestions.map((s) => (
+              <div key={s.id} className="rounded-[1.25rem] border border-white/10 bg-[rgba(0,0,0,0.18)] px-5 py-4">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0 space-y-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-sm font-medium text-[--metis-paper]">{s.item.title}</p>
+                      <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">Suggested</Badge>
+                      {s.item.stakeholderGroupId ? (
+                        <Badge className="border-0 bg-[--metis-brass]/12 text-[--metis-brass-soft]">Audience group</Badge>
+                      ) : (
+                        <Badge className="border-0 bg-white/6 text-[--metis-paper-muted]">General</Badge>
+                      )}
+                    </div>
+                    <p className="text-sm text-[--metis-paper-muted]">{s.why}</p>
+                    <p className="text-xs text-[--metis-paper-muted]">
+                      <span className="text-[--metis-paper]">Output</span> · {s.item.outputType}
+                      <span className="mx-2 text-white/20" aria-hidden>
+                        •
+                      </span>
+                      <span className="text-[--metis-paper]">Channel</span> · {s.item.channel}
+                      <span className="mx-2 text-white/20" aria-hidden>
+                        •
+                      </span>
+                      <span className="text-[--metis-paper]">Schedule</span> · {s.item.scheduleType}
+                      {s.item.scheduleType === "cadence" && s.item.cadenceMinutes ? ` (${s.item.cadenceMinutes}m)` : ""}
+                      {s.item.scheduleType === "trigger" && s.item.triggerType ? ` (${s.item.triggerType})` : ""}
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                      disabled={addingAll || addingSuggestionId === s.id}
+                      onClick={() => {
+                        void (async () => {
+                          setError(null);
+                          setAddingSuggestionId(s.id);
+                          try {
+                            await createItemFromSuggestion(s.item);
+                            await refresh();
+                            setSuggestions((cur) => cur.filter((x) => x.id !== s.id));
+                          } catch (e) {
+                            setError(e instanceof Error ? e.message : "Unknown error");
+                          } finally {
+                            setAddingSuggestionId(null);
+                          }
+                        })();
+                      }}
+                    >
+                      {addingSuggestionId === s.id ? "Adding…" : "Add to active plan"}
+                    </Button>
+                    <Button variant="ghost" disabled={addingAll} onClick={() => setSuggestions((cur) => cur.filter((x) => x.id !== s.id))}>
+                      Remove
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="mt-4 text-sm text-[--metis-paper-muted]">No suggested rows yet. Choose inputs above and generate.</p>
+        )}
+      </div>
+
       <div className="rounded-[1.25rem] border border-white/10 bg-[rgba(255,255,255,0.03)] px-5 py-5">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
