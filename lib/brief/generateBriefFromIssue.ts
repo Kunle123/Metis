@@ -249,27 +249,36 @@ function capBulletBlock(text: string, maxBullets: number) {
   return `${head.join("\n")}\n- …${lines.length - maxBullets} more item(s) in the record`;
 }
 
-function topOpenQuestionsSummary({
-  openQuestionsRaw,
-  openGaps,
-  cap = 5,
-}: {
-  openQuestionsRaw: string;
-  openGaps: Gap[];
-  cap?: number;
-}) {
+type TopOpenQuestionRecord = {
+  source: "intake" | "gap";
+  score: number;
+  text: string;
+  severity?: string | null;
+  section?: string | null;
+};
+
+function severityRankForOpenQuestion(severity: string | null | undefined): number {
+  const u = cleanText(severity ?? "").toLowerCase();
+  if (u.includes("critical")) return 4;
+  if (u.includes("blocker")) return 4;
+  if (u.includes("severe") || u.includes("serious")) return 3;
+  if (u.includes("high")) return 3;
+  if (u.includes("important")) return 2;
+  if (u.includes("moderate") || u.includes("medium")) return 1;
+  if (u.length) return 1;
+  return 0;
+}
+
+function gatherTopOpenQuestionRecords(openQuestionsRaw: string, openGaps: Gap[]): TopOpenQuestionRecord[] {
   const intakeItems = splitOpenQuestionsToBullets(openQuestionsRaw).map((s) => fixMalformedQuestionText(s)).filter(Boolean);
 
-  const byKey = new Map<
-    string,
-    { source: "intake" | "gap"; score: number; text: string; severity?: string | null; section?: string | null }
-  >();
+  const byKey = new Map<string, TopOpenQuestionRecord>();
 
   for (const item of intakeItems) {
     const key = normalizeQuestionThemeKey(item) || normalizeQuestionKey(item) || normalizeNeedText(item);
     if (!key) continue;
     const existing = byKey.get(key);
-    const candidate = { source: "intake" as const, score: 0, text: item, severity: null, section: null };
+    const candidate: TopOpenQuestionRecord = { source: "intake", score: 0, text: item, severity: null, section: null };
     if (!existing || candidate.score > existing.score || (candidate.score === existing.score && candidate.text.length < existing.text.length)) {
       byKey.set(key, candidate);
     }
@@ -285,28 +294,151 @@ function topOpenQuestionsSummary({
     const linkedSection = cleanText((g as any).linkedSection) ? String((g as any).linkedSection) : null;
     const score = (hasSeverity ? 2 : 0) + (linkedSection ? 1 : 0);
     const existing = byKey.get(key);
-    const candidate = { source: "gap" as const, score, text: raw, severity: g.severity ?? null, section: linkedSection };
+    const candidate: TopOpenQuestionRecord = { source: "gap", score, text: raw, severity: g.severity ?? null, section: linkedSection };
     if (!existing) {
       byKey.set(key, candidate);
       continue;
     }
-    const prefer = candidate.score > existing.score || (candidate.score === existing.score && candidate.text.length < existing.text.length);
+    const prefer =
+      candidate.score > existing.score || (candidate.score === existing.score && candidate.text.length < existing.text.length);
     if (prefer) byKey.set(key, candidate);
   }
 
+  /** Same ordering as legacy `topOpenQuestionsSummary`: gap precedence, tracker score tie-breakers, shorter text first. Full brief depends on this. */
   const ranked = [...byKey.values()].sort((a, b) => {
     if (a.source !== b.source) return a.source === "gap" ? -1 : 1;
     if (a.score !== b.score) return b.score - a.score;
     return a.text.length - b.text.length;
   });
 
-  const out = ranked.slice(0, cap).map((q) => {
+  return ranked;
+}
+
+const NEAR_DUP_STOPWORDS = new Set([
+  "what",
+  "which",
+  "when",
+  "where",
+  "whose",
+  "whether",
+  "that",
+  "this",
+  "with",
+  "from",
+  "into",
+  "about",
+  "have",
+  "been",
+  "there",
+  "their",
+  "they",
+  "needs",
+  "need",
+]);
+
+function significantTokensForNearDup(normalizedSentence: string): Set<string> {
+  const tokens = normalizedSentence.split(/\s+/).filter(Boolean);
+  const out = new Set<string>();
+  for (const raw of tokens) {
+    const t = stripTrailingPunctuation(raw);
+    if (t.length < 4 || NEAR_DUP_STOPWORDS.has(t)) continue;
+    out.add(t);
+  }
+  return out;
+}
+
+function tokenJaccard(a: Set<string>, b: Set<string>): number {
+  if (!a.size && !b.size) return 1;
+  if (!a.size || !b.size) return 0;
+  let inter = 0;
+  const smaller = a.size <= b.size ? a : b;
+  const larger = a.size <= b.size ? b : a;
+  for (const x of smaller) if (larger.has(x)) inter += 1;
+  const uni = a.size + b.size - inter;
+  return uni ? inter / uni : 0;
+}
+
+/** Executive-only: merges near-duplicates that survived key-level dedupe; conservative thresholds. */
+export function dedupeExecutiveNearDuplicateQuestions(items: readonly TopOpenQuestionRecord[]): TopOpenQuestionRecord[] {
+  const out: TopOpenQuestionRecord[] = [];
+  const pickPreferred = (x: TopOpenQuestionRecord, y: TopOpenQuestionRecord): TopOpenQuestionRecord => {
+    const sr = severityRankForOpenQuestion(y.severity) - severityRankForOpenQuestion(x.severity);
+    if (sr !== 0) return sr > 0 ? y : x;
+    if (x.source !== y.source) return x.source === "gap" ? x : y;
+    if (x.score !== y.score) return x.score >= y.score ? x : y;
+    return x.text.length <= y.text.length ? x : y;
+  };
+
+  const stripLeadSeverity = (s: string) => s.replace(/^\[[^\]]+\]\s*/, "").trim();
+
+  const nearDuplicateTexts = (a: string, b: string): boolean => {
+    const norm = (raw: string) => normalizeNeedText(stripLeadSeverity(raw)).replace(/[-_/]+/g, " ").replace(/\s+/g, " ").trim();
+    const na = norm(a);
+    const nb = norm(b);
+    if (!na || !nb) return na === nb;
+    if (na === nb) return true;
+    const shorter = na.length <= nb.length ? na : nb;
+    const longer = na.length <= nb.length ? nb : na;
+    if (shorter.length >= 28 && longer.includes(shorter) && shorter.length >= longer.length * 0.82) return true;
+
+    const ja = significantTokensForNearDup(na);
+    const jb = significantTokensForNearDup(nb);
+    const j = tokenJaccard(ja, jb);
+    const minTok = Math.min(ja.size, jb.size);
+    if (minTok >= 2 && j >= 0.82) return true;
+    if (minTok >= 3 && j >= 0.68) return true;
+    return false;
+  };
+
+  for (const item of items) {
+    let merged = false;
+    for (let i = 0; i < out.length; i += 1) {
+      if (nearDuplicateTexts(item.text, out[i].text)) {
+        out[i] = pickPreferred(out[i], item);
+        merged = true;
+        break;
+      }
+    }
+    if (!merged) out.push(item);
+  }
+
+  const bySevGapScore = [...out].sort((a, b) => {
+    const sr = severityRankForOpenQuestion(b.severity) - severityRankForOpenQuestion(a.severity);
+    if (sr !== 0) return sr;
+    if (a.source !== b.source) return a.source === "gap" ? -1 : 1;
+    if (a.score !== b.score) return b.score - a.score;
+    return a.text.localeCompare(b.text, undefined, { sensitivity: "base" });
+  });
+  return bySevGapScore;
+}
+
+function formatTopOpenQuestionsBody(records: readonly TopOpenQuestionRecord[]): string {
+  const out = records.map((q) => {
     const sev = q.source === "gap" && q.severity ? `[${q.severity}] ` : "";
     const section = q.source === "gap" && q.section ? ` — ${q.section}` : "";
     return `- ${sev}${stripTrailingPunctuation(q.text)}${section}`;
   });
-
   return out.join("\n");
+}
+
+function topOpenQuestionsSummary({
+  openQuestionsRaw,
+  openGaps,
+  cap = 5,
+}: {
+  openQuestionsRaw: string;
+  openGaps: Gap[];
+  cap?: number;
+}) {
+  const ranked = gatherTopOpenQuestionRecords(openQuestionsRaw, openGaps).slice(0, cap);
+  return formatTopOpenQuestionsBody(ranked);
+}
+
+/** Executive-only path after key merge: near-dedupe then cap bullets. Exported for fixtures/tests. */
+export function buildExecutiveOpenQuestionsBody(openQuestionsRaw: string, openGaps: Gap[], cap = 5) {
+  const gathered = dedupeExecutiveNearDuplicateQuestions(gatherTopOpenQuestionRecords(openQuestionsRaw, openGaps));
+  const capped = gathered.slice(0, cap);
+  return formatTopOpenQuestionsBody(capped);
 }
 
 export type BriefGenerationInput = {
@@ -469,17 +601,70 @@ function evidenceBaseExecutive(sources: Source[], total: number) {
   return out.join("\n");
 }
 
-function evidenceBaseLeadership(sources: Source[], total: number) {
-  if (!total) {
-    return "No linked source material is on file yet. Add sources so leadership points can be traced to an evidence line.";
+/** Title patterns that indicate smoke/test placeholders — omitted from Executive copy (still on file in Full / Sources). */
+function isSmokeOrTestLikeSourceTitle(title: unknown): boolean {
+  const t = cleanText(title ?? "");
+  if (!t.length) return true;
+  const low = t.toLowerCase();
+  if (/\bsmoke\s*test\b|\bfixture\b|\bstubs?\b|\bplaceholder\b|\btemporary\b|\bscratch\b|\bdo not use\b|\btest\s*only\b/i.test(low)) return true;
+  if (/^test\b/i.test(low) && low.length <= 44) return true;
+  return false;
+}
+
+function evidenceExecutiveConfidenceSummary(rankedSources: Source[], totalLinked: number) {
+  if (!totalLinked) {
+    return "No linked source material is on file yet. Add substantive sources before treating external or leadership claims as attributable. For retrieval and audit trails, review the Sources page and Full brief.";
   }
-  const lines = sources.slice(0, CAP_EX_SOURCES).map((s) => formatSourceForExecutive(s));
-  const out = [`${total} source(s) on file.`, "", ...lines];
-  if (total > CAP_EX_SOURCES) {
-    out.push("");
-    out.push(`…and ${total - CAP_EX_SOURCES} more; review the full register when the narrative is sensitive.`);
+
+  const substantive = rankedSources.filter((s) => !isSmokeOrTestLikeSourceTitle(s.title));
+  const excludedSmoke = rankedSources.filter((s) => isSmokeOrTestLikeSourceTitle(s.title)).length;
+
+  const poolForMix = substantive.length ? substantive : rankedSources;
+  const withReliabilityLabel = poolForMix.filter((s) => Boolean(cleanText(s.reliability)));
+
+  const counts = new Map<string, number>();
+  for (const s of poolForMix) {
+    const k = cleanText(s.tier) || "Unlabelled tier";
+    counts.set(k, (counts.get(k) ?? 0) + 1);
   }
-  return out.join("\n");
+
+  const mix = [...counts.entries()]
+    .sort((a, b) => {
+      const n = b[1] - a[1];
+      if (n !== 0) return n;
+      return a[0].localeCompare(b[0], undefined, { sensitivity: "base" });
+    })
+    .map(([k, v]) => `${k} (${v})`)
+    .join(", ");
+
+  const official = substantive.length ? substantive.filter((s) => cleanText(s.tier).toLowerCase() === "official").length : 0;
+
+  let confidenceBits: string[] = [];
+  if (!substantive.length) {
+    confidenceBits.push(
+      "Linked records appear to be smoke/test placeholders rather than substantive source material — treat attributable claims cautiously.",
+    );
+  } else {
+    confidenceBits.push(`${substantive.length} substantive linked record(s); tier mix skews toward: ${mix || "mixed"}.`);
+    if (official === 0) confidenceBits.push("No Official-tier material is present in substantive records — external lines should remain explicitly conditional.");
+    else if (substantive.length === 1) confidenceBits.push("Only one substantive record is linked — corroborate before taking firm positions.");
+    else confidenceBits.push("Multiple substantive records exist — corroborate any sensitive point against at least two lines where feasible.");
+    if (!withReliabilityLabel.length) confidenceBits.push("Reliability assessments are unevenly labelled across sources — weigh Official/internal tiering more than unstated reliability tags.");
+    else if (withReliabilityLabel.length < poolForMix.length) {
+      const missing = poolForMix.length - withReliabilityLabel.length;
+      confidenceBits.push(`${missing} substantive record(s) lack reliability labels — do not imply provenance certainty beyond tier and linkage.`);
+    } else confidenceBits.push("Reliability annotations are present on substantive records — combine with tiering but still avoid overstating causal proof.");
+
+    if (excludedSmoke && substantive.length)
+      confidenceBits.push(
+        `${excludedSmoke} non-substantive linked record(s) are omitted from this mix (titles look like placeholders); see Full brief/Sources for the complete register.`,
+      );
+  }
+
+  const tail =
+    "\n\nFor line-by-line source codes, excerpts, and the complete register—including any excluded stubs—review the Sources page or the Evidence base section in the Full brief.";
+
+  return `${confidenceBits.join(" ")}\n\nThis summary is directional only; it does not establish facts beyond what intake and Sources themselves record.${tail}`;
 }
 
 /** Not referenced by current brief artifact; if wired in, pass `rankSourcesForIssue` output and `total`. */
@@ -604,6 +789,36 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
 
   const recommendedBodyForFull = recommendedActionsForFull.map((x, i) => `${i + 1}) ${x}`).join("\n");
 
+  function leadershipDecisionScaffoldLine(gap: Gap, rotationIndex: number): string | null {
+    const rawAll = cleanText(gap.prompt || gap.title || "");
+    if (!rawAll) return null;
+    const rawOneLine = stripTrailingPunctuation(rawAll.replace(/\s+/g, " "));
+    const prompt = clipAtWordBoundary(rawOneLine, 130);
+    if (!prompt) return null;
+    const low = normalizeNeedText(rawOneLine);
+    const section = cleanText(gap.linkedSection ?? "");
+    const sectionHint = section ? ` (${section})` : "";
+
+    if (
+      /\b(public|community|resident|citizen|stakeholder|audience|narrative|messaging|comms\b|communication|communications|press|external line)\b/.test(low)
+    ) {
+      return `Approve the communications posture for${sectionHint}: ${prompt}`;
+    }
+    if (/\b(procurement|legal|budget|contract|award|award decision|committee|approval route|authorised|authorized)\b/.test(low)) {
+      return `Agree the approval route for${sectionHint}: ${prompt}`;
+    }
+    if (
+      /\b(owner|ownership|deadline|due date|escalation path|routing|who decides|timeline|cadence|decision timeline)\b/.test(low)
+    ) {
+      return `Set the decision owner and escalation route for${sectionHint}: ${prompt}`;
+    }
+    const scaffoldCycle = rotationIndex % 4;
+    if (scaffoldCycle === 0) return `Confirm the leadership position on${sectionHint}: ${prompt}`;
+    if (scaffoldCycle === 1) return `Agree the approval route for${sectionHint}: ${prompt}`;
+    if (scaffoldCycle === 2) return `Set the decision owner and deadline for${sectionHint}: ${prompt}`;
+    return `Confirm the executive decision required for${sectionHint}: ${prompt}`;
+  }
+
   const recommendedActionsForLeadership: string[] = (() => {
     const out: string[] = [];
     const oqBullets = splitOpenQuestionsToBullets(openQuestions);
@@ -611,15 +826,10 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
     const hasOq = oqBullets.length > 0;
 
     if (hasGaps) {
-      for (const g of rankedOpenGaps.slice(0, 4)) {
-        const raw = (g.prompt.trim() || g.title).replace(/\s+/g, " ");
-        const prompt = clipAtWordBoundary(stripTrailingPunctuation(raw), 110);
-        if (!prompt) continue;
-        const sev = g.severity ? `[${g.severity}] ` : "";
-        const sec = cleanText(g.linkedSection ?? "");
-        const secBit = sec ? ` (${sec})` : "";
-        out.push(`Assign owner and resolution path for ${sev}open question${secBit}: ${prompt}.`);
-      }
+      rankedOpenGaps.slice(0, 4).forEach((g, i) => {
+        const line = leadershipDecisionScaffoldLine(g, i);
+        if (line) out.push(sentence(line));
+      });
     } else if (hasOq) {
       const seen = new Set<string>();
       for (const c of oqBullets) {
@@ -628,62 +838,43 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
         const key = normalizeQuestionThemeKey(q) || normalizeQuestionKey(q) || normalizeNeedText(q);
         if (!key || seen.has(key)) continue;
         seen.add(key);
+        const shortPrompt = stripTrailingPunctuation(q.replace(/\s+/g, " "));
+        const short = clipAtWordBoundary(shortPrompt, 110);
         if (/\bfollow[- ]?up\b|\bcadence\b|\bnamed owner\b/i.test(q)) {
-          out.push("Confirm follow-up cadence and named owner before the leadership session.");
+          out.push("Confirm follow-up cadence and accountable owner routing before leadership uses firm commitments.");
         } else if (/\bproof point\b|\bevidence\b|\bcite\b|\bsources?\b/i.test(q)) {
-          out.push("Agree which proof points can be used in the room and which require softer wording or follow-up.");
+          out.push("Agree what can be asserted vs what must remain conditional pending corroborating records.");
         } else if (/\bpartnership\b|\boffers?\b|\bprocurement\b|\bbudget\b|\bcommit(?:ment|ting)\b/i.test(q)) {
-          out.push("Clarify any partnership offers and constraints before they are mentioned externally.");
+          out.push("Align leadership on disclosed constraints versus still-open commercial or partnership points.");
         } else if (/\btimeline\b|\bwhen\b|\bdates?\b|\bdecision point\b|\bsign[- ]?off\b/i.test(q)) {
-          out.push("Confirm timeline and decision points, including what can be said publicly vs internally.");
-        } else {
-          const short = clipAtWordBoundary(stripTrailingPunctuation(q), 86);
-          if (short) out.push(`Resolve the open question: ${short}`);
+          out.push("Fix decision milestones and disclose what timelines remain genuinely flexible.");
+        } else if (short) {
+          out.push(`Confirm the leadership decision on: ${short}`);
         }
-        if (out.length >= 2) break;
+        if (out.length >= 4) break;
       }
     }
 
-    if (rankedSources.length) {
-      const counts = new Map<string, number>();
-      for (const s of rankedSources) {
-        const k = cleanText(s.tier) || "Unset";
-        counts.set(k, (counts.get(k) ?? 0) + 1);
-      }
-      const mix = [...counts.entries()]
-        .sort((a, b) => b[1] - a[1])
-        .map(([k, v]) => `${k}×${v}`)
-        .join(", ");
-      const official = counts.get("Official") ?? 0;
-      let tail = "";
-      if (official === 0) tail = " No Official-tier material on file — keep external claims conditional.";
-      else if (rankedSources.length === 1) tail = " Single source on file — cross-check before hard commitments.";
-      out.push(`Cite the evidence base (${rankedSources.length} on file; tier mix: ${mix}).${tail}`);
-    } else if (hasGaps || hasOq) {
-      out.push("Link at least one source so leadership lines can be traced to attributable material.");
+    if ((!rankedSources.length && (hasGaps || hasOq)) || rankedSources.every((s) => isSmokeOrTestLikeSourceTitle(s.title))) {
+      out.push("Link substantive sources so approvals can cite attributable material—not smoke-test placeholders—in the Sources register.");
     }
 
     if (orderedMessageAudienceNames.length) {
-      out.push(
-        sentence(`Stress-test external-facing lines for audience groups used in Messages: ${orderedMessageAudienceNames.join(", ")}`),
-      );
+      out.push(sentence(`Stress-test external-facing lines for audience groups used in Messages (${orderedMessageAudienceNames.join(", ")}).`));
     } else if (cleanText(issue.audience ?? "")) {
-      out.push(sentence(`Calibrate the line against the intake audience note: ${cleanText(issue.audience ?? "")}`));
+      out.push(sentence(`Calibrate the line against the intake audience note (${cleanText(issue.audience ?? "")}).`));
     }
 
     if (cleanText(issue.ownerName ?? "")) {
-      out.push(`Accountable owner for the next update and sign-off: ${issue.ownerName}.`);
+      out.push(`Accountable owner for the cadence packaged with this briefing: ${issue.ownerName}.`);
     } else {
-      out.push("Assign a named owner for the next update and sign-off.");
+      out.push("Record a named accountable owner for unresolved decisions surfaced here.");
     }
 
     let deduped = dedupeActionLines(out);
     const thin = !hasGaps && !hasOq;
     if (thin && deduped.length < 2) {
-      deduped = dedupeActionLines([
-        ...deduped,
-        "Confirm what remains under validation before broad or external circulation.",
-      ]);
+      deduped = dedupeActionLines([...deduped, sentence("Confirm what remains under validation before broad or external circulation")]);
     }
     return deduped.slice(0, 5);
   })();
@@ -772,7 +963,8 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
     if (!cleanText(openQuestions) && rankedOpenGaps.length === 0) {
       return "No open questions are recorded yet.";
     }
-    const summary = topOpenQuestions ? capBulletBlock(topOpenQuestions, 5) : "";
+    const execQuestions = buildExecutiveOpenQuestionsBody(openQuestions, rankedOpenGaps, 5);
+    const summary = execQuestions ? capBulletBlock(execQuestions, 5) : "";
     const note =
       rankedOpenGaps.length > 5 || splitOpenQuestionsToBullets(openQuestions).length > 5
         ? "See the Open questions view for the full register."
@@ -798,7 +990,7 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
         { label: "Current assessment", body: currentAssessmentLeadership },
         { label: "Confirmed facts", body: confirmedFactsBlockExecutive },
         { label: "Open questions and unresolved needs", body: keyUnknownsLeadership },
-        { label: "Evidence base", body: evidenceBaseLeadership(rankedSources, rankedSources.length) },
+        { label: "Evidence base", body: evidenceExecutiveConfidenceSummary(rankedSources, rankedSources.length) },
         {
           label: "Observations",
           body:

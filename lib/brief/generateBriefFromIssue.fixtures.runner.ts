@@ -5,6 +5,7 @@
 import assert from "node:assert/strict";
 
 import {
+  buildExecutiveOpenQuestionsBody,
   generateBriefFromIssue,
   normalizeMessageAudienceGroupNames,
   splitOpenQuestionsToBullets,
@@ -110,8 +111,16 @@ const withGaps: BriefGenerationInput = {
 
 const execGaps = generateBriefFromIssue(withGaps, "executive");
 const recBody = execGaps.executive.blocks.find((b) => b.label === "Recommended decisions / next actions")?.body ?? "";
-assert.match(recBody, /\[[^\]]*\]\s*open question\s*\(/i);
-assert.match(recBody, /tier mix/i);
+assert.match(recBody, /Agree the approval route for/i);
+assert.ok(
+  !/Assign owner and resolution path/i.test(recBody),
+  "Executive recommendations should be decision-framed, not repetitive tracker owner assignment",
+);
+
+const execEvWithGaps = execGaps.executive.blocks.find((b) => b.label === "Evidence base")?.body ?? "";
+assert.ok(!execEvWithGaps.includes("SRC-"), "Executive evidence summary should not expose source codes");
+assert.ok(!execEvWithGaps.toLowerCase().includes("reliability not set"), 'Executive evidence should not surface "reliability not set"');
+assert.match(execEvWithGaps, /Full brief/i);
 
 /** Intake `issue.audience` fallback when Messages has no audience groups recorded. */
 const intakeAudienceOnly: BriefGenerationInput = {
@@ -176,9 +185,46 @@ const tierOrderExec = generateBriefFromIssue(
   "executive",
 );
 const evBody = tierOrderExec.executive.blocks.find((b) => b.label === "Evidence base")?.body ?? "";
-assert.ok(
-  evBody.indexOf("Official line") >= 0 && evBody.indexOf("Internal note") >= 0 && evBody.indexOf("Official line") < evBody.indexOf("Internal note"),
-  "executive evidence base orders Official before Internal despite recency",
+assert.match(evBody, /substantive linked record/i);
+assert.match(evBody, /Official/i);
+assert.match(evBody, /Internal/i);
+assert.ok(!evBody.includes("SRC-"), "Executive evidence stays free of SRC codes despite ranked ordering");
+
+/** Full artifact evidence panel retains per-source SRC listing for auditability. */
+const fullTierEvidence = generateBriefFromIssue(
+  { issue: baseIssue, sources: [internalNewer, officialFirst], gaps: [], internalInputs: [] as InternalInput[] },
+  "full",
 );
+const fullEvPanel = fullTierEvidence.executive.blocks.find((b) => b.label === "Evidence base")?.body ?? "";
+assert.ok(fullEvPanel.includes("SRC-OFF"), "Full brief keeps detailed source identifiers");
+
+const mergedExecBody = buildExecutiveOpenQuestionsBody(
+  "Define the material change threshold for external communications rollout.",
+  [
+    gap({
+      id: "gap-material",
+      prompt: "Confirm the material-change threshold for external communications rollout.",
+      title: "Materiality",
+      severity: "Critical",
+    }),
+  ],
+  5,
+);
+const mergedBullets = mergedExecBody.split("\n").map((l) => l.trim()).filter((l) => l.startsWith("-"));
+assert.ok(mergedBullets.length === 1, "Executive open-question merge should collapse near-duplicate wording");
+
+const smokeSource: Source = {
+  ...sampleSource,
+  id: "smoke-1",
+  sourceCode: "SRC-SMOKE",
+  title: "Smoke test harness",
+};
+const execSmoke = generateBriefFromIssue(
+  { issue: baseIssue, sources: [smokeSource, sampleSource], gaps: [], internalInputs: [] as InternalInput[] },
+  "executive",
+);
+const evSmoke = execSmoke.executive.blocks.find((b) => b.label === "Evidence base")?.body ?? "";
+assert.ok(!evSmoke.includes("SRC-SMOKE"));
+assert.ok(!/smoke test/i.test(evSmoke), "Executive evidence should not surface smoke-test titles");
 
 console.log("generateBriefFromIssue fixtures: OK");
