@@ -388,11 +388,15 @@ export function MetisShell({
             <div className="metis-shell-aside-header space-y-4 border-b border-white/8 pb-7">
               <div className="inline-flex items-center gap-3">
                 <div className="metis-shell-aside-brand-mark flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-white/5 shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
-                  <span className="font-[Cormorant_Garamond] text-2xl text-[--metis-paper]">M</span>
+                  <span className="metis-shell-aside-brand-letter font-[Cormorant_Garamond] text-2xl text-[--metis-paper]">M</span>
                 </div>
                 <div>
-                  <p className="text-[0.68rem] uppercase tracking-[0.3em] text-[--metis-ink-soft]">Metis</p>
-                  <p className="mt-1 font-[Cormorant_Garamond] text-3xl text-[--metis-paper]">Briefing</p>
+                  <p className="metis-shell-aside-brand-eyebrow text-[0.68rem] uppercase tracking-[0.3em] text-[--metis-ink-soft]">
+                    Metis
+                  </p>
+                  <p className="metis-shell-aside-brand-title mt-1 font-[Cormorant_Garamond] text-3xl text-[--metis-paper]">
+                    Briefing
+                  </p>
                 </div>
               </div>
             </div>
@@ -492,7 +496,7 @@ export function MetisShell({
                       Issue · <span className="text-[--metis-paper]">{activeIssue.title}</span>
                     </p>
                   ) : null}
-                  <h1 className="font-[Cormorant_Garamond] text-3xl text-[--metis-paper] sm:text-4xl">{pageTitle}</h1>
+                  <h1 className="metis-shell-page-title font-[Cormorant_Garamond] text-3xl text-[--metis-paper] sm:text-4xl">{pageTitle}</h1>
                   {activeIssue?.ownerName ? (
                     <p className="text-[0.68rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">
                       Owner · <span className="text-[--metis-paper]">{activeIssue.ownerName}</span>
