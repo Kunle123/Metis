@@ -20,10 +20,13 @@ import { getAlternateWordingForTarget } from "@/lib/brief/alternateWording";
 export const dynamic = "force-dynamic";
 
 function readinessFromConfidence(confidence: BriefConfidence) {
-  if (confidence === "Needs validation") return { label: "Needs validation", tone: "bg-[rgba(118,27,46,0.56)] text-rose-50" };
-  if (confidence === "Unclear") return { label: "Needs clarification", tone: "bg-[rgba(131,82,17,0.72)] text-amber-50" };
-  if (confidence === "Confirmed") return { label: "Ready to circulate", tone: "bg-[rgba(18,91,60,0.76)] text-emerald-50" };
-  return { label: "Ready for review", tone: "bg-[rgba(49,63,82,0.72)] text-slate-50" };
+  if (confidence === "Needs validation")
+    return { label: "Needs validation", tone: "bg-[--metis-status-danger-bg] text-[--metis-status-danger-fg]" };
+  if (confidence === "Unclear")
+    return { label: "Needs clarification", tone: "bg-[--metis-status-warning-bg] text-[--metis-status-warning-fg]" };
+  if (confidence === "Confirmed")
+    return { label: "Ready to circulate", tone: "bg-[--metis-status-success-bg] text-[--metis-status-success-fg]" };
+  return { label: "Ready for review", tone: "bg-[--metis-status-neutral-bg] text-[--metis-status-neutral-fg]" };
 }
 
 function displayTitles(id: string, fallback: string) {
@@ -47,13 +50,13 @@ async function getLatestBriefVersion(issueId: string, mode: BriefMode) {
 
 /** Restrained step band — hierarchy without form-like heaviness */
 const WORKFLOW_STEP =
-  "space-y-3 rounded-[1.05rem] border border-white/[0.07] bg-[rgba(255,255,255,0.018)] px-4 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] sm:px-5";
+  "space-y-3 rounded-[1.05rem] border border-[--metis-outline-subtle] bg-[--metis-surface-card] px-4 py-3.5 shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_18%,transparent)] sm:px-5";
 
 function briefStepLabel(n: string, title: string) {
   return (
     <div className="flex items-center gap-2.5">
       <span
-        className="inline-flex h-6 min-w-6 shrink-0 items-center justify-center rounded-md border border-[--metis-outline-subtle] bg-[rgba(255,255,255,0.05)] text-[0.65rem] font-semibold tabular-nums text-[--metis-brass-soft]"
+        className="inline-flex h-6 min-w-6 shrink-0 items-center justify-center rounded-md border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_65%,transparent)] text-[0.65rem] font-semibold tabular-nums text-[--metis-brass-soft]"
         aria-hidden
       >
         {n}
@@ -189,7 +192,7 @@ export default async function IssueBriefPage({
     >
       <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <SurfaceCard className="min-w-0 overflow-hidden">
-          <div className="border-b border-white/8 bg-[rgba(255,255,255,0.015)] px-5 py-3 sm:px-6">
+          <div className="border-b border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_45%,transparent)] px-5 py-3 sm:px-6">
             <ReviewToolbar
               className="border-0 bg-transparent px-0 py-0"
               left={
@@ -273,7 +276,7 @@ export default async function IssueBriefPage({
 
               {artifact ? (
                 mode === "full" ? (
-                  <div className="rounded-[1.15rem] border border-[--metis-outline-subtle] bg-[rgba(0,0,0,0.12)] px-3 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:px-5 sm:py-5">
+                  <div className="rounded-[1.15rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-frame-soft)_86%,transparent)] px-3 py-4 shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_18%,transparent)] sm:px-5 sm:py-5">
                     <div className="rounded-[1rem] border border-[--metis-outline-subtle] bg-[--metis-surface-card] px-3 py-4 sm:px-5 sm:py-5">
                       <div className="space-y-6">
                         {artifact.full.sections.map((section, index) => {
@@ -316,7 +319,7 @@ export default async function IssueBriefPage({
                     </div>
                   </div>
                 ) : (
-                  <div className="rounded-[1.15rem] border border-[--metis-outline-subtle] bg-[rgba(0,0,0,0.12)] px-3 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:px-5 sm:py-5">
+                  <div className="rounded-[1.15rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-frame-soft)_86%,transparent)] px-3 py-4 shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_18%,transparent)] sm:px-5 sm:py-5">
                     <header className="mb-6 space-y-4 border-b border-[--metis-outline-subtle] pb-6">
                       <h2 className="font-[Cormorant_Garamond] text-[1.85rem] leading-tight text-[--metis-text-primary]">{issue.title}</h2>
                       <p className="max-w-4xl text-sm leading-7 text-[--metis-text-secondary]">{artifact.lede}</p>
@@ -373,7 +376,7 @@ export default async function IssueBriefPage({
             </section>
 
             <section
-              className={`${WORKFLOW_STEP} border-dashed border-white/[0.1]`}
+              className={`${WORKFLOW_STEP} border-dashed border-[--metis-outline-subtle]`}
               aria-label="Next · Prepare output"
             >
               <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-text-tertiary]">Next · Prepare output</p>
@@ -403,14 +406,16 @@ export default async function IssueBriefPage({
                 <div className="space-y-2">
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Mode</span>
-                    <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{mode === "full" ? "Full" : "Executive"}</Badge>
+                    <Badge className="border-0 bg-[color-mix(in_oklab,var(--metis-surface-elevated)_70%,transparent)] text-[--metis-text-secondary]">
+                      {mode === "full" ? "Full" : "Executive"}
+                    </Badge>
                   </div>
-                  <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-2">
+                  <div className="flex items-center justify-between gap-3 border-t border-[--metis-outline-subtle] pt-2">
                     <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Stored revision</span>
                     <span className="text-right text-[--metis-paper]">{storedBriefRevisionLabel ?? "No stored brief yet"}</span>
                   </div>
                   {briefVersion ? (
-                    <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-2">
+                    <div className="flex items-center justify-between gap-3 border-t border-[--metis-outline-subtle] pt-2">
                       <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Freshness</span>
                       <span
                         className={
@@ -423,7 +428,7 @@ export default async function IssueBriefPage({
                       </span>
                     </div>
                   ) : null}
-                  <p className="border-t border-white/8 pt-2 text-[0.7rem] leading-snug text-[--metis-paper-muted]">
+                  <p className="border-t border-[--metis-outline-subtle] pt-2 text-[0.7rem] leading-snug text-[--metis-paper-muted]">
                     See the main column for what revision vs freshness means and when to regenerate.
                   </p>
                 </div>
@@ -432,7 +437,10 @@ export default async function IssueBriefPage({
               <div className="space-y-2 text-sm leading-6 text-[--metis-paper-muted]">
                 {artifactMetadata.length ? (
                   artifactMetadata.map((item) => (
-                    <div key={item.label} className="flex items-center justify-between gap-3 border-t border-white/8 pt-2 first:border-t-0 first:pt-0">
+                    <div
+                      key={item.label}
+                      className="flex items-center justify-between gap-3 border-t border-[--metis-outline-subtle] pt-2 first:border-t-0 first:pt-0"
+                    >
                       <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">{item.label}</span>
                       <span className="text-[--metis-paper]">{item.value}</span>
                     </div>
@@ -448,8 +456,10 @@ export default async function IssueBriefPage({
                 defaultOpen={false}
                 summary={
                   <div className="flex items-center justify-between gap-3">
-                    <h3 className="text-[0.7rem] font-medium uppercase tracking-[0.22em] text-[rgba(176,171,160,0.72)]">Pre-flight checks</h3>
-                    <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{artifact.executive.immediateActions.length}</Badge>
+                    <h3 className="text-[0.7rem] font-medium uppercase tracking-[0.22em] text-[--metis-text-tertiary]">Pre-flight checks</h3>
+                    <Badge className="border-0 bg-[color-mix(in_oklab,var(--metis-surface-elevated)_70%,transparent)] text-[--metis-text-secondary]">
+                      {artifact.executive.immediateActions.length}
+                    </Badge>
                   </div>
                 }
               >
@@ -466,14 +476,16 @@ export default async function IssueBriefPage({
                 defaultOpen={false}
                 summary={
                   <div className="flex items-center justify-between gap-3">
-                    <h3 className="text-[0.7rem] font-medium uppercase tracking-[0.22em] text-[rgba(176,171,160,0.72)]">Sources appendix</h3>
-                    <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{linkedSources.length}</Badge>
+                    <h3 className="text-[0.7rem] font-medium uppercase tracking-[0.22em] text-[--metis-text-tertiary]">Sources appendix</h3>
+                    <Badge className="border-0 bg-[color-mix(in_oklab,var(--metis-surface-elevated)_70%,transparent)] text-[--metis-text-secondary]">
+                      {linkedSources.length}
+                    </Badge>
                   </div>
                 }
               >
                 <div className="space-y-3">
                   {linkedSources.map((s) => (
-                    <div key={s.id} className="border-t border-white/8 pt-3 first:border-t-0 first:pt-0">
+                    <div key={s.id} className="border-t border-[--metis-outline-subtle] pt-3 first:border-t-0 first:pt-0">
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <p className="text-sm font-medium text-[--metis-paper]">{s.sourceCode} · {s.title}</p>
@@ -481,7 +493,9 @@ export default async function IssueBriefPage({
                             {s.tier} · {s.linkedSection ?? "—"}
                           </p>
                         </div>
-                        <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{s.reliability ?? "In use"}</Badge>
+                        <Badge className="border-0 bg-[color-mix(in_oklab,var(--metis-surface-elevated)_70%,transparent)] text-[--metis-text-secondary]">
+                          {s.reliability ?? "In use"}
+                        </Badge>
                       </div>
                     </div>
                   ))}
@@ -496,11 +510,13 @@ export default async function IssueBriefPage({
                 <div className="space-y-2">
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Status</span>
-                    <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{issue.status}</Badge>
+                    <Badge className="border-0 bg-[color-mix(in_oklab,var(--metis-surface-elevated)_70%,transparent)] text-[--metis-text-secondary]">
+                      {issue.status}
+                    </Badge>
                   </div>
-                  <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-2">
+                  <div className="flex items-center justify-between gap-3 border-t border-[--metis-outline-subtle] pt-2">
                     <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Open questions</span>
-                    <Badge className="border-0 bg-[rgba(124,78,18,0.6)] text-amber-50">{issue.openGapsCount}</Badge>
+                    <Badge className="border-0 bg-[--metis-status-warning-bg] text-[--metis-status-warning-fg]">{issue.openGapsCount}</Badge>
                   </div>
                 </div>
               }
@@ -519,7 +535,10 @@ export default async function IssueBriefPage({
               title="Blockers"
               meta={
                 <div className="flex items-center gap-2 text-[--metis-text-primary]">
-                  <AlertTriangle className="h-4 w-4 shrink-0 text-amber-400/85" aria-hidden />
+                  <AlertTriangle
+                    className="h-4 w-4 shrink-0 text-[color-mix(in_oklab,var(--metis-status-warning-fg)_85%,transparent)]"
+                    aria-hidden
+                  />
                   <span>Top items to validate</span>
                 </div>
               }
@@ -527,7 +546,7 @@ export default async function IssueBriefPage({
               <div className="space-y-3">
                 {blockers.length ? (
                   blockers.map((item) => (
-                    <div key={item.title} className="border-t border-white/8 pt-3 first:border-t-0 first:pt-0">
+                    <div key={item.title} className="border-t border-[--metis-outline-subtle] pt-3 first:border-t-0 first:pt-0">
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <p className="text-sm font-medium text-[--metis-paper]">{item.title}</p>
                         <ConfidencePill level={item.confidence} />
@@ -554,7 +573,7 @@ export default async function IssueBriefPage({
               <div className="space-y-3">
                 {evidenceItems.length ? (
                   evidenceItems.map((s) => (
-                    <div key={s.id} className="border-t border-white/8 pt-3 first:border-t-0 first:pt-0">
+                    <div key={s.id} className="border-t border-[--metis-outline-subtle] pt-3 first:border-t-0 first:pt-0">
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <p className="text-sm font-medium text-[--metis-paper]">{s.sourceCode}</p>
@@ -562,7 +581,9 @@ export default async function IssueBriefPage({
                             {s.tier} · {s.linkedSection ?? "—"}
                           </p>
                         </div>
-                        <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{s.reliability ?? "In use"}</Badge>
+                        <Badge className="border-0 bg-[color-mix(in_oklab,var(--metis-surface-elevated)_70%,transparent)] text-[--metis-text-secondary]">
+                          {s.reliability ?? "In use"}
+                        </Badge>
                       </div>
                     </div>
                   ))

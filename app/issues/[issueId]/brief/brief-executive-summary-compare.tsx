@@ -67,7 +67,7 @@ export function BriefExecutiveSummaryCompare({
   }
 
   return (
-    <div className="space-y-3 rounded-[var(--metis-control-radius-md)] border border-dashed border-[--metis-outline-subtle] bg-[rgba(255,255,255,0.015)] px-3 py-3 sm:px-4">
+    <div className="space-y-3 rounded-[var(--metis-control-radius-md)] border border-dashed border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_45%,transparent)] px-3 py-3 sm:px-4">
       <p className="text-[0.58rem] font-medium uppercase tracking-[0.18em] text-[--metis-text-tertiary]">
         Optional · Compare alternate wording
       </p>

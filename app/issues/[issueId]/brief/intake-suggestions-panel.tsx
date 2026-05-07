@@ -140,7 +140,7 @@ export function IntakeSuggestionsPanel({ issueId }: { issueId: string }) {
   if (!bundle || !hasAny) return null;
 
   return (
-    <div className="space-y-4 border-b border-white/8 bg-[rgba(255,255,255,0.012)] px-6 py-5 sm:px-7">
+    <div className="space-y-4 border-b border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_45%,transparent)] px-6 py-5 sm:px-7">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="space-y-1">
           <p className="text-sm font-medium text-[--metis-paper]">Intake suggestions</p>
@@ -178,7 +178,10 @@ export function IntakeSuggestionsPanel({ issueId }: { issueId: string }) {
                   const st = sourceState[idx]?.status ?? "idle";
                   const missing = !src.title?.trim() || !src.note?.trim() || !src.tier;
                   return (
-                    <div key={`${src.title ?? "source"}-${idx}`} className="space-y-2 border-t border-white/8 pt-4 first:border-t-0 first:pt-0">
+                    <div
+                      key={`${src.title ?? "source"}-${idx}`}
+                      className="space-y-2 border-t border-[--metis-outline-subtle] pt-4 first:border-t-0 first:pt-0"
+                    >
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-[--metis-paper]">{src.title ?? "Untitled source"}</p>
@@ -230,7 +233,7 @@ export function IntakeSuggestionsPanel({ issueId }: { issueId: string }) {
                         <p className="text-xs text-[--metis-paper-muted]">Needs title, note, and tier before it can be created.</p>
                       ) : null}
                       {sourceState[idx]?.status === "error" ? (
-                        <p className="text-xs text-rose-100">{sourceState[idx]?.message ?? "Failed."}</p>
+                        <p className="text-xs text-[--metis-status-danger-fg]">{sourceState[idx]?.message ?? "Failed."}</p>
                       ) : null}
                     </div>
                   );
@@ -249,7 +252,10 @@ export function IntakeSuggestionsPanel({ issueId }: { issueId: string }) {
                   const missing = missingGapFields(draft);
                   const disabled = st === "creating" || st === "created" || missing.length > 0;
                   return (
-                    <div key={`${gap.title ?? "gap"}-${idx}`} className="space-y-2 border-t border-white/8 pt-4 first:border-t-0 first:pt-0">
+                    <div
+                      key={`${gap.title ?? "gap"}-${idx}`}
+                      className="space-y-2 border-t border-[--metis-outline-subtle] pt-4 first:border-t-0 first:pt-0"
+                    >
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-[--metis-paper]">{draft.title || gap.title || "Untitled gap"}</p>
@@ -295,14 +301,14 @@ export function IntakeSuggestionsPanel({ issueId }: { issueId: string }) {
                           {st === "created" ? "Created" : st === "creating" ? "Creating…" : "Create gap"}
                         </Button>
                       </div>
-                      <div className="grid gap-2 rounded-[1.1rem] border border-white/8 bg-white/[0.02] px-3 py-3">
+                      <div className="grid gap-2 rounded-[1.1rem] border border-[--metis-outline-subtle] bg-[--metis-surface-card] px-3 py-3">
                         <div className="grid gap-2 sm:grid-cols-2">
                           <label className="space-y-1">
                             <span className="text-[0.65rem] uppercase tracking-[0.18em] text-[--metis-ink-soft]">Title</span>
                             <input
                               value={draft.title}
                               onChange={(e) => setGapDraftByIdx((m) => ({ ...m, [idx]: { ...draft, title: e.target.value } }))}
-                              className="h-9 w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 text-sm text-[--metis-paper] outline-none focus:border-white/18"
+                              className="h-9 w-full rounded-lg border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-3 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
                               placeholder="What is missing?"
                             />
                           </label>
@@ -332,7 +338,7 @@ export function IntakeSuggestionsPanel({ issueId }: { issueId: string }) {
                             <input
                               value={draft.stakeholder}
                               onChange={(e) => setGapDraftByIdx((m) => ({ ...m, [idx]: { ...draft, stakeholder: e.target.value } }))}
-                              className="h-9 w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 text-sm text-[--metis-paper] outline-none focus:border-white/18"
+                              className="h-9 w-full rounded-lg border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-3 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
                               placeholder="Who needs the answer?"
                             />
                           </label>
@@ -341,7 +347,7 @@ export function IntakeSuggestionsPanel({ issueId }: { issueId: string }) {
                             <input
                               value={draft.linkedSection}
                               onChange={(e) => setGapDraftByIdx((m) => ({ ...m, [idx]: { ...draft, linkedSection: e.target.value } }))}
-                              className="h-9 w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 text-sm text-[--metis-paper] outline-none focus:border-white/18"
+                              className="h-9 w-full rounded-lg border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-3 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
                               placeholder="e.g., student comms, legal line, customer impact"
                             />
                             <p className="text-xs leading-5 text-[--metis-paper-muted]">
@@ -356,7 +362,7 @@ export function IntakeSuggestionsPanel({ issueId }: { issueId: string }) {
                           <textarea
                             value={draft.prompt}
                             onChange={(e) => setGapDraftByIdx((m) => ({ ...m, [idx]: { ...draft, prompt: e.target.value } }))}
-                            className="min-h-[64px] w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-[--metis-paper] outline-none focus:border-white/18"
+                            className="min-h-[64px] w-full rounded-lg border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-3 py-2 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
                             placeholder="Phrase as a question or verification task."
                           />
                         </label>
@@ -366,7 +372,7 @@ export function IntakeSuggestionsPanel({ issueId }: { issueId: string }) {
                           <textarea
                             value={draft.whyItMatters}
                             onChange={(e) => setGapDraftByIdx((m) => ({ ...m, [idx]: { ...draft, whyItMatters: e.target.value } }))}
-                            className="min-h-[56px] w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-[--metis-paper] outline-none focus:border-white/18"
+                            className="min-h-[56px] w-full rounded-lg border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-3 py-2 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
                             placeholder="What decision/risk does this affect?"
                           />
                         </label>
@@ -378,7 +384,7 @@ export function IntakeSuggestionsPanel({ issueId }: { issueId: string }) {
                         </p>
                       ) : null}
                       {gapState[idx]?.status === "error" ? (
-                        <p className="text-xs whitespace-pre-wrap text-rose-100">{gapState[idx]?.message ?? "Failed."}</p>
+                        <p className="text-xs whitespace-pre-wrap text-[--metis-status-danger-fg]">{gapState[idx]?.message ?? "Failed."}</p>
                       ) : null}
                     </div>
                   );
