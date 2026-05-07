@@ -342,41 +342,41 @@ export function MessagesPanel({
   return (
     <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
       <div className="min-w-0 space-y-4">
+        {/* Configure (template / audience / wording) */}
         <div className="rounded-[1.25rem] border border-white/10 bg-[rgba(0,0,0,0.14)] px-4 py-4 sm:px-5">
           <div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          <ControlField label="Template">
-            <ControlSelect
-              aria-label="Message template"
-              value={selectedTemplateId}
-              onChange={(e) => navigateToTemplate(e.target.value as MessageVariantTemplateId)}
-            >
-              <option value="external_customer_resident_student">External / customer–resident–student update</option>
-              <option value="internal_staff_update">Internal / staff update</option>
-              <option value="media_holding_line">Media / holding line</option>
-            </ControlSelect>
-          </ControlField>
+            <ControlField label="Template">
+              <ControlSelect
+                aria-label="Message template"
+                value={selectedTemplateId}
+                onChange={(e) => navigateToTemplate(e.target.value as MessageVariantTemplateId)}
+              >
+                <option value="external_customer_resident_student">External / customer–resident–student update</option>
+                <option value="internal_staff_update">Internal / staff update</option>
+                <option value="media_holding_line">Media / holding line</option>
+              </ControlSelect>
+            </ControlField>
 
-          <ControlField label="Audience group">
-            <ControlSelect
-              aria-label="Audience group"
-              value={selectValue}
-              onChange={(e) => {
-                const v = e.target.value;
-                navigateToLens(v === "" ? null : v);
-              }}
-            >
-              <option value="">General (no audience group)</option>
-              {audienceGroupOptions.map((o) => (
-                <option key={o.id} value={o.id}>
-                  {o.label}
-                </option>
-              ))}
-            </ControlSelect>
-          </ControlField>
+            <ControlField label="Audience group">
+              <ControlSelect
+                aria-label="Audience group"
+                value={selectValue}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  navigateToLens(v === "" ? null : v);
+                }}
+              >
+                <option value="">General (no audience group)</option>
+                {audienceGroupOptions.map((o) => (
+                  <option key={o.id} value={o.id}>
+                    {o.label}
+                  </option>
+                ))}
+              </ControlSelect>
+            </ControlField>
 
-          <div className="space-y-2">
             <SegmentedControl<"original" | "ai">
-              label="Output"
+              label="Wording"
               disabled={loading}
               value={aiToggleOn ? "ai" : "original"}
               options={[
@@ -389,59 +389,105 @@ export function MessagesPanel({
               }}
               className="min-w-0 lg:max-w-xl"
             />
-            <p className="text-[0.72rem] leading-snug text-[--metis-paper-muted]">
-              {savedDraftLabel ? (
-                <>
-                  <span className="text-[--metis-paper]">{savedDraftLabel}</span>
-                  {viewingAiPolishedWording ? (
-                    <>
-                      {" "}
-                      — <span className="text-[--metis-paper]">AI-enhanced</span> is alternate wording for this same saved draft, not a separate version or
-                      higher-truth text.
-                    </>
-                  ) : (
-                    <>
-                      {" "}
-                      — <span className="text-[--metis-paper]">Original</span> and <span className="text-[--metis-paper]">AI-enhanced</span> switch wording
-                      views for the same saved row when AI polish exists.
-                    </>
-                  )}
-                </>
-              ) : (
-                <>
-                  <span className="text-[--metis-paper]">Unsaved preview — no draft version yet.</span> Save a draft to create a numbered{" "}
-                  <span className="text-[--metis-paper]">Message draft vN</span> for this issue and template.
-                </>
-              )}
-            </p>
-            <div className="flex flex-col gap-1.5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2">
-              <AiProvenance mode={aiToggleOn ? "ai" : "original"} />
-              <Button type="button" variant="outline" disabled={!markdown} onClick={() => void copyMd()}>
-                <Copy className="mr-2 h-4 w-4" />
-                {copyState === "copied" ? "Copied" : copyState === "error" ? "Copy failed" : "Copy"}
-              </Button>
-              {copyFeedback ? (
-                <span className="text-[0.72rem] leading-snug text-[--metis-paper-muted]" role="status">
-                  {copyFeedback}
-                </span>
-              ) : null}
-            </div>
           </div>
-        </div>
 
           <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-white/8 pt-3 text-xs text-[--metis-paper-muted]">
             <div className="min-w-0">
-              <span className="text-[--metis-paper]">Shaping:</span>{" "}
+              <span className="text-[--metis-paper]">Configured:</span>{" "}
               <span className="text-[--metis-paper]">{selectedTemplateId.replaceAll("_", " ")}</span> ·{" "}
               <span className="text-[--metis-paper]">{selectedAudienceGroupLabel}</span>
               <span className="ml-2">{audienceHelperText}</span>
-              {aiToggleOn && loading ? <span className="ml-2">· Preparing AI-enhanced…</span> : null}
+              {aiToggleOn && loading ? <span className="ml-2">· Preparing AI wording…</span> : null}
               {aiNote ? <span className="ml-2">· {aiNote}</span> : null}
-              {aiToggleOn && compareStats?.veryClose ? <span className="ml-2">· AI-enhanced is very close to the original.</span> : null}
+              {aiToggleOn && compareStats?.veryClose ? <span className="ml-2">· AI wording is very close to the original.</span> : null}
             </div>
             <Link href="/audience-groups" className="text-xs text-[--metis-brass-soft] underline-offset-4 hover:underline">
               Manage audience groups →
             </Link>
+          </div>
+        </div>
+
+        {/* Draft state */}
+        <div className="rounded-[1.25rem] border border-white/10 bg-[rgba(0,0,0,0.12)] px-4 py-4 sm:px-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0 space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[0.66rem] font-medium uppercase tracking-[0.22em] text-[--metis-paper]">
+                  {latest ? `Saved draft v${latest.versionNumber}` : "Preview only"}
+                </span>
+                {latest ? (
+                  <span
+                    className={`rounded-full border px-3 py-1 text-[0.66rem] font-medium uppercase tracking-[0.22em] ${
+                      inSync
+                        ? "border-[--metis-status-neutral-border] bg-[--metis-status-neutral-bg] text-[--metis-status-neutral-fg]"
+                        : "border-[--metis-status-info-border] bg-[--metis-status-info-bg] text-[--metis-status-info-fg]"
+                    }`}
+                  >
+                    {inSync ? "Up to date" : "Stale"}
+                  </span>
+                ) : null}
+              </div>
+
+              {latest ? (
+                <p className="text-[0.78rem] leading-snug text-[--metis-paper-muted]">
+                  Draft version is the saved row; freshness reflects whether the issue changed since it was saved.
+                </p>
+              ) : (
+                <p className="text-[0.78rem] leading-snug text-[--metis-paper-muted]">Preview is computed from the current issue. Save to create a numbered draft.</p>
+              )}
+
+              <p className="text-[0.72rem] leading-snug text-[--metis-paper-muted]">
+                {viewingAiPolishedWording ? (
+                  <>
+                    <span className="text-[--metis-paper]">AI-enhanced</span> is alternate wording for this same message shape — not a separate version or higher-truth text.
+                  </>
+                ) : (
+                  <>
+                    <span className="text-[--metis-paper]">Original</span> and <span className="text-[--metis-paper]">AI-enhanced</span> are wording views of the same message.
+                  </>
+                )}
+              </p>
+            </div>
+
+            <div className="flex shrink-0 items-center gap-2">
+              <AiProvenance mode={aiToggleOn ? "ai" : "original"} />
+            </div>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="rounded-[1.25rem] border border-white/10 bg-[rgba(0,0,0,0.14)] px-4 py-4 sm:px-5">
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                type="button"
+                variant={!latest || !inSync ? "default" : "outline"}
+                disabled={loading}
+                onClick={() => void saveDeterministicVariant()}
+              >
+                {loading ? "Saving…" : latest ? "Save updated draft" : "Save draft"}
+              </Button>
+
+              <Button type="button" variant="outline" disabled={!markdown} onClick={() => void copyMd()}>
+                <Copy className="mr-2 h-4 w-4" />
+                {copyState === "copied" ? "Copied" : copyState === "error" ? "Copy failed" : "Copy"}
+              </Button>
+
+              {canShowAi && aiToggleOn && aiRow ? (
+                <Button type="button" variant="outline" disabled={loading} onClick={() => void ensureAiEnhanced()}>
+                  Refresh AI wording
+                </Button>
+              ) : null}
+            </div>
+
+            <div className="min-w-0 text-[0.72rem] leading-snug text-[--metis-paper-muted]">
+              {!latest ? <span className="text-[--metis-paper]">Copying preview does not create a saved draft version.</span> : null}
+              {copyFeedback ? (
+                <span className="ml-2" role="status">
+                  {copyFeedback}
+                </span>
+              ) : null}
+            </div>
           </div>
         </div>
 
@@ -466,28 +512,6 @@ export function MessagesPanel({
       </div>
 
       <div className="min-w-0 space-y-4 xl:mt-[0.1rem]">
-        <ReviewRailCard
-          title="Persist"
-          tone="neutral"
-          meta={
-            <p className="text-sm leading-6 text-[--metis-paper-muted]">
-              Save the current deterministic draft for history and export. Saving assigns the next <span className="text-[--metis-paper]">Message draft vN</span>{" "}
-              for this issue and template (per template, not per audience group).
-            </p>
-          }
-        >
-          <div className="grid gap-2">
-            <Button type="button" variant="outline" disabled={loading} onClick={() => void saveDeterministicVariant()}>
-              {loading ? "Saving…" : latest ? "Save updated draft" : "Save draft"}
-            </Button>
-            {canShowAi && aiToggleOn && aiRow ? (
-              <Button type="button" variant="outline" disabled={loading} onClick={() => void ensureAiEnhanced()}>
-                Refresh AI-enhanced
-              </Button>
-            ) : null}
-          </div>
-        </ReviewRailCard>
-
         <ReviewRailCard
           title="Draft status"
           tone="info"
@@ -560,6 +584,27 @@ export function MessagesPanel({
                 </>
               ) : null}
             </div>
+        </ReviewRailCard>
+
+        <ReviewRailCard
+          title="Next steps"
+          tone="neutral"
+          meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Optional — no required workflow. Use when you’re ready.</p>}
+        >
+          <div className="grid gap-2">
+            <Link
+              href={`/issues/${issueId}/export`}
+              className="rounded-[1rem] border border-white/10 bg-white/5 px-3 py-2 text-sm text-[--metis-paper] underline-offset-4 hover:underline"
+            >
+              Circulation package &amp; export →
+            </Link>
+            <Link
+              href={`/issues/${issueId}/comms-plan`}
+              className="rounded-[1rem] border border-white/10 bg-white/5 px-3 py-2 text-sm text-[--metis-paper] underline-offset-4 hover:underline"
+            >
+              Comms plan →
+            </Link>
+          </div>
         </ReviewRailCard>
 
         {/* Legacy metadata notes suppressed: Messages uses organisation-level audience groups only. */}
