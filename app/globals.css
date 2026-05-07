@@ -176,6 +176,8 @@
   --metis-status-success-border: rgba(36, 165, 106, 0.32);
   --metis-status-warning-bg: oklch(0.47 0.1 75);
   --metis-status-warning-fg: rgba(255, 255, 255, 0.92);
+  /* Secondary line on compact warning banners (warm, not slate-grey). */
+  --metis-status-warning-muted: rgba(255, 250, 240, 0.82);
   --metis-status-warning-border: rgba(245, 158, 11, 0.34);
   --metis-status-danger-bg: oklch(0.4 0.1 20);
   --metis-status-danger-fg: rgba(255, 255, 255, 0.92);
@@ -228,32 +230,39 @@
  * :root retains dark-oriented values unchanged.
  */
 .light {
+  /* Neutral editorial light: surfaces recede, text is charcoal, colour is semantic only. */
   --metis-dark: oklch(0.22 0.018 70);
   --metis-dark-soft: oklch(0.32 0.012 72);
-  --metis-frame: oklch(0.972 0.014 82);
-  --metis-frame-soft: oklch(0.965 0.016 80);
-  /* “Paper” names double as readable ink on light surfaces */
-  --metis-paper: oklch(0.22 0.028 270);
-  --metis-paper-muted: oklch(0.4 0.024 258);
-  --metis-ink-soft: oklch(0.5 0.022 255);
-  --metis-brass: oklch(0.64 0.09 72);
-  --metis-brass-soft: oklch(0.74 0.07 74);
+  /* Two-tier light system:
+   * - Ambient chrome (page/shell/rails): quiet neutral light grey.
+   * - Reading surfaces (cards/elevated): lighter near-white with a tiny warm-neutral tint.
+   */
+  --metis-frame: oklch(0.976 0.003 255);
+  --metis-frame-soft: oklch(0.968 0.004 255);
+  /* Neutral ink: slightly darker for comfortable reading on near-white cards. */
+  --metis-paper: oklch(0.23 0.01 255);
+  --metis-paper-muted: oklch(0.41 0.01 255);
+  --metis-ink-soft: oklch(0.52 0.01 255);
+  --metis-brass: oklch(0.63 0.095 72);
+  --metis-brass-soft: oklch(0.76 0.078 74);
   --metis-accent: var(--metis-brass);
   --metis-accent-soft: var(--metis-brass-soft);
-  --metis-info: oklch(0.58 0.12 238);
-  --metis-info-soft: oklch(0.9 0.045 236);
-  --metis-info-bg: color-mix(in oklab, var(--metis-info-soft) 72%, rgba(255, 255, 255, 0.55));
-  --metis-info-border: color-mix(in oklab, var(--metis-info) 32%, rgba(0, 0, 0, 0.12));
+  /* Semantic info / provenance only (unchanged hue family) */
+  --metis-info: oklch(0.56 0.11 238);
+  --metis-info-soft: oklch(0.88 0.05 236);
+  --metis-info-bg: color-mix(in oklab, var(--metis-info-soft) 68%, var(--metis-surface-card));
+  --metis-info-border: color-mix(in oklab, var(--metis-info) 34%, rgba(0, 0, 0, 0.12));
   --metis-info-ring: color-mix(in oklab, var(--metis-info) 52%, transparent);
-  --metis-control-bg: oklch(0.995 0.004 250);
-  --metis-control-border: oklch(0.78 0.028 248);
-  --metis-control-inset: oklch(0.97 0.014 252);
-  --metis-control-bg-hover: oklch(0.99 0.008 250);
-  --metis-control-border-hover: oklch(0.75 0.028 246);
-  --metis-control-inset-hover: oklch(0.96 0.014 248);
+  /* Controls: neutral, low-noise */
+  --metis-control-bg: oklch(0.993 0.003 255);
+  --metis-control-border: oklch(0.82 0.006 255);
+  --metis-control-inset: oklch(0.97 0.004 255);
+  --metis-control-bg-hover: oklch(0.99 0.004 255);
+  --metis-control-border-hover: oklch(0.78 0.007 255);
+  --metis-control-inset-hover: oklch(0.965 0.004 255);
   --metis-control-hover-bg: var(--metis-control-bg-hover);
-  --metis-control-bg-disabled: oklch(0.93 0.008 248);
-  --metis-control-border-disabled: oklch(0.82 0.015 246);
+  --metis-control-bg-disabled: oklch(0.94 0.004 255);
+  --metis-control-border-disabled: oklch(0.86 0.005 255);
   --metis-secondary-border: color-mix(in oklab, var(--metis-brass) 46%, transparent);
   --metis-secondary-bg: color-mix(in oklab, var(--metis-brass) 14%, transparent);
   --metis-secondary-inset: color-mix(in oklab, var(--metis-brass) 18%, rgba(0, 0, 0, 0.04));
@@ -262,92 +271,98 @@
   --metis-secondary-inset-hover: color-mix(in oklab, var(--metis-brass) 24%, rgba(0, 0, 0, 0.06));
   --metis-secondary-border-disabled: color-mix(in oklab, var(--metis-brass) 26%, transparent);
   --metis-secondary-bg-disabled: color-mix(in oklab, var(--metis-brass) 8%, transparent);
-  --metis-primary-bg-disabled: oklch(0.9 0.006 250);
-  --metis-primary-border-disabled: oklch(0.84 0.008 246);
-  --metis-primary-text-disabled: oklch(0.62 0.012 258);
-  --metis-primary-inset-disabled: oklch(0.92 0.006 250);
-  --metis-surface-page: oklch(0.982 0.012 85);
-  --metis-surface-card: oklch(0.996 0.006 88);
-  --metis-surface-rail: oklch(0.968 0.014 248);
-  --metis-surface-toolbar: oklch(0.955 0.018 250);
-  --metis-surface-elevated: oklch(1 0.004 90);
-  --metis-surface-disabled: oklch(0.93 0.008 246);
+  --metis-primary-bg-disabled: oklch(0.93 0.003 255);
+  --metis-primary-border-disabled: oklch(0.88 0.004 255);
+  --metis-primary-text-disabled: oklch(0.62 0.01 255);
+  --metis-primary-inset-disabled: oklch(0.94 0.003 255);
+  /* Surfaces: ambient vs reading separation without patchwork. */
+  --metis-surface-page: var(--metis-frame);
+  --metis-surface-rail: oklch(0.971 0.004 255);
+  --metis-surface-toolbar: oklch(0.966 0.004 255);
+  /* Reading surfaces: slightly warmer + lighter than ambient chrome. */
+  --metis-surface-card: oklch(0.991 0.004 92);
+  --metis-surface-elevated: oklch(0.996 0.004 92);
+  --metis-surface-disabled: oklch(0.946 0.003 255);
   --metis-text-primary: var(--metis-paper);
   --metis-text-secondary: var(--metis-paper-muted);
   --metis-text-tertiary: var(--metis-ink-soft);
-  --metis-text-disabled: oklch(0.6 0.014 258);
-  --metis-text-on-accent: oklch(0.22 0.028 265);
-  --metis-action-primary-bg: oklch(0.76 0.11 76);
-  --metis-action-primary-border: oklch(0.7 0.1 74);
-  --metis-action-primary-fg: oklch(0.16 0.028 270);
-  --metis-action-primary-disabled-bg: oklch(0.915 0.006 246);
-  --metis-action-primary-disabled-border: oklch(0.85 0.008 246);
-  --metis-action-primary-disabled-fg: oklch(0.68 0.012 258);
-  --metis-action-secondary-bg: oklch(0.94 0.016 248);
+  --metis-text-disabled: oklch(0.62 0.01 255);
+  --metis-text-on-accent: oklch(0.2 0.032 72);
+  --metis-action-primary-bg: oklch(0.74 0.115 74);
+  --metis-action-primary-border: oklch(0.68 0.102 72);
+  --metis-action-primary-fg: oklch(0.18 0.03 72);
+  --metis-action-primary-disabled-bg: oklch(0.908 0.014 82);
+  --metis-action-primary-disabled-border: oklch(0.845 0.018 80);
+  --metis-action-primary-disabled-fg: oklch(0.58 0.02 78);
+  --metis-action-secondary-bg: oklch(0.936 0.02 82);
   --metis-action-secondary-fg: var(--metis-text-primary);
-  --metis-action-secondary-border: oklch(0.76 0.024 246);
-  --metis-action-secondary-hover-bg: oklch(0.965 0.014 246);
-  --metis-action-secondary-hover-border: oklch(0.68 0.028 244);
-  --metis-action-ghost-fg: oklch(0.42 0.028 258);
-  --metis-action-ghost-disabled-fg: oklch(0.7 0.012 258);
-  --metis-action-secondary-disabled-bg: oklch(0.92 0.008 248);
-  --metis-action-secondary-disabled-border: oklch(0.82 0.012 246);
-  --metis-action-secondary-disabled-fg: oklch(0.68 0.01 258);
-  --metis-action-disabled-bg: oklch(0.925 0.006 248);
-  --metis-action-disabled-fg: oklch(0.66 0.01 258);
-  --metis-action-disabled-border: oklch(0.82 0.012 246);
-  --metis-action-info-bg: color-mix(in oklab, var(--metis-info-soft) 55%, rgba(255, 255, 255, 0.4));
+  --metis-action-secondary-border: oklch(0.74 0.024 78);
+  --metis-action-secondary-hover-bg: oklch(0.958 0.018 84);
+  --metis-action-secondary-hover-border: oklch(0.66 0.028 76);
+  --metis-action-ghost-fg: oklch(0.44 0.03 78);
+  --metis-action-ghost-disabled-fg: oklch(0.68 0.016 80);
+  --metis-action-secondary-disabled-bg: oklch(0.915 0.014 82);
+  --metis-action-secondary-disabled-border: oklch(0.8 0.02 78);
+  --metis-action-secondary-disabled-fg: oklch(0.6 0.018 78);
+  --metis-action-disabled-bg: oklch(0.918 0.012 82);
+  --metis-action-disabled-fg: oklch(0.62 0.018 78);
+  --metis-action-disabled-border: oklch(0.8 0.02 78);
+  --metis-action-info-bg: color-mix(in oklab, var(--metis-info-soft) 55%, var(--metis-surface-card));
   --metis-action-info-border: color-mix(in oklab, var(--metis-info) 38%, rgba(0, 0, 0, 0.1));
-  --metis-action-info-fg: oklch(0.32 0.08 246);
-  --metis-action-info-hover-bg: color-mix(in oklab, var(--metis-info-soft) 65%, rgba(255, 255, 255, 0.45));
-  --metis-action-info-hover-border: color-mix(in oklab, var(--metis-info) 48%, rgba(0, 0, 0, 0.12));
-  --metis-segmented-rail-bg: oklch(0.9 0.02 248);
-  --metis-segmented-rail-border: oklch(0.78 0.022 246);
-  --metis-control-active-bg: oklch(0.99 0.005 250);
-  --metis-control-active-border: oklch(0.72 0.028 248);
-  --metis-control-thumb: oklch(0.995 0.003 250);
-  --metis-control-disabled-bg: oklch(0.92 0.008 248);
-  --metis-control-disabled-border: oklch(0.82 0.012 246);
-  --metis-control-disabled-fg: oklch(0.66 0.012 258);
-  --metis-status-info-bg: oklch(0.92 0.04 236);
-  --metis-status-info-fg: oklch(0.3 0.08 246);
+  --metis-action-info-fg: oklch(0.3 0.09 242);
+  --metis-action-info-hover-bg: color-mix(in oklab, var(--metis-info-soft) 64%, var(--metis-surface-card));
+  --metis-action-info-hover-border: color-mix(in oklab, var(--metis-info) 46%, rgba(42, 36, 31, 0.12));
+  --metis-segmented-rail-bg: oklch(0.93 0.004 255);
+  --metis-segmented-rail-border: oklch(0.84 0.006 255);
+  --metis-control-active-bg: oklch(0.995 0.002 255);
+  --metis-control-active-border: oklch(0.8 0.007 255);
+  --metis-control-thumb: oklch(0.997 0.001 255);
+  --metis-control-disabled-bg: oklch(0.94 0.004 255);
+  --metis-control-disabled-border: oklch(0.86 0.005 255);
+  --metis-control-disabled-fg: oklch(0.62 0.01 255);
+  --metis-status-info-bg: oklch(0.916 0.042 236);
+  --metis-status-info-fg: oklch(0.3 0.09 242);
   --metis-status-info-border: var(--metis-info-border);
   --metis-status-success-bg: oklch(0.92 0.06 152);
   --metis-status-success-fg: oklch(0.32 0.09 152);
   --metis-status-success-border: rgba(22, 120, 72, 0.28);
-  --metis-status-warning-bg: oklch(0.95 0.07 88);
-  --metis-status-warning-fg: oklch(0.38 0.1 65);
-  --metis-status-warning-border: rgba(180, 120, 20, 0.32);
-  --metis-status-danger-bg: oklch(0.94 0.05 18);
-  --metis-status-danger-fg: oklch(0.4 0.14 22);
+  /* Clear warning identity: visibly amber vs neutral slabs; title/body harmonise to ochre axis */
+  --metis-status-warning-bg: oklch(0.902 0.122 71);
+  --metis-status-warning-fg: oklch(0.28 0.14 56);
+  --metis-status-warning-muted: oklch(0.418 0.095 61);
+  --metis-status-warning-border: color-mix(in oklab, oklch(0.72 0.18 71) 70%, transparent);
+  --metis-status-danger-bg: oklch(0.932 0.048 22);
+  --metis-status-danger-fg: oklch(0.38 0.15 22);
   --metis-status-danger-border: rgba(200, 50, 70, 0.32);
-  --metis-status-neutral-bg: oklch(0.94 0.012 250);
-  --metis-status-neutral-fg: oklch(0.38 0.02 265);
-  --metis-status-neutral-border: oklch(0.78 0.018 248);
+  --metis-status-neutral-bg: oklch(0.94 0.003 255);
+  --metis-status-neutral-fg: oklch(0.42 0.01 255);
+  --metis-status-neutral-border: oklch(0.84 0.006 255);
   --metis-focus-ring: oklch(0.58 0.14 72);
   --metis-focus-ring-info: color-mix(in oklab, var(--metis-info) 55%, transparent);
-  --metis-outline-subtle: oklch(0.85 0.016 248);
+  /* Borders: soft neutral grey; avoid tinted slabs. */
+  --metis-outline-subtle: oklch(0.86 0.004 255);
   --metis-outline-strong: rgba(0, 0, 0, 0.12);
-  --metis-ring-offset: oklch(0.985 0.012 88);
-  --metis-switch-track-off-bg: oklch(0.935 0.022 248);
-  --metis-switch-track-off-hover-bg: oklch(0.915 0.024 246);
-  --shadow-card: 0 14px 40px rgba(0, 0, 0, 0.1);
+  --metis-ring-offset: oklch(0.985 0.002 255);
+  --metis-switch-track-off-bg: oklch(0.935 0.004 255);
+  --metis-switch-track-off-hover-bg: oklch(0.925 0.004 255);
+  /* Slightly stronger lift so reading cards come forward. */
+  --shadow-card: 0 12px 40px rgba(0, 0, 0, 0.075);
   --background: var(--metis-surface-page);
   --foreground: var(--metis-paper);
   --card: var(--metis-surface-card);
   --card-foreground: var(--metis-text-primary);
   --popover: var(--metis-surface-elevated);
   --popover-foreground: var(--metis-text-primary);
-  --secondary: oklch(0.93 0.012 250);
+  --secondary: oklch(0.94 0.003 255);
   --secondary-foreground: var(--metis-text-primary);
-  --muted: oklch(0.965 0.01 246);
+  --muted: oklch(0.97 0.003 255);
   --muted-foreground: var(--metis-paper-muted);
-  --accent: oklch(0.94 0.015 246);
+  --accent: oklch(0.95 0.003 255);
   --accent-foreground: var(--metis-text-primary);
-  --border: oklch(0 0 0 / 10%);
-  --input: oklch(0 0 0 / 12%);
-  /* Stronger than body text for placeholder & control hints on near-white fields */
-  --metis-control-placeholder: oklch(0.46 0.03 258);
+  --border: rgba(0, 0, 0, 0.1);
+  --input: rgba(0, 0, 0, 0.12);
+  /* Visible but calm on near-white fields */
+  --metis-control-placeholder: oklch(0.52 0.01 255);
   --metis-input-bg: var(--metis-control-bg);
   --metis-input-fg: var(--metis-text-primary);
   --metis-input-placeholder: var(--metis-control-placeholder);
@@ -426,169 +441,6 @@
     color: var(--metis-paper);
   }
 
-  html.light ::selection {
-    background: color-mix(in oklab, var(--metis-brass) 32%, rgba(255, 255, 255, 0.7));
-    color: var(--metis-text-primary);
-  }
-
-  /* Light root (dev / future): readable page wash; production default never sets `html.light`. */
-  html.light body {
-    background-image:
-      linear-gradient(180deg, color-mix(in oklab, var(--metis-brass-soft) 14%, transparent), transparent 24%),
-      radial-gradient(circle at top left, color-mix(in oklab, var(--metis-brass-soft) 22%, transparent), transparent 30%),
-      radial-gradient(circle at top right, color-mix(in oklab, var(--metis-info) 12%, transparent), transparent 22%),
-      radial-gradient(circle at bottom right, color-mix(in oklab, rgb(27 59 55) 10%, transparent), transparent 28%);
-  }
-
-  /* Flatten dark-only glass cards when the document is in light mode */
-  html.light .metis-surface {
-    backdrop-filter: none;
-    --metis-surface-bg: var(--metis-surface-card);
-    --metis-surface-border: color-mix(in oklab, var(--metis-outline-strong) 70%, transparent);
-    --metis-surface-glow: transparent;
-    --metis-surface-tint: color-mix(in oklab, var(--metis-brass) 10%, transparent);
-  }
-
-  html.light .metis-surface::before {
-    opacity: 0.12;
-  }
-
-  html.light .metis-surface::after {
-    border-color: color-mix(in oklab, var(--metis-outline-subtle) 55%, transparent);
-  }
-
-  /*
-   * Shell chrome: `html.light` is only applied on `/dev/ui` by the dev toggle; product routes stay `html.dark`.
-   * Hooks are inert class names on MetisShell wrappers.
-   */
-  html.light .metis-shell-vignette {
-    background: radial-gradient(
-        circle at top left,
-        color-mix(in oklab, var(--metis-brass-soft) 24%, transparent),
-        transparent 34%
-      ), radial-gradient(circle at top right, color-mix(in oklab, var(--metis-info-soft) 35%, transparent), transparent 26%),
-      radial-gradient(circle at bottom right, color-mix(in oklab, rgb(56 84 103) 14%, transparent), transparent 30%);
-    opacity: 0.55;
-  }
-
-  html.light .metis-shell-aside {
-    border-right-color: color-mix(in oklab, var(--metis-outline-strong) 80%, transparent);
-    background: var(--metis-surface-rail);
-  }
-
-  html.light .metis-shell-stage {
-    border-color: color-mix(in oklab, var(--metis-outline-strong) 72%, transparent);
-    background: var(--metis-surface-card);
-    box-shadow: var(--shadow-card);
-  }
-
-  html.light .metis-shell-band {
-    border-color: color-mix(in oklab, var(--metis-outline-strong) 72%, transparent) !important;
-    background: color-mix(in oklab, var(--metis-surface-toolbar) 38%, transparent) !important;
-    background-image: none !important;
-  }
-
-  html.light .metis-shell-body {
-    background: color-mix(in oklab, var(--metis-surface-page) 55%, var(--metis-surface-card));
-    background-image: none !important;
-  }
-
-  html.light .metis-shell-nav-group[data-metis-shell-nav-active="false"] {
-    border-color: color-mix(in oklab, var(--metis-outline-strong) 45%, transparent);
-    background: color-mix(in oklab, var(--metis-surface-card) 88%, transparent);
-  }
-
-  html.light .metis-shell-nav-group[data-metis-shell-nav-active="true"] {
-    border-color: color-mix(in oklab, var(--metis-brass) 38%, transparent);
-    background: color-mix(in oklab, var(--metis-brass-soft) 35%, transparent);
-    box-shadow: none;
-    background-image: none !important;
-  }
-
-  /*
-   * Nav tiles: dark defaults use translucent black + white-alpha borders — too heavy on `html.light`.
-   * Hooks: `.metis-shell-nav-item[data-metis-shell-nav-item-state]`, pills, bullets, aside brand.
-   */
-  html.light .metis-shell-aside-header {
-    border-bottom-color: color-mix(in oklab, var(--metis-outline-strong) 54%, transparent) !important;
-  }
-
-  html.light .metis-shell-aside-brand-mark {
-    border-color: color-mix(in oklab, var(--metis-outline-strong) 58%, transparent) !important;
-    background: color-mix(in oklab, var(--metis-surface-elevated) 90%, transparent) !important;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08) !important;
-  }
-
-  html.light .metis-shell-nav-pill[data-metis-shell-nav-pill-tone="muted"] {
-    border-color: color-mix(in oklab, var(--metis-outline-strong) 48%, transparent) !important;
-    background: color-mix(in oklab, var(--metis-surface-toolbar) 62%, transparent) !important;
-    color: var(--metis-text-secondary) !important;
-  }
-
-  html.light .metis-shell-nav-pill[data-metis-shell-nav-pill-tone="brass"] {
-    border-color: color-mix(in oklab, var(--metis-brass) 38%, transparent) !important;
-    background: color-mix(in oklab, var(--metis-brass-soft) 40%, transparent) !important;
-    color: oklch(0.3 0.07 74) !important;
-  }
-
-  html.light .metis-shell-nav-item[data-metis-shell-nav-item-state="inactive"] {
-    border-color: color-mix(in oklab, var(--metis-outline-strong) 36%, transparent) !important;
-    background: color-mix(in oklab, var(--metis-surface-card) 88%, transparent) !important;
-    background-image: none !important;
-    box-shadow: none !important;
-  }
-
-  html.light .metis-shell-nav-item[data-metis-shell-nav-item-state="inactive"]:hover {
-    border-color: color-mix(in oklab, var(--metis-outline-strong) 76%, transparent) !important;
-    background: color-mix(in oklab, var(--metis-surface-elevated) 94%, transparent) !important;
-  }
-
-  html.light .metis-shell-nav-item[data-metis-shell-nav-item-state="active"] {
-    border-color: color-mix(in oklab, var(--metis-brass) 54%, transparent) !important;
-    background: color-mix(in oklab, var(--metis-brass-soft) 44%, var(--metis-surface-card)) !important;
-    background-image: none !important;
-    box-shadow:
-      inset 0 1px 0 color-mix(in oklab, var(--metis-paper) 15%, transparent),
-      0 10px 32px rgba(0, 0, 0, 0.08) !important;
-  }
-
-  html.light .metis-shell-nav-item[data-metis-shell-nav-item-state="disabled"] {
-    opacity: 1 !important;
-    border-color: color-mix(in oklab, var(--metis-outline-subtle) 90%, transparent) !important;
-    background: color-mix(in oklab, var(--metis-surface-disabled) 94%, transparent) !important;
-    background-image: none !important;
-    box-shadow: none !important;
-  }
-
-  html.light .metis-shell-nav-item[data-metis-shell-nav-item-state="active"] .metis-shell-nav-label {
-    color: var(--metis-text-primary) !important;
-  }
-
-  html.light .metis-shell-nav-item[data-metis-shell-nav-item-state="inactive"] .metis-shell-nav-bullet {
-    border-color: color-mix(in oklab, var(--metis-outline-strong) 58%, transparent) !important;
-    background: color-mix(in oklab, var(--metis-surface-toolbar) 74%, transparent) !important;
-    box-shadow: none !important;
-  }
-
-  html.light .metis-shell-nav-item[data-metis-shell-nav-item-state="disabled"] .metis-shell-nav-bullet {
-    opacity: 1 !important;
-    border-color: color-mix(in oklab, var(--metis-outline-subtle) 88%, transparent) !important;
-    background: color-mix(in oklab, var(--metis-surface-disabled) 100%, transparent) !important;
-  }
-
-  html.light .metis-shell-nav-item[data-metis-shell-nav-item-state="active"]:not([aria-disabled="true"]) .metis-shell-nav-bullet {
-    border-color: color-mix(in oklab, var(--metis-brass) 46%, transparent) !important;
-    background: color-mix(in oklab, var(--metis-brass-soft) 70%, transparent) !important;
-    box-shadow: 0 0 0 4px color-mix(in oklab, var(--metis-brass) 18%, transparent) !important;
-  }
-
-  html.light .metis-shell-nav-item[data-metis-shell-nav-item-state="active"]:not([aria-disabled="true"]) .metis-shell-nav-rail-accent {
-    box-shadow: 0 0 14px color-mix(in oklab, var(--metis-brass) 32%, transparent) !important;
-  }
-
-  html.light .metis-shell-nav-item[data-metis-shell-nav-item-state="disabled"] .metis-shell-nav-chevron {
-    opacity: 0.42 !important;
-  }
 }
 
 @layer components {
@@ -654,5 +506,182 @@
     position: relative;
     z-index: 1;
   }
+}
+
+/*
+ * `html.light` is only toggled from `/dev/ui` (production stays `html.dark`).
+ * IMPORTANT: Keep these rules UNLAYERED. Identical selectors lived in `@layer base` but Tailwind utilities
+ * (shell stage gradient, bg utilities on cards, etc.) still won the cascade inside their layer.
+ */
+html.light ::selection {
+  background: color-mix(in oklab, var(--metis-brass) 32%, rgba(255, 255, 255, 0.7));
+  color: var(--metis-text-primary);
+}
+
+/* Light root (dev): neutral editorial wash — minimal tint */
+html.light body {
+  background-image:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.012), transparent 24%),
+    radial-gradient(circle at top left, color-mix(in oklab, var(--metis-brass-soft) 6%, transparent), transparent 30%),
+    radial-gradient(circle at top right, rgba(0, 0, 0, 0.01), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(0, 0, 0, 0.016), transparent 32%);
+}
+
+/* Flatten dark-only glass cards when the document is in light mode */
+html.light .metis-surface {
+  backdrop-filter: none;
+  --metis-surface-bg: var(--metis-surface-card);
+  --metis-surface-border: color-mix(in oklab, var(--metis-outline-strong) 52%, transparent);
+  --metis-surface-glow: transparent;
+  --metis-surface-tint: color-mix(in oklab, var(--metis-brass) 8%, transparent);
+  background: var(--metis-surface-bg) !important;
+  border-color: var(--metis-surface-border) !important;
+  box-shadow:
+    var(--shadow-card),
+    inset 0 1px 0 rgba(255, 252, 245, 0.55) !important;
+}
+
+html.light .metis-surface::before {
+  opacity: 0.1;
+}
+
+html.light .metis-surface::after {
+  border-color: color-mix(in oklab, var(--metis-outline-subtle) 55%, transparent);
+}
+
+/*
+ * Shell chrome: hooks are class names on MetisShell wrappers.
+ */
+html.light .metis-shell-vignette {
+  background: radial-gradient(
+      circle at top left,
+      color-mix(in oklab, var(--metis-brass-soft) 9%, transparent),
+      transparent 34%
+    ),
+    radial-gradient(circle at top right, rgba(0, 0, 0, 0.012), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(0, 0, 0, 0.018), transparent 28%);
+  opacity: 0.42;
+}
+
+html.light .metis-shell-aside {
+  border-right-color: color-mix(in oklab, var(--metis-outline-strong) 55%, transparent);
+  background: var(--metis-surface-rail);
+  background-image: none !important;
+}
+
+html.light .metis-shell-stage {
+  border-color: color-mix(in oklab, var(--metis-outline-strong) 54%, transparent) !important;
+  background: color-mix(in oklab, var(--metis-surface-card) 70%, var(--metis-surface-page)) !important;
+  background-image: none !important;
+  box-shadow:
+    0 6px 28px rgba(46, 38, 29, 0.04),
+    inset 0 1px 0 rgba(255, 252, 245, 0.5) !important;
+}
+
+html.light .metis-shell-band {
+  border-color: color-mix(in oklab, var(--metis-outline-strong) 52%, transparent) !important;
+  background: color-mix(in oklab, var(--metis-surface-toolbar) 82%, var(--metis-surface-page)) !important;
+  background-image: none !important;
+}
+
+html.light .metis-shell-body {
+  background: color-mix(in oklab, var(--metis-surface-page) 78%, var(--metis-surface-card)) !important;
+  background-image: none !important;
+}
+
+html.light .metis-shell-nav-group[data-metis-shell-nav-active="false"] {
+  border-color: color-mix(in oklab, var(--metis-outline-strong) 38%, transparent);
+  background: color-mix(in oklab, var(--metis-surface-card) 58%, var(--metis-surface-rail));
+}
+
+html.light .metis-shell-nav-group[data-metis-shell-nav-active="true"] {
+  border-color: color-mix(in oklab, var(--metis-brass) 38%, transparent);
+  background: color-mix(in oklab, var(--metis-brass-soft) 32%, var(--metis-surface-rail));
+  box-shadow: none;
+  background-image: none !important;
+}
+
+/*
+ * Nav tiles: dark defaults use translucent black + white-alpha borders — too heavy on `html.light`.
+ */
+html.light .metis-shell-aside-header {
+  border-bottom-color: color-mix(in oklab, var(--metis-outline-strong) 42%, transparent) !important;
+}
+
+html.light .metis-shell-aside-brand-mark {
+  border-color: color-mix(in oklab, var(--metis-outline-strong) 42%, transparent) !important;
+  background: color-mix(in oklab, var(--metis-surface-elevated) 82%, var(--metis-surface-page)) !important;
+  box-shadow: 0 4px 16px rgba(46, 38, 29, 0.05) !important;
+}
+
+html.light .metis-shell-nav-pill[data-metis-shell-nav-pill-tone="muted"] {
+  border-color: color-mix(in oklab, var(--metis-outline-strong) 42%, transparent) !important;
+  background: color-mix(in oklab, var(--metis-surface-toolbar) 55%, var(--metis-surface-rail)) !important;
+  color: var(--metis-text-secondary) !important;
+}
+
+html.light .metis-shell-nav-pill[data-metis-shell-nav-pill-tone="brass"] {
+  border-color: color-mix(in oklab, var(--metis-brass) 38%, transparent) !important;
+  background: color-mix(in oklab, var(--metis-brass-soft) 52%, var(--metis-surface-rail)) !important;
+  color: oklch(0.3 0.07 74) !important;
+}
+
+html.light .metis-shell-nav-item[data-metis-shell-nav-item-state="inactive"] {
+  border-color: color-mix(in oklab, var(--metis-outline-strong) 32%, transparent) !important;
+  background: color-mix(in oklab, var(--metis-surface-card) 55%, var(--metis-surface-rail)) !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+html.light .metis-shell-nav-item[data-metis-shell-nav-item-state="inactive"]:hover {
+  border-color: color-mix(in oklab, var(--metis-outline-strong) 55%, transparent) !important;
+  background: color-mix(in oklab, var(--metis-surface-elevated) 72%, var(--metis-surface-card)) !important;
+}
+
+html.light .metis-shell-nav-item[data-metis-shell-nav-item-state="active"] {
+  border-color: color-mix(in oklab, var(--metis-brass) 54%, transparent) !important;
+  background: color-mix(in oklab, var(--metis-brass-soft) 44%, var(--metis-surface-card)) !important;
+  background-image: none !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 252, 245, 0.55),
+    0 8px 24px rgba(46, 38, 29, 0.07) !important;
+}
+
+html.light .metis-shell-nav-item[data-metis-shell-nav-item-state="disabled"] {
+  opacity: 1 !important;
+  border-color: color-mix(in oklab, var(--metis-outline-subtle) 90%, transparent) !important;
+  background: color-mix(in oklab, var(--metis-surface-disabled) 82%, var(--metis-surface-rail)) !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+html.light .metis-shell-nav-item[data-metis-shell-nav-item-state="active"] .metis-shell-nav-label {
+  color: var(--metis-text-primary) !important;
+}
+
+html.light .metis-shell-nav-item[data-metis-shell-nav-item-state="inactive"] .metis-shell-nav-bullet {
+  border-color: color-mix(in oklab, var(--metis-outline-strong) 48%, transparent) !important;
+  background: color-mix(in oklab, var(--metis-surface-toolbar) 80%, transparent) !important;
+  box-shadow: none !important;
+}
+
+html.light .metis-shell-nav-item[data-metis-shell-nav-item-state="disabled"] .metis-shell-nav-bullet {
+  opacity: 1 !important;
+  border-color: color-mix(in oklab, var(--metis-outline-subtle) 88%, transparent) !important;
+  background: color-mix(in oklab, var(--metis-surface-disabled) 92%, var(--metis-surface-rail)) !important;
+}
+
+html.light .metis-shell-nav-item[data-metis-shell-nav-item-state="active"]:not([aria-disabled="true"]) .metis-shell-nav-bullet {
+  border-color: color-mix(in oklab, var(--metis-brass) 46%, transparent) !important;
+  background: color-mix(in oklab, var(--metis-brass-soft) 70%, transparent) !important;
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--metis-brass) 18%, transparent) !important;
+}
+
+html.light .metis-shell-nav-item[data-metis-shell-nav-item-state="active"]:not([aria-disabled="true"]) .metis-shell-nav-rail-accent {
+  box-shadow: 0 0 14px color-mix(in oklab, var(--metis-brass) 32%, transparent) !important;
+}
+
+html.light .metis-shell-nav-item[data-metis-shell-nav-item-state="disabled"] .metis-shell-nav-chevron {
+  opacity: 0.42 !important;
 }
 

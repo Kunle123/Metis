@@ -6,13 +6,13 @@ export type ReviewRailCardTone = "neutral" | "info";
 
 const toneStyles: Record<ReviewRailCardTone, { wrap: string; divider: string; title: string }> = {
   neutral: {
-    wrap: "border-white/12 bg-[rgba(0,0,0,0.22)]",
-    divider: "border-white/10",
-    title: "text-[--metis-ink-soft]",
+    wrap: "border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_52%,var(--metis-surface-page))]",
+    divider: "border-[--metis-outline-subtle]",
+    title: "text-[--metis-text-tertiary]",
   },
   info: {
     wrap: "border-[--metis-info-border] bg-[--metis-info-bg]",
-    divider: "border-white/10",
+    divider: "border-[color-mix(in_oklab,var(--metis-info-border)_70%,transparent)]",
     title: "text-[--metis-info-soft]",
   },
 };
@@ -40,7 +40,7 @@ export function ReviewRailCard({
   return (
     <div
       className={cn(
-        "rounded-[1.2rem] border px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]",
+        "rounded-[1.2rem] border px-4 py-4 shadow-[inset_0_1px_0_var(--metis-control-inset)]",
         t.wrap,
         className,
       )}

@@ -191,14 +191,22 @@ function tokenPropertyForKind(kind: Pair["kind"], which: "fg" | "bg"): "color" |
 
 function PassPill({ ok, label }: { ok: boolean; label: string }) {
   return (
-    <Badge className={ok ? "border-0 bg-emerald-900/35 text-emerald-50" : "border-0 bg-rose-900/35 text-rose-50"}>
+    <Badge
+      className={
+        ok
+          ? "border-0 bg-[--metis-status-success-bg] text-[--metis-status-success-fg]"
+          : "border-0 bg-[--metis-status-danger-bg] text-[--metis-status-danger-fg]"
+      }
+    >
       {label}: {ok ? "PASS" : "FAIL"}
     </Badge>
   );
 }
 
 function ColorChip({ rgba }: { rgba: Rgba }) {
-  return <span className="inline-block h-5 w-8 rounded-md border border-white/12" style={{ background: rgbaToCss(rgba) }} />;
+  return (
+    <span className="inline-block h-5 w-8 rounded-md border border-[--metis-outline-strong]" style={{ background: rgbaToCss(rgba) }} />
+  );
 }
 
 export function ContrastAudit() {
@@ -317,12 +325,12 @@ export function ContrastAudit() {
 
   function Table({ title, items, showWcag }: { title: string; items: typeof rows; showWcag: boolean }) {
     return (
-      <div className="space-y-3 rounded-[1.2rem] border border-white/10 bg-black/10 px-4 py-4">
+      <div className="space-y-3 rounded-[1.2rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_36%,var(--metis-surface-page))] px-4 py-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">{title}</p>
+            <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-text-tertiary]">{title}</p>
             {title === "Layer separation (heuristic)" ? (
-              <p className="mt-2 text-sm leading-6 text-[--metis-paper-muted]">
+              <p className="mt-2 text-sm leading-6 text-[--metis-text-secondary]">
                 This is an internal heuristic for visual hierarchy, not a WCAG requirement.
               </p>
             ) : null}
@@ -332,8 +340,8 @@ export function ContrastAudit() {
         <div className="overflow-x-auto">
           <table className="w-full min-w-[1220px] border-separate border-spacing-0 text-left text-sm">
             <thead>
-              <tr className="text-xs text-[--metis-paper-muted]">
-                <th className="sticky left-0 z-10 bg-[rgba(0,0,0,0.18)] p-2">Pair</th>
+              <tr className="text-xs text-[--metis-text-secondary]">
+                <th className="sticky left-0 z-10 bg-[--metis-surface-card] p-2 shadow-[1px_0_0_var(--metis-outline-subtle)]">Pair</th>
                 <th className="p-2">FG token</th>
                 <th className="p-2">BG token</th>
                 <th className="p-2">FG debug</th>
@@ -345,45 +353,45 @@ export function ContrastAudit() {
             </thead>
             <tbody>
               {items.map((r) => (
-                <tr key={r.pair.id} className="border-t border-white/8">
-                  <td className="sticky left-0 z-10 bg-[rgba(0,0,0,0.18)] p-2 align-top">
-                    <code className="text-xs text-[--metis-paper]">{r.pair.id}</code>
+                <tr key={r.pair.id} className="border-t border-[--metis-outline-subtle]">
+                  <td className="sticky left-0 z-10 bg-[--metis-surface-card] p-2 align-top shadow-[1px_0_0_var(--metis-outline-subtle)]">
+                    <code className="text-xs text-[--metis-text-primary]">{r.pair.id}</code>
                   </td>
                   <td className="p-2 align-top">
-                    <code className="text-xs text-[--metis-paper]">{r.pair.fg}</code>
+                    <code className="text-xs text-[--metis-text-primary]">{r.pair.fg}</code>
                   </td>
                   <td className="p-2 align-top">
-                    <code className="text-xs text-[--metis-paper]">{r.pair.bg}</code>
+                    <code className="text-xs text-[--metis-text-primary]">{r.pair.bg}</code>
                   </td>
                   <td className="p-2 align-top">
                     <div className="space-y-2">
-                      <div className="text-xs text-[--metis-paper-muted]">
-                        <div className="text-[--metis-paper]">
+                      <div className="text-xs text-[--metis-text-secondary]">
+                        <div className="text-[--metis-text-primary]">
                           {r.fg.rgba ? (
                             <span className="inline-flex items-center gap-2">
                               <ColorChip rgba={r.fg.rgba} />
                               <span>{rgbaToHex(r.fg.rgba)}</span>
                             </span>
                           ) : (
-                            <Badge className="border-0 bg-rose-900/35 text-rose-50">parse failed</Badge>
+                            <Badge className="border-0 bg-[--metis-status-danger-bg] text-[--metis-status-danger-fg]">parse failed</Badge>
                           )}
                         </div>
                         <div>
-                          <span className="text-[--metis-ink-soft]">strategy</span> · <span>{r.fg.strategy}</span>
+                          <span className="text-[--metis-text-tertiary]">strategy</span> · <span>{r.fg.strategy}</span>
                         </div>
                       </div>
-                      <div className="rounded-lg border border-white/10 bg-black/20 p-2 text-[0.7rem] leading-5 text-[--metis-paper-muted]">
+                      <div className="rounded-lg border border-[--metis-outline-subtle] bg-[--metis-frame-soft] p-2 text-[0.7rem] leading-5 text-[--metis-text-secondary]">
                         <div>
-                          <span className="text-[--metis-ink-soft]">var</span> · <code className="text-[--metis-paper]">{r.fg.rawVar || "∅"}</code>
+                          <span className="text-[--metis-text-tertiary]">var</span> · <code className="text-[--metis-text-primary]">{r.fg.rawVar || "∅"}</code>
                         </div>
                         <div className="mt-1">
-                          <span className="text-[--metis-ink-soft]">computed</span> ·{" "}
-                          <code className="text-[--metis-paper]">{r.fg.rawComputed || "∅"}</code>
+                          <span className="text-[--metis-text-tertiary]">computed</span> ·{" "}
+                          <code className="text-[--metis-text-primary]">{r.fg.rawComputed || "∅"}</code>
                         </div>
                         {r.fg.normalizedComputed ? (
                           <div className="mt-1">
-                            <span className="text-[--metis-ink-soft]">normalized</span> ·{" "}
-                            <code className="text-[--metis-paper]">{r.fg.normalizedComputed}</code>
+                            <span className="text-[--metis-text-tertiary]">normalized</span> ·{" "}
+                            <code className="text-[--metis-text-primary]">{r.fg.normalizedComputed}</code>
                           </div>
                         ) : null}
                       </div>
@@ -391,33 +399,33 @@ export function ContrastAudit() {
                   </td>
                   <td className="p-2 align-top">
                     <div className="space-y-2">
-                      <div className="text-xs text-[--metis-paper-muted]">
-                        <div className="text-[--metis-paper]">
+                      <div className="text-xs text-[--metis-text-secondary]">
+                        <div className="text-[--metis-text-primary]">
                           {r.bg.rgba ? (
                             <span className="inline-flex items-center gap-2">
                               <ColorChip rgba={r.bg.rgba} />
                               <span>{rgbaToHex(r.bg.rgba)}</span>
                             </span>
                           ) : (
-                            <Badge className="border-0 bg-rose-900/35 text-rose-50">parse failed</Badge>
+                            <Badge className="border-0 bg-[--metis-status-danger-bg] text-[--metis-status-danger-fg]">parse failed</Badge>
                           )}
                         </div>
                         <div>
-                          <span className="text-[--metis-ink-soft]">strategy</span> · <span>{r.bg.strategy}</span>
+                          <span className="text-[--metis-text-tertiary]">strategy</span> · <span>{r.bg.strategy}</span>
                         </div>
                       </div>
-                      <div className="rounded-lg border border-white/10 bg-black/20 p-2 text-[0.7rem] leading-5 text-[--metis-paper-muted]">
+                      <div className="rounded-lg border border-[--metis-outline-subtle] bg-[--metis-frame-soft] p-2 text-[0.7rem] leading-5 text-[--metis-text-secondary]">
                         <div>
-                          <span className="text-[--metis-ink-soft]">var</span> · <code className="text-[--metis-paper]">{r.bg.rawVar || "∅"}</code>
+                          <span className="text-[--metis-text-tertiary]">var</span> · <code className="text-[--metis-text-primary]">{r.bg.rawVar || "∅"}</code>
                         </div>
                         <div className="mt-1">
-                          <span className="text-[--metis-ink-soft]">computed</span> ·{" "}
-                          <code className="text-[--metis-paper]">{r.bg.rawComputed || "∅"}</code>
+                          <span className="text-[--metis-text-tertiary]">computed</span> ·{" "}
+                          <code className="text-[--metis-text-primary]">{r.bg.rawComputed || "∅"}</code>
                         </div>
                         {r.bg.normalizedComputed ? (
                           <div className="mt-1">
-                            <span className="text-[--metis-ink-soft]">normalized</span> ·{" "}
-                            <code className="text-[--metis-paper]">{r.bg.normalizedComputed}</code>
+                            <span className="text-[--metis-text-tertiary]">normalized</span> ·{" "}
+                            <code className="text-[--metis-text-primary]">{r.bg.normalizedComputed}</code>
                           </div>
                         ) : null}
                       </div>
@@ -425,9 +433,9 @@ export function ContrastAudit() {
                   </td>
                   <td className="p-2 align-top">
                     {r.ratio != null ? (
-                      <span className="font-medium text-[--metis-paper]">{r.ratio.toFixed(2)}:1</span>
+                      <span className="font-medium text-[--metis-text-primary]">{r.ratio.toFixed(2)}:1</span>
                     ) : (
-                      <span className="text-[--metis-paper-muted]">—</span>
+                      <span className="text-[--metis-text-secondary]">—</span>
                     )}
                   </td>
                   <td className="p-2 align-top">
@@ -439,15 +447,17 @@ export function ContrastAudit() {
                           <PassPill ok={r.labels.aaaText} label="AAA 7.0" />
                         </div>
                       ) : (
-                        <span className="text-[--metis-paper-muted]">—</span>
+                        <span className="text-[--metis-text-secondary]">—</span>
                       )
                     ) : r.separation ? (
-                      <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{r.separation}</Badge>
+                      <Badge className="border-0 bg-[--metis-surface-elevated] text-[--metis-text-secondary] shadow-[inset_0_0_0_1px_var(--metis-outline-subtle)]">
+                        {r.separation}
+                      </Badge>
                     ) : (
-                      <span className="text-[--metis-paper-muted]">—</span>
+                      <span className="text-[--metis-text-secondary]">—</span>
                     )}
                   </td>
-                  <td className="p-2 align-top text-xs leading-5 text-[--metis-paper-muted]">{r.pair.note}</td>
+                  <td className="p-2 align-top text-xs leading-5 text-[--metis-text-secondary]">{r.pair.note}</td>
                 </tr>
               ))}
             </tbody>
@@ -459,14 +469,14 @@ export function ContrastAudit() {
 
   return (
     <div className="space-y-4">
-      <div className="space-y-2 rounded-[1.2rem] border border-white/10 bg-black/10 px-4 py-4">
-        <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Export (for verification)</p>
-        <p className="text-sm leading-6 text-[--metis-paper-muted]">
+      <div className="space-y-2 rounded-[1.2rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_36%,var(--metis-surface-page))] px-4 py-4">
+        <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-text-tertiary]">Export (for verification)</p>
+        <p className="text-sm leading-6 text-[--metis-text-secondary]">
           Copy this JSON to share exact computed values (dev-only; not a WCAG artifact).
         </p>
-        <div className="rounded-lg border border-white/10 bg-black/30 p-3">
+        <div className="rounded-lg border border-[--metis-outline-subtle] bg-[--metis-frame-soft] p-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Key pairs (requested)</p>
+            <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-text-tertiary]">Key pairs (requested)</p>
             <div className="flex items-center gap-2">
               <Button
                 type="button"
@@ -486,17 +496,17 @@ export function ContrastAudit() {
                 Copy key pairs JSON
               </Button>
               {copyState === "copied" ? (
-                <Badge className="border-0 bg-emerald-900/35 text-emerald-50">Copied</Badge>
+                <Badge className="border-0 bg-[--metis-status-success-bg] text-[--metis-status-success-fg]">Copied</Badge>
               ) : copyState === "error" ? (
-                <Badge className="border-0 bg-rose-900/35 text-rose-50">Copy failed</Badge>
+                <Badge className="border-0 bg-[--metis-status-danger-bg] text-[--metis-status-danger-fg]">Copy failed</Badge>
               ) : null}
             </div>
           </div>
-          <pre className="mt-2 max-h-[240px] overflow-auto text-[0.7rem] leading-5 text-[--metis-paper]">
+          <pre className="mt-2 max-h-[240px] overflow-auto text-[0.7rem] leading-5 text-[--metis-text-primary]">
             {keyPairsJson}
           </pre>
         </div>
-        <pre className="max-h-[320px] overflow-auto rounded-lg border border-white/10 bg-black/30 p-3 text-[0.7rem] leading-5 text-[--metis-paper]">
+        <pre className="max-h-[320px] overflow-auto rounded-lg border border-[--metis-outline-subtle] bg-[--metis-frame-soft] p-3 text-[0.7rem] leading-5 text-[--metis-text-primary]">
           {JSON.stringify(exportRows, null, 2)}
         </pre>
       </div>

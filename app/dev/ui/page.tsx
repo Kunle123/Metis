@@ -245,10 +245,10 @@ function LightThemePrimitivesPreview() {
             <p className="text-[0.65rem] uppercase tracking-[0.12em] text-[--metis-text-tertiary]">Page</p>
             <p className="mt-2 text-xs text-[--metis-text-secondary]">Outer canvas inside the light subtree.</p>
           </div>
-          <div className="rounded-[1rem] border border-[--metis-outline-subtle] bg-[--metis-surface-card] p-3 shadow-[0_1px_0_rgba(0,0,0,0.04)]">
+          <div className="rounded-[1rem] border border-[--metis-outline-subtle] bg-[--metis-surface-card] p-3 shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_35%,transparent)]">
             <p className="text-[0.65rem] uppercase tracking-[0.12em] text-[--metis-text-tertiary]">Card</p>
           </div>
-          <div className="rounded-[1rem] border border-[--metis-outline-subtle] bg-[--metis-surface-elevated] p-3 shadow-[0_6px_20px_-6px_rgba(0,0,0,0.12)]">
+          <div className="rounded-[1rem] border border-[--metis-outline-subtle] bg-[--metis-surface-elevated] p-3 shadow-[0_10px_28px_-8px_color-mix(in_oklab,var(--metis-text-primary)_12%,transparent)]">
             <p className="text-[0.65rem] uppercase tracking-[0.12em] text-[--metis-text-tertiary]">Elevated</p>
           </div>
           <div className="rounded-[1rem] border border-[--metis-outline-strong] bg-[--metis-frame-soft] p-3">
@@ -569,18 +569,41 @@ export default function MetisUiDiagnosticsPage() {
                       <IconButton
                         label="Icon-only sm (outline)"
                         size="sm"
-                        icon={<span className="size-[var(--metis-icon-size-sm)] rounded bg-white/25" aria-hidden />}
+                        icon={
+                          <span
+                            className="size-[var(--metis-icon-size-sm)] rounded bg-[color-mix(in_oklab,var(--metis-text-primary)_22%,transparent)]"
+                            aria-hidden
+                          />
+                        }
                       />
-                      <IconButton label="Icon-only md (outline)" icon={<span className="size-[var(--metis-icon-size-md)] rounded bg-white/25" aria-hidden />} />
+                      <IconButton
+                        label="Icon-only md (outline)"
+                        icon={
+                          <span
+                            className="size-[var(--metis-icon-size-md)] rounded bg-[color-mix(in_oklab,var(--metis-text-primary)_22%,transparent)]"
+                            aria-hidden
+                          />
+                        }
+                      />
                       <IconButton
                         disabled
                         label="Icon-only outline disabled"
-                        icon={<span className="size-[var(--metis-icon-size-md)] rounded bg-white/18" aria-hidden />}
+                        icon={
+                          <span
+                            className="size-[var(--metis-icon-size-md)] rounded bg-[color-mix(in_oklab,var(--metis-text-primary)_16%,transparent)]"
+                            aria-hidden
+                          />
+                        }
                       />
                       <IconButton
                         label="Icon-only info"
                         variant="info"
-                        icon={<span className="size-[var(--metis-icon-size-md)] rounded bg-white/12" aria-hidden />}
+                        icon={
+                          <span
+                            className="size-[var(--metis-icon-size-md)] rounded bg-[color-mix(in_oklab,var(--metis-text-primary)_12%,transparent)]"
+                            aria-hidden
+                          />
+                        }
                       />
                       <IconButton
                         label="Icon-only md (primary)"
@@ -841,9 +864,9 @@ export default function MetisUiDiagnosticsPage() {
             <DenseSection title="Common controls">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge className="border-0 bg-[--metis-brass]/15 text-[--metis-brass-soft]">Selected pill</Badge>
-                <Badge className="border-0 bg-[rgba(124,78,18,0.6)] text-amber-50">Open questions · 3</Badge>
-                <Badge className="border-0 bg-[rgba(18,84,58,0.62)] text-emerald-50">Up to date</Badge>
-                <Badge className="border-0 bg-[rgba(19,86,118,0.55)] text-sky-50">Stale</Badge>
+                <Badge className="border-0 bg-[--metis-status-warning-bg] text-[--metis-status-warning-fg]">Open questions · 3</Badge>
+                <Badge className="border-0 bg-[--metis-status-success-bg] text-[--metis-status-success-fg]">Up to date</Badge>
+                <Badge className="border-0 bg-[--metis-status-info-bg] text-[--metis-status-info-fg]">Stale</Badge>
                 <ConfidencePill level="Confirmed" />
                 <ConfidencePill level="Likely" />
                 <ConfidencePill level="Unclear" />
@@ -912,8 +935,8 @@ export default function MetisUiDiagnosticsPage() {
               <div className="space-y-2 text-sm leading-6 text-[--metis-paper-muted]">
                 <p className="text-[--metis-paper]">Can we confirm impact scope by region?</p>
                 <div className="flex flex-wrap items-center gap-2">
-                  <Badge className="border-0 bg-[rgba(124,78,18,0.6)] text-amber-50">Open</Badge>
-                  <Badge className="border-0 bg-[rgba(132,26,42,0.62)] text-rose-50">Critical</Badge>
+                  <Badge className="border-0 bg-[--metis-status-warning-bg] text-[--metis-status-warning-fg]">Open</Badge>
+                  <Badge className="border-0 bg-[--metis-status-danger-bg] text-[--metis-status-danger-fg]">Critical</Badge>
                 </div>
               </div>
             </ReviewRailCard>
@@ -923,7 +946,9 @@ export default function MetisUiDiagnosticsPage() {
                 <p className="text-[--metis-paper]">On-call · A. Name</p>
                 <div className="flex flex-wrap items-center gap-2">
                   <ConfidencePill level="Likely" />
-                  <Badge className="border-0 bg-rose-900/25 text-rose-50">Excluded</Badge>
+                  <Badge className="border-0 bg-[color-mix(in_oklab,var(--metis-status-danger-bg)_58%,var(--metis-surface-page))] text-[--metis-status-danger-fg]">
+                    Excluded
+                  </Badge>
                 </div>
               </div>
             </ReviewRailCard>

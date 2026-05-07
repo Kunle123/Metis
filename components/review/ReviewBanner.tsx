@@ -4,9 +4,9 @@ export type ReviewBannerTone = "warning" | "info" | "neutral";
 
 const toneStyles: Record<ReviewBannerTone, { wrap: string; title: string; body: string }> = {
   warning: {
-    wrap: "border-amber-400/25 bg-amber-950/15",
-    title: "text-amber-200/90",
-    body: "text-amber-50/90",
+    wrap: "border-[--metis-status-warning-border] bg-[--metis-status-warning-bg]",
+    title: "text-[--metis-status-warning-fg]",
+    body: "text-[--metis-status-warning-muted]",
   },
   info: {
     wrap: "border-[--metis-info-border] bg-[--metis-info-bg]",
