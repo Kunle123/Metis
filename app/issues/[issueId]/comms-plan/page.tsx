@@ -59,7 +59,7 @@ export default async function IssueCommsPlanPage({ params }: { params: Promise<{
     >
       <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <SurfaceCard className="min-w-0 overflow-hidden">
-          <div className="border-b border-white/8 bg-[rgba(255,255,255,0.015)] px-6 py-5 sm:px-7">
+          <div className="border-b border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_45%,transparent)] px-6 py-5 sm:px-7">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div className="space-y-2">
                 <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper]">Comms plan</h2>
@@ -115,7 +115,7 @@ export default async function IssueCommsPlanPage({ params }: { params: Promise<{
 
         <SurfaceCard className="metis-support-surface min-w-0 overflow-hidden">
           <div className="space-y-4 px-5 py-5">
-            <div className="rounded-[1.25rem] border border-white/10 bg-[rgba(255,255,255,0.03)] px-4 py-4">
+            <div className="rounded-[1.25rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_45%,transparent)] px-4 py-4">
               <p className="text-[0.68rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Shortcuts</p>
               <div className="mt-3 grid gap-2">
                 <Button asChild variant="outline" className="w-full justify-start">
@@ -133,7 +133,7 @@ export default async function IssueCommsPlanPage({ params }: { params: Promise<{
               </div>
               <p className="mt-3 text-xs leading-relaxed text-[--metis-paper-muted]">These open related workflows — they don’t change plan status.</p>
             </div>
-            <div className="rounded-[1.25rem] border border-white/10 bg-[rgba(255,255,255,0.03)] px-4 py-4">
+            <div className="rounded-[1.25rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_45%,transparent)] px-4 py-4">
               <p className="text-[0.68rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Reminder</p>
               <p className="mt-2 text-sm leading-6 text-[--metis-paper-muted]">
                 This planner does not send communications. Use it to track what should be prepared and what has actually been sent.

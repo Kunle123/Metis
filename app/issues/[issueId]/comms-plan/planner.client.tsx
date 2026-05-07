@@ -141,11 +141,11 @@ function dueState(item: CommsPlanItem, now: number) {
 }
 
 const DUE_BADGE: Record<string, string> = {
-  overdue: "border-0 bg-[rgba(132,26,42,0.62)] text-rose-50",
-  due: "border-0 bg-[rgba(19,86,118,0.55)] text-sky-50",
+  overdue: "border-0 bg-[--metis-status-danger-bg] text-[--metis-status-danger-fg]",
+  due: "border-0 bg-[--metis-status-info-bg] text-[--metis-status-info-fg]",
   trigger: "border-0 bg-[color-mix(in_oklab,var(--metis-surface-elevated)_70%,transparent)] text-[--metis-text-secondary]",
   none: "border-0 bg-[color-mix(in_oklab,var(--metis-surface-elevated)_55%,transparent)] text-[--metis-text-secondary]",
-  done: "border-0 bg-[rgba(18,84,58,0.62)] text-emerald-50",
+  done: "border-0 bg-[--metis-status-success-bg] text-[--metis-status-success-fg]",
 };
 
 export function CommsPlanClient({ issueId, initialItems, audienceGroups, defaultOwner }: Props) {
@@ -398,7 +398,7 @@ export function CommsPlanClient({ issueId, initialItems, audienceGroups, default
                 key={idx}
                 className={cn(
                   "text-sm leading-relaxed",
-                  line.includes("pass validation") ? "text-amber-100/90" : "text-[--metis-text-secondary]",
+                  line.includes("pass validation") ? "text-[--metis-status-warning-fg]" : "text-[--metis-text-secondary]",
                 )}
               >
                 {line}
@@ -458,21 +458,25 @@ export function CommsPlanClient({ issueId, initialItems, audienceGroups, default
                   <div className="min-w-0 space-y-2">
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="text-sm font-medium text-[--metis-paper]">{s.item.title}</p>
-                      <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">Suggested</Badge>
+                      <Badge className="border-0 bg-[color-mix(in_oklab,var(--metis-surface-elevated)_70%,transparent)] text-[--metis-text-secondary]">
+                        Suggested
+                      </Badge>
                       {s.item.stakeholderGroupId ? (
                         <Badge className="border-0 bg-[--metis-brass]/12 text-[--metis-brass-soft]">Audience group</Badge>
                       ) : (
-                        <Badge className="border-0 bg-white/6 text-[--metis-paper-muted]">General</Badge>
+                        <Badge className="border-0 bg-[color-mix(in_oklab,var(--metis-surface-elevated)_55%,transparent)] text-[--metis-text-tertiary]">
+                          General
+                        </Badge>
                       )}
                     </div>
                     <p className="text-sm text-[--metis-paper-muted]">{s.why}</p>
                     <p className="text-xs text-[--metis-paper-muted]">
                       <span className="text-[--metis-paper]">Output</span> · {s.item.outputType}
-                      <span className="mx-2 text-white/20" aria-hidden>
+                      <span className="mx-2 text-[color-mix(in_oklab,var(--metis-text-tertiary)_65%,transparent)]" aria-hidden>
                         •
                       </span>
                       <span className="text-[--metis-paper]">Channel</span> · {s.item.channel}
-                      <span className="mx-2 text-white/20" aria-hidden>
+                      <span className="mx-2 text-[color-mix(in_oklab,var(--metis-text-tertiary)_65%,transparent)]" aria-hidden>
                         •
                       </span>
                       <span className="text-[--metis-paper]">Schedule</span> · {s.item.scheduleType}
@@ -558,15 +562,17 @@ export function CommsPlanClient({ issueId, initialItems, audienceGroups, default
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="text-sm font-medium text-[--metis-paper]">{item.title}</p>
                     <Badge className={DUE_BADGE[due.kind]}>{due.label}</Badge>
-                    <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{item.status}</Badge>
+                    <Badge className="border-0 bg-[color-mix(in_oklab,var(--metis-surface-elevated)_70%,transparent)] text-[--metis-text-secondary]">
+                      {item.status}
+                    </Badge>
                   </div>
                   <p className="mt-2 text-sm text-[--metis-paper-muted]">
                     <span className="text-[--metis-paper]">Audience</span> · {audience}
-                    <span className="mx-2 text-white/20" aria-hidden>
+                    <span className="mx-2 text-[color-mix(in_oklab,var(--metis-text-tertiary)_65%,transparent)]" aria-hidden>
                       •
                     </span>
                     <span className="text-[--metis-paper]">Channel</span> · {item.channel}
-                    <span className="mx-2 text-white/20" aria-hidden>
+                    <span className="mx-2 text-[color-mix(in_oklab,var(--metis-text-tertiary)_65%,transparent)]" aria-hidden>
                       •
                     </span>
                     <span className="text-[--metis-paper]">Owner</span> · {owner}
@@ -890,7 +896,7 @@ export function CommsPlanClient({ issueId, initialItems, audienceGroups, default
           <Textarea value={createDraft.notes} onChange={(e) => setCreateDraft((d) => ({ ...d, notes: e.target.value }))} />
         </label>
 
-        {error ? <p className="mt-3 text-sm text-rose-200">{error}</p> : null}
+        {error ? <p className="mt-3 text-sm text-[--metis-status-danger-fg]">{error}</p> : null}
       </div>
     </div>
   );
