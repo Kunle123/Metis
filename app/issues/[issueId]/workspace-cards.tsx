@@ -80,20 +80,20 @@ function metaParts(parts: Array<string | null | undefined>) {
 function MetaLine({ parts }: { parts: Array<string | null | undefined> }) {
   const text = metaParts(parts).join(" · ");
   if (!text) return null;
-  return <p className="text-xs text-white/50">{text}</p>;
+  return <p className="text-xs text-[--metis-text-tertiary]">{text}</p>;
 }
 
 function statusPillClass(status: string) {
-  if (status === "Open") return "border-0 bg-[rgba(124,78,18,0.6)] text-amber-50";
-  if (status === "Resolved") return "border-0 bg-[rgba(18,84,58,0.62)] text-emerald-50";
-  return "border border-white/10 bg-white/6 text-white/80";
+  if (status === "Open") return "border border-[--metis-status-warning-border] bg-[--metis-status-warning-bg] text-[--metis-status-warning-fg]";
+  if (status === "Resolved") return "border border-[--metis-status-success-border] bg-[--metis-status-success-bg] text-[--metis-status-success-fg]";
+  return "border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_55%,transparent)] text-[--metis-text-secondary]";
 }
 
 function severityPillClass(severity: string) {
-  if (severity === "Critical") return "border-0 bg-[rgba(132,26,42,0.62)] text-rose-50";
-  if (severity === "Important") return "border-0 bg-[rgba(128,82,18,0.58)] text-amber-50";
-  if (severity === "Watch") return "border border-white/12 bg-[rgba(52,60,69,0.56)] text-slate-100";
-  return "border border-white/10 bg-white/6 text-white/80";
+  if (severity === "Critical") return "border border-[--metis-status-danger-border] bg-[--metis-status-danger-bg] text-[--metis-status-danger-fg]";
+  if (severity === "Important") return "border border-[--metis-status-warning-border] bg-[--metis-status-warning-bg] text-[--metis-status-warning-fg]";
+  if (severity === "Watch") return "border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_55%,transparent)] text-[--metis-text-secondary]";
+  return "border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_55%,transparent)] text-[--metis-text-secondary]";
 }
 
 function Pill({ children, className }: { children: React.ReactNode; className?: string }) {
@@ -116,21 +116,21 @@ function CardShell({
   details?: React.ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-white/[0.09] bg-[rgba(0,0,0,0.2)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+    <div className="rounded-2xl border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_42%,transparent)] shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_20%,transparent)]">
       <Button
         type="button"
         variant="ghost"
         onClick={onToggle}
         aria-expanded={expanded}
-        className="h-auto min-h-0 w-full items-start justify-between gap-4 rounded-none border-0 bg-transparent px-4 py-2.5 text-left font-normal text-[inherit] shadow-none ring-0 hover:bg-white/[0.04] hover:no-underline"
+        className="h-auto min-h-0 w-full items-start justify-between gap-4 rounded-none border-0 bg-transparent px-4 py-2.5 text-left font-normal text-[inherit] shadow-none ring-0 hover:bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_62%,transparent)] hover:no-underline"
       >
         <div className="min-w-0 flex-1">{summary}</div>
-        <div className="mt-0.5 flex shrink-0 items-center gap-2 text-white/40">
+        <div className="mt-0.5 flex shrink-0 items-center gap-2 text-[--metis-text-tertiary]">
           <span className="text-xs">{expanded ? "Hide" : "View details"}</span>
           {expanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
         </div>
       </Button>
-      {expanded && details ? <div className="border-t border-white/10 px-4 pb-3 pt-2.5">{details}</div> : null}
+      {expanded && details ? <div className="border-t border-[--metis-outline-subtle] px-4 pb-3 pt-2.5">{details}</div> : null}
     </div>
   );
 }
@@ -306,7 +306,7 @@ export function WorkspaceGapCards({
               onToggle={() => setOpenId((cur) => (cur === g.id ? null : g.id))}
               summary={
                 <>
-                  <p className="text-sm font-medium text-white/90">{preview}</p>
+                  <p className="text-sm font-medium text-[--metis-paper]">{preview}</p>
                   <div className="mt-1">
                     <MetaLine
                       parts={[
@@ -390,13 +390,25 @@ export function WorkspaceGapCards({
                       <div className="flex flex-wrap items-center gap-2 lg:max-w-[min(420px,46%)] lg:justify-end">
                         {g.status ? <Pill className={statusPillClass(g.status)}>{g.status}</Pill> : null}
                         {g.severity ? <Pill className={severityPillClass(g.severity)}>{g.severity}</Pill> : null}
-                        {g.section ? <Pill className="border border-white/10 bg-black/20 text-white/75">Relates · {g.section}</Pill> : null}
-                        {g.stakeholder ? <Pill className="border border-white/10 bg-black/20 text-white/70">Stake · {g.stakeholder}</Pill> : null}
-                        {isEditing ? <Pill className="border border-white/10 bg-white/5 text-white/75">Editing</Pill> : null}
+                        {g.section ? (
+                          <Pill className="border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-frame-soft)_82%,transparent)] text-[--metis-text-secondary]">
+                            Relates · {g.section}
+                          </Pill>
+                        ) : null}
+                        {g.stakeholder ? (
+                          <Pill className="border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-frame-soft)_82%,transparent)] text-[--metis-text-secondary]">
+                            Stake · {g.stakeholder}
+                          </Pill>
+                        ) : null}
+                        {isEditing ? (
+                          <Pill className="border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_52%,transparent)] text-[--metis-text-secondary]">
+                            Editing
+                          </Pill>
+                        ) : null}
                       </div>
                     </div>
 
-                    <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-white/10 pt-3">
+                    <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-[--metis-outline-subtle] pt-3">
                       <Button variant="outline" size="sm" disabled={!canEdit || busyGapId === g.id} onClick={() => beginEdit(g)}>
                         <PencilLine size={14} />
                         Edit
@@ -449,8 +461,8 @@ export function WorkspaceGapCards({
 
                   {/* Zone 2 — context (read-only) */}
                   {hasWhy ? (
-                    <div className="rounded-[1.05rem] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(0,0,0,0.10))] px-3 py-2.5">
-                      <p className="whitespace-pre-wrap text-sm leading-6 text-white/70">{whyDisplay}</p>
+                    <div className="rounded-[1.05rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-frame-soft)_82%,transparent)] px-3 py-2.5">
+                      <p className="whitespace-pre-wrap text-sm leading-6 text-[--metis-paper-muted]">{whyDisplay}</p>
                       {whyLong ? (
                         <Button
                           type="button"
@@ -466,23 +478,23 @@ export function WorkspaceGapCards({
                   ) : null}
 
                   {/* Zone 3 — resolution (interactive) */}
-                  <div className="rounded-[1.05rem] border border-white/8 bg-[linear-gradient(135deg,rgba(62,92,112,0.10),rgba(0,0,0,0.20))] px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+                  <div className="rounded-[1.05rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_45%,transparent)] px-3 py-3 shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_16%,transparent)]">
                     {isResolved ? (
                       <p className="text-sm leading-6 text-emerald-100/80">
                         Resolved by: <span className="text-emerald-50/95">{resolvedByLabel ?? "—"}</span>
                       </p>
                     ) : (
                       <div className="grid gap-3 md:grid-cols-2">
-                        <p className="col-span-full text-[0.72rem] leading-snug text-white/55">
+                        <p className="col-span-full text-[0.72rem] leading-snug text-[--metis-text-tertiary]">
                           Answer, assign, or close on the{" "}
                           <Link href={`/issues/${issueId}/gaps`} className="font-medium text-[--metis-brass-soft] underline-offset-4 hover:underline">
                             Open questions
                           </Link>{" "}
                           ledger when the thread is settled — use controls below from the workspace shortcut.
                         </p>
-                        <div className="md:pr-3 md:border-r md:border-white/10">
-                          <p className="text-xs text-white/55">Existing observation</p>
-                          <p className="mt-1 text-sm text-white/70">Select, then mark answered.</p>
+                        <div className="md:pr-3 md:border-r md:border-[--metis-outline-subtle]">
+                          <p className="text-xs text-[--metis-text-tertiary]">Existing observation</p>
+                          <p className="mt-1 text-sm text-[--metis-paper-muted]">Select, then mark answered.</p>
                           <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
                             <select
                               value={resolveSelectionById[g.id] ?? ""}
@@ -535,11 +547,11 @@ export function WorkspaceGapCards({
                         </div>
 
                         <div className="md:pl-1">
-                          <p className="text-xs text-white/55">New observation</p>
-                          <p className="mt-1 text-sm text-white/70">Add an attributable observation that answers this question.</p>
+                          <p className="text-xs text-[--metis-text-tertiary]">New observation</p>
+                          <p className="mt-1 text-sm text-[--metis-paper-muted]">Add an attributable observation that answers this question.</p>
 
                           <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                            <p className="text-xs text-white/50">Save, then select it above and mark answered.</p>
+                            <p className="text-xs text-[--metis-text-tertiary]">Save, then select it above and mark answered.</p>
                             <Button
                               variant="ghost"
                               size="sm"
@@ -680,7 +692,7 @@ export function WorkspaceSourceCards({
 
   if (sources.length === 0) {
     return (
-      <p className="text-sm leading-6 text-white/55">
+                  <p className="text-sm leading-6 text-[--metis-paper-muted]">
         No Sources in this workspace preview yet.{" "}
         <Link href={`/issues/${issueId}/sources`} className="font-medium text-[--metis-brass-soft] underline-offset-4 hover:underline">
           Open Sources
@@ -706,7 +718,7 @@ export function WorkspaceSourceCards({
               onToggle={() => setOpenId((cur) => (cur === s.id ? null : s.id))}
               summary={
                 <>
-                  <p className="text-sm font-medium text-white/90">{title}</p>
+                  <p className="text-sm font-medium text-[--metis-paper]">{title}</p>
                   <div className="mt-1">
                     <MetaLine
                       parts={[
@@ -717,26 +729,22 @@ export function WorkspaceSourceCards({
                       ]}
                     />
                   </div>
-                  {notePreview ? (
-                    <p className="mt-2 text-sm text-white/75">{notePreview}</p>
-                  ) : (
-                    <p className="mt-2 text-sm text-white/50">No note recorded.</p>
-                  )}
+                  {notePreview ? <p className="mt-2 text-sm text-[--metis-paper-muted]">{notePreview}</p> : <p className="mt-2 text-sm text-[--metis-text-tertiary]">No note recorded.</p>}
                 </>
               }
               details={
                 <div className="space-y-3">
                   {fullNote ? (
-                    <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-2">
-                      <p className="text-xs text-white/50">Note</p>
-                      <p className="mt-1 whitespace-pre-wrap text-sm text-white/85">{fullNote}</p>
+                    <div className="rounded-xl border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-frame-soft)_82%,transparent)] px-3 py-2">
+                      <p className="text-xs text-[--metis-text-tertiary]">Note</p>
+                      <p className="mt-1 whitespace-pre-wrap text-sm text-[--metis-paper]">{fullNote}</p>
                     </div>
                   ) : null}
 
                   {fullSnippet ? (
-                    <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-2">
-                      <p className="text-xs text-white/50">Snippet</p>
-                      <p className="mt-1 whitespace-pre-wrap text-sm text-white/80">{fullSnippet}</p>
+                    <div className="rounded-xl border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-frame-soft)_82%,transparent)] px-3 py-2">
+                      <p className="text-xs text-[--metis-text-tertiary]">Snippet</p>
+                      <p className="mt-1 whitespace-pre-wrap text-sm text-[--metis-paper-muted]">{fullSnippet}</p>
                     </div>
                   ) : null}
 
@@ -749,7 +757,7 @@ export function WorkspaceSourceCards({
                         </a>
                       </Button>
                     ) : (
-                      <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs text-white/45">
+                      <span className="inline-flex items-center rounded-full border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_52%,transparent)] px-3 py-1.5 text-xs text-[--metis-text-tertiary]">
                         No link available
                       </span>
                     )}
@@ -800,12 +808,14 @@ export function WorkspaceObservationCards({ issueId, observations }: { issueId: 
       {observations.map((o) => (
         <div
           key={o.id}
-          className="rounded-2xl border border-white/[0.09] bg-[rgba(0,0,0,0.18)] px-4 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)]"
+          className="rounded-2xl border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_42%,transparent)] px-4 py-2.5 shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_18%,transparent)]"
         >
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-sm font-medium text-white/90">{o.role} · {o.name}</p>
-              <p className="mt-1 text-xs text-white/50">
+              <p className="text-sm font-medium text-[--metis-paper]">
+                {o.role} · {o.name}
+              </p>
+              <p className="mt-1 text-xs text-[--metis-text-tertiary]">
                 {[o.timestampLabel ?? "—", o.linkedSection ?? "—", o.visibility ?? "—"].join(" · ")}
               </p>
             </div>
@@ -826,8 +836,8 @@ export function WorkspaceObservationCards({ issueId, observations }: { issueId: 
               </Button>
             </div>
           </div>
-          <p className="mt-2.5 whitespace-pre-wrap text-sm text-white/85">{o.response}</p>
-          <p className="mt-2 text-xs text-white/45">{formatIsoInstantLondon(o.createdAt)}</p>
+          <p className="mt-2.5 whitespace-pre-wrap text-sm text-[--metis-paper-muted]">{o.response}</p>
+          <p className="mt-2 text-xs text-[--metis-text-tertiary]">{formatIsoInstantLondon(o.createdAt)}</p>
         </div>
       ))}
     </div>

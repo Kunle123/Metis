@@ -19,7 +19,7 @@ function sectionNavItem(id: string, label: string) {
     <a
       key={id}
       href={`#${id}`}
-      className="rounded-full border border-white/10 bg-[rgba(255,255,255,0.025)] px-3.5 py-2 text-sm text-[--metis-paper-muted] transition hover:border-white/14 hover:bg-white/[0.05] hover:text-[--metis-paper]"
+      className="rounded-full border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_42%,transparent)] px-3.5 py-2 text-sm text-[--metis-paper-muted] transition hover:border-[--metis-outline-strong] hover:bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_62%,transparent)] hover:text-[--metis-paper]"
     >
       {label}
     </a>
@@ -62,7 +62,7 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
     >
       <div className="space-y-6">
         <SurfaceCard className="overflow-hidden">
-          <div className="border-b border-white/8 bg-[rgba(255,255,255,0.025)] px-6 py-5 sm:px-7">
+          <div className="border-b border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_45%,transparent)] px-6 py-5 sm:px-7">
             <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between lg:items-end">
               <div className="min-w-0 space-y-1">
                 <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper]">Workspace</h2>
@@ -106,44 +106,45 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
 
           <div className="space-y-8 px-6 py-6 sm:px-7 sm:py-7">
             <section id="summary" className="space-y-4">
-              <div className="rounded-[1.35rem] border border-white/10 bg-[rgba(0,0,0,0.14)] px-5 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-                <p className="text-[0.72rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Issue summary</p>
+              <div className="rounded-[1.35rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-card)_82%,transparent)] px-5 py-5 shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_18%,transparent)]">
+                <p className="text-[0.72rem] uppercase tracking-[0.22em] text-[--metis-text-tertiary]">Issue summary (read-only)</p>
                 <h3 className="mt-2 text-[1.35rem] font-medium leading-8 text-[--metis-paper]">{issue.title}</h3>
                 <p className="mt-3 max-w-4xl text-sm leading-7 text-[--metis-paper] whitespace-pre-wrap">{issue.summary}</p>
               </div>
             </section>
 
-            <section id="facts" className="space-y-5 border-t border-white/10 pt-8">
+            <section id="facts" className="space-y-5 border-t border-[--metis-outline-subtle] pt-8">
               <div className="space-y-2">
-                <p className="text-[0.72rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Confirmed vs unclear</p>
+                <p className="text-[0.72rem] uppercase tracking-[0.22em] text-[--metis-text-tertiary]">Confirmed vs unclear (read-only)</p>
                 <p className="text-sm leading-6 text-[--metis-paper-muted]">Keep facts and unknowns separate.</p>
               </div>
               <div className="grid gap-4 xl:grid-cols-2">
-                <div className="space-y-2 rounded-[1.25rem] border border-[--metis-info-border] bg-[rgba(255,255,255,0.03)] px-4 py-4 sm:px-5 sm:py-5">
+                <div className="space-y-2 rounded-[1.25rem] border border-[--metis-info-border] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_40%,transparent)] px-4 py-4 sm:px-5 sm:py-5">
                   <p className="text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">Confirmed facts</p>
                   <p className="text-sm leading-7 text-[--metis-paper] whitespace-pre-wrap">{issue.confirmedFacts ?? "—"}</p>
                 </div>
-                <div className="space-y-2 rounded-[1.25rem] border border-[--metis-info-border] bg-[rgba(255,255,255,0.03)] px-4 py-4 sm:px-5 sm:py-5">
+                <div className="space-y-2 rounded-[1.25rem] border border-[--metis-info-border] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_40%,transparent)] px-4 py-4 sm:px-5 sm:py-5">
                   <p className="text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">Open questions</p>
                   <p className="text-sm leading-7 text-[--metis-paper] whitespace-pre-wrap">{issue.openQuestions ?? "—"}</p>
                 </div>
               </div>
               {issue.context ? (
-                <div className="space-y-2 rounded-[1.25rem] border border-[--metis-info-border]/90 bg-[rgba(28,42,58,0.28)] px-4 py-4 sm:px-5 sm:py-5">
+                <div className="space-y-2 rounded-[1.25rem] border border-[--metis-info-border]/90 bg-[--metis-info-bg] px-4 py-4 sm:px-5 sm:py-5">
                   <p className="text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">Context</p>
                   <p className="text-sm leading-7 text-[--metis-paper-muted] whitespace-pre-wrap">{issue.context}</p>
                 </div>
               ) : null}
             </section>
 
-            <section id="sources" className="space-y-5 border-t border-white/10 pt-8">
+            <section id="sources" className="space-y-5 border-t border-[--metis-outline-subtle] pt-8">
               <WorkspaceSection
                 title="Sources"
-                description="Evidence and artifacts linked to this issue."
+                description="Evidence and artifacts linked to this issue. Creates a saved source record on the issue."
                 addLabel="Add source"
                 advancedHref={`/issues/${issue.id}/sources`}
                 form={<SourceEntryForm issueId={issue.id} />}
               >
+                <p className="text-[0.6rem] font-medium uppercase tracking-[0.18em] text-[--metis-text-tertiary]">Saved sources (preview)</p>
                 {sources.length ? (
                   <WorkspaceSourceCards
                     issueId={issue.id}
@@ -166,14 +167,15 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
               </WorkspaceSection>
             </section>
 
-            <section id="gaps" className="space-y-5 border-t border-white/8 pt-7">
+            <section id="gaps" className="space-y-5 border-t border-[--metis-outline-subtle] pt-7">
               <WorkspaceSection
                 title="Open questions"
-                description="Unknowns and questions that must be answered."
+                description="Unknowns and questions that must be answered. Creates a saved open-question record on the issue."
                 addLabel="Add open question"
                 advancedHref={`/issues/${issue.id}/gaps`}
                 form={<GapCreateForm issueId={issue.id} />}
               >
+                <p className="text-[0.6rem] font-medium uppercase tracking-[0.18em] text-[--metis-text-tertiary]">Saved open questions (preview)</p>
                 {gaps.length ? (
                   <WorkspaceGapCards
                     issueId={issue.id}
@@ -201,11 +203,11 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
               </WorkspaceSection>
             </section>
 
-            <section id="input" className="space-y-8 border-t border-white/10 pt-8">
+            <section id="input" className="space-y-8 border-t border-[--metis-outline-subtle] pt-8">
               <CaptureNotesForm issueId={issue.id} captureNotesAiEnabled={captureNotesAiEnabled} />
               <WorkspaceSection
                 title="Observations"
-                description="Attributable internal observations linked to sections."
+                description="Attributable internal observations linked to sections. Creates a saved observation record on the issue."
                 addLabel="Add observation"
                 advancedHref={`/issues/${issue.id}/input`}
                 form={<InternalInputCreateForm issueId={issue.id} />}
@@ -213,6 +215,7 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
                 <p className="rounded-xl border border-[--metis-info-border]/60 bg-[rgba(28,42,58,0.18)] px-3 py-2.5 text-sm leading-6 text-[--metis-paper-muted]">
                   Observations are attributable internal statements. Sources are external or internal artifacts used as evidence.
                 </p>
+                <p className="text-[0.6rem] font-medium uppercase tracking-[0.18em] text-[--metis-text-tertiary]">Saved observations (preview)</p>
                 {inputs.length ? (
                   <WorkspaceObservationCards
                     issueId={issue.id}
@@ -233,6 +236,27 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
                   <p className="text-sm text-[--metis-paper-muted]">No observations yet.</p>
                 )}
               </WorkspaceSection>
+
+              <div className="rounded-[1.25rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_35%,transparent)] px-5 py-4">
+                <p className="text-[0.62rem] font-semibold uppercase tracking-[0.18em] text-[--metis-text-tertiary]">Continue when ready</p>
+                <p className="mt-1 text-sm leading-6 text-[--metis-paper-muted]">
+                  Optional next steps — generate outputs after you’ve captured notes, reviewed suggestions, and saved records.
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Link href={`/issues/${issue.id}/brief`} className="rounded-full border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_52%,transparent)] px-4 py-2 text-sm text-[--metis-paper] hover:underline underline-offset-4">
+                    Brief →
+                  </Link>
+                  <Link href={`/issues/${issue.id}/messages`} className="rounded-full border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_52%,transparent)] px-4 py-2 text-sm text-[--metis-paper] hover:underline underline-offset-4">
+                    Messages →
+                  </Link>
+                  <Link href={`/issues/${issue.id}/comms-plan`} className="rounded-full border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_52%,transparent)] px-4 py-2 text-sm text-[--metis-paper] hover:underline underline-offset-4">
+                    Comms plan →
+                  </Link>
+                  <Link href={`/issues/${issue.id}/export`} className="rounded-full border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_52%,transparent)] px-4 py-2 text-sm text-[--metis-paper] hover:underline underline-offset-4">
+                    Export →
+                  </Link>
+                </div>
+              </div>
             </section>
           </div>
         </SurfaceCard>

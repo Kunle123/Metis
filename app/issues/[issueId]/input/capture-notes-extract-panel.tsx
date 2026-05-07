@@ -216,7 +216,7 @@ export function CaptureNotesExtractPanel({
     openQuestions.length > 0 || sources.length > 0 || observations.length > 0 || followUps.length > 0;
 
   return (
-    <div className="space-y-3 border-t border-white/10 px-4 py-4 sm:px-5 sm:py-5">
+    <div className="space-y-3 border-t border-[--metis-outline-subtle] px-4 py-4 sm:px-5 sm:py-5">
       <div className="rounded-lg border border-[--metis-info-border]/50 bg-[rgba(28,42,58,0.2)] px-3 py-2.5 text-xs leading-relaxed text-[--metis-paper-muted]">
         <strong className="font-medium text-[--metis-paper]">Unverified suggestions.</strong> The model proposes items from
         your notes; it does not validate facts or treat anything as confirmed evidence. Nothing is saved to the issue until you
@@ -257,13 +257,18 @@ export function CaptureNotesExtractPanel({
                 {openQuestions.map((row) => (
                   <li
                     key={row.key}
-                    className="rounded-xl border border-white/10 bg-black/25 px-3 py-2.5 text-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+                    className="rounded-xl border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_45%,transparent)] px-3 py-2.5 text-sm shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_18%,transparent)]"
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <span className="text-[0.65rem] uppercase tracking-[0.12em] text-amber-100/75">Open question</span>
-                      <span className="rounded-full border border-amber-200/20 bg-amber-950/30 px-2 py-0.5 text-[0.65rem] text-amber-50/95">
-                        Needs review
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="rounded-full border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_70%,transparent)] px-2 py-0.5 text-[0.65rem] text-[--metis-text-secondary]">
+                          Not saved yet
+                        </span>
+                        <span className="rounded-full border border-amber-200/20 bg-amber-950/30 px-2 py-0.5 text-[0.65rem] text-amber-50/95">
+                          Needs review
+                        </span>
+                      </div>
                     </div>
                     <p className="mt-1.5 font-medium text-[--metis-paper]">{row.title}</p>
                     <p className="mt-1 text-xs text-[--metis-paper-muted]">{row.prompt}</p>
@@ -287,9 +292,9 @@ export function CaptureNotesExtractPanel({
                         </div>
                       ) : null}
                     </dl>
-                    <div className="mt-2 rounded-lg border border-white/8 bg-black/30 px-2 py-1.5">
+                    <div className="mt-2 rounded-lg border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-frame-soft)_82%,transparent)] px-2 py-1.5">
                       <p className="text-[0.6rem] uppercase tracking-[0.14em] text-[--metis-ink-soft]">Notes excerpt</p>
-                      <p className="mt-0.5 whitespace-pre-wrap text-xs text-white/75">{row.verbatimExcerpt}</p>
+                      <p className="mt-0.5 whitespace-pre-wrap text-xs text-[--metis-paper-muted]">{row.verbatimExcerpt}</p>
                     </div>
                     {itemError?.key === row.key ? <p className="mt-2 text-xs text-rose-200">{itemError.message}</p> : null}
                     <div className="mt-2 flex flex-wrap gap-2">
@@ -326,13 +331,18 @@ export function CaptureNotesExtractPanel({
                 {sources.map((row) => (
                   <li
                     key={row.key}
-                    className="rounded-xl border border-white/10 bg-black/25 px-3 py-2.5 text-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+                    className="rounded-xl border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_45%,transparent)] px-3 py-2.5 text-sm shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_18%,transparent)]"
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <span className="text-[0.65rem] uppercase tracking-[0.12em] text-[--metis-brass-soft]/90">Source (not verified)</span>
-                      <span className="rounded-full border border-amber-200/20 bg-amber-950/30 px-2 py-0.5 text-[0.65rem] text-amber-50/95">
-                        Needs review
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="rounded-full border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_70%,transparent)] px-2 py-0.5 text-[0.65rem] text-[--metis-text-secondary]">
+                          Not saved yet
+                        </span>
+                        <span className="rounded-full border border-amber-200/20 bg-amber-950/30 px-2 py-0.5 text-[0.65rem] text-amber-50/95">
+                          Needs review
+                        </span>
+                      </div>
                     </div>
                     <p className="mt-1.5 font-medium text-[--metis-paper]">{row.title}</p>
                     <p className="mt-1 text-xs text-[--metis-paper-muted]">{row.note}</p>
@@ -355,14 +365,14 @@ export function CaptureNotesExtractPanel({
                       ) : null}
                     </dl>
                     {row.snippet ? (
-                      <p className="mt-2 whitespace-pre-wrap text-xs text-white/70">
+                      <p className="mt-2 whitespace-pre-wrap text-xs text-[--metis-paper-muted]">
                         <span className="text-[0.6rem] uppercase tracking-[0.14em] text-[--metis-ink-soft]">Snippet · </span>
                         {row.snippet}
                       </p>
                     ) : null}
-                    <div className="mt-2 rounded-lg border border-white/8 bg-black/30 px-2 py-1.5">
+                    <div className="mt-2 rounded-lg border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-frame-soft)_82%,transparent)] px-2 py-1.5">
                       <p className="text-[0.6rem] uppercase tracking-[0.14em] text-[--metis-ink-soft]">Notes excerpt</p>
-                      <p className="mt-0.5 whitespace-pre-wrap text-xs text-white/75">{row.verbatimExcerpt}</p>
+                      <p className="mt-0.5 whitespace-pre-wrap text-xs text-[--metis-paper-muted]">{row.verbatimExcerpt}</p>
                     </div>
                     {itemError?.key === row.key ? <p className="mt-2 text-xs text-rose-200">{itemError.message}</p> : null}
                     <div className="mt-2 flex flex-wrap gap-2">
@@ -394,13 +404,18 @@ export function CaptureNotesExtractPanel({
                 {observations.map((row) => (
                   <li
                     key={row.key}
-                    className="rounded-xl border border-white/10 bg-black/25 px-3 py-2.5 text-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+                    className="rounded-xl border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_45%,transparent)] px-3 py-2.5 text-sm shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_18%,transparent)]"
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className="text-[0.65rem] uppercase tracking-[0.12em] text-white/55">Observation</span>
-                      <span className="rounded-full border border-amber-200/20 bg-amber-950/30 px-2 py-0.5 text-[0.65rem] text-amber-50/95">
-                        Needs review
-                      </span>
+                      <span className="text-[0.65rem] uppercase tracking-[0.12em] text-[--metis-text-tertiary]">Observation</span>
+                      <div className="flex items-center gap-2">
+                        <span className="rounded-full border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_70%,transparent)] px-2 py-0.5 text-[0.65rem] text-[--metis-text-secondary]">
+                          Not saved yet
+                        </span>
+                        <span className="rounded-full border border-amber-200/20 bg-amber-950/30 px-2 py-0.5 text-[0.65rem] text-amber-50/95">
+                          Needs review
+                        </span>
+                      </div>
                     </div>
                     <p className="mt-1.5 text-[--metis-paper]">
                       <span className="font-medium">{row.role}</span> · {row.name}
@@ -418,9 +433,9 @@ export function CaptureNotesExtractPanel({
                         </div>
                       ) : null}
                     </dl>
-                    <div className="mt-2 rounded-lg border border-white/8 bg-black/30 px-2 py-1.5">
+                    <div className="mt-2 rounded-lg border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-frame-soft)_82%,transparent)] px-2 py-1.5">
                       <p className="text-[0.6rem] uppercase tracking-[0.14em] text-[--metis-ink-soft]">Notes excerpt</p>
-                      <p className="mt-0.5 whitespace-pre-wrap text-xs text-white/75">{row.verbatimExcerpt}</p>
+                      <p className="mt-0.5 whitespace-pre-wrap text-xs text-[--metis-paper-muted]">{row.verbatimExcerpt}</p>
                     </div>
                     <p className="mt-2 text-[0.65rem] text-[--metis-paper-muted]">
                       Accepts as internal observation, excluded from briefs until you change it.
@@ -461,14 +476,14 @@ export function CaptureNotesExtractPanel({
                 {followUps.map((row) => (
                   <li
                     key={row.key}
-                    className="rounded-xl border border-white/8 bg-black/20 px-3 py-2 text-xs text-[--metis-paper-muted]"
+                    className="rounded-xl border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-frame-soft)_82%,transparent)] px-3 py-2 text-xs text-[--metis-paper-muted]"
                   >
                     <p className="font-medium text-[--metis-paper]">{row.label}</p>
                     {row.rationale ? <p className="mt-1">{row.rationale}</p> : null}
                     <p className="mt-1 text-[0.65rem] uppercase tracking-[0.12em] text-[--metis-ink-soft]">
                       Suggested focus · {row.suggestedTarget.replace(/_/g, " ")}
                     </p>
-                    <p className="mt-1 whitespace-pre-wrap text-white/60">{row.verbatimExcerpt}</p>
+                    <p className="mt-1 whitespace-pre-wrap text-[--metis-paper-muted]">{row.verbatimExcerpt}</p>
                   </li>
                 ))}
               </ul>

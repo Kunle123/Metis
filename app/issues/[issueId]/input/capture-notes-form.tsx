@@ -112,13 +112,13 @@ export function CaptureNotesForm({
   return (
     <div
       id="capture-notes"
-      className="scroll-mt-28 overflow-hidden rounded-[1.25rem] border border-[color-mix(in_oklab,var(--metis-info)_42%,rgba(255,255,255,0.14))] bg-[linear-gradient(165deg,rgba(62,110,160,0.14),rgba(0,0,0,0.2))] shadow-[inset_0_1px_0_rgba(255,255,255,0.07)]"
+      className="scroll-mt-28 overflow-hidden rounded-[1.25rem] border border-[--metis-info-border] bg-[color-mix(in_oklab,var(--metis-info-bg)_72%,transparent)] shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_22%,transparent)]"
     >
-      <div className="border-b border-white/10 px-4 py-4 sm:px-5 sm:py-5">
+      <div className="border-b border-[--metis-outline-subtle] px-4 py-4 sm:px-5 sm:py-5">
         <div className="min-w-0 space-y-1">
           <p className="text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">Capture notes</p>
           <p className="text-sm leading-6 text-[--metis-paper-muted]">
-            Paste meeting, call, or email notes. They are saved as an internal observation for triage and are excluded from briefs until curated.
+            Paste meeting, call, or email notes. Saving creates a saved internal observation for triage (excluded from briefs until you curate it).
           </p>
         </div>
 
@@ -148,7 +148,7 @@ export function CaptureNotesForm({
               if (success) setSuccess(false);
             }}
             placeholder="e.g. Weekly stand‑up · 12 May"
-            className="border-white/14 bg-black/25 text-[--metis-paper] placeholder:text-[--metis-paper-muted]/80"
+            className="border-[--metis-outline-subtle] bg-[var(--metis-control-bg)] text-[--metis-paper] placeholder:text-[--metis-paper-muted]/80"
           />
         </label>
         <label className="block space-y-2">
@@ -157,7 +157,7 @@ export function CaptureNotesForm({
             value={notes}
             onChange={(ev) => onNotesChange(ev.target.value)}
             placeholder="Paste notes from a meeting, call, email thread, or stakeholder conversation…"
-            className="min-h-[132px] border-white/14 bg-black/25"
+            className="min-h-[132px] border-[--metis-outline-subtle] bg-[var(--metis-control-bg)] text-[--metis-paper]"
             disabled={isSaving}
           />
         </label>
@@ -165,7 +165,7 @@ export function CaptureNotesForm({
 
       {captureNotesAiEnabled ? <CaptureNotesExtractPanel issueId={issueId} rawNotes={notes} meetingLabel={meetingLabel} /> : null}
 
-      <footer className="space-y-3 border-t border-white/12 bg-[rgba(0,0,0,0.28)] px-4 py-4 sm:px-5">
+      <footer className="space-y-3 border-t border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_42%,transparent)] px-4 py-4 sm:px-5">
         <div className="flex justify-end">
           <Button type="button" className="rounded-full px-5" disabled={!canSubmit} onClick={onSave}>
             {isSaving ? "Saving…" : "Save notes"}
