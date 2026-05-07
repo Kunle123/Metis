@@ -4,42 +4,39 @@ import { Suspense, useCallback, useEffect, useLayoutEffect } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
-
-type Preview = "dark" | "light";
-
-function readThemeParam(value: string | null): Preview {
-  return value === "light" ? "light" : "dark";
-}
-
-/** Apply mutually-exclusive root theme class (immediate, for optimistic clicks + URL hydration). */
-function applyRootPreview(next: Preview) {
-  const root = document.documentElement;
-  root.classList.remove("dark", "light");
-  root.classList.add(next);
-}
+import {
+  applyRootDevThemePreview,
+  parseDevThemePreview,
+  readDevThemePreviewFromQuery,
+  readStoredDevThemePreview,
+  storeDevThemePreview,
+  type DevThemePreview,
+} from "@/components/dev/dev-theme-preview";
 
 function DevUiRootThemeInner({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const preview = readThemeParam(searchParams.get("theme"));
+  const preview: DevThemePreview = parseDevThemePreview(searchParams.get("theme")) ?? "dark";
 
   useLayoutEffect(() => {
     if (!pathname?.startsWith("/dev/ui")) return;
-    const fromWindow = new URLSearchParams(window.location.search).get("theme");
-    applyRootPreview(readThemeParam(fromWindow ?? searchParams.get("theme")));
+    const fromQuery = readDevThemePreviewFromQuery(window.location.search) ?? parseDevThemePreview(searchParams.get("theme"));
+    // Query param wins on `/dev/ui`. If absent, fall back to stored dev preview if present.
+    const next = fromQuery ?? readStoredDevThemePreview() ?? "dark";
+    applyRootDevThemePreview(next);
   }, [pathname, searchParams]);
 
   useEffect(() => {
     return () => {
-      const root = document.documentElement;
-      root.classList.remove("light");
-      if (!root.classList.contains("dark")) root.classList.add("dark");
+      // Leaving `/dev/ui` should restore the global dev preview choice (if any), not forcibly dark.
+      const next = readStoredDevThemePreview() ?? "dark";
+      applyRootDevThemePreview(next);
     };
   }, []);
 
   const syncUrl = useCallback(
-    (next: Preview) => {
+    (next: DevThemePreview) => {
       const nextParams = new URLSearchParams(searchParams.toString());
       if (next === "light") nextParams.set("theme", "light");
       else nextParams.delete("theme");
@@ -50,9 +47,10 @@ function DevUiRootThemeInner({ children }: { children: React.ReactNode }) {
   );
 
   const setPreviewTracked = useCallback(
-    (next: Preview) => {
+    (next: DevThemePreview) => {
       if (!pathname?.startsWith("/dev/ui")) return;
-      applyRootPreview(next);
+      storeDevThemePreview(next);
+      applyRootDevThemePreview(next);
       syncUrl(next);
     },
     [pathname, syncUrl],
