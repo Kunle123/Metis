@@ -72,17 +72,19 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
               </div>
               <div className="flex min-w-0 flex-col gap-1.5 md:items-end">
                 <div className="flex flex-wrap items-center gap-2">
-                  <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{issue.issueType}</Badge>
-                  <Badge className="border-0 bg-rose-900/35 text-rose-100">{issue.severity}</Badge>
+                  <Badge className="border-0 bg-[color-mix(in_oklab,var(--metis-surface-elevated)_70%,transparent)] text-[--metis-text-secondary]">
+                    {issue.issueType}
+                  </Badge>
+                  <Badge className="border-0 bg-[--metis-status-danger-bg] text-[--metis-status-danger-fg]">{issue.severity}</Badge>
                   <Link
                     href={`/issues/${issue.id}/sources`}
-                    className="inline-flex items-center rounded-full border-0 bg-white/8 px-3 py-1 text-[0.72rem] font-medium text-[--metis-paper-muted] transition hover:bg-white/[0.11] hover:text-[--metis-paper] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25 focus-visible:ring-offset-2 focus-visible:ring-offset-[rgba(0,0,0,0.35)]"
+                    className="inline-flex items-center rounded-full border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_52%,transparent)] px-3 py-1 text-[0.72rem] font-medium text-[--metis-text-secondary] transition hover:border-[--metis-outline-strong] hover:bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_68%,transparent)] hover:text-[--metis-paper] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/50"
                   >
                     Sources · {issue.sourcesCount}
                   </Link>
                   <Link
                     href={`/issues/${issue.id}/gaps`}
-                    className="inline-flex items-center rounded-full border-0 bg-[rgba(131,82,17,0.72)] px-3 py-1 text-[0.72rem] font-medium text-amber-50 transition hover:bg-[rgba(131,82,17,0.82)] hover:text-amber-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[rgba(0,0,0,0.35)]"
+                    className="inline-flex items-center rounded-full border border-[--metis-status-warning-border] bg-[--metis-status-warning-bg] px-3 py-1 text-[0.72rem] font-medium text-[--metis-status-warning-fg] transition hover:bg-[color-mix(in_oklab,var(--metis-status-warning-bg)_88%,var(--metis-surface-page))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/45"
                   >
                     Open questions · {issue.openGapsCount}
                   </Link>
@@ -212,7 +214,7 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
                 advancedHref={`/issues/${issue.id}/input`}
                 form={<InternalInputCreateForm issueId={issue.id} />}
               >
-                <p className="rounded-xl border border-[--metis-info-border]/60 bg-[rgba(28,42,58,0.18)] px-3 py-2.5 text-sm leading-6 text-[--metis-paper-muted]">
+                <p className="rounded-xl border border-[--metis-info-border]/60 bg-[color-mix(in_oklab,var(--metis-info-bg)_48%,transparent)] px-3 py-2.5 text-sm leading-6 text-[--metis-paper-muted]">
                   Observations are attributable internal statements. Sources are external or internal artifacts used as evidence.
                 </p>
                 <p className="text-[0.6rem] font-medium uppercase tracking-[0.18em] text-[--metis-text-tertiary]">Saved observations (preview)</p>

@@ -147,8 +147,8 @@ export function SourceEntryForm({ issueId }: { issueId: string }) {
   }
 
   return (
-    <div className="overflow-hidden rounded-[1.45rem] border border-white/14 bg-[linear-gradient(165deg,rgba(255,255,255,0.08),rgba(0,0,0,0.18))] shadow-[inset_0_1px_0_rgba(255,255,255,0.07)]">
-      <div className="border-b border-white/10 px-5 pb-4 pt-5">
+    <div className="overflow-hidden rounded-[1.45rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_55%,var(--metis-frame-soft))] shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_18%,transparent)]">
+      <div className="border-b border-[--metis-outline-subtle] px-5 pb-4 pt-5">
         <p className="text-[0.58rem] font-medium uppercase tracking-[0.18em] text-[--metis-ink-soft]">Add source</p>
         <p className="mt-1 text-sm text-[--metis-paper-muted]">
           Capture a document, update, or piece of evidence used to support the brief and messages.
@@ -253,9 +253,12 @@ export function SourceEntryForm({ issueId }: { issueId: string }) {
         </label>
       </div>
 
-      <footer className="space-y-3 border-t border-white/12 bg-[rgba(0,0,0,0.26)] px-5 py-4">
+      <footer className="space-y-3 border-t border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_48%,transparent)] px-5 py-4">
         {error ? (
-          <div className="rounded-[1.1rem] border border-rose-400/30 bg-[rgba(118,27,46,0.28)] px-4 py-3 text-sm text-rose-50" role="alert">
+          <div
+            className="rounded-[1.1rem] border border-[--metis-status-danger-border] bg-[color-mix(in_oklab,var(--metis-status-danger-bg)_52%,transparent)] px-4 py-3 text-sm text-[--metis-status-danger-fg]"
+            role="alert"
+          >
             {error}
           </div>
         ) : null}

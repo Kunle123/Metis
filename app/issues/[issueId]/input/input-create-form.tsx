@@ -77,8 +77,8 @@ export function InternalInputCreateForm({ issueId }: { issueId: string }) {
   }
 
   return (
-    <div className="overflow-hidden rounded-[1.45rem] border border-white/14 bg-[linear-gradient(165deg,rgba(255,255,255,0.08),rgba(0,0,0,0.18))] shadow-[inset_0_1px_0_rgba(255,255,255,0.07)]">
-      <div className="flex flex-col gap-4 border-b border-white/10 px-5 pb-4 pt-5">
+    <div className="overflow-hidden rounded-[1.45rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_55%,var(--metis-frame-soft))] shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_18%,transparent)]">
+      <div className="flex flex-col gap-4 border-b border-[--metis-outline-subtle] px-5 pb-4 pt-5">
         <div>
           <p className="text-[0.58rem] font-medium uppercase tracking-[0.18em] text-[--metis-ink-soft]">Capture internal input</p>
           <p className="mt-1 text-sm text-[--metis-paper-muted]">Stored on the issue record for attribution and gap resolution.</p>
@@ -157,8 +157,8 @@ export function InternalInputCreateForm({ issueId }: { issueId: string }) {
         </div>
       </div>
 
-      <footer className="space-y-3 border-t border-white/12 bg-[rgba(0,0,0,0.26)] px-5 py-4">
-        {error ? <p className="text-sm text-rose-200" role="alert">{error}</p> : null}
+      <footer className="space-y-3 border-t border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_48%,transparent)] px-5 py-4">
+        {error ? <p className="text-sm text-[--metis-status-danger-fg]" role="alert">{error}</p> : null}
         {missingRequired && !isSaving ? (
           <p className="text-sm leading-6 text-[--metis-paper-muted]">Complete required fields to continue.</p>
         ) : null}

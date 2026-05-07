@@ -73,8 +73,8 @@ export function GapCreateForm({ issueId }: { issueId: string }) {
   }
 
   return (
-    <div className="overflow-hidden rounded-[1.45rem] border border-[color-mix(in_oklab,rgba(217,119,6,0.45)_35%,rgba(255,255,255,0.12))] bg-[linear-gradient(165deg,rgba(131,82,17,0.12),rgba(0,0,0,0.2))] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
-      <div className="border-b border-white/10 px-5 pb-4 pt-5">
+    <div className="overflow-hidden rounded-[1.45rem] border border-[color-mix(in_oklab,var(--metis-status-warning-border)_72%,var(--metis-outline-subtle))] bg-[color-mix(in_oklab,var(--metis-status-warning-bg)_18%,var(--metis-surface-toolbar)_88%)] shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_16%,transparent)]">
+      <div className="border-b border-[--metis-outline-subtle] px-5 pb-4 pt-5">
         <p className="text-[0.58rem] font-medium uppercase tracking-[0.18em] text-[--metis-ink-soft]">Register gap</p>
         <p className="mt-1 text-sm text-[--metis-paper-muted]">Creates a persisted clarification gap for this issue.</p>
         <p className="mt-1 text-sm text-[--metis-paper-muted]">All fields below are required to register a gap.</p>
@@ -154,8 +154,8 @@ export function GapCreateForm({ issueId }: { issueId: string }) {
         </label>
       </div>
 
-      <footer className="space-y-3 border-t border-white/12 bg-[rgba(0,0,0,0.28)] px-5 py-4">
-        {error ? <p className="text-sm text-rose-200" role="alert">{error}</p> : null}
+      <footer className="space-y-3 border-t border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_48%,transparent)] px-5 py-4">
+        {error ? <p className="text-sm text-[--metis-status-danger-fg]" role="alert">{error}</p> : null}
         {missingRequired && !isSaving ? (
           <p className="text-sm leading-6 text-[--metis-paper-muted]">Complete required fields to continue.</p>
         ) : null}

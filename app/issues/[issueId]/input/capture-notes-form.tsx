@@ -172,12 +172,12 @@ export function CaptureNotesForm({
           </Button>
         </div>
         {error ? (
-          <p className="text-sm text-rose-200" role="alert">
+          <p className="text-sm text-[--metis-status-danger-fg]" role="alert">
             {error}
           </p>
         ) : null}
         {success ? (
-          <p className="text-sm text-emerald-200/95" role="status">
+          <p className="text-sm text-[--metis-status-success-fg]" role="status">
             Notes saved as an observation (not in brief outputs until you adjust it).
           </p>
         ) : null}

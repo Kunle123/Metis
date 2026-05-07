@@ -217,7 +217,7 @@ export function CaptureNotesExtractPanel({
 
   return (
     <div className="space-y-3 border-t border-[--metis-outline-subtle] px-4 py-4 sm:px-5 sm:py-5">
-      <div className="rounded-lg border border-[--metis-info-border]/50 bg-[rgba(28,42,58,0.2)] px-3 py-2.5 text-xs leading-relaxed text-[--metis-paper-muted]">
+      <div className="rounded-lg border border-[--metis-info-border]/50 bg-[color-mix(in_oklab,var(--metis-info-bg)_48%,transparent)] px-3 py-2.5 text-xs leading-relaxed text-[--metis-paper-muted]">
         <strong className="font-medium text-[--metis-paper]">Unverified suggestions.</strong> The model proposes items from
         your notes; it does not validate facts or treat anything as confirmed evidence. Nothing is saved to the issue until you
         accept a suggestion or use Save notes.
@@ -239,7 +239,7 @@ export function CaptureNotesExtractPanel({
       </div>
 
       {extractError ? (
-        <p className="text-sm text-amber-100/90" role="status">
+        <p className="text-sm text-[--metis-status-warning-fg]" role="status">
           {extractError}
         </p>
       ) : null}
@@ -260,12 +260,12 @@ export function CaptureNotesExtractPanel({
                     className="rounded-xl border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_45%,transparent)] px-3 py-2.5 text-sm shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_18%,transparent)]"
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className="text-[0.65rem] uppercase tracking-[0.12em] text-amber-100/75">Open question</span>
+                      <span className="text-[0.65rem] uppercase tracking-[0.12em] text-[--metis-status-warning-muted]">Open question</span>
                       <div className="flex items-center gap-2">
                         <span className="rounded-full border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_70%,transparent)] px-2 py-0.5 text-[0.65rem] text-[--metis-text-secondary]">
                           Not saved yet
                         </span>
-                        <span className="rounded-full border border-amber-200/20 bg-amber-950/30 px-2 py-0.5 text-[0.65rem] text-amber-50/95">
+                        <span className="rounded-full border border-[--metis-status-warning-border] bg-[color-mix(in_oklab,var(--metis-status-warning-bg)_58%,transparent)] px-2 py-0.5 text-[0.65rem] text-[--metis-status-warning-fg]">
                           Needs review
                         </span>
                       </div>
@@ -296,7 +296,7 @@ export function CaptureNotesExtractPanel({
                       <p className="text-[0.6rem] uppercase tracking-[0.14em] text-[--metis-ink-soft]">Notes excerpt</p>
                       <p className="mt-0.5 whitespace-pre-wrap text-xs text-[--metis-paper-muted]">{row.verbatimExcerpt}</p>
                     </div>
-                    {itemError?.key === row.key ? <p className="mt-2 text-xs text-rose-200">{itemError.message}</p> : null}
+                    {itemError?.key === row.key ? <p className="mt-2 text-xs text-[--metis-status-danger-fg]">{itemError.message}</p> : null}
                     <div className="mt-2 flex flex-wrap gap-2">
                       <Button
                         type="button"
@@ -339,7 +339,7 @@ export function CaptureNotesExtractPanel({
                         <span className="rounded-full border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_70%,transparent)] px-2 py-0.5 text-[0.65rem] text-[--metis-text-secondary]">
                           Not saved yet
                         </span>
-                        <span className="rounded-full border border-amber-200/20 bg-amber-950/30 px-2 py-0.5 text-[0.65rem] text-amber-50/95">
+                        <span className="rounded-full border border-[--metis-status-warning-border] bg-[color-mix(in_oklab,var(--metis-status-warning-bg)_58%,transparent)] px-2 py-0.5 text-[0.65rem] text-[--metis-status-warning-fg]">
                           Needs review
                         </span>
                       </div>
@@ -374,7 +374,7 @@ export function CaptureNotesExtractPanel({
                       <p className="text-[0.6rem] uppercase tracking-[0.14em] text-[--metis-ink-soft]">Notes excerpt</p>
                       <p className="mt-0.5 whitespace-pre-wrap text-xs text-[--metis-paper-muted]">{row.verbatimExcerpt}</p>
                     </div>
-                    {itemError?.key === row.key ? <p className="mt-2 text-xs text-rose-200">{itemError.message}</p> : null}
+                    {itemError?.key === row.key ? <p className="mt-2 text-xs text-[--metis-status-danger-fg]">{itemError.message}</p> : null}
                     <div className="mt-2 flex flex-wrap gap-2">
                       <Button type="button" size="sm" disabled={acceptingKey === row.key} onClick={() => void acceptSource(row)}>
                         {acceptingKey === row.key ? "Saving…" : "Accept"}
@@ -412,7 +412,7 @@ export function CaptureNotesExtractPanel({
                         <span className="rounded-full border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_70%,transparent)] px-2 py-0.5 text-[0.65rem] text-[--metis-text-secondary]">
                           Not saved yet
                         </span>
-                        <span className="rounded-full border border-amber-200/20 bg-amber-950/30 px-2 py-0.5 text-[0.65rem] text-amber-50/95">
+                        <span className="rounded-full border border-[--metis-status-warning-border] bg-[color-mix(in_oklab,var(--metis-status-warning-bg)_58%,transparent)] px-2 py-0.5 text-[0.65rem] text-[--metis-status-warning-fg]">
                           Needs review
                         </span>
                       </div>
@@ -440,7 +440,7 @@ export function CaptureNotesExtractPanel({
                     <p className="mt-2 text-[0.65rem] text-[--metis-paper-muted]">
                       Accepts as internal observation, excluded from briefs until you change it.
                     </p>
-                    {itemError?.key === row.key ? <p className="mt-2 text-xs text-rose-200">{itemError.message}</p> : null}
+                    {itemError?.key === row.key ? <p className="mt-2 text-xs text-[--metis-status-danger-fg]">{itemError.message}</p> : null}
                     <div className="mt-2 flex flex-wrap gap-2">
                       <Button
                         type="button"

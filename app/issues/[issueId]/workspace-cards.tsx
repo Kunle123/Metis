@@ -322,7 +322,7 @@ export function WorkspaceGapCards({
               details={
                 <div className="space-y-2.5">
                   {/* Zone 1 — decision header: question + compact chips + tertiary utilities */}
-                  <div className="relative overflow-hidden rounded-[1.05rem] border border-[color-mix(in_oklab,var(--metis-brass)_26%,rgba(255,255,255,0.12))] bg-[linear-gradient(135deg,rgba(164,132,82,0.14),rgba(255,255,255,0.03))] pl-4 pr-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+                  <div className="relative overflow-hidden rounded-[1.05rem] border border-[color-mix(in_oklab,var(--metis-brass)_32%,var(--metis-outline-subtle))] bg-[color-mix(in_oklab,var(--metis-brass)_12%,var(--metis-surface-toolbar)_55%)] pl-4 pr-3 py-3 shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_20%,transparent)]">
                     <div className="pointer-events-none absolute inset-y-0 left-0 w-[3px] bg-[color-mix(in_oklab,var(--metis-brass)_70%,transparent)]" />
                     <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
                       <div className="min-w-0 flex-1">
@@ -336,7 +336,7 @@ export function WorkspaceGapCards({
                                   [g.id]: e.target.value,
                                 }))
                               }
-                              className="min-h-[120px] w-full rounded-[0.95rem] border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-3 py-3 text-sm leading-6 text-white/90 shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
+                              className="min-h-[120px] w-full rounded-[0.95rem] border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-3 py-3 text-sm leading-6 text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
                             />
                             <div className="flex flex-wrap items-center gap-2">
                               <Button
@@ -480,8 +480,9 @@ export function WorkspaceGapCards({
                   {/* Zone 3 — resolution (interactive) */}
                   <div className="rounded-[1.05rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_45%,transparent)] px-3 py-3 shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_16%,transparent)]">
                     {isResolved ? (
-                      <p className="text-sm leading-6 text-emerald-100/80">
-                        Resolved by: <span className="text-emerald-50/95">{resolvedByLabel ?? "—"}</span>
+                      <p className="text-sm leading-6 text-[color-mix(in_oklab,var(--metis-status-success-fg)_88%,transparent)]">
+                        Resolved by:{" "}
+                        <span className="font-medium text-[--metis-status-success-fg]">{resolvedByLabel ?? "—"}</span>
                       </p>
                     ) : (
                       <div className="grid gap-3 md:grid-cols-2">
@@ -504,7 +505,7 @@ export function WorkspaceGapCards({
                                   [g.id]: e.target.value,
                                 }))
                               }
-                              className="h-10 w-full rounded-full border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-white/85 shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
+                              className="h-10 w-full rounded-full border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
                             >
                               <option value="">Select an observation…</option>
                               {internalInputs.map((i) => (
@@ -581,7 +582,7 @@ export function WorkspaceGapCards({
                             <div className="mt-3 space-y-3">
                               <div className="grid gap-2 sm:grid-cols-2">
                                 <label className="space-y-1">
-                                  <span className="text-xs text-white/55">Role</span>
+                                  <span className="text-xs text-[--metis-text-tertiary]">Role</span>
                                   <input
                                     value={obsDraft.role}
                                     onChange={(e) =>
@@ -590,12 +591,12 @@ export function WorkspaceGapCards({
                                         [g.id]: { ...obsDraft, role: e.target.value },
                                       }))
                                     }
-                                    className="h-10 w-full rounded-full border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-white/85 shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
+                                    className="h-10 w-full rounded-full border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
                                     placeholder="e.g., On-call"
                                   />
                                 </label>
                                 <label className="space-y-1">
-                                  <span className="text-xs text-white/55">Name</span>
+                                  <span className="text-xs text-[--metis-text-tertiary]">Name</span>
                                   <input
                                     value={obsDraft.name}
                                     onChange={(e) =>
@@ -604,14 +605,14 @@ export function WorkspaceGapCards({
                                         [g.id]: { ...obsDraft, name: e.target.value },
                                       }))
                                     }
-                                    className="h-10 w-full rounded-full border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-white/85 shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
+                                    className="h-10 w-full rounded-full border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
                                     placeholder="Attributable name"
                                   />
                                 </label>
                               </div>
 
                               <label className="space-y-1">
-                                <span className="text-xs text-white/55">Response</span>
+                                <span className="text-xs text-[--metis-text-tertiary]">Response</span>
                                 <textarea
                                   value={obsDraft.response}
                                   onChange={(e) =>
@@ -621,14 +622,14 @@ export function WorkspaceGapCards({
                                     }))
                                   }
                                   rows={4}
-                                  className="w-full rounded-[0.95rem] border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 py-3 text-sm leading-6 text-white/85 shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
+                                  className="w-full rounded-[0.95rem] border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 py-3 text-sm leading-6 text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
                                   placeholder="Attributable observation that answers the open question"
                                 />
                               </label>
 
                               <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
                                 <label className="space-y-1">
-                                  <span className="text-xs text-white/55">Confidence</span>
+                                  <span className="text-xs text-[--metis-text-tertiary]">Confidence</span>
                                   <select
                                     value={obsDraft.confidence}
                                     onChange={(e) =>
@@ -640,7 +641,7 @@ export function WorkspaceGapCards({
                                         },
                                       }))
                                     }
-                                    className="h-10 w-full rounded-full border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-white/85 shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
+                                    className="h-10 w-full rounded-full border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
                                   >
                                     <option value="Confirmed">Confirmed</option>
                                     <option value="Likely">Likely</option>
@@ -661,15 +662,15 @@ export function WorkspaceGapCards({
                               </div>
 
                               {obsMissingRequired ? (
-                                <p className="text-xs text-white/55">Complete role, name, and response to save.</p>
+                                <p className="text-xs text-[--metis-text-tertiary]">Complete role, name, and response to save.</p>
                               ) : null}
-                              {obsErrorById[g.id] ? <p className="text-sm text-rose-200">{obsErrorById[g.id]}</p> : null}
+                              {obsErrorById[g.id] ? <p className="text-sm text-[--metis-status-danger-fg]">{obsErrorById[g.id]}</p> : null}
                             </div>
                           ) : null}
                         </div>
                       </div>
                     )}
-                    {errorById[g.id] ? <p className="mt-2 text-sm text-rose-200">{errorById[g.id]}</p> : null}
+                    {errorById[g.id] ? <p className="mt-2 text-sm text-[--metis-status-danger-fg]">{errorById[g.id]}</p> : null}
                   </div>
                 </div>
               }
@@ -821,7 +822,7 @@ export function WorkspaceObservationCards({ issueId, observations }: { issueId: 
             </div>
             <div className="flex flex-wrap items-center gap-2">
               {excludedById[o.id] ? (
-                <span className="rounded-full border border-rose-200/15 bg-rose-900/25 px-2.5 py-0.5 text-[0.7rem] font-medium text-rose-50">
+                <span className="rounded-full border border-[--metis-status-danger-border] bg-[color-mix(in_oklab,var(--metis-status-danger-bg)_52%,transparent)] px-2.5 py-0.5 text-[0.7rem] font-medium text-[--metis-status-danger-fg]">
                   Excluded from brief
                 </span>
               ) : null}
