@@ -343,7 +343,7 @@ export function MessagesPanel({
     <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
       <div className="min-w-0 space-y-4">
         {/* Configure (template / audience / wording) */}
-        <div className="rounded-[1.25rem] border border-white/10 bg-[rgba(0,0,0,0.14)] px-4 py-4 sm:px-5">
+        <div className="rounded-[1.25rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_40%,transparent)] px-4 py-4 sm:px-5 shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_22%,transparent)]">
           <div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-3">
             <ControlField label="Template">
               <ControlSelect
@@ -391,7 +391,7 @@ export function MessagesPanel({
             />
           </div>
 
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-white/8 pt-3 text-xs text-[--metis-paper-muted]">
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-[--metis-outline-subtle] pt-3 text-xs text-[--metis-paper-muted]">
             <div className="min-w-0">
               <span className="text-[--metis-paper]">Configured:</span>{" "}
               <span className="text-[--metis-paper]">{selectedTemplateId.replaceAll("_", " ")}</span> ·{" "}
@@ -408,11 +408,11 @@ export function MessagesPanel({
         </div>
 
         {/* Draft state */}
-        <div className="rounded-[1.25rem] border border-white/10 bg-[rgba(0,0,0,0.12)] px-4 py-4 sm:px-5">
+        <div className="rounded-[1.25rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-frame-soft)_75%,var(--metis-surface-toolbar))] px-4 py-4 sm:px-5 shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_18%,transparent)]">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0 space-y-2">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[0.66rem] font-medium uppercase tracking-[0.22em] text-[--metis-paper]">
+                <span className="rounded-full border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_70%,transparent)] px-3 py-1 text-[0.66rem] font-medium uppercase tracking-[0.22em] text-[--metis-paper]">
                   {latest ? `Saved draft v${latest.versionNumber}` : "Preview only"}
                 </span>
                 {latest ? (
@@ -456,7 +456,7 @@ export function MessagesPanel({
         </div>
 
         {/* Actions */}
-        <div className="rounded-[1.25rem] border border-white/10 bg-[rgba(0,0,0,0.14)] px-4 py-4 sm:px-5">
+        <div className="rounded-[1.25rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_40%,transparent)] px-4 py-4 sm:px-5 shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_22%,transparent)]">
           <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
             <div className="flex flex-wrap items-center gap-2">
               <Button
@@ -491,16 +491,16 @@ export function MessagesPanel({
           </div>
         </div>
 
-        <div className="rounded-[1.25rem] border border-white/10 bg-[rgba(0,0,0,0.12)] px-4 py-4 sm:px-5">
+        <div className="rounded-[1.25rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-card)_72%,transparent)] px-4 py-4 sm:px-5 shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_16%,transparent)]">
           <p className="font-[Cormorant_Garamond] text-[1.55rem] leading-tight text-[--metis-paper] sm:text-[1.85rem]">
             {deterministicPreview.metadata.publicHeadline}
           </p>
         </div>
 
-        <article className="rounded-[1.25rem] border border-white/10 bg-[rgba(0,0,0,0.10)] px-4 py-4 sm:px-5">
+        <article className="rounded-[1.25rem] border border-[--metis-outline-subtle] bg-[--metis-surface-card] px-4 py-4 sm:px-5 shadow-[0_18px_54px_rgba(0,0,0,0.12),inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_18%,transparent)]">
           <div className="space-y-5">
             {visibleArtifact.sections.map((s) => (
-              <section key={s.id} className="border-t border-white/8 pt-4 first:border-t-0 first:pt-0">
+              <section key={s.id} className="border-t border-[--metis-outline-subtle] pt-4 first:border-t-0 first:pt-0">
                 <h3 className="text-sm font-semibold text-[--metis-paper]">{s.title}</h3>
                 <p className="mt-2 max-w-4xl whitespace-pre-line text-sm leading-7 text-[--metis-paper-muted]">
                   {normalizeBodyText(s.body)}
@@ -534,10 +534,10 @@ export function MessagesPanel({
                 <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Audience group</span>
                 <span className="text-right text-[--metis-paper]">{selectedAudienceGroupLabel}</span>
               </div>
-              <div className="border-t border-white/8 pt-3 text-sm leading-6 text-[--metis-paper-muted]">{templateHelperText}</div>
+              <div className="border-t border-[--metis-outline-subtle] pt-3 text-sm leading-6 text-[--metis-paper-muted]">{templateHelperText}</div>
               {latest ? (
                 <>
-                  <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-3">
+                  <div className="flex items-center justify-between gap-3 border-t border-[--metis-outline-subtle] pt-3">
                     <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Saved draft</span>
                     <span className="text-right text-[--metis-paper]">{savedDraftLabel}</span>
                   </div>
@@ -545,7 +545,7 @@ export function MessagesPanel({
                     Draft numbers are assigned per issue and template (not per audience group). Shaping above shows which template and audience you are
                     previewing.
                   </p>
-                  <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-3">
+                  <div className="flex items-center justify-between gap-3 border-t border-[--metis-outline-subtle] pt-3">
                     <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Freshness</span>
                     <div className="flex flex-col items-end gap-1">
                       <span
@@ -568,7 +568,7 @@ export function MessagesPanel({
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center justify-between gap-3 border-t border-white/8 pt-3">
+                  <div className="flex items-center justify-between gap-3 border-t border-[--metis-outline-subtle] pt-3">
                     <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Open questions</span>
                     <Link
                       href={`/issues/${issueId}/gaps`}
@@ -578,7 +578,7 @@ export function MessagesPanel({
                       {deterministicPreview.metadata.openGapsLabel}
                     </Link>
                   </div>
-                  <p className="border-t border-white/8 pt-3 text-[0.72rem] leading-snug text-[--metis-paper-muted]">
+                  <p className="border-t border-[--metis-outline-subtle] pt-3 text-[0.72rem] leading-snug text-[--metis-paper-muted]">
                     Answer, assign, or close open questions before circulation.
                   </p>
                 </>
@@ -594,13 +594,13 @@ export function MessagesPanel({
           <div className="grid gap-2">
             <Link
               href={`/issues/${issueId}/export`}
-              className="rounded-[1rem] border border-white/10 bg-white/5 px-3 py-2 text-sm text-[--metis-paper] underline-offset-4 hover:underline"
+              className="rounded-[1rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_52%,transparent)] px-3 py-2 text-sm text-[--metis-paper] underline-offset-4 hover:underline"
             >
               Circulation package &amp; export →
             </Link>
             <Link
               href={`/issues/${issueId}/comms-plan`}
-              className="rounded-[1rem] border border-white/10 bg-white/5 px-3 py-2 text-sm text-[--metis-paper] underline-offset-4 hover:underline"
+              className="rounded-[1rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_52%,transparent)] px-3 py-2 text-sm text-[--metis-paper] underline-offset-4 hover:underline"
             >
               Comms plan →
             </Link>
@@ -613,7 +613,7 @@ export function MessagesPanel({
           className="border-[--metis-info-border] bg-[--metis-info-bg]"
           summary={
             <div className="flex items-center justify-between gap-3">
-              <h3 className="text-[0.7rem] font-medium uppercase tracking-[0.22em] text-[rgba(176,171,160,0.72)]">
+              <h3 className="text-[0.7rem] font-medium uppercase tracking-[0.22em] text-[--metis-text-tertiary]">
                 Guardrails (internal)
               </h3>
               <span className="text-xs text-[--metis-paper-muted]">Show</span>

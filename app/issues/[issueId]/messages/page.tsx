@@ -155,7 +155,7 @@ export default async function IssueMessagesPage({
       }}
     >
       <SurfaceCard className="min-w-0 overflow-hidden">
-        <div className="border-b border-white/8 bg-[rgba(255,255,255,0.02)] px-6 py-4 sm:px-7 sm:py-4">
+        <div className="border-b border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_45%,transparent)] px-6 py-4 sm:px-7 sm:py-4">
           <div className="flex flex-wrap items-baseline justify-between gap-3">
             <h2 className="font-[Cormorant_Garamond] text-[1.8rem] leading-none text-[--metis-paper]">Messages</h2>
             <p className="text-xs text-[--metis-paper-muted]">Deterministic preview + optional AI-enhanced view.</p>
@@ -174,7 +174,7 @@ export default async function IssueMessagesPage({
             messagesAiCleanupEnabled={messagesAiCleanupEnabled}
             deterministicPreview={deterministicPreview}
           />
-          <div className="mt-8 border-t border-white/8 pt-6">
+          <div className="mt-8 border-t border-[--metis-outline-subtle] pt-6">
             <Link href={`/issues/${issue.id}/export`} className="text-sm text-[--metis-brass-soft] underline-offset-4 hover:underline">
               Circulation package &amp; export →
             </Link>
