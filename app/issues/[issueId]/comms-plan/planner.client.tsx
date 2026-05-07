@@ -143,8 +143,8 @@ function dueState(item: CommsPlanItem, now: number) {
 const DUE_BADGE: Record<string, string> = {
   overdue: "border-0 bg-[rgba(132,26,42,0.62)] text-rose-50",
   due: "border-0 bg-[rgba(19,86,118,0.55)] text-sky-50",
-  trigger: "border-0 bg-white/8 text-[--metis-paper-muted]",
-  none: "border-0 bg-white/6 text-[--metis-paper-muted]",
+  trigger: "border-0 bg-[color-mix(in_oklab,var(--metis-surface-elevated)_70%,transparent)] text-[--metis-text-secondary]",
+  none: "border-0 bg-[color-mix(in_oklab,var(--metis-surface-elevated)_55%,transparent)] text-[--metis-text-secondary]",
   done: "border-0 bg-[rgba(18,84,58,0.62)] text-emerald-50",
 };
 
@@ -327,16 +327,16 @@ export function CommsPlanClient({ issueId, initialItems, audienceGroups, default
 
   return (
     <div className="space-y-6">
-      <div className="rounded-[1.25rem] border border-white/10 bg-[rgba(255,255,255,0.03)] px-5 py-5">
+      <div className="rounded-[1.25rem] border border-[--metis-outline-subtle] bg-[--metis-surface-card] px-5 py-5">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="text-[0.68rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Suggested plan</p>
+            <p className="text-[0.68rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Suggested rows</p>
             <p className="mt-1 text-sm text-[--metis-paper-muted]">
-              Generate a suggested set of communications based on event type and selected audiences. Nothing becomes active until you add it.
+              Generate proposals based on event type and audiences. <span className="text-[--metis-paper]">Suggestions are not active yet</span> — nothing is tracked until you add it to the active plan.
             </p>
           </div>
           <Button variant="outline" onClick={generateSuggestedPlan}>
-            Generate suggested plan
+            Generate suggestions
           </Button>
         </div>
 
@@ -360,7 +360,7 @@ export function CommsPlanClient({ issueId, initialItems, audienceGroups, default
 
           <div className="space-y-2">
             <span className="text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">Audiences to include</span>
-            <div className="rounded-[1rem] border border-white/10 bg-black/10 px-3 py-2">
+            <div className="rounded-[1rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-frame-soft)_84%,transparent)] px-3 py-2">
               <div className="grid gap-1.5">
                 {audienceGroups.map((g) => {
                   const on = Boolean(suggestSelectedAudienceIds[g.id]);
@@ -392,13 +392,13 @@ export function CommsPlanClient({ issueId, initialItems, audienceGroups, default
         </div>
 
         {suggestNoticeLines.length ? (
-          <div className="mt-3 space-y-1.5">
+          <div className="mt-3 space-y-1.5 rounded-[1rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_45%,transparent)] px-3 py-2.5">
             {suggestNoticeLines.map((line, idx) => (
               <p
                 key={idx}
                 className={cn(
                   "text-sm leading-relaxed",
-                  line.includes("pass validation") ? "text-amber-100/90" : "text-[--metis-paper-muted]",
+                  line.includes("pass validation") ? "text-amber-100/90" : "text-[--metis-text-secondary]",
                 )}
               >
                 {line}
@@ -414,40 +414,46 @@ export function CommsPlanClient({ issueId, initialItems, audienceGroups, default
                 {formatSuggestionListCount(suggestions.length)}
                 {" — "}review below before adding to the active plan.
               </p>
-              <Button
-                onClick={() => {
-                  void (async () => {
-                    setError(null);
-                    setAddingAll(true);
-                    try {
-                      const results = await Promise.allSettled(
-                        suggestions.map(async (s) => {
-                          await createItemFromSuggestion(s.item);
-                          return s.id;
-                        }),
-                      );
-                      const failed = results.filter((r) => r.status === "rejected");
-                      if (failed.length) {
-                        setError(`Some suggested rows failed to add (${failed.length}). Add individually to see specific errors.`);
-                      } else {
-                        setSuggestions([]);
+              <div className="flex flex-col items-end gap-1">
+                <Button
+                  onClick={() => {
+                    void (async () => {
+                      setError(null);
+                      setAddingAll(true);
+                      try {
+                        const results = await Promise.allSettled(
+                          suggestions.map(async (s) => {
+                            await createItemFromSuggestion(s.item);
+                            return s.id;
+                          }),
+                        );
+                        const failed = results.filter((r) => r.status === "rejected");
+                        if (failed.length) {
+                          setError(`Some suggested rows failed to add (${failed.length}). Add individually to see specific errors.`);
+                        } else {
+                          setSuggestions([]);
+                        }
+                        await refresh();
+                      } catch (e) {
+                        setError(e instanceof Error ? e.message : "Unknown error");
+                      } finally {
+                        setAddingAll(false);
                       }
-                      await refresh();
-                    } catch (e) {
-                      setError(e instanceof Error ? e.message : "Unknown error");
-                    } finally {
-                      setAddingAll(false);
-                    }
-                  })();
-                }}
-                disabled={addingAll}
-              >
-                {addingAll ? "Adding…" : "Add all to active plan"}
-              </Button>
+                    })();
+                  }}
+                  disabled={addingAll}
+                >
+                  {addingAll ? "Adding…" : "Add all to active plan"}
+                </Button>
+                <p className="text-xs text-[--metis-text-tertiary]">Creates {suggestions.length} plan item{suggestions.length === 1 ? "" : "s"}.</p>
+              </div>
             </div>
 
             {suggestions.map((s) => (
-              <div key={s.id} className="rounded-[1.25rem] border border-white/10 bg-[rgba(0,0,0,0.18)] px-5 py-4">
+              <div
+                key={s.id}
+                className="rounded-[1.25rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_45%,transparent)] px-5 py-4"
+              >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0 space-y-2">
                     <div className="flex flex-wrap items-center gap-2">
@@ -475,30 +481,37 @@ export function CommsPlanClient({ issueId, initialItems, audienceGroups, default
                     </p>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Button
-                      disabled={addingAll || addingSuggestionId === s.id}
-                      onClick={() => {
-                        void (async () => {
-                          setError(null);
-                          setAddingSuggestionId(s.id);
-                          try {
-                            await createItemFromSuggestion(s.item);
-                            await refresh();
-                            setSuggestions((cur) => cur.filter((x) => x.id !== s.id));
-                          } catch (e) {
-                            setError(e instanceof Error ? e.message : "Unknown error");
-                          } finally {
-                            setAddingSuggestionId(null);
-                          }
-                        })();
-                      }}
-                    >
-                      {addingSuggestionId === s.id ? "Adding…" : "Add to active plan"}
-                    </Button>
-                    <Button variant="ghost" disabled={addingAll} onClick={() => setSuggestions((cur) => cur.filter((x) => x.id !== s.id))}>
-                      Remove
-                    </Button>
+                  <div className="flex flex-col items-end gap-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button
+                        disabled={addingAll || addingSuggestionId === s.id}
+                        onClick={() => {
+                          void (async () => {
+                            setError(null);
+                            setAddingSuggestionId(s.id);
+                            try {
+                              await createItemFromSuggestion(s.item);
+                              await refresh();
+                              setSuggestions((cur) => cur.filter((x) => x.id !== s.id));
+                            } catch (e) {
+                              setError(e instanceof Error ? e.message : "Unknown error");
+                            } finally {
+                              setAddingSuggestionId(null);
+                            }
+                          })();
+                        }}
+                      >
+                        {addingSuggestionId === s.id ? "Adding…" : "Add to active plan"}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        disabled={addingAll}
+                        onClick={() => setSuggestions((cur) => cur.filter((x) => x.id !== s.id))}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                    <p className="text-xs text-[--metis-text-tertiary]">Creates a plan item.</p>
                   </div>
                 </div>
               </div>
@@ -509,11 +522,172 @@ export function CommsPlanClient({ issueId, initialItems, audienceGroups, default
         )}
       </div>
 
-      <div className="rounded-[1.25rem] border border-white/10 bg-[rgba(255,255,255,0.03)] px-5 py-5">
+      <div className="space-y-3">
+        <div className="rounded-[1.25rem] border border-[--metis-outline-subtle] bg-[--metis-surface-card] px-5 py-5">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="text-[0.68rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Active plan</p>
+              <p className="mt-1 text-sm text-[--metis-paper-muted]">
+                Prepare opens the artifact. <span className="text-[--metis-paper]">Prepared</span> means ready to send.{" "}
+                <span className="text-[--metis-paper]">Sent</span> means actually sent.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {sorted.length === 0 ? (
+          <div className="rounded-[1.25rem] border border-[--metis-outline-subtle] bg-[--metis-surface-card] px-5 py-5 text-sm text-[--metis-paper-muted]">
+            No planned communications yet.
+          </div>
+        ) : null}
+
+        {sorted.map((item) => {
+          const due = dueState(item, now);
+          const href = prepareHref(issueId, item);
+          const isBusy = busyId === item.id;
+          const skipOpen = skipOpenId === item.id;
+          const skipDraft = skipDraftById[item.id] ?? "";
+          const canEditStatus = item.status !== "sent" && item.status !== "skipped";
+          const owner = item.owner?.trim() || "—";
+          const audience = item.stakeholderGroupName ?? (item.stakeholderGroupId ? "Audience group" : "General (no audience group)");
+
+          return (
+            <div key={item.id} className="rounded-[1.25rem] border border-[--metis-outline-subtle] bg-[--metis-surface-card] px-5 py-5">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-sm font-medium text-[--metis-paper]">{item.title}</p>
+                    <Badge className={DUE_BADGE[due.kind]}>{due.label}</Badge>
+                    <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{item.status}</Badge>
+                  </div>
+                  <p className="mt-2 text-sm text-[--metis-paper-muted]">
+                    <span className="text-[--metis-paper]">Audience</span> · {audience}
+                    <span className="mx-2 text-white/20" aria-hidden>
+                      •
+                    </span>
+                    <span className="text-[--metis-paper]">Channel</span> · {item.channel}
+                    <span className="mx-2 text-white/20" aria-hidden>
+                      •
+                    </span>
+                    <span className="text-[--metis-paper]">Owner</span> · {owner}
+                  </p>
+                  {item.notes?.trim() ? <p className="mt-2 text-sm leading-6 text-[--metis-paper-muted]">{item.notes}</p> : null}
+                  {item.status === "skipped" && item.skipReason?.trim() ? (
+                    <p className="mt-2 text-sm text-[--metis-paper-muted]">
+                      <span className="text-[--metis-paper]">Skipped</span> · {item.skipReason}
+                    </p>
+                  ) : null}
+                </div>
+
+                <div className="flex w-full flex-col gap-2 sm:w-auto sm:items-end">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-[0.65rem] uppercase tracking-[0.18em] text-[--metis-text-tertiary]">Prepare</p>
+                    {isBusy ? (
+                      <Button type="button" variant="outline" disabled>
+                        Prepare
+                      </Button>
+                    ) : (
+                      <Button asChild variant="outline">
+                        <Link href={href} prefetch={false}>
+                          Open to prepare
+                        </Link>
+                      </Button>
+                    )}
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-[0.65rem] uppercase tracking-[0.18em] text-[--metis-text-tertiary]">Status</p>
+                    <Button
+                      variant="outline"
+                      disabled={isBusy || !canEditStatus}
+                      onClick={() => void patchItem(item.id, { status: "prepared" as CommsPlanStatus })}
+                    >
+                      Mark prepared
+                    </Button>
+                    <Button
+                      variant="outline"
+                      disabled={isBusy || !canEditStatus}
+                      onClick={() => void patchItem(item.id, { status: "sent" as CommsPlanStatus })}
+                    >
+                      Mark sent
+                    </Button>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-[0.65rem] uppercase tracking-[0.18em] text-[--metis-text-tertiary]">Exceptions</p>
+                    <Button
+                      variant="outline"
+                      disabled={isBusy || !canEditStatus}
+                      onClick={() => {
+                        setSkipOpenId((cur) => (cur === item.id ? null : item.id));
+                        setSkipDraftById((cur) => ({ ...cur, [item.id]: cur[item.id] ?? item.skipReason ?? "" }));
+                      }}
+                    >
+                      Skip…
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="border-[--metis-status-danger-border] text-[--metis-status-danger-fg] hover:bg-[color-mix(in_oklab,var(--metis-status-danger-bg)_70%,transparent)]"
+                      disabled={isBusy}
+                      onClick={() => void deleteItem(item.id)}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {skipOpen ? (
+                <div className="mt-4 rounded-[1.15rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_45%,transparent)] px-4 py-4">
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                    <div className="min-w-0 flex-1">
+                      <label className="block space-y-2">
+                        <span className="text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">Skip reason</span>
+                        <Textarea
+                          value={skipDraft}
+                          onChange={(e) => setSkipDraftById((cur) => ({ ...cur, [item.id]: e.target.value }))}
+                          placeholder="Explain why this communication is being skipped."
+                        />
+                      </label>
+                      <p className="mt-2 text-xs text-[--metis-paper-muted]">
+                        Exception status. A reason is required to mark this plan item as skipped.
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button disabled={isBusy || skipDraft.trim().length === 0} onClick={() => void confirmSkip(item.id)}>
+                        Confirm skip
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        disabled={isBusy}
+                        onClick={() => {
+                          setSkipOpenId(null);
+                          setSkipDraftById((cur) => {
+                            const next = { ...cur };
+                            delete next[item.id];
+                            return next;
+                          });
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="rounded-[1.25rem] border border-[--metis-outline-subtle] bg-[--metis-surface-card] px-5 py-5">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="text-[0.68rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Add planned communication</p>
-            <p className="mt-1 text-sm text-[--metis-paper-muted]">Track preparation vs sending. Add a due time only when it’s meaningful.</p>
+            <p className="text-[0.68rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Manual add (fallback)</p>
+            <p className="mt-1 text-sm text-[--metis-paper-muted]">
+              Use this when suggestions don’t cover what you need. Track preparation vs sending. Add a due time only when it’s meaningful.
+            </p>
           </div>
           <Button onClick={() => void createItem()} disabled={creating || !createDraft.title.trim()}>
             {creating ? "Saving…" : "Add item"}
@@ -523,7 +697,11 @@ export function CommsPlanClient({ issueId, initialItems, audienceGroups, default
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           <label className="space-y-2">
             <span className="text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">Title</span>
-            <Input value={createDraft.title} onChange={(e) => setCreateDraft((d) => ({ ...d, title: e.target.value }))} placeholder="e.g., Board note 17:00" />
+            <Input
+              value={createDraft.title}
+              onChange={(e) => setCreateDraft((d) => ({ ...d, title: e.target.value }))}
+              placeholder="e.g., Board note 17:00"
+            />
           </label>
           <label className="space-y-2">
             <span className="text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">Audience group (optional)</span>
@@ -563,7 +741,11 @@ export function CommsPlanClient({ issueId, initialItems, audienceGroups, default
           </label>
           <label className="space-y-2">
             <span className="text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">Channel</span>
-            <Input value={createDraft.channel} onChange={(e) => setCreateDraft((d) => ({ ...d, channel: e.target.value }))} placeholder="e.g., Email / Intranet / Press line" />
+            <Input
+              value={createDraft.channel}
+              onChange={(e) => setCreateDraft((d) => ({ ...d, channel: e.target.value }))}
+              placeholder="e.g., Email / Intranet / Press line"
+            />
           </label>
         </div>
 
@@ -709,135 +891,6 @@ export function CommsPlanClient({ issueId, initialItems, audienceGroups, default
         </label>
 
         {error ? <p className="mt-3 text-sm text-rose-200">{error}</p> : null}
-      </div>
-
-      <div className="space-y-3">
-        {sorted.length === 0 ? (
-          <div className="rounded-[1.25rem] border border-white/10 bg-[rgba(255,255,255,0.03)] px-5 py-5 text-sm text-[--metis-paper-muted]">
-            No planned communications yet.
-          </div>
-        ) : null}
-
-        {sorted.map((item) => {
-          const due = dueState(item, now);
-          const href = prepareHref(issueId, item);
-          const isBusy = busyId === item.id;
-          const skipOpen = skipOpenId === item.id;
-          const skipDraft = skipDraftById[item.id] ?? "";
-          const canEditStatus = item.status !== "sent" && item.status !== "skipped";
-          const owner = item.owner?.trim() || "—";
-          const audience = item.stakeholderGroupName ?? (item.stakeholderGroupId ? "Audience group" : "General (no audience group)");
-
-          return (
-            <div key={item.id} className="rounded-[1.25rem] border border-white/10 bg-[rgba(255,255,255,0.03)] px-5 py-5">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-sm font-medium text-[--metis-paper]">{item.title}</p>
-                    <Badge className={DUE_BADGE[due.kind]}>{due.label}</Badge>
-                    <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{item.status}</Badge>
-                  </div>
-                  <p className="mt-2 text-sm text-[--metis-paper-muted]">
-                    <span className="text-[--metis-paper]">Audience</span> · {audience}
-                    <span className="mx-2 text-white/20" aria-hidden>
-                      •
-                    </span>
-                    <span className="text-[--metis-paper]">Channel</span> · {item.channel}
-                    <span className="mx-2 text-white/20" aria-hidden>
-                      •
-                    </span>
-                    <span className="text-[--metis-paper]">Owner</span> · {owner}
-                  </p>
-                  {item.notes?.trim() ? <p className="mt-2 text-sm leading-6 text-[--metis-paper-muted]">{item.notes}</p> : null}
-                  {item.status === "skipped" && item.skipReason?.trim() ? (
-                    <p className="mt-2 text-sm text-[--metis-paper-muted]">
-                      <span className="text-[--metis-paper]">Skipped</span> · {item.skipReason}
-                    </p>
-                  ) : null}
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2">
-                  {isBusy ? (
-                    <Button type="button" variant="outline" disabled>
-                      Prepare
-                    </Button>
-                  ) : (
-                    <Button asChild variant="outline">
-                      <Link href={href} prefetch={false}>
-                        Prepare
-                      </Link>
-                    </Button>
-                  )}
-                  <Button
-                    variant="outline"
-                    disabled={isBusy || !canEditStatus}
-                    onClick={() => void patchItem(item.id, { status: "prepared" as CommsPlanStatus })}
-                  >
-                    Mark prepared
-                  </Button>
-                  <Button
-                    variant="outline"
-                    disabled={isBusy || !canEditStatus}
-                    onClick={() => void patchItem(item.id, { status: "sent" as CommsPlanStatus })}
-                  >
-                    Mark sent
-                  </Button>
-                  <Button
-                    variant="outline"
-                    disabled={isBusy || !canEditStatus}
-                    onClick={() => {
-                      setSkipOpenId((cur) => (cur === item.id ? null : item.id));
-                      setSkipDraftById((cur) => ({ ...cur, [item.id]: cur[item.id] ?? item.skipReason ?? "" }));
-                    }}
-                  >
-                    Skip
-                  </Button>
-                  <Button variant="outline" disabled={isBusy} onClick={() => void deleteItem(item.id)}>
-                    Delete
-                  </Button>
-                </div>
-              </div>
-
-              {skipOpen ? (
-                <div className="mt-4 rounded-[1.15rem] border border-white/10 bg-[rgba(0,0,0,0.18)] px-4 py-4">
-                  <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-                    <div className="min-w-0 flex-1">
-                      <label className="block space-y-2">
-                        <span className="text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">Skip reason</span>
-                        <Textarea
-                          value={skipDraft}
-                          onChange={(e) => setSkipDraftById((cur) => ({ ...cur, [item.id]: e.target.value }))}
-                          placeholder="Explain why this communication is being skipped."
-                        />
-                      </label>
-                      <p className="mt-2 text-xs text-[--metis-paper-muted]">Explain why this communication is being skipped.</p>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Button disabled={isBusy || skipDraft.trim().length === 0} onClick={() => void confirmSkip(item.id)}>
-                        Confirm skip
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        disabled={isBusy}
-                        onClick={() => {
-                          setSkipOpenId(null);
-                          setSkipDraftById((cur) => {
-                            const next = { ...cur };
-                            delete next[item.id];
-                            return next;
-                          });
-                        }}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ) : null}
-            </div>
-          );
-        })}
       </div>
     </div>
   );

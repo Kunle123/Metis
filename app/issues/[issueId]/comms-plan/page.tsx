@@ -116,7 +116,7 @@ export default async function IssueCommsPlanPage({ params }: { params: Promise<{
         <SurfaceCard className="metis-support-surface min-w-0 overflow-hidden">
           <div className="space-y-4 px-5 py-5">
             <div className="rounded-[1.25rem] border border-white/10 bg-[rgba(255,255,255,0.03)] px-4 py-4">
-              <p className="text-[0.68rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Prepare</p>
+              <p className="text-[0.68rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Shortcuts</p>
               <div className="mt-3 grid gap-2">
                 <Button asChild variant="outline" className="w-full justify-start">
                   <Link href={`/issues/${issue.id}/messages`}>Open Messages</Link>
@@ -131,6 +131,7 @@ export default async function IssueCommsPlanPage({ params }: { params: Promise<{
                   <Link href={`/issues/${issue.id}/export`}>Open Export</Link>
                 </Button>
               </div>
+              <p className="mt-3 text-xs leading-relaxed text-[--metis-paper-muted]">These open related workflows — they don’t change plan status.</p>
             </div>
             <div className="rounded-[1.25rem] border border-white/10 bg-[rgba(255,255,255,0.03)] px-4 py-4">
               <p className="text-[0.68rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Reminder</p>
