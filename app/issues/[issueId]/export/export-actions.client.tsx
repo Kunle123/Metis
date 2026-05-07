@@ -119,26 +119,26 @@ async function writePackageToClipboard(mimeType: string, content: string): Promi
 
 /** Shared shells — surface rhythm only; does not change structure or behavior. */
 const STEP_PANEL =
-  "rounded-[1.25rem] border border-white/[0.08] bg-[rgba(255,255,255,0.025)] px-4 py-4 sm:px-5 sm:py-4 border-l-[3px] border-l-[rgba(224,183,111,0.45)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]";
+  "rounded-[1.25rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_40%,transparent)] px-4 py-4 sm:px-5 sm:py-4 border-l-[3px] border-l-[color-mix(in_oklab,var(--metis-brass)_55%,transparent)] shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_24%,transparent)]";
 
 const SECONDARY_PATH =
-  "rounded-[var(--metis-control-radius-md)] border border-dashed border-white/15 bg-[rgba(18,86,118,0.12)] px-4 py-3";
+  "rounded-[var(--metis-control-radius-md)] border border-dashed border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_45%,transparent)] px-4 py-3";
 
 const ADDITIONAL_DOWNLOAD =
-  "rounded-[var(--metis-control-radius-md)] border border-white/[0.1] bg-[rgba(255,255,255,0.03)] px-4 py-3 border-l-2 border-l-white/25";
+  "rounded-[var(--metis-control-radius-md)] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_65%,transparent)] px-4 py-3 border-l-2 border-l-[color-mix(in_oklab,var(--metis-outline-strong)_55%,transparent)]";
 
 const PREVIEW_SHELL =
-  "rounded-[var(--metis-control-radius-md)] border border-white/12 bg-[rgba(0,0,0,0.14)] px-4 py-4 sm:px-5 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]";
+  "rounded-[var(--metis-control-radius-md)] border border-[--metis-outline-subtle] bg-[--metis-frame-soft] px-4 py-4 sm:px-5 shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--metis-outline-strong)_30%,transparent)]";
 
 /** Wraps optional email-ready + DOCX; not numbered like steps 1–4. */
 const OPTIONAL_OUTPUTS_GROUP =
-  "rounded-[var(--metis-control-radius-md)] border border-white/[0.06] bg-[rgba(255,255,255,0.015)] px-4 py-4 space-y-4 max-w-xl";
+  "rounded-[var(--metis-control-radius-md)] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_32%,transparent)] px-4 py-4 space-y-4 max-w-xl";
 
 function stepLabel(n: string, title: string) {
   return (
     <div className="flex items-center gap-2.5">
       <span
-        className="inline-flex h-6 min-w-6 shrink-0 items-center justify-center rounded-md border border-white/10 bg-[rgba(255,255,255,0.07)] text-[0.65rem] font-semibold tabular-nums text-[--metis-brass-soft]"
+        className="inline-flex h-6 min-w-6 shrink-0 items-center justify-center rounded-md border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_70%,transparent)] text-[0.65rem] font-semibold tabular-nums text-[--metis-brass-soft]"
         aria-hidden
       >
         {n}
@@ -187,14 +187,16 @@ export function ExportActionsClient(props: Props) {
     if (mime === "text/html") {
       return (
         <div
-          className={`${isExpanded ? "h-[min(calc(100vh-140px),52rem)]" : "max-h-[52vh]"} min-h-[220px] w-full overflow-hidden rounded-[1rem] border border-white/10 bg-white`}
+          className={`${isExpanded ? "h-[min(calc(100vh-140px),52rem)]" : "max-h-[52vh]"} min-h-[220px] w-full overflow-hidden rounded-[1rem] border border-[--metis-outline-subtle] bg-white`}
         >
           <iframe title={title} className="h-full min-h-[200px] w-full border-0" srcDoc={content} sandbox="" />
         </div>
       );
     }
     return (
-      <pre className={`whitespace-pre-wrap text-xs leading-6 ${lightOnDark ? "text-white/90" : "text-[rgba(255,255,255,0.9)]"}`}>{content}</pre>
+      <pre className={`whitespace-pre-wrap text-xs leading-6 ${lightOnDark ? "text-[--metis-text-primary]" : "text-[--metis-text-primary]"}`}>
+        {content}
+      </pre>
     );
   };
 
@@ -281,7 +283,7 @@ export function ExportActionsClient(props: Props) {
           )}
         </div>
 
-        <div className="border-t border-white/[0.08]" aria-hidden />
+        <div className="border-t border-[--metis-outline-subtle]" aria-hidden />
 
         {/* Step 3 — Copy / download (current package only) */}
         <div className="space-y-2">
@@ -315,8 +317,8 @@ export function ExportActionsClient(props: Props) {
         <div
           className={`flex max-w-xl items-center justify-between gap-3 rounded-[1rem] border px-4 py-3 text-sm ${
             message.tone === "ok"
-              ? "border-emerald-400/25 bg-[rgba(18,83,58,0.35)] text-emerald-50"
-              : "border-rose-400/25 bg-[rgba(118,27,46,0.35)] text-rose-50"
+              ? "border-[--metis-status-success-border] bg-[--metis-status-success-bg] text-[--metis-status-success-fg]"
+              : "border-[--metis-status-danger-border] bg-[--metis-status-danger-bg] text-[--metis-status-danger-fg]"
           }`}
         >
           <div className="flex items-center gap-2">
@@ -420,7 +422,7 @@ export function ExportActionsClient(props: Props) {
           </div>
         </div>
 
-        <div className="mt-4 max-h-[52vh] overflow-auto rounded-[1rem] border border-white/15 bg-[rgba(0,0,0,0.22)] p-4 shadow-[inset_0_2px_12px_rgba(0,0,0,0.35)]">
+        <div className="mt-4 max-h-[52vh] overflow-auto rounded-[1rem] border border-[--metis-outline-subtle] bg-[--metis-surface-card] p-4 shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_22%,transparent)]">
           <PreviewBody
             mime={props.previewMimeType}
             title={`Review · ${props.previewTitle}`}
@@ -433,11 +435,11 @@ export function ExportActionsClient(props: Props) {
 
       {expanded ? (
         <div className="fixed inset-0 z-50 bg-black/70 p-4 backdrop-blur-sm">
-          <div className="mx-auto flex h-full max-w-5xl flex-col overflow-hidden rounded-[1.25rem] border border-white/10 bg-[rgba(16,16,16,0.96)] shadow-[0_24px_80px_rgba(0,0,0,0.55)]">
-            <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
+          <div className="mx-auto flex h-full max-w-5xl flex-col overflow-hidden rounded-[1.25rem] border border-[--metis-outline-subtle] bg-[--metis-surface-card] shadow-[0_24px_80px_rgba(0,0,0,0.55)]">
+            <div className="flex items-center justify-between gap-3 border-b border-[--metis-outline-subtle] px-4 py-3">
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-white">{props.previewTitle}</p>
-                <p className="mt-1 text-xs text-white/70">
+                <p className="truncate text-sm font-semibold text-[--metis-text-primary]">{props.previewTitle}</p>
+                <p className="mt-1 text-xs text-[--metis-text-secondary]">
                   {formatLabel(props.previewMimeType)} · {props.sourceBriefRevisionLabel}
                   {props.urlMode !== props.briefSourceMode ? ` · Bookmark mode: ${props.urlMode === "full" ? "Full" : "Executive"}` : ""}
                   {props.selectedFormat === "email-ready" ? " · Email-ready preview is plain text only." : ""}

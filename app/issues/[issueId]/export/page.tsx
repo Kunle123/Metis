@@ -19,6 +19,13 @@ import { ExportActionsClient } from "@/app/issues/[issueId]/export/export-action
 
 export const dynamic = "force-dynamic";
 
+const EXPORT_CHROME_BAND = "border-b border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_45%,transparent)]";
+const EXPORT_INSET_PANEL =
+  "rounded-[1.25rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_40%,transparent)] shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_24%,transparent)]";
+const EXPORT_INSET_LIST =
+  "rounded-[1.1rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-frame-soft)_85%,transparent)] shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_18%,transparent)]";
+const EXPORT_DASHED_PANEL = "rounded-[var(--metis-control-radius-md)] border border-dashed border-[--metis-outline-subtle] bg-transparent px-3 py-2";
+
 const packageOptions: Array<{
   id: ExportFormat;
   label: string;
@@ -114,7 +121,7 @@ export default async function IssueExportPage({
         }}
       >
         <SurfaceCard className="overflow-hidden">
-          <div className="border-b border-white/8 bg-[rgba(255,255,255,0.025)] px-6 py-5 sm:px-7">
+          <div className={`${EXPORT_CHROME_BAND} px-6 py-5 sm:px-7`}>
             <ReviewToolbar
               className="border-0 bg-transparent px-0 py-0"
               left={
@@ -247,7 +254,7 @@ export default async function IssueExportPage({
     >
       <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
         <SurfaceCard className="min-w-0 overflow-hidden">
-          <div className="border-b border-white/8 bg-[rgba(255,255,255,0.025)] px-6 py-5 sm:px-7">
+          <div className={`${EXPORT_CHROME_BAND} px-6 py-5 sm:px-7`}>
             <ReviewToolbar
               className="border-0 bg-transparent px-0 py-0"
               left={
@@ -285,10 +292,10 @@ export default async function IssueExportPage({
           </div>
 
           <div className="space-y-6 px-6 py-6 sm:px-7 sm:py-7">
-            <section className="space-y-3 rounded-[1.25rem] border border-white/[0.08] bg-[rgba(255,255,255,0.025)] px-4 py-4 sm:px-5 sm:py-4 border-l-[3px] border-l-[rgba(224,183,111,0.45)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+            <section className={`${EXPORT_INSET_PANEL} space-y-3 px-4 py-4 sm:px-5 sm:py-4 border-l-[3px] border-l-[color-mix(in_oklab,var(--metis-brass)_55%,transparent)]`}>
               <div className="flex items-center gap-2.5">
                 <span
-                  className="inline-flex h-6 min-w-6 shrink-0 items-center justify-center rounded-md border border-white/10 bg-[rgba(255,255,255,0.07)] text-[0.65rem] font-semibold tabular-nums text-[--metis-brass-soft]"
+                  className="inline-flex h-6 min-w-6 shrink-0 items-center justify-center rounded-md border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_70%,transparent)] text-[0.65rem] font-semibold tabular-nums text-[--metis-brass-soft]"
                   aria-hidden
                 >
                   1
@@ -298,7 +305,7 @@ export default async function IssueExportPage({
               <p className="text-[0.72rem] leading-snug text-[--metis-paper-muted]">
                 Names describe package shapes only — not live readiness scoring for your issue.
               </p>
-              <div className="rounded-[1.1rem] border border-white/[0.09] bg-[rgba(0,0,0,0.08)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+              <div className={EXPORT_INSET_LIST}>
                 {packageOptions.map((item) => {
                   const isSelected = item.id === selectedFormat;
                   return (
@@ -307,10 +314,10 @@ export default async function IssueExportPage({
                       href={`/issues/${issue.id}/export?mode=${urlMode}&format=${item.id}${
                         item.id === "email-ready" ? "" : `&output=${exportPreviewOutput}`
                       }`}
-                      className={`block border-t border-white/10 px-4 py-3.5 first:border-t-0 sm:px-5 ${
+                      className={`block border-t border-[--metis-outline-subtle] px-4 py-3.5 first:border-t-0 sm:px-5 ${
                         isSelected
-                          ? "bg-[rgba(224,183,111,0.12)] ring-2 ring-[--metis-brass]/35 ring-inset"
-                          : "hover:bg-white/[0.02]"
+                          ? "bg-[color-mix(in_oklab,var(--metis-brass-soft)_18%,transparent)] ring-2 ring-[--metis-brass]/35 ring-inset"
+                          : "hover:bg-[color-mix(in_oklab,var(--metis-surface-elevated)_72%,transparent)]"
                       }`}
                     >
                       <DenseSection
@@ -341,7 +348,7 @@ export default async function IssueExportPage({
                 })}
               </div>
 
-              <div className="mt-4 rounded-[var(--metis-control-radius-md)] border border-dashed border-white/10 bg-transparent px-3 py-2">
+              <div className={`mt-4 ${EXPORT_DASHED_PANEL}`}>
                 <CollapsibleSection
                   defaultOpen={false}
                   summary={
@@ -355,12 +362,14 @@ export default async function IssueExportPage({
                     {packageContents.map((item) => (
                       <div
                         key={item.label}
-                        className="flex items-center justify-between rounded-[0.875rem] border border-white/8 bg-[rgba(255,255,255,0.03)] px-3 py-2"
+                        className="flex items-center justify-between rounded-[0.875rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_65%,transparent)] px-3 py-2"
                       >
                         <span className="text-xs text-[--metis-paper]">{item.label}</span>
                         <Badge
                           className={`border-0 text-[0.65rem] ${
-                            item.included ? "bg-[rgba(18,84,58,0.62)] text-emerald-50" : "bg-white/8 text-[--metis-paper-muted]"
+                            item.included
+                              ? "bg-[--metis-status-success-bg] text-[--metis-status-success-fg]"
+                              : "bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_55%,transparent)] text-[--metis-text-secondary]"
                           }`}
                         >
                           {item.included ? "Included" : "Hidden"}
@@ -393,7 +402,7 @@ export default async function IssueExportPage({
               channels={{ file: fileChannel, copy: copyChannel, email: emailChannel }}
             />
 
-            <div className="rounded-[1rem] border border-dashed border-white/12 bg-[rgba(255,255,255,0.015)] px-4 py-3">
+            <div className="rounded-[1rem] border border-dashed border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_35%,transparent)] px-4 py-3">
               <p className="text-[0.58rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Related</p>
               <p className="mt-2 text-[0.72rem] leading-relaxed text-[--metis-paper-muted]">
                 Need message copy instead? Message variants live outside this export workflow.{" "}
@@ -416,7 +425,7 @@ export default async function IssueExportPage({
                 </p>
               }
             >
-              <dl className="divide-y divide-white/[0.06] text-[0.68rem] leading-snug text-[--metis-paper-muted]">
+              <dl className="divide-y divide-[--metis-outline-subtle] text-[0.68rem] leading-snug text-[--metis-paper-muted]">
                 {exportSummaryMeta.map((row) => (
                   <div key={row.label} className="py-2.5 first:pt-0 last:pb-0">
                     <dt className="font-medium uppercase tracking-[0.12em] text-[--metis-ink-soft]">{row.label}</dt>
@@ -431,19 +440,19 @@ export default async function IssueExportPage({
               className="border-[--metis-info-border] bg-[--metis-info-bg]"
               summary={
                 <div className="min-w-0">
-                  <p className="text-[0.58rem] uppercase tracking-[0.16em] text-[rgba(176,171,160,0.58)]">Recent circulation record</p>
+                  <p className="text-[0.58rem] uppercase tracking-[0.16em] text-[--metis-text-tertiary]">Recent circulation record</p>
                   <p className="mt-1 text-xs text-[--metis-paper-muted]">Last 5 actions.</p>
                 </div>
               }
             >
               {recentCirculationEvents.length === 0 ? (
-                <div className="rounded-[1.25rem] border border-white/10 bg-[rgba(255,255,255,0.04)] px-4 py-3 text-sm leading-6 text-[--metis-paper-muted]">
+                <div className="rounded-[1.25rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_72%,transparent)] px-4 py-3 text-sm leading-6 text-[--metis-paper-muted]">
                   No circulation actions logged yet.
                 </div>
               ) : (
                 <div className="space-y-2">
                   {recentCirculationEvents.map((e) => (
-                    <div key={e.id} className="rounded-[1.25rem] border border-white/10 bg-[rgba(255,255,255,0.04)] px-4 py-3">
+                    <div key={e.id} className="rounded-[1.25rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_72%,transparent)] px-4 py-3">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-[--metis-paper]">
@@ -470,19 +479,19 @@ export default async function IssueExportPage({
               className="border-[--metis-info-border] bg-[--metis-info-bg]"
               summary={
                 <div className="min-w-0">
-                  <p className="text-[0.58rem] uppercase tracking-[0.16em] text-[rgba(176,171,160,0.58)]">Circulation checks</p>
+                  <p className="text-[0.58rem] uppercase tracking-[0.16em] text-[--metis-text-tertiary]">Circulation checks</p>
                   <p className="mt-1 text-xs text-[--metis-paper-muted]">Illustrative package notes — not authoritative status for this issue.</p>
                 </div>
               }
             >
               <div className="space-y-3">
                 {packageOptions.map((item) => (
-                  <div key={item.label} className="space-y-2 border-t border-white/8 pt-4 first:border-t-0 first:pt-0">
+                  <div key={item.label} className="space-y-2 border-t border-[--metis-outline-subtle] pt-4 first:border-t-0 first:pt-0">
                     <span className="text-sm font-medium text-[--metis-paper]">{item.label}</span>
                     <p className="text-sm leading-6 text-[--metis-paper-muted]">{item.description}</p>
                   </div>
                 ))}
-                <div className="flex items-start gap-3 border-t border-white/8 pt-4 text-sm leading-6 text-[--metis-paper-muted]">
+                <div className="flex items-start gap-3 border-t border-[--metis-outline-subtle] pt-4 text-sm leading-6 text-[--metis-paper-muted]">
                   <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-[--metis-brass]" />
                   <span>
                     {rendered.mimeType === "text/plain"
