@@ -542,9 +542,7 @@ html.light .metis-surface {
   --metis-surface-tint: color-mix(in oklab, var(--metis-brass) 11%, transparent);
   background: var(--metis-surface-bg) !important;
   border-color: var(--metis-surface-border) !important;
-  box-shadow:
-    var(--shadow-card),
-    inset 0 1px 0 rgba(255, 252, 245, 0.55) !important;
+  box-shadow: var(--shadow-card) !important;
 }
 
 html.light .metis-surface::before {
@@ -552,7 +550,8 @@ html.light .metis-surface::before {
 }
 
 html.light .metis-surface::after {
-  border-color: color-mix(in oklab, var(--metis-outline-subtle) 55%, transparent);
+  /* Avoid double-outline corners in light: the element border is the single edge. */
+  border-color: transparent;
 }
 
 /*
