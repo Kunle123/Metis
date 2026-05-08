@@ -37,7 +37,7 @@ const templateCards = [
 ] as const;
 
 const dashboardQuickLinksBase = [
-  { label: "Full brief workspace" as const, href: "/brief" },
+  { label: "Select issue · Brief" as const, href: "/brief" },
   { label: "Settings · Audience groups" as const, href: "/audience-groups" },
 ] as const;
 
@@ -193,7 +193,9 @@ export default async function DashboardPage() {
               <div className="space-y-1">
                 <p className="shrink-0 text-[0.68rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Shortcuts</p>
                 <p className="text-xs leading-relaxed text-[--metis-text-tertiary]">
-                  {firstIssue ? "Shortcuts for latest issue + global libraries." : "Global libraries and workspaces."}
+                  {firstIssue
+                    ? "Shortcuts for latest issue + global pickers/libraries."
+                    : "Global pickers and libraries (choose an issue when prompted)."}
                 </p>
               </div>
               <div className="grid min-w-0 gap-3 sm:grid-cols-2 lg:flex lg:flex-wrap">
