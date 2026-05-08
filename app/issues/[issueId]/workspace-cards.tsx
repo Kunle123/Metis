@@ -34,6 +34,8 @@ type GapCardData = {
 
 type SourceCardData = {
   id: string;
+  /** Issue-scoped evidence code (`SRC-01`); optional for preview rows. */
+  sourceCode?: string | null;
   title: string | null;
   note: string | null;
   snippet: string | null;
@@ -734,6 +736,7 @@ export function WorkspaceSourceCards({
       {sources.map((s) => {
         const expanded = openId === s.id;
         const title = (s.title ?? "").trim() || "Source";
+        const sourceCodeDisplay = (s.sourceCode ?? "").trim();
         const notePreview = clampText(s.note ?? s.snippet ?? "", 160);
         const fullNote = (s.note ?? "").trim();
         const fullSnippet = (s.snippet ?? "").trim();
@@ -745,7 +748,19 @@ export function WorkspaceSourceCards({
               onToggle={() => setOpenId((cur) => (cur === s.id ? null : s.id))}
               summary={
                 <>
-                  <p className="text-sm font-medium text-[--metis-paper]">{title}</p>
+                  <div className="flex min-w-0 flex-wrap items-start gap-x-2 gap-y-1">
+                    {sourceCodeDisplay ? (
+                      <Pill
+                        className={cn(
+                          RECORD_CODE_PILL_CLASS,
+                          "shrink-0 font-mono text-[0.7rem] font-normal tabular-nums tracking-[0.04em]",
+                        )}
+                      >
+                        {sourceCodeDisplay}
+                      </Pill>
+                    ) : null}
+                    <p className="min-w-0 flex-1 text-sm font-medium leading-snug text-[--metis-paper]">{title}</p>
+                  </div>
                   <div className="mt-1">
                     <MetaLine
                       parts={[

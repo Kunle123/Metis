@@ -152,6 +152,7 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
                     issueId={issue.id}
                     sources={sources.slice(0, 8).map((s) => ({
                       id: s.id,
+                      sourceCode: s.sourceCode,
                       title: s.title,
                       note: s.note,
                       snippet: s.snippet,
