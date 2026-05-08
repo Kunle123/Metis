@@ -30,30 +30,30 @@ type ReadinessState =
 
 const confidenceClassMap: Record<ConfidenceLevel, string> = {
   Confirmed:
-    "border-emerald-400/35 bg-[rgba(18,83,58,0.62)] text-emerald-50 ring-1 ring-emerald-300/22 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]",
+    "border-[--metis-status-success-border] bg-[color-mix(in_oklab,var(--metis-status-success-bg)_52%,transparent)] text-[--metis-status-success-fg] shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_22%,transparent)]",
   Likely:
-    "border-[rgba(224,183,111,0.45)] bg-[rgba(118,84,26,0.5)] text-[rgba(255,237,202,0.98)] ring-1 ring-[rgba(224,183,111,0.18)] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]",
+    "border-[--metis-status-info-border] bg-[color-mix(in_oklab,var(--metis-status-info-bg)_52%,transparent)] text-[--metis-status-info-fg] shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_22%,transparent)]",
   Unclear:
-    "border-amber-400/40 bg-[rgba(117,72,13,0.54)] text-amber-50 ring-1 ring-amber-300/18 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]",
+    "border-[--metis-status-warning-border] bg-[color-mix(in_oklab,var(--metis-status-warning-bg)_52%,transparent)] text-[--metis-status-warning-fg] shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_22%,transparent)]",
   "Needs validation":
-    "border-rose-400/40 bg-[rgba(118,27,46,0.56)] text-rose-50 ring-1 ring-rose-300/18 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]",
+    "border-[--metis-status-danger-border] bg-[color-mix(in_oklab,var(--metis-status-danger-bg)_52%,transparent)] text-[--metis-status-danger-fg] shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_22%,transparent)]",
 };
 
 const readinessClassMap: Record<ReadinessState, string> = {
   "Open gap":
-    "border-[rgba(227,176,73,0.5)] bg-[rgba(131,82,17,0.72)] text-amber-50 ring-1 ring-[rgba(245,191,88,0.28)] shadow-[0_10px_24px_rgba(88,58,12,0.2),inset_0_1px_0_rgba(255,255,255,0.06)]",
+    "border-[--metis-status-warning-border] bg-[color-mix(in_oklab,var(--metis-status-warning-bg)_52%,transparent)] text-[--metis-status-warning-fg] shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_22%,transparent)]",
   "Needs validation":
-    "border-[rgba(220,112,136,0.52)] bg-[rgba(114,31,55,0.76)] text-rose-50 ring-1 ring-[rgba(241,137,160,0.28)] shadow-[0_10px_24px_rgba(70,17,32,0.24),inset_0_1px_0_rgba(255,255,255,0.06)]",
+    "border-[--metis-status-danger-border] bg-[color-mix(in_oklab,var(--metis-status-danger-bg)_52%,transparent)] text-[--metis-status-danger-fg] shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_22%,transparent)]",
   "Source conflict":
-    "border-[rgba(218,118,134,0.52)] bg-[rgba(90,33,47,0.78)] text-rose-50 ring-1 ring-[rgba(235,138,152,0.28)] shadow-[0_10px_24px_rgba(67,19,31,0.24),inset_0_1px_0_rgba(255,255,255,0.06)]",
+    "border-[--metis-status-danger-border] bg-[color-mix(in_oklab,var(--metis-status-danger-bg)_52%,transparent)] text-[--metis-status-danger-fg] shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_22%,transparent)]",
   "Updated since last version":
-    "border-[rgba(112,191,232,0.48)] bg-[rgba(19,86,118,0.72)] text-sky-50 ring-1 ring-[rgba(138,214,250,0.24)] shadow-[0_10px_24px_rgba(14,48,73,0.22),inset_0_1px_0_rgba(255,255,255,0.06)]",
+    "border-[--metis-status-info-border] bg-[color-mix(in_oklab,var(--metis-status-info-bg)_52%,transparent)] text-[--metis-status-info-fg] shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_22%,transparent)]",
   "Ready for review":
-    "border-[rgba(148,169,194,0.38)] bg-[rgba(49,63,82,0.72)] text-slate-50 ring-1 ring-[rgba(203,213,225,0.18)] shadow-[0_10px_24px_rgba(23,30,40,0.22),inset_0_1px_0_rgba(255,255,255,0.05)]",
+    "border-[--metis-status-neutral-border] bg-[color-mix(in_oklab,var(--metis-status-neutral-bg)_72%,transparent)] text-[--metis-status-neutral-fg] shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_18%,transparent)]",
   "Ready to circulate":
-    "border-[rgba(76,198,143,0.48)] bg-[rgba(18,91,60,0.76)] text-emerald-50 ring-1 ring-[rgba(108,226,168,0.24)] shadow-[0_10px_24px_rgba(15,54,38,0.22),inset_0_1px_0_rgba(255,255,255,0.06)]",
+    "border-[--metis-status-success-border] bg-[color-mix(in_oklab,var(--metis-status-success-bg)_52%,transparent)] text-[--metis-status-success-fg] shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_22%,transparent)]",
   Blocked:
-    "border-[rgba(236,98,116,0.56)] bg-[rgba(116,23,31,0.8)] text-red-50 ring-1 ring-[rgba(248,127,143,0.28)] shadow-[0_10px_24px_rgba(73,15,20,0.26),inset_0_1px_0_rgba(255,255,255,0.06)]",
+    "border-[--metis-status-danger-border] bg-[color-mix(in_oklab,var(--metis-status-danger-bg)_52%,transparent)] text-[--metis-status-danger-fg] shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_22%,transparent)]",
 };
 
 const readinessIconMap: Record<ReadinessState, typeof Clock3> = {
@@ -122,12 +122,25 @@ function MetricCard({ label, value, detail }: { label: string; value: string; de
     <div className="metis-surface metis-support-surface relative overflow-hidden rounded-[1.35rem] border px-4 py-4 shadow-[0_16px_42px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.03)]">
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[--metis-brass]/60 to-transparent" />
       <p className="text-[0.68rem] uppercase tracking-[0.24em] text-[--metis-ink-soft]">{label}</p>
-      <div className="mt-4 flex flex-col gap-1 border-t border-white/8 pt-4 text-left">
+      <div className="mt-4 flex flex-col gap-1 border-t border-[--metis-outline-subtle] pt-4 text-left">
         <span className="font-[Cormorant_Garamond] text-[2.35rem] leading-none text-[--metis-paper]">{value}</span>
         <span className="text-[0.72rem] leading-snug text-[--metis-paper-muted]">{detail}</span>
       </div>
     </div>
   );
+}
+
+function issueSeverityBadgeClass(severity: string | null | undefined) {
+  if (!severity) {
+    return "border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_55%,transparent)] text-[--metis-text-secondary]";
+  }
+  if (severity === "Critical" || severity === "High") {
+    return "border border-[--metis-status-danger-border] bg-[color-mix(in_oklab,var(--metis-status-danger-bg)_52%,transparent)] text-[--metis-status-danger-fg]";
+  }
+  if (severity === "Moderate") {
+    return "border border-[--metis-status-warning-border] bg-[color-mix(in_oklab,var(--metis-status-warning-bg)_52%,transparent)] text-[--metis-status-warning-fg]";
+  }
+  return "border border-[--metis-status-neutral-border] bg-[color-mix(in_oklab,var(--metis-status-neutral-bg)_72%,transparent)] text-[--metis-status-neutral-fg]";
 }
 
 type GlobalNavGroup = "Work" | "Current issue" | "Review & output" | "Records" | "Settings";
@@ -353,7 +366,7 @@ export function MetisShell({
               className={cn(
                 "metis-shell-nav-pill rounded-full border px-2 py-0.5 text-[0.52rem] uppercase tracking-[0.26em]",
                 metaPill === "Select issue"
-                  ? "border-white/10 bg-white/5 text-[--metis-ink-soft]"
+                  ? "border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_55%,transparent)] text-[--metis-text-tertiary]"
                   : "border-[--metis-brass]/20 bg-[--metis-brass]/10 text-[--metis-brass-soft]",
               )}
             >
@@ -466,7 +479,9 @@ export function MetisShell({
                       {activeIssue?.title ?? "Select an issue from the ledger."}
                     </p>
                   </div>
-                  <Badge className="border-0 bg-rose-900/40 text-rose-100">{activeIssue?.severity ?? "Critical"}</Badge>
+                  <Badge className={issueSeverityBadgeClass(activeIssue?.severity ?? null)}>
+                    {activeIssue?.severity ?? "—"}
+                  </Badge>
                 </div>
                 <div className="grid grid-cols-2 gap-3 text-xs text-[--metis-paper-muted]">
                   <div className="rounded-2xl border border-white/8 bg-[rgba(0,0,0,0.16)] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
