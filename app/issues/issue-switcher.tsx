@@ -60,7 +60,7 @@ export function IssueSwitcher({
   }
 
   return (
-    <div className="rounded-[1.35rem] border border-white/10 bg-[rgba(0,0,0,0.14)] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+    <div className="rounded-[1.35rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_52%,var(--metis-surface-page))] p-4 shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_22%,transparent)]">
       <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -69,7 +69,7 @@ export function IssueSwitcher({
           </div>
           <Button
             variant="outline"
-            className="rounded-full border-white/10 bg-white/[0.03] text-[--metis-paper] hover:bg-white/[0.08]"
+            className="rounded-full"
             onClick={loadIssues}
             disabled={isLoading}
           >
@@ -83,16 +83,16 @@ export function IssueSwitcher({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search by title or id"
-              className="h-11 rounded-full border-white/10 bg-white/[0.04] text-[--metis-paper]"
+              className="h-11 rounded-full"
             />
-            <div className="max-h-[280px] overflow-auto rounded-[1.1rem] border border-white/10 bg-[rgba(255,255,255,0.02)]">
-              <div className="divide-y divide-white/8">
+            <div className="max-h-[280px] overflow-auto rounded-[1.1rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-card)_70%,var(--metis-surface-page))]">
+              <div className="divide-y divide-[--metis-outline-subtle]">
                 {filtered.map((i) => (
                   <button
                     key={i.id}
                     type="button"
                     onClick={() => router.push(hrefForIssueRoute(i.id, routeKind))}
-                    className="w-full px-4 py-3 text-left transition hover:bg-white/[0.04]"
+                    className="w-full px-4 py-3 text-left transition hover:bg-[color-mix(in_oklab,var(--metis-surface-elevated)_22%,transparent)]"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
