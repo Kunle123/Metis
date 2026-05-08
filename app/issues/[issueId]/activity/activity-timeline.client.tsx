@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { Search, RotateCcw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -18,9 +19,57 @@ import {
 const SELECT_CLASS =
   "h-[var(--metis-control-height-md)] min-w-0 flex-1 sm:min-w-[11rem] sm:flex-none max-w-full rounded-md border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-3 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60 disabled:opacity-50";
 
-type Props = { items: ActivityTimelineItem[] };
+ type Props = { issueId: string; items: ActivityTimelineItem[] };
 
-export function ActivityTimelineClient({ items }: Props) {
+type ActivityGroup = { label: string; dateKey: string; items: ActivityTimelineItem[] };
+
+function startOfDay(d: Date) {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
+function groupLabelForDate(iso: string) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  const today = startOfDay(new Date());
+  const day = startOfDay(d);
+  const diffDays = Math.round((today.getTime() - day.getTime()) / (24 * 60 * 60 * 1000));
+  if (diffDays === 0) return "Today";
+  if (diffDays === 1) return "Yesterday";
+  return new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/London", dateStyle: "medium" }).format(day);
+}
+
+function dateKeyForIso(iso: string) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function activityRefHref(issueId: string, row: ActivityTimelineItem): string | null {
+  const refType = row.refType?.trim() ?? "";
+  if (!refType) return null;
+
+  switch (refType) {
+    case "BriefVersion":
+      return `/issues/${issueId}/brief?mode=full`;
+    case "MessageVariant":
+      return `/issues/${issueId}/messages`;
+    case "ArtifactExport":
+    case "CirculationEvent":
+      return `/issues/${issueId}/export`;
+    case "Source":
+      return `/issues/${issueId}/sources`;
+    case "Gap":
+      return `/issues/${issueId}/gaps`;
+    case "InternalInput":
+      return `/issues/${issueId}#input`;
+    case "CommsPlanItem":
+      return `/issues/${issueId}/comms-plan`;
+    default:
+      return null;
+  }
+}
+
+export function ActivityTimelineClient({ issueId, items }: Props) {
   const [query, setQuery] = useState("");
   const [kind, setKind] = useState("");
   const [actor, setActor] = useState("");
@@ -57,9 +106,22 @@ export function ActivityTimelineClient({ items }: Props) {
     setActor("");
   };
 
+  const grouped: ActivityGroup[] = useMemo(() => {
+    const groups = new Map<string, ActivityGroup>();
+    for (const row of filtered) {
+      const dateKey = dateKeyForIso(row.createdAt);
+      const label = groupLabelForDate(row.createdAt);
+      const existing = groups.get(dateKey);
+      if (existing) existing.items.push(row);
+      else groups.set(dateKey, { dateKey, label, items: [row] });
+    }
+
+    return [...groups.values()].sort((a, b) => b.dateKey.localeCompare(a.dateKey));
+  }, [filtered]);
+
   if (items.length === 0) {
     return (
-      <div className="rounded-[1.35rem] border border-white/10 bg-[rgba(255,255,255,0.04)] px-5 py-5 text-sm leading-7 text-[--metis-paper-muted]">
+      <div className="rounded-[1.35rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_38%,transparent)] px-5 py-5 text-sm leading-7 text-[--metis-paper-muted] shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_10%,transparent)]">
         No activity recorded yet.
       </div>
     );
@@ -67,7 +129,7 @@ export function ActivityTimelineClient({ items }: Props) {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-3 rounded-[1.25rem] border border-white/8 bg-[rgba(255,255,255,0.03)] p-4 lg:flex-row lg:flex-wrap lg:items-end">
+      <div className="flex flex-col gap-3 rounded-[1.25rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_34%,transparent)] p-4 shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_10%,transparent)] lg:flex-row lg:flex-wrap lg:items-end">
         <div className="relative min-w-[min(100%,16rem)] flex-1 lg:max-w-xl">
           <label htmlFor="activity-timeline-search" className="sr-only">
             Search activity timeline
@@ -89,7 +151,7 @@ export function ActivityTimelineClient({ items }: Props) {
         <div className="flex min-w-0 flex-wrap items-end gap-2">
           <div className="flex min-w-0 flex-col gap-1">
             <label htmlFor="activity-timeline-type" className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">
-              Type
+              Event type
             </label>
             <select
               id="activity-timeline-type"
@@ -143,7 +205,7 @@ export function ActivityTimelineClient({ items }: Props) {
       </div>
 
       {filtered.length === 0 ? (
-        <div className="rounded-[1.35rem] border border-white/10 bg-[rgba(255,255,255,0.04)] px-5 py-5 text-sm leading-7 text-[--metis-paper-muted]">
+        <div className="rounded-[1.35rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_38%,transparent)] px-5 py-5 text-sm leading-7 text-[--metis-paper-muted] shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_10%,transparent)]">
           <p className="font-medium text-[--metis-paper]">No matching activity</p>
           <p className="mt-2">
             Nothing in this timeline matches your search or filters. This timeline only shows key briefing actions — it is not a full edit history.
@@ -161,44 +223,69 @@ export function ActivityTimelineClient({ items }: Props) {
           </p>
         </div>
       ) : (
-        <div className="space-y-3">
-          {filtered.map((a) => (
-            <div
-              key={a.id}
-              className="rounded-[1.35rem] border border-white/10 bg-[rgba(255,255,255,0.05)] px-5 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
-            >
-              <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-                <p className="text-[0.62rem] font-medium uppercase tracking-[0.18em] text-[--metis-ink-soft]">
-                  {activityKindLabel(a.kind)}
-                </p>
-                <p className="shrink-0 text-[0.68rem] tabular-nums text-[--metis-ink-soft]" title={a.createdAt}>
-                  {formatActivityTimestamp(a.createdAt)}
-                </p>
+        <div className="space-y-5">
+          {grouped.map((group) => (
+            <section key={group.dateKey} aria-label={`Activity for ${group.label}`} className="space-y-3">
+              <p className="text-[0.65rem] font-medium uppercase tracking-[0.18em] text-[--metis-ink-soft]">{group.label}</p>
+              <div className="space-y-3">
+                {group.items.map((a) => {
+                  const href = activityRefHref(issueId, a);
+                  return (
+                    <div
+                      key={a.id}
+                      className="rounded-[1.35rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-card)_72%,transparent)] px-5 py-3.5 shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_10%,transparent)]"
+                    >
+                      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                        <p className="text-[0.7rem] font-medium uppercase tracking-[0.18em] text-[--metis-ink-soft]">
+                          {activityKindLabel(a.kind)}
+                        </p>
+                        <p className="shrink-0 text-[0.7rem] tabular-nums text-[--metis-ink-soft]" title={a.createdAt}>
+                          {formatActivityTimestamp(a.createdAt)}
+                        </p>
+                      </div>
+
+                      <p className="mt-2 text-sm font-medium leading-6 text-[--metis-paper]">{activityTimelineDisplaySummary(a)}</p>
+
+                      <div className="mt-1.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs leading-5 text-[--metis-paper-muted]">
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                          {a.actorLabel ? (
+                            <span>
+                              <span className="text-[--metis-ink-soft]">Actor</span>
+                              {" · "}
+                              {a.actorLabel}
+                            </span>
+                          ) : null}
+
+                          {a.refType || a.refId ? (
+                            <span>
+                              <span className="text-[--metis-ink-soft]">Related</span>
+                              {" · "}
+                              <span className="font-mono text-[0.7rem] text-[--metis-text-tertiary]">
+                                {activityDisplayRefType(a.refType)}
+                              </span>
+                              {a.refId ? (
+                                <>
+                                  {" · "}
+                                  <span className="font-mono text-[0.7rem]">{shortActivityRefId(a.refId)}</span>
+                                </>
+                              ) : null}
+                            </span>
+                          ) : null}
+                        </div>
+
+                        {href ? (
+                          <Button asChild variant="ghost" size="sm" className="h-auto px-0 py-0 text-[--metis-brass-soft] hover:bg-transparent">
+                            <Link href={href} className="underline underline-offset-4">
+                              Open
+                            </Link>
+                          </Button>
+                        ) : null}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-              <p className="mt-2 text-sm font-medium leading-6 text-[--metis-paper]">{activityTimelineDisplaySummary(a)}</p>
-              {a.actorLabel ? (
-                <p className="mt-1.5 text-xs leading-5 text-[--metis-paper-muted]">
-                  <span className="text-[--metis-ink-soft]">Actor</span>
-                  {" · "}
-                  {a.actorLabel}
-                </p>
-              ) : null}
-              {a.refType || a.refId ? (
-                <p className="mt-1 text-xs leading-5 text-[--metis-paper-muted]">
-                  {a.refType ? (
-                    <span className="font-mono text-[0.7rem] text-[rgba(176,171,160,0.85)]">{activityDisplayRefType(a.refType)}</span>
-                  ) : (
-                    <span className="font-mono text-[0.7rem] text-[rgba(176,171,160,0.85)]">Ref</span>
-                  )}
-                  {a.refId ? (
-                    <>
-                      {" · "}
-                      <span className="font-mono text-[0.7rem]">{shortActivityRefId(a.refId)}</span>
-                    </>
-                  ) : null}
-                </p>
-              ) : null}
-            </div>
+            </section>
           ))}
         </div>
       )}
