@@ -275,6 +275,7 @@ export function SetupForm() {
             type="button"
             onClick={onStructureWithAI}
             disabled={structLoading || !intakeRawNotes.trim().length}
+            variant="info"
             className="h-10 rounded-full px-5"
           >
             {structLoading ? "Structuring…" : "Suggest fields (AI)"}
@@ -291,14 +292,14 @@ export function SetupForm() {
         </div>
         {structError ? (
           <div
-            className="mt-4 rounded-md border border-rose-400/20 bg-rose-900/20 px-3 py-2 text-sm text-rose-100"
+            className="mt-4 rounded-[1rem] border border-[--metis-status-danger-border] bg-[color-mix(in_oklab,var(--metis-status-danger-bg)_40%,transparent)] px-3 py-2 text-sm text-[--metis-status-danger-fg]"
             role="alert"
           >
             {structError}
           </div>
         ) : null}
         {structureResponse ? (
-          <div className="space-y-5 border-t border-white/8 pt-5">
+          <div className="space-y-5 border-t border-[--metis-outline-subtle] pt-5">
             <div>
               <p className="text-sm font-medium text-[--metis-paper]">AI suggestions</p>
               <p className="mt-1 text-sm leading-6 text-[--metis-paper-muted]">
@@ -329,7 +330,7 @@ export function SetupForm() {
             </div>
 
             {structureResponse.suggestedSources?.length ? (
-              <div className="space-y-3 border-t border-white/8 pt-5">
+              <div className="space-y-3 border-t border-[--metis-outline-subtle] pt-5">
                 <p className="text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">Suggested sources</p>
                 <div className="space-y-4 pl-1">
                   {structureResponse.suggestedSources.map((src, idx) => (
@@ -354,7 +355,7 @@ export function SetupForm() {
             ) : null}
 
             {structureResponse.suggestedGaps?.length ? (
-              <div className="space-y-3 border-t border-white/8 pt-5">
+              <div className="space-y-3 border-t border-[--metis-outline-subtle] pt-5">
                 <p className="text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">Suggested open questions</p>
                 <div className="space-y-4 pl-1">
                   {structureResponse.suggestedGaps.map((gap, idx) => (
@@ -400,7 +401,7 @@ export function SetupForm() {
                 type="button"
                 onClick={onClearStructurePreview}
                 variant="outline"
-                className="h-9 rounded-full border-white/10 bg-white/[0.03] px-4 text-[--metis-paper] hover:bg-white/[0.08]"
+                className="h-9 rounded-full px-4"
               >
                 Clear suggestions
               </Button>
@@ -548,7 +549,7 @@ export function SetupForm() {
             className="min-h-[172px] rounded-[1.2rem] px-4 py-4 text-sm leading-7"
           />
           {confirmedFactsPasteError ? (
-            <div className="rounded-md border border-rose-400/20 bg-rose-900/20 px-3 py-2 text-sm text-rose-100">
+            <div className="rounded-[1rem] border border-[--metis-status-danger-border] bg-[color-mix(in_oklab,var(--metis-status-danger-bg)_40%,transparent)] px-3 py-2 text-sm text-[--metis-status-danger-fg]">
               {confirmedFactsPasteError}
             </div>
           ) : null}
@@ -564,14 +565,14 @@ export function SetupForm() {
           />
         </div>
 
-        <div className="space-y-3 border-t border-white/8 pt-5">
+        <div className="space-y-3 border-t border-[--metis-outline-subtle] pt-5">
           <div className="flex items-center justify-between gap-3">
             <p className="text-[0.72rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Context (optional)</p>
             <Button
               type="button"
               onClick={onPasteContext}
               variant="outline"
-              className="h-9 rounded-full border-white/10 bg-white/[0.03] px-4 text-[--metis-paper] opacity-75 hover:bg-white/[0.08]"
+              className="h-9 rounded-full px-4 opacity-75"
             >
               Paste from clipboard
             </Button>
@@ -583,13 +584,15 @@ export function SetupForm() {
             className="min-h-[154px] rounded-[1.2rem] px-4 py-4 text-sm leading-7"
           />
           {contextPasteError ? (
-            <div className="rounded-md border border-rose-400/20 bg-rose-900/20 px-3 py-2 text-sm text-rose-100">{contextPasteError}</div>
+            <div className="rounded-[1rem] border border-[--metis-status-danger-border] bg-[color-mix(in_oklab,var(--metis-status-danger-bg)_40%,transparent)] px-3 py-2 text-sm text-[--metis-status-danger-fg]">
+              {contextPasteError}
+            </div>
           ) : null}
         </div>
       </div>
 
       {error ? (
-        <div className="rounded-[1.2rem] border border-rose-400/20 bg-rose-900/20 px-4 py-3 text-sm text-rose-100">
+        <div className="rounded-[1.2rem] border border-[--metis-status-danger-border] bg-[color-mix(in_oklab,var(--metis-status-danger-bg)_40%,transparent)] px-4 py-3 text-sm text-[--metis-status-danger-fg]">
           {error}
         </div>
       ) : null}
