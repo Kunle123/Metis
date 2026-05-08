@@ -9,6 +9,7 @@ export type GapStatus = z.infer<typeof GapStatusSchema>;
 export const GapSchema = z.object({
   id: z.string(),
   issueId: z.string(),
+  gapNumber: z.number().int().positive(),
   title: z.string(),
   whyItMatters: z.string(),
   stakeholder: z.string(),

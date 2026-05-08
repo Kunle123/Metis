@@ -33,6 +33,7 @@ export default async function IssueInternalInputPage({ params }: { params: Promi
       const candidate = {
         id: i.id,
         issueId: i.issueId,
+        observationNumber: i.observationNumber,
         role: i.role ?? "",
         name: i.name ?? "",
         response: i.response ?? "",

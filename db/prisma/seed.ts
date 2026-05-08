@@ -590,12 +590,15 @@ async function main() {
       });
     }
 
-    for (const g of gaps) {
+    for (let gi = 0; gi < gaps.length; gi++) {
+      const g = gaps[gi]!;
+      const gapNumber = gi + 1;
       await prisma.gap.upsert({
         where: { id: g.id },
         create: {
           id: g.id,
           issueId: createdIssue.id,
+          gapNumber,
           title: g.title,
           whyItMatters: g.whyItMatters,
           stakeholder: g.stakeholder,
@@ -606,6 +609,7 @@ async function main() {
           resolvedByInternalInputId: null,
         },
         update: {
+          gapNumber,
           title: g.title,
           whyItMatters: g.whyItMatters,
           stakeholder: g.stakeholder,
@@ -617,12 +621,15 @@ async function main() {
       });
     }
 
-    for (const i of internalInputs) {
+    for (let oi = 0; oi < internalInputs.length; oi++) {
+      const i = internalInputs[oi]!;
+      const observationNumber = oi + 1;
       await prisma.internalInput.upsert({
         where: { id: i.id },
         create: {
           id: i.id,
           issueId: createdIssue.id,
+          observationNumber,
           role: i.role,
           name: i.name,
           response: i.response,
@@ -633,6 +640,7 @@ async function main() {
           timestampLabel: i.timestampLabel,
         },
         update: {
+          observationNumber,
           role: i.role,
           name: i.name,
           response: i.response,
@@ -644,6 +652,14 @@ async function main() {
         },
       });
     }
+
+    await prisma.issue.update({
+      where: { id: createdIssue.id },
+      data: {
+        gapCodeSeq: gaps.length,
+        observationCodeSeq: internalInputs.length,
+      },
+    });
 
     // Minimal audit trail to make the Activity page useful in demos.
     // Keep timestamps staggered but deterministic in order.

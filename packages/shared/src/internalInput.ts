@@ -11,6 +11,7 @@ export type InternalInputConfidence = z.infer<typeof InternalInputConfidenceSche
 export const InternalInputSchema = z.object({
   id: z.string(),
   issueId: z.string(),
+  observationNumber: z.number().int().positive(),
   role: z.string(),
   name: z.string(),
   response: z.string(),

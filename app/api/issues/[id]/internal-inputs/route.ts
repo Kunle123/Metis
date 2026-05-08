@@ -10,6 +10,7 @@ import { requireMutation } from "@/lib/governance/requireMutation";
 function serializeInternalInput(input: {
   id: string;
   issueId: string;
+  observationNumber: number;
   role: string;
   name: string;
   response: string;
@@ -23,6 +24,7 @@ function serializeInternalInput(input: {
   return {
     id: input.id,
     issueId: input.issueId,
+    observationNumber: input.observationNumber,
     role: input.role,
     name: input.name,
     response: input.response,
@@ -78,9 +80,17 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   }
 
   const created = await prisma.$transaction(async (tx) => {
+    const issueRow = await tx.issue.update({
+      where: { id: issueId },
+      data: { observationCodeSeq: { increment: 1 } },
+      select: { observationCodeSeq: true },
+    });
+    const observationNumber = issueRow.observationCodeSeq;
+
     const input = await tx.internalInput.create({
       data: {
         issueId,
+        observationNumber,
         role: roleTrimmed,
         name: nameTrimmed,
         response: responseTrimmed,

@@ -11,6 +11,7 @@ import { requireMutation } from "@/lib/governance/requireMutation";
 function serializeGap(gap: {
   id: string;
   issueId: string;
+  gapNumber: number;
   title: string;
   whyItMatters: string;
   stakeholder: string;
@@ -25,6 +26,7 @@ function serializeGap(gap: {
   return {
     id: gap.id,
     issueId: gap.issueId,
+    gapNumber: gap.gapNumber,
     title: gap.title,
     whyItMatters: gap.whyItMatters,
     stakeholder: gap.stakeholder,

@@ -11,6 +11,7 @@ import { requireMutation } from "@/lib/governance/requireMutation";
 function serializeGap(gap: {
   id: string;
   issueId: string;
+  gapNumber: number;
   title: string;
   whyItMatters: string;
   stakeholder: string;
@@ -25,6 +26,7 @@ function serializeGap(gap: {
   return {
     id: gap.id,
     issueId: gap.issueId,
+    gapNumber: gap.gapNumber,
     title: gap.title,
     whyItMatters: gap.whyItMatters,
     stakeholder: gap.stakeholder,
@@ -109,9 +111,17 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   }
 
   const created = await prisma.$transaction(async (tx) => {
+    const issueRow = await tx.issue.update({
+      where: { id: issueId },
+      data: { gapCodeSeq: { increment: 1 } },
+      select: { gapCodeSeq: true },
+    });
+    const gapNumber = issueRow.gapCodeSeq;
+
     const gap = await tx.gap.create({
       data: {
         issueId,
+        gapNumber,
         title: titleTrimmed,
         whyItMatters: whyItMattersTrimmed,
         stakeholder: stakeholderTrimmed,

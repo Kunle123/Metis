@@ -82,6 +82,7 @@ function gap(o: Partial<Gap> & Pick<Gap, "id" | "prompt" | "title">): Gap {
   const base: Omit<Gap, "prompt" | "title"> & { prompt?: string; title?: string } = {
     id: o.id,
     issueId: "iss-1",
+    gapNumber: o.gapNumber ?? 1,
     prompt: "",
     title: "",
     whyItMatters: "",
@@ -152,6 +153,7 @@ assert.deepEqual(
 const inputExcluded: InternalInput = {
   id: "ex-1",
   issueId: "iss",
+  observationNumber: 1,
   role: "R",
   name: "N",
   response: "x",

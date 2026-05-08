@@ -32,6 +32,10 @@ model Issue {
   audience      String?
   openGapsCount Int      @default(0)
   sourcesCount  Int      @default(0)
+  /** Last assigned open-question ordinal within this issue (`Q-{padded}` in UI); next create uses increment. */
+  gapCodeSeq         Int @default(0)
+  /** Last assigned observation ordinal within this issue (`OBS-{padded}` in UI); next create uses increment. */
+  observationCodeSeq Int @default(0)
   lastActivityAt DateTime @default(now())
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -284,6 +288,8 @@ model Source {
 model Gap {
   id                          String   @id @default(uuid())
   issueId                     String
+  /** Per-issue stable ordinal for human-readable `Q-###` codes (not renumbered on delete). */
+  gapNumber                   Int
   title                       String
   whyItMatters                String
   stakeholder                 String
@@ -298,6 +304,7 @@ model Gap {
   issue Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
   resolvedByInternalInput InternalInput? @relation("GapResolvedByInternalInput", fields: [resolvedByInternalInputId], references: [id], onDelete: Restrict)
 
+  @@unique([issueId, gapNumber])
   @@index([issueId, status, createdAt])
   @@index([resolvedByInternalInputId])
 }
@@ -305,6 +312,8 @@ model Gap {
 model InternalInput {
   id             String   @id @default(uuid())
   issueId        String
+  /** Per-issue stable ordinal for human-readable `OBS-###` codes (not renumbered on delete). */
+  observationNumber Int
   role           String
   name           String
   response       String
@@ -318,6 +327,7 @@ model InternalInput {
   issue Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
   resolvedGaps Gap[] @relation("GapResolvedByInternalInput")
 
+  @@unique([issueId, observationNumber])
   @@index([issueId, createdAt])
 }
 

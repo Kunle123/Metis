@@ -17,6 +17,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
   return NextResponse.json({
     id: input.id,
     issueId: input.issueId,
+    observationNumber: input.observationNumber,
     role: input.role,
     name: input.name,
     response: input.response,
@@ -61,6 +62,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   return NextResponse.json({
     id: updated.id,
     issueId: updated.issueId,
+    observationNumber: updated.observationNumber,
     role: updated.role,
     name: updated.name,
     response: updated.response,

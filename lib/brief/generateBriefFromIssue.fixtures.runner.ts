@@ -40,6 +40,8 @@ const baseIssue: Issue = {
   audience: null,
   openGapsCount: 1,
   sourcesCount: 1,
+  gapCodeSeq: 0,
+  observationCodeSeq: 0,
   lastActivityAt: new Date(),
   createdAt: new Date(),
   updatedAt: new Date(),
@@ -50,6 +52,7 @@ function gap(o: Partial<Gap> & Pick<Gap, "prompt" | "title">): Gap {
   return {
     id: o.id ?? "gap-1",
     issueId: o.issueId ?? "issue-1",
+    gapNumber: o.gapNumber ?? 1,
     title: o.title,
     prompt: o.prompt,
     whyItMatters: o.whyItMatters ?? "",
