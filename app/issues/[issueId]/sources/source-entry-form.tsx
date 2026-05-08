@@ -220,7 +220,7 @@ export function SourceEntryForm({ issueId }: { issueId: string }) {
 
         <div className="grid gap-3 md:grid-cols-2">
           <label className="space-y-2">
-            <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Related section (optional)</span>
+            <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Brief section (optional)</span>
             <p className="text-xs leading-5 text-[--metis-paper-muted]">Where this is most relevant in the brief (free text).</p>
             <Input
               value={linkedSection}
@@ -231,7 +231,7 @@ export function SourceEntryForm({ issueId }: { issueId: string }) {
           </label>
           <label className="space-y-2">
             <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Reliability (optional)</span>
-            <p className="text-xs leading-5 text-[--metis-paper-muted]">Your confidence and why (corroboration, directness, recency).</p>
+            <p className="text-xs leading-5 text-[--metis-paper-muted]">Your assessment of confidence and why (corroboration, directness, recency).</p>
             <Input
               value={reliability}
               onChange={(e) => setReliability(e.target.value)}
