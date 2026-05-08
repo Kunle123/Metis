@@ -13,7 +13,7 @@ export type SerializedActivityRow = {
 /** Activity row with optional join-derived headline (issue activity page). */
 export type ActivityTimelineItem = SerializedActivityRow & {
   enrichedSummary?: string | null;
-  /** When ref is a Gap or InternalInput with a known record, e.g. `Q-003` or `OBS-002`. */
+  /** When ref has a human-readable record label: gap/open question, observation, or persisted `sourceCode` (e.g. `SRC-01`). */
   refRecordCode?: string | null;
 };
 

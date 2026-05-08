@@ -22,6 +22,7 @@ export async function enrichActivityRowsForIssue(
   const circulationIds = new Set<string>();
   const gapIds = new Set<string>();
   const internalInputIds = new Set<string>();
+  const sourceIds = new Set<string>();
 
   for (const r of rows) {
     if (!r.refId?.trim()) continue;
@@ -31,9 +32,10 @@ export async function enrichActivityRowsForIssue(
     else if (r.refType === "CirculationEvent") circulationIds.add(r.refId);
     else if (r.refType === "Gap") gapIds.add(r.refId);
     else if (r.refType === "InternalInput") internalInputIds.add(r.refId);
+    else if (r.refType === "Source") sourceIds.add(r.refId);
   }
 
-  const [briefRows, messageRows, exportRows, circulationRows, gapRows, internalInputRows] = await Promise.all([
+  const [briefRows, messageRows, exportRows, circulationRows, gapRows, internalInputRows, sourceRows] = await Promise.all([
     briefIds.size
       ? prisma.briefVersion.findMany({
           where: { issueId, id: { in: [...briefIds] } },
@@ -78,6 +80,12 @@ export async function enrichActivityRowsForIssue(
           select: { id: true, observationNumber: true },
         })
       : [],
+    sourceIds.size
+      ? prisma.source.findMany({
+          where: { issueId, id: { in: [...sourceIds] } },
+          select: { id: true, sourceCode: true },
+        })
+      : [],
   ]);
 
   const briefMap = new Map(briefRows.map((b) => [b.id, b]));
@@ -90,6 +98,11 @@ export async function enrichActivityRowsForIssue(
   const observationRecordCodeById = new Map(
     internalInputRows.map((i) => [i.id, formatObservationCode(i.observationNumber)] as [string, string | null]),
   );
+  const sourceRecordCodeById = new Map<string, string>();
+  for (const s of sourceRows) {
+    const c = (s.sourceCode ?? "").trim();
+    if (c.length) sourceRecordCodeById.set(s.id, c);
+  }
 
   return rows.map((row) => {
     let enrichedSummary: string | null = null;
@@ -99,6 +112,8 @@ export async function enrichActivityRowsForIssue(
       refRecordCode = gapRecordCodeById.get(row.refId) ?? null;
     } else if (row.refType === "InternalInput" && row.refId) {
       refRecordCode = observationRecordCodeById.get(row.refId) ?? null;
+    } else if (row.refType === "Source" && row.refId) {
+      refRecordCode = sourceRecordCodeById.get(row.refId) ?? null;
     }
 
     if (row.kind === "brief_version_created" && row.refType === "BriefVersion" && row.refId) {
