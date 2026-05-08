@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 
-import { InternalInputConfidenceSchema, PatchInternalInputInputSchema } from "@metis/shared/internalInput";
+import { PatchInternalInputInputSchema } from "@metis/shared/internalInput";
 import { prisma } from "@/lib/db/prisma";
 import { requireMutation } from "@/lib/governance/requireMutation";
+import { internalInputDbRowToWire } from "@/lib/internalInputs/internalInputWireFormat";
 
 export async function GET(_: Request, { params }: { params: Promise<{ id: string; internalInputId: string }> }) {
   const { id: issueId, internalInputId } = await params;
@@ -14,20 +15,12 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
 
   if (!input) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  return NextResponse.json({
-    id: input.id,
-    issueId: input.issueId,
-    observationNumber: input.observationNumber,
-    role: input.role,
-    name: input.name,
-    response: input.response,
-    confidence: InternalInputConfidenceSchema.parse(input.confidence),
-    excludedFromBrief: input.excludedFromBrief,
-    linkedSection: input.linkedSection,
-    visibility: input.visibility,
-    timestampLabel: input.timestampLabel,
-    createdAt: input.createdAt.toISOString(),
-  });
+  const wired = internalInputDbRowToWire(input);
+  if (!wired) {
+    return NextResponse.json({ error: "Malformed internal input record", id: input.id }, { status: 422 });
+  }
+
+  return NextResponse.json(wired);
 }
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string; internalInputId: string }> }) {
@@ -59,18 +52,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   revalidatePath(`/issues/${issueId}/input`);
   revalidatePath(`/issues/${issueId}/brief`);
 
-  return NextResponse.json({
-    id: updated.id,
-    issueId: updated.issueId,
-    observationNumber: updated.observationNumber,
-    role: updated.role,
-    name: updated.name,
-    response: updated.response,
-    confidence: InternalInputConfidenceSchema.parse(updated.confidence),
-    excludedFromBrief: updated.excludedFromBrief,
-    linkedSection: updated.linkedSection,
-    visibility: updated.visibility,
-    timestampLabel: updated.timestampLabel,
-    createdAt: updated.createdAt.toISOString(),
-  });
+  const wired = internalInputDbRowToWire(updated);
+  if (!wired) {
+    return NextResponse.json({ error: "Malformed internal input record", id: updated.id }, { status: 422 });
+  }
+
+  return NextResponse.json(wired);
 }

@@ -6,36 +6,7 @@ import { prisma } from "@/lib/db/prisma";
 import { IssueActivityKinds } from "@/lib/issues/activityKinds";
 import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
 import { requireMutation } from "@/lib/governance/requireMutation";
-
-function serializeInternalInput(input: {
-  id: string;
-  issueId: string;
-  observationNumber: number;
-  role: string;
-  name: string;
-  response: string;
-  confidence: string;
-  excludedFromBrief: boolean;
-  linkedSection: string | null;
-  visibility: string | null;
-  timestampLabel: string | null;
-  createdAt: Date;
-}) {
-  return {
-    id: input.id,
-    issueId: input.issueId,
-    observationNumber: input.observationNumber,
-    role: input.role,
-    name: input.name,
-    response: input.response,
-    confidence: InternalInputConfidenceSchema.parse(input.confidence),
-    excludedFromBrief: input.excludedFromBrief,
-    linkedSection: input.linkedSection,
-    visibility: input.visibility,
-    timestampLabel: input.timestampLabel,
-    createdAt: input.createdAt.toISOString(),
-  };
-}
+import { internalInputDbRowToWire } from "@/lib/internalInputs/internalInputWireFormat";
 
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id: issueId } = await params;
@@ -48,7 +19,9 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
     orderBy: [{ createdAt: "desc" }],
   });
 
-  return NextResponse.json(inputs.map((i) => serializeInternalInput(i)));
+  const wired = inputs.map((i) => internalInputDbRowToWire(i)).filter((row): row is NonNullable<typeof row> => row !== null);
+
+  return NextResponse.json(wired);
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -117,5 +90,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   revalidatePath("/");
   revalidatePath(`/issues/${issueId}`);
 
-  return NextResponse.json(serializeInternalInput(created));
+  const wired = internalInputDbRowToWire(created);
+  if (!wired) {
+    return NextResponse.json({ error: "Internal serialization failed", id: created.id }, { status: 500 });
+  }
+
+  return NextResponse.json(wired);
 }
