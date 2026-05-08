@@ -23,6 +23,7 @@ import { ReviewRailCard } from "@/components/review/ReviewRailCard";
 import { ReviewToolbar } from "@/components/review/ReviewToolbar";
 import { useUnsavedChangesWarning } from "@/lib/hooks/useUnsavedChangesWarning";
 import { cn } from "@/lib/utils";
+import { formatGapCode, formatObservationCode } from "@/lib/issueRecordCodes";
 import type { Gap } from "@metis/shared/gap";
 
 import { GapCreateForm } from "./gap-create-form";
@@ -30,10 +31,42 @@ import { CollapsibleFormPanel } from "../collapsible-form-panel";
 
 type InternalInputListItem = {
   id: string;
+  observationNumber: number;
   role: string;
   name: string;
   createdAt: string;
 };
+
+/** Neutral metadata badge for stable record codes (`Q-###`); keep visually quieter than severity/status. */
+const GAP_RECORD_BADGE_CLASS =
+  "border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_58%,transparent)] text-[--metis-text-tertiary] font-normal tabular-nums tracking-[0.04em]";
+
+function formatIsoShortLondon(iso: string) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/London", dateStyle: "short", timeStyle: "short" }).format(d);
+}
+
+function gapRecordBadgeLabel(gap: Gap) {
+  return formatGapCode(gap.gapNumber) ?? `${gap.id.slice(0, 8)}…`;
+}
+
+/** `<option>` text — value stays UUID. */
+function observationSelectLabel(i: InternalInputListItem) {
+  const code = formatObservationCode(i.observationNumber);
+  const lead = code ?? `Observation ref · ${i.id.slice(0, 8)}`;
+  const when = formatIsoShortLondon(i.createdAt);
+  return `${lead} · ${i.role} · ${i.name} · ${when}`;
+}
+
+function observationAttributionSecondary(resolvedId: string | null, inputsById: Map<string, InternalInputListItem>): string | null {
+  if (!resolvedId) return null;
+  const inp = inputsById.get(resolvedId);
+  if (!inp) return `Observation ref · ${resolvedId.slice(0, 8)}`;
+  const code = formatObservationCode(inp.observationNumber);
+  if (code) return `${code} · ${inp.role} · ${inp.name}`;
+  return `Observation ref · ${resolvedId.slice(0, 8)} · ${inp.role} · ${inp.name}`;
+}
 
 const severityTone: Record<string, string> = {
   Critical:
@@ -120,10 +153,12 @@ export function GapLedger({
 
   const observationWorkspaceHref = observationAnchorHref(issueId);
 
-  const internalInputLabelById = useMemo(() => {
+  const inputsById = useMemo(() => new Map(internalInputs.map((i) => [i.id, i])), [internalInputs]);
+
+  const internalInputOptionLabelById = useMemo(() => {
     const map = new Map<string, string>();
     internalInputs.forEach((i) => {
-      map.set(i.id, `${i.id.slice(0, 8)}… · ${i.role} · ${i.name}`);
+      map.set(i.id, observationSelectLabel(i));
     });
     return map;
   }, [internalInputs]);
@@ -369,7 +404,7 @@ export function GapLedger({
                         >
                           <div className="min-w-0 flex-1">
                             <div className="flex flex-wrap items-center gap-2">
-                              <Badge className="border-0 bg-[--metis-brass]/12 text-[--metis-brass-soft]">{gap.id.slice(0, 8)}…</Badge>
+                              <Badge className={GAP_RECORD_BADGE_CLASS}>{gapRecordBadgeLabel(gap)}</Badge>
                               <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-text-tertiary]">Severity</span>
                               <Badge className={severityTone[gap.severity] ?? severityTone.Watch}>{gap.severity}</Badge>
                               <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-text-tertiary]">Status</span>
@@ -468,7 +503,7 @@ export function GapLedger({
                                             <option value="">Select observation…</option>
                                             {internalInputs.map((i) => (
                                               <option key={i.id} value={i.id}>
-                                                {internalInputLabelById.get(i.id) ?? `${i.id.slice(0, 8)}… · ${i.role} · ${i.name}`}
+                                                {internalInputOptionLabelById.get(i.id) ?? observationSelectLabel(i)}
                                               </option>
                                             ))}
                                           </select>
@@ -542,7 +577,7 @@ export function GapLedger({
                     const why = (gap.whyItMatters ?? "").trim();
                     const promptPreview = clampText(questionValue || gap.prompt, 160);
                     const resolvedBy = gap.resolvedByInternalInputId ?? null;
-                    const resolvedLabel = resolvedBy ? internalInputLabelById.get(resolvedBy) ?? `${resolvedBy.slice(0, 8)}…` : null;
+                    const resolvedObservationLine = observationAttributionSecondary(resolvedBy, inputsById);
 
                     return (
                       <div
@@ -561,13 +596,13 @@ export function GapLedger({
                         >
                           <div className="min-w-0 flex-1">
                             <div className="flex flex-wrap items-center gap-2">
-                              <Badge className="border-0 bg-[--metis-brass]/12 text-[--metis-brass-soft]">{gap.id.slice(0, 8)}…</Badge>
+                              <Badge className={GAP_RECORD_BADGE_CLASS}>{gapRecordBadgeLabel(gap)}</Badge>
                               <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-text-tertiary]">Severity</span>
                               <Badge className={severityTone[gap.severity] ?? severityTone.Watch}>{gap.severity}</Badge>
                               <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-text-tertiary]">Status</span>
                               <Badge className={statusTone[gap.status] ?? statusTone.Open}>{gap.status}</Badge>
                               <Badge className="border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_48%,transparent)] text-[--metis-text-secondary]">
-                                Observation · {resolvedLabel ?? "—"}
+                                Observation · {resolvedObservationLine ?? "—"}
                               </Badge>
                             </div>
 
@@ -610,7 +645,7 @@ export function GapLedger({
                               <div className="min-w-0 space-y-3 xl:border-l xl:border-[--metis-outline-subtle] xl:pl-6">
                                 <DenseSection title="Attribution reference" titleClassName="text-[0.62rem]" className="border-t-0 pt-0">
                                   <p className="text-sm leading-6 text-[--metis-paper-muted]">
-                                    Resolved by observation: <span className="text-[--metis-paper]">{resolvedLabel ?? resolvedBy ?? "—"}</span>
+                                    Answered by <span className="text-[--metis-paper]">{resolvedObservationLine ?? "—"}</span>
                                   </p>
                                 </DenseSection>
                                 <DenseSection title="Resolution" titleClassName="text-[0.62rem]">

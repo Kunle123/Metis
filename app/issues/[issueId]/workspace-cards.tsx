@@ -17,9 +17,11 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { formatGapCode, formatObservationCode } from "@/lib/issueRecordCodes";
 
 type GapCardData = {
   id: string;
+  gapNumber?: number;
   prompt: string;
   whyItMatters: string | null;
   status: string | null;
@@ -45,6 +47,7 @@ type SourceCardData = {
 
 type ObservationCardData = {
   id: string;
+  observationNumber?: number;
   role: string;
   name: string;
   response: string;
@@ -81,6 +84,32 @@ function MetaLine({ parts }: { parts: Array<string | null | undefined> }) {
   const text = metaParts(parts).join(" · ");
   if (!text) return null;
   return <p className="text-xs text-[--metis-text-tertiary]">{text}</p>;
+}
+
+/** Quiet record-code styling — not status or severity. */
+const RECORD_CODE_PILL_CLASS =
+  "border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-frame-soft)_92%,transparent)] text-[--metis-text-tertiary]";
+
+function workspaceGapChipText(g: { id: string; gapNumber?: number }) {
+  return formatGapCode(g.gapNumber) ?? `${g.id.slice(0, 8)}…`;
+}
+
+function observationSelectOptionText(i: { id: string; observationNumber?: number; role: string; name: string; createdAt: string }) {
+  const code = formatObservationCode(i.observationNumber);
+  const lead = code ?? `Observation ref · ${i.id.slice(0, 8)}`;
+  return `${lead} · ${i.role} · ${i.name} · ${formatIsoInstantLondon(i.createdAt)}`;
+}
+
+function observationAttributionLine(
+  observationId: string | null | undefined,
+  inputs: Array<{ id: string; observationNumber?: number; role: string; name: string }>,
+): string | null {
+  if (!observationId?.trim()) return null;
+  const i = inputs.find((x) => x.id === observationId);
+  if (!i) return `Observation ref · ${observationId.slice(0, 8)}`;
+  const code = formatObservationCode(i.observationNumber);
+  if (code) return `Answered by · ${code} · ${i.role} · ${i.name}`;
+  return `Observation ref · ${observationId.slice(0, 8)} · ${i.role} · ${i.name}`;
 }
 
 function statusPillClass(status: string) {
@@ -142,7 +171,7 @@ export function WorkspaceGapCards({
 }: {
   issueId: string;
   gaps: GapCardData[];
-  internalInputs: Array<{ id: string; role: string; name: string; createdAt: string }>;
+  internalInputs: Array<{ id: string; observationNumber?: number; role: string; name: string; createdAt: string }>;
 }) {
   const router = useRouter();
   const WHY_COLLAPSE_CHARS = 260;
@@ -171,8 +200,7 @@ export function WorkspaceGapCards({
   const inputLabelById = useMemo(() => {
     const m = new Map<string, string>();
     for (const i of internalInputs) {
-      const shortId = i.id.slice(0, 8);
-      m.set(i.id, `${shortId}… · ${i.role} · ${i.name}`);
+      m.set(i.id, observationSelectOptionText(i));
     }
     return m;
   }, [internalInputs]);
@@ -278,9 +306,7 @@ export function WorkspaceGapCards({
         const draftPrompt = (draftPromptById[g.id] ?? g.prompt).trimEnd();
         const canEdit = (g.status ?? "") !== "Resolved";
         const isResolved = (g.status ?? "") === "Resolved";
-        const resolvedByLabel = g.resolvedByInternalInputId
-          ? inputLabelById.get(g.resolvedByInternalInputId) ?? g.resolvedByInternalInputId
-          : null;
+        const resolvedByLabel = observationAttributionLine(g.resolvedByInternalInputId, internalInputs);
         const addObsOpen = addObsOpenById[g.id] ?? false;
         const obsDraft = obsDraftByGapId[g.id] ?? {
           role: "",
@@ -310,6 +336,7 @@ export function WorkspaceGapCards({
                   <div className="mt-1">
                     <MetaLine
                       parts={[
+                        workspaceGapChipText(g) ? `Question: ${workspaceGapChipText(g)}` : null,
                         g.status ? `Status: ${g.status}` : null,
                         g.severity ? `Severity: ${g.severity}` : null,
                         g.section ? `Relates to: ${g.section}` : null,
@@ -481,7 +508,6 @@ export function WorkspaceGapCards({
                   <div className="rounded-[1.05rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_45%,transparent)] px-3 py-3 shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_16%,transparent)]">
                     {isResolved ? (
                       <p className="text-sm leading-6 text-[color-mix(in_oklab,var(--metis-status-success-fg)_88%,transparent)]">
-                        Resolved by:{" "}
                         <span className="font-medium text-[--metis-status-success-fg]">{resolvedByLabel ?? "—"}</span>
                       </p>
                     ) : (
@@ -510,7 +536,7 @@ export function WorkspaceGapCards({
                               <option value="">Select an observation…</option>
                               {internalInputs.map((i) => (
                                 <option key={i.id} value={i.id}>
-                                  {inputLabelById.get(i.id) ?? i.id}
+                                  {inputLabelById.get(i.id) ?? observationSelectOptionText(i)}
                                 </option>
                               ))}
                             </select>
@@ -813,9 +839,14 @@ export function WorkspaceObservationCards({ issueId, observations }: { issueId: 
         >
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-sm font-medium text-[--metis-paper]">
-                {o.role} · {o.name}
-              </p>
+              <div className="flex min-w-0 flex-wrap items-center gap-2">
+                <Pill className={RECORD_CODE_PILL_CLASS}>
+                  {formatObservationCode(o.observationNumber) ?? `${o.id.slice(0, 8)}…`}
+                </Pill>
+                <p className="text-sm font-medium text-[--metis-paper]">
+                  {o.role} · {o.name}
+                </p>
+              </div>
               <p className="mt-1 text-xs text-[--metis-text-tertiary]">
                 {[o.timestampLabel ?? "—", o.linkedSection ?? "—", o.visibility ?? "—"].join(" · ")}
               </p>

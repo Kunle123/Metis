@@ -11,6 +11,7 @@ import { CollapsibleSection } from "@/components/review/CollapsibleSection";
 import { DenseSection } from "@/components/review/DenseSection";
 import { ReviewRailCard } from "@/components/review/ReviewRailCard";
 import { ReviewToolbar } from "@/components/review/ReviewToolbar";
+import { formatObservationCode } from "@/lib/issueRecordCodes";
 import type { InternalInput } from "@metis/shared/internalInput";
 
 import { InternalInputCreateForm } from "./input-create-form";
@@ -27,6 +28,9 @@ function clampText(s: string, max = 220) {
   if (t.length <= max) return t;
   return `${t.slice(0, max).trimEnd()}…`;
 }
+
+const OBS_RECORD_BADGE_CLASS =
+  "border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_58%,transparent)] text-[--metis-text-tertiary] font-normal tabular-nums tracking-[0.04em]";
 
 export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; inputs: InternalInput[] }) {
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -159,7 +163,9 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
                         <DenseSection
                           title={
                             <div className="flex flex-wrap items-center gap-2">
-                              <Badge className="border-0 bg-[--metis-brass]/12 text-[--metis-brass-soft]">{input.id.slice(0, 8)}…</Badge>
+                              <Badge className={OBS_RECORD_BADGE_CLASS}>
+                                {formatObservationCode(input.observationNumber) ?? `${input.id.slice(0, 8)}…`}
+                              </Badge>
                               <span className="text-sm font-medium text-[--metis-paper]">
                                 {input.role} · {input.name}
                               </span>

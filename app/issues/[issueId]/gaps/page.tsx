@@ -19,7 +19,7 @@ export default async function IssueGapsPage({ params }: { params: Promise<{ issu
     prisma.internalInput.findMany({
       where: { issueId: issue.id },
       orderBy: [{ createdAt: "desc" }],
-      select: { id: true, role: true, name: true, createdAt: true },
+      select: { id: true, observationNumber: true, role: true, name: true, createdAt: true },
     }),
   ]);
 
@@ -34,6 +34,7 @@ export default async function IssueGapsPage({ params }: { params: Promise<{ issu
 
   const internalInputs = internalInputsRaw.map((i) => ({
     id: i.id,
+    observationNumber: i.observationNumber,
     role: i.role,
     name: i.name,
     createdAt: i.createdAt.toISOString(),

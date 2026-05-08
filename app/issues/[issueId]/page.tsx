@@ -183,6 +183,7 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
                     issueId={issue.id}
                     gaps={gaps.slice(0, 8).map((g) => ({
                       id: g.id,
+                      gapNumber: g.gapNumber,
                       prompt: g.prompt,
                       whyItMatters: g.whyItMatters ?? null,
                       status: g.status ?? null,
@@ -194,6 +195,7 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
                     }))}
                     internalInputs={inputs.slice(0, 50).map((i) => ({
                       id: i.id,
+                      observationNumber: i.observationNumber,
                       role: i.role,
                       name: i.name,
                       createdAt: i.createdAt.toISOString(),
@@ -223,6 +225,7 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
                     issueId={issue.id}
                     observations={inputs.slice(0, 6).map((i) => ({
                       id: i.id,
+                      observationNumber: i.observationNumber,
                       role: i.role,
                       name: i.name,
                       response: i.response,
