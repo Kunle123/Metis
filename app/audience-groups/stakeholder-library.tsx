@@ -143,16 +143,20 @@ export function StakeholderLibrary({ initialGroups }: { initialGroups: Group[] }
     }
   }
 
+  const activeCount = useMemo(() => groups.filter((g) => g.isActive).length, [groups]);
+
   return (
     <div className="space-y-6">
-      <div className="rounded-[1.25rem] border border-white/10 bg-[rgba(255,255,255,0.03)] px-5 py-5">
+      <div className="rounded-[1.25rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_45%,transparent)] px-5 py-5 shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_14%,transparent)]">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <p className="text-[0.68rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Add audience group</p>
-            <p className="mt-1 text-sm text-[--metis-paper-muted]">Reusable organisation-level audiences used by Messages.</p>
+            <p className="mt-1 text-sm text-[--metis-paper-muted]">
+              Creates a reusable organisation-level audience group, available across issues for future Messages and Comms plan targeting.
+            </p>
           </div>
           <Button onClick={() => void createGroup()} disabled={creating || !draft.name.trim()}>
-            {creating ? "Saving…" : "Add group"}
+            {creating ? "Saving…" : "Save group"}
           </Button>
         </div>
         <div className="mt-4 grid gap-3 md:grid-cols-2">
@@ -210,26 +214,65 @@ export function StakeholderLibrary({ initialGroups }: { initialGroups: Group[] }
             placeholder="Default tone adjustments, if any."
           />
         </label>
-        {createError ? <p className="mt-3 text-sm text-rose-200">{createError}</p> : null}
+        {createError ? <p className="mt-3 text-sm text-[--metis-status-danger-fg]">{createError}</p> : null}
       </div>
 
       <div className="space-y-3">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div className="space-y-1">
+            <h3 className="font-[Cormorant_Garamond] text-[1.75rem] leading-none text-[--metis-paper]">
+              Saved audience groups ({groups.length})
+            </h3>
+            <p className="text-sm leading-6 text-[--metis-paper-muted]">
+              Active groups appear in pickers. Mark inactive to hide a group from selection without deleting it.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge className="border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_62%,transparent)] text-[--metis-text-secondary]">
+              {activeCount} active
+            </Badge>
+            <Badge className="border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_48%,transparent)] text-[--metis-text-tertiary]">
+              {Math.max(0, groups.length - activeCount)} inactive
+            </Badge>
+          </div>
+        </div>
+
+        {groups.length === 0 ? (
+          <div className="rounded-[1.25rem] border border-[--metis-outline-subtle] bg-[--metis-surface-card] px-5 py-5 text-sm text-[--metis-paper-muted]">
+            <p className="text-[--metis-paper]">No saved groups yet.</p>
+            <p className="mt-2 leading-6">
+              Create one above to enable audience-specific defaults in Messages and audience targeting in Comms plan suggestions and plan items.
+            </p>
+          </div>
+        ) : null}
+
         {groups.map((g) => {
           const isEditing = editId === g.id;
           const err = errorById[g.id];
-          const rowTone = g.isActive ? "bg-[rgba(255,255,255,0.03)]" : "bg-[rgba(0,0,0,0.18)]";
+          const rowTone = g.isActive
+            ? "bg-[color-mix(in_oklab,var(--metis-surface-card)_72%,transparent)]"
+            : "bg-[color-mix(in_oklab,var(--metis-frame-soft)_78%,transparent)]";
+          const channels = (g.defaultChannels ?? "").trim();
+          const tone = (g.defaultToneGuidance ?? "").trim();
 
           return (
-            <div key={g.id} className={cn("rounded-[1.25rem] border border-white/10 px-5 py-5", rowTone)}>
+            <div key={g.id} className={cn("rounded-[1.25rem] border border-[--metis-outline-subtle] px-5 py-5", rowTone)}>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="text-sm font-medium text-[--metis-paper]">{g.name}</p>
                     {g.isActive ? (
-                      <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">Active</Badge>
+                      <Badge className="border border-[--metis-status-success-border] bg-[color-mix(in_oklab,var(--metis-status-success-bg)_52%,transparent)] text-[--metis-status-success-fg]">
+                        Active
+                      </Badge>
                     ) : (
-                      <Badge className="border-0 bg-white/6 text-[--metis-paper-muted]">Inactive</Badge>
+                      <Badge className="border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_48%,transparent)] text-[--metis-text-tertiary]">
+                        Inactive
+                      </Badge>
                     )}
+                    <Badge className="border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_55%,transparent)] text-[--metis-text-secondary]">
+                      Scope · Organisation
+                    </Badge>
                     {g.defaultSensitivity ? (
                       <Badge className="border-0 bg-[--metis-brass]/12 text-[--metis-brass-soft]">
                         {g.defaultSensitivity}
@@ -237,6 +280,13 @@ export function StakeholderLibrary({ initialGroups }: { initialGroups: Group[] }
                     ) : null}
                   </div>
                   {g.description ? <p className="mt-2 text-sm text-[--metis-paper-muted]">{g.description}</p> : null}
+                  {channels || tone ? (
+                    <p className="mt-2 text-xs leading-relaxed text-[--metis-text-tertiary]">
+                      <span className="text-[--metis-paper]">Defaults</span>
+                      {channels ? ` · Channels: ${channels}` : ""}
+                      {tone ? ` · Tone: ${tone}` : ""}
+                    </p>
+                  ) : null}
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
@@ -258,7 +308,7 @@ export function StakeholderLibrary({ initialGroups }: { initialGroups: Group[] }
               </div>
 
               {isEditing && editDraft ? (
-                <div className="mt-4 space-y-3 border-t border-white/8 pt-4">
+                <div className="mt-4 space-y-3 border-t border-[--metis-outline-subtle] pt-4">
                   <div className="grid gap-3 md:grid-cols-2">
                     <label className="space-y-2">
                       <span className="text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">Name</span>
@@ -325,9 +375,13 @@ export function StakeholderLibrary({ initialGroups }: { initialGroups: Group[] }
                       onClick={() =>
                         setEditDraft((d) => (d ? { ...d, isActive: !d.isActive } : d))
                       }
-                      className="h-auto min-h-0 justify-start gap-2 px-2 py-1.5 text-sm text-[--metis-paper-muted] hover:bg-white/[0.06] hover:text-[--metis-paper]"
+                      className="h-auto min-h-0 justify-start gap-2 px-2 py-1.5 text-sm text-[--metis-paper-muted] hover:bg-[color-mix(in_oklab,var(--metis-surface-elevated)_22%,transparent)] hover:text-[--metis-paper]"
                     >
-                      {editDraft.isActive ? <ToggleRight className="h-5 w-5 text-[--metis-brass-soft]" /> : <ToggleLeft className="h-5 w-5 text-white/50" />}
+                      {editDraft.isActive ? (
+                        <ToggleRight className="h-5 w-5 text-[--metis-brass-soft]" />
+                      ) : (
+                        <ToggleLeft className="h-5 w-5 text-[--metis-text-tertiary]" />
+                      )}
                       {editDraft.isActive ? "Active" : "Inactive"}
                     </Button>
 
@@ -340,7 +394,7 @@ export function StakeholderLibrary({ initialGroups }: { initialGroups: Group[] }
                     </Button>
                   </div>
 
-                  {err ? <p className="text-sm text-rose-200">{err}</p> : null}
+                  {err ? <p className="text-sm text-[--metis-status-danger-fg]">{err}</p> : null}
                 </div>
               ) : null}
             </div>
