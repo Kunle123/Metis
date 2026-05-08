@@ -64,6 +64,40 @@ function clampText(s: string, max = 180) {
   return `${t.slice(0, max).trimEnd()}…`;
 }
 
+function observationAnchorHref(issueId: string) {
+  return `/issues/${issueId}#input`;
+}
+
+/** Guidance for resolving open questions — info tone, not an error record. */
+function ObservationRequiredGuide({ issueId }: { issueId: string }) {
+  const href = observationAnchorHref(issueId);
+  return (
+    <div className="rounded-[1rem] border border-[--metis-status-info-border] bg-[color-mix(in_oklab,var(--metis-status-info-bg)_22%,var(--metis-surface-toolbar)_88%)] px-3.5 py-3 shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_10%,transparent)]">
+      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-[--metis-status-info-fg]">Observation required</p>
+      <p className="mt-2 text-xs leading-relaxed text-[--metis-paper-muted]">
+        To mark this question answered, select the saved observation that contains the attributable answer. If you have not captured one yet, add an observation
+        first.
+      </p>
+      <Button asChild variant="outline" size="sm" className="mt-3 w-full justify-center sm:inline-flex sm:w-auto">
+        <Link href={href}>Add observation</Link>
+      </Button>
+    </div>
+  );
+}
+
+function NoObservationsEmptyState({ issueId }: { issueId: string }) {
+  const href = observationAnchorHref(issueId);
+  return (
+    <div className="rounded-[1rem] border border-[color-mix(in_oklab,var(--metis-status-warning-border)_55%,var(--metis-outline-subtle))] bg-[color-mix(in_oklab,var(--metis-status-warning-bg)_14%,var(--metis-surface-toolbar)_92%)] px-3.5 py-3 shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_8%,transparent)]">
+      <p className="text-sm font-medium text-[--metis-status-warning-fg]">No observations available yet</p>
+      <p className="mt-1 text-xs leading-relaxed text-[--metis-paper-muted]">Add an observation before marking this question answered.</p>
+      <Button asChild variant="outline" size="sm" className="mt-3 w-full justify-center sm:inline-flex sm:w-auto">
+        <Link href={href}>Add observation</Link>
+      </Button>
+    </div>
+  );
+}
+
 export function GapLedger({
   issueId,
   gaps,
@@ -84,7 +118,7 @@ export function GapLedger({
   const [busyGapId, setBusyGapId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const attributableInputHref = `/issues/${issueId}#input`;
+  const observationWorkspaceHref = observationAnchorHref(issueId);
 
   const internalInputLabelById = useMemo(() => {
     const map = new Map<string, string>();
@@ -177,7 +211,7 @@ export function GapLedger({
     setError(null);
     const selected = resolveSelections[gapId]?.trim();
     if (!selected) {
-      setError("Select an internal input record before marking an open question answered.");
+      setError("Select an observation before marking this question answered.");
       return;
     }
 
@@ -249,8 +283,8 @@ export function GapLedger({
                   Full list of open and resolved questions. Use the workspace for day-to-day review; this page is for deeper ledger work.
                 </p>
                 <p className="text-[0.72rem] leading-snug text-[--metis-paper-muted]">
-                  For each open row: edit the drafted question as needed, then mark it answered when you have attributable input. Reopen if the
-                  facts move again.
+                  For each open row: edit the drafted question as needed, then mark it answered once the answer exists as a saved observation. Reopen if the facts
+                  move again.
                 </p>
               </div>
             }
@@ -288,7 +322,7 @@ export function GapLedger({
 
           <CollapsibleFormPanel
             title="Register open question"
-            description="Creates a saved open question record. Resolving requires selecting an attributable observation."
+            description="Creates a saved open question record. Resolving links this question to a saved observation you select."
             addLabel="Add open question"
             form={<GapCreateForm issueId={issueId} />}
             secondaryAction={
@@ -303,7 +337,9 @@ export function GapLedger({
                 <div className="flex items-end justify-between gap-3">
                   <div>
                     <p className="text-[0.72rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Open questions ({openGaps.length})</p>
-                    <p className="mt-1 text-sm leading-6 text-[--metis-paper-muted]">Resolve when you have attributable input; edit text as needed.</p>
+                    <p className="mt-1 text-sm leading-6 text-[--metis-paper-muted]">
+                      Resolve by choosing the observation that answers the question; edit text as needed.
+                    </p>
                   </div>
                 </div>
                 <div className="rounded-[1.25rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-card)_72%,transparent)] shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_12%,transparent)]">
@@ -409,56 +445,53 @@ export function GapLedger({
                                   <p className="text-sm leading-6 text-[--metis-paper]">{stakeholder}</p>
                                 </DenseSection>
                                 <DenseSection title="Resolution" titleClassName="text-[0.62rem]">
-                                  <div className="space-y-2">
-                                    <p className="text-xs text-[--metis-paper-muted]">
-                                      Mark answered only when you have attributable input. Create it first in{" "}
-                                      <Link
-                                        href={attributableInputHref}
-                                        className="font-medium text-[--metis-brass-soft] underline-offset-4 hover:underline"
-                                      >
-                                        Observations
-                                      </Link>
-                                      , then select it below.
-                                    </p>
-                                    <label className="block space-y-2">
-                                      <span className="text-[0.62rem] font-medium uppercase tracking-[0.14em] text-[--metis-text-tertiary]">
-                                        Resolved by observation
-                                      </span>
-                                      <select
-                                        value={resolveSelections[gap.id] ?? ""}
-                                        onChange={(e) =>
-                                          setResolveSelections((current) => ({
-                                            ...current,
-                                            [gap.id]: e.target.value,
-                                          }))
-                                        }
-                                        className="h-11 w-full rounded-md border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
-                                      >
-                                        <option value="">Select an observation…</option>
-                                        {internalInputs.map((i) => (
-                                          <option key={i.id} value={i.id}>
-                                            {internalInputLabelById.get(i.id) ?? `${i.id.slice(0, 8)}… · ${i.role} · ${i.name}`}
-                                          </option>
-                                        ))}
-                                      </select>
-                                    </label>
-                                    <Button
-                                      variant="outline"
-                                      disabled={busyGapId === gap.id || internalInputs.length === 0}
-                                      onClick={() => void resolveGap(gap.id)}
-                                      className="w-full justify-start"
-                                    >
-                                      <CheckCircle2 className="mr-2 h-4 w-4" />
-                                      Mark answered
-                                    </Button>
+                                  <div className="space-y-3">
+                                    <ObservationRequiredGuide issueId={issueId} />
+                                    {internalInputs.length === 0 ? (
+                                      <NoObservationsEmptyState issueId={issueId} />
+                                    ) : (
+                                      <>
+                                        <label className="block space-y-2">
+                                          <span className="text-[0.62rem] font-medium uppercase tracking-[0.14em] text-[--metis-text-tertiary]">
+                                            Answering observation
+                                          </span>
+                                          <select
+                                            value={resolveSelections[gap.id] ?? ""}
+                                            onChange={(e) =>
+                                              setResolveSelections((current) => ({
+                                                ...current,
+                                                [gap.id]: e.target.value,
+                                              }))
+                                            }
+                                            className="h-11 max-w-full rounded-md border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
+                                          >
+                                            <option value="">Select observation…</option>
+                                            {internalInputs.map((i) => (
+                                              <option key={i.id} value={i.id}>
+                                                {internalInputLabelById.get(i.id) ?? `${i.id.slice(0, 8)}… · ${i.role} · ${i.name}`}
+                                              </option>
+                                            ))}
+                                          </select>
+                                        </label>
+                                        <Button
+                                          variant="outline"
+                                          disabled={busyGapId === gap.id || !(resolveSelections[gap.id]?.trim())}
+                                          onClick={() => void resolveGap(gap.id)}
+                                          className="w-full justify-start"
+                                        >
+                                          <CheckCircle2 className="mr-2 h-4 w-4" />
+                                          Mark answered with observation
+                                        </Button>
+                                      </>
+                                    )}
                                   </div>
                                 </DenseSection>
 
                                 <div className="grid gap-2 pt-1">
                                   <Button asChild variant="outline" className="w-full justify-start">
-                                    <Link href={attributableInputHref}>
+                                    <Link href={observationWorkspaceHref}>
                                       <MessageSquareText className="mr-2 h-4 w-4" />
-                                      Add attributable input
+                                      Add observation
                                     </Link>
                                   </Button>
                                   <Button variant="outline" onClick={() => startEditing(gap)} className="w-full justify-start">
@@ -534,7 +567,7 @@ export function GapLedger({
                               <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-text-tertiary]">Status</span>
                               <Badge className={statusTone[gap.status] ?? statusTone.Open}>{gap.status}</Badge>
                               <Badge className="border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_48%,transparent)] text-[--metis-text-secondary]">
-                                Resolved by · {resolvedLabel ?? "—"}
+                                Observation · {resolvedLabel ?? "—"}
                               </Badge>
                             </div>
 
@@ -675,11 +708,11 @@ export function GapLedger({
           <ReviewRailCard
             title="Next"
             tone="info"
-            meta={<p className="text-sm leading-6 text-[--metis-paper-muted]\">Jump to related registers and outputs.</p>}
+            meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Jump to related registers and outputs.</p>}
           >
             <div className="grid gap-3">
               <Button asChild variant="outline" className="w-full justify-start">
-                <Link href={attributableInputHref}>Add attributable input</Link>
+                <Link href={observationWorkspaceHref}>Add observation</Link>
               </Button>
               <Button asChild variant="outline" className="w-full justify-start">
                 <Link href={`/issues/${issueId}/sources`}>Sources</Link>
