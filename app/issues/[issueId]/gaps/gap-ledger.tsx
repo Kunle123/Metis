@@ -84,6 +84,8 @@ export function GapLedger({
   const [busyGapId, setBusyGapId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const attributableInputHref = `/issues/${issueId}#input`;
+
   const internalInputLabelById = useMemo(() => {
     const map = new Map<string, string>();
     internalInputs.forEach((i) => {
@@ -411,7 +413,7 @@ export function GapLedger({
                                     <p className="text-xs text-[--metis-paper-muted]">
                                       Mark answered only when you have attributable input. Create it first in{" "}
                                       <Link
-                                        href={`/issues/${issueId}/input`}
+                                        href={attributableInputHref}
                                         className="font-medium text-[--metis-brass-soft] underline-offset-4 hover:underline"
                                       >
                                         Observations
@@ -454,7 +456,7 @@ export function GapLedger({
 
                                 <div className="grid gap-2 pt-1">
                                   <Button asChild variant="outline" className="w-full justify-start">
-                                    <Link href={`/issues/${issueId}/input`}>
+                                    <Link href={attributableInputHref}>
                                       <MessageSquareText className="mr-2 h-4 w-4" />
                                       Add attributable input
                                     </Link>
@@ -677,7 +679,7 @@ export function GapLedger({
           >
             <div className="grid gap-3">
               <Button asChild variant="outline" className="w-full justify-start">
-                <Link href={`/issues/${issueId}/input`}>Add attributable input</Link>
+                <Link href={attributableInputHref}>Add attributable input</Link>
               </Button>
               <Button asChild variant="outline" className="w-full justify-start">
                 <Link href={`/issues/${issueId}/sources`}>Sources</Link>
