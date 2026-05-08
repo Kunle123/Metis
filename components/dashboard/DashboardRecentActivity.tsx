@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 export function DashboardRecentActivity({ items }: { items: DashboardActivityVM[] }) {
   if (!items.length) {
     return (
-      <div className="rounded-[1.2rem] border border-white/10 bg-[rgba(255,255,255,0.02)] px-4 py-5 text-sm text-[--metis-paper-muted]">
+      <div className="rounded-[1.2rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-card)_72%,transparent)] px-4 py-5 text-sm text-[--metis-paper-muted] shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_10%,transparent)]">
         No activity yet across your issues — open an issue workspace to add sources, open questions, or generate a brief.
       </div>
     );
@@ -33,10 +33,12 @@ export function DashboardRecentActivity({ items }: { items: DashboardActivityVM[
             <li key={row.id}>
               <Link
                 href={href}
-                className="block rounded-[1.3rem] border border-white/10 bg-[rgba(255,255,255,0.025)] p-4 transition hover:border-white/14 hover:bg-white/[0.05]"
+                className="block rounded-[1.3rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-card)_68%,transparent)] p-4 transition hover:bg-[color-mix(in_oklab,var(--metis-surface-elevated)_22%,transparent)]"
               >
                 <div className="flex flex-wrap items-center gap-2 gap-y-2">
-                  <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{time}</Badge>
+                  <Badge className="border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_55%,transparent)] text-[--metis-text-tertiary]">
+                    {time}
+                  </Badge>
                   <span className="inline-flex items-center gap-2 text-[0.65rem] uppercase tracking-[0.18em] text-[--metis-ink-soft]">
                     <Activity className="h-3.5 w-3.5 text-[--metis-brass]" aria-hidden />
                     {kindLabel}
