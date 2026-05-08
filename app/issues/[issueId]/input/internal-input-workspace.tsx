@@ -38,6 +38,7 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
   });
 
   const excludedCount = useMemo(() => Object.values(excludedById).filter(Boolean).length, [excludedById]);
+  const includedCount = useMemo(() => Math.max(0, inputs.length - excludedCount), [excludedCount, inputs.length]);
 
   async function toggleExcluded(id: string, next: boolean) {
     setBusyId(id);
@@ -62,12 +63,12 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
   return (
     <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <SurfaceCard className="min-w-0 overflow-hidden">
-          <div className="border-b border-white/8 bg-[rgba(255,255,255,0.025)] px-6 py-5 sm:px-7">
+          <div className="border-b border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_45%,transparent)] px-6 py-5 sm:px-7">
             <ReviewToolbar
               className="border-0 bg-transparent px-0 py-0"
               left={
                 <div>
-                  <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper] sm:text-[2rem]">Attributable records</h2>
+                  <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper] sm:text-[2rem]">Internal observations</h2>
                   <p className="mt-1 text-sm leading-6 text-[--metis-paper-muted]">
                     Full list of internal observations. Normal capture happens in the workspace; use this for full-list review and management.
                   </p>
@@ -80,7 +81,9 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
                     <ReadinessPill state="Updated since last version" />
                   </div>
                 ) : (
-                  <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">No observations yet</Badge>
+                  <Badge className="border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_62%,transparent)] text-[--metis-text-secondary]">
+                    No observations yet
+                  </Badge>
                 )
               }
             >
@@ -93,20 +96,52 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
           </div>
 
           <div className="space-y-8 px-6 py-6 sm:px-7 sm:py-7">
+            <section aria-label="Observation overview" className="space-y-3">
+              <div className="rounded-[1.1rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_38%,transparent)] px-4 py-3 shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_14%,transparent)] sm:px-5">
+                <p className="text-[0.65rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Overview</p>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <Badge className="border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_62%,transparent)] text-[--metis-text-secondary]">
+                    {inputs.length} total
+                  </Badge>
+                  <Badge className="border border-[--metis-status-success-border] bg-[color-mix(in_oklab,var(--metis-status-success-bg)_52%,transparent)] text-[--metis-status-success-fg]">
+                    {includedCount} included in briefs
+                  </Badge>
+                  <Badge className="border border-[--metis-status-danger-border] bg-[color-mix(in_oklab,var(--metis-status-danger-bg)_52%,transparent)] text-[--metis-status-danger-fg]">
+                    {excludedCount} excluded from briefs
+                  </Badge>
+                  <Button
+                    asChild
+                    variant="ghost"
+                    size="sm"
+                    className="h-auto px-0 py-0 text-[--metis-brass-soft] hover:bg-transparent"
+                  >
+                    <Link href={`/issues/${issueId}/gaps`} className="underline underline-offset-4">
+                      Use observations to resolve open questions
+                    </Link>
+                  </Button>
+                </div>
+                <p className="mt-2 text-xs leading-relaxed text-[--metis-text-tertiary]">
+                  Internal observations are attributable internal statements — not external source evidence. Confidence reflects internal readiness, not proof.
+                </p>
+              </div>
+            </section>
+
             <section className="space-y-4">
               <div className="flex items-center justify-between gap-3">
-                <h3 className="font-[Cormorant_Garamond] text-[1.75rem] leading-none text-[--metis-paper]">Observations</h3>
+                <h3 className="font-[Cormorant_Garamond] text-[1.75rem] leading-none text-[--metis-paper]">Saved observations ({inputs.length})</h3>
                 <div className="flex flex-wrap items-center gap-2">
-                  {excludedCount ? (
-                    <Badge className="border-0 bg-rose-900/25 text-rose-50">{excludedCount} excluded from briefs</Badge>
-                  ) : null}
-                  <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{inputs.length} records</Badge>
+                  <Badge className="border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_62%,transparent)] text-[--metis-text-secondary]">
+                    {includedCount} included
+                  </Badge>
+                  <Badge className="border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_62%,transparent)] text-[--metis-text-secondary]">
+                    {excludedCount} excluded
+                  </Badge>
                 </div>
               </div>
               {inputs.length === 0 ? (
                 <p className="text-sm leading-6 text-[--metis-paper-muted]">No observations yet. Add one below or from the issue workspace.</p>
               ) : (
-                <div className="rounded-[1.25rem] border border-white/10 bg-[rgba(255,255,255,0.035)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+                <div className="rounded-[1.25rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-card)_72%,transparent)] shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_10%,transparent)]">
                   {inputs.map((input) => {
                     const expanded = openId === input.id;
                     const response = (input.response ?? "").trim();
@@ -119,7 +154,7 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
                     return (
                       <div
                         key={input.id}
-                        className={["border-t border-white/10 px-4 py-3 first:border-t-0 sm:px-5", !expanded ? "hover:bg-white/[0.02]" : ""].join(" ")}
+                        className={["border-t border-[--metis-outline-subtle] px-4 py-3 first:border-t-0 sm:px-5", !expanded ? "hover:bg-[color-mix(in_oklab,var(--metis-surface-elevated)_22%,transparent)]" : ""].join(" ")}
                       >
                         <DenseSection
                           title={
@@ -136,13 +171,13 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
                           <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
                             <div className="min-w-0 flex-1">
                               <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-[--metis-paper-muted]">
-                                <span className="text-[--metis-paper]">Timestamp:</span>
+                                <span className="text-[--metis-text-tertiary]">Timestamp:</span>
                                 <span>{timestamp}</span>
-                                <span className="text-white/20">•</span>
-                                <span className="text-[--metis-paper]">Section:</span>
+                                <span className="text-[--metis-outline-strong]">•</span>
+                                <span className="text-[--metis-text-tertiary]">Section:</span>
                                 <span>{linked}</span>
-                                <span className="text-white/20">•</span>
-                                <span className="text-[--metis-paper]">Visibility:</span>
+                                <span className="text-[--metis-outline-strong]">•</span>
+                                <span className="text-[--metis-text-tertiary]">Visibility:</span>
                                 <span>{visibility}</span>
                               </div>
 
@@ -150,9 +185,15 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
                             </div>
 
                             <div className="flex shrink-0 flex-wrap items-center gap-2">
-                              {isExcluded ? (
-                                <Badge className="border-0 bg-rose-900/25 text-rose-50">Excluded from brief output</Badge>
-                              ) : null}
+                              <Badge
+                                className={
+                                  isExcluded
+                                    ? "border border-[--metis-status-danger-border] bg-[color-mix(in_oklab,var(--metis-status-danger-bg)_52%,transparent)] text-[--metis-status-danger-fg]"
+                                    : "border border-[--metis-status-success-border] bg-[color-mix(in_oklab,var(--metis-status-success-bg)_52%,transparent)] text-[--metis-status-success-fg]"
+                                }
+                              >
+                                {isExcluded ? "Excluded from briefs" : "Included in briefs"}
+                              </Badge>
                               <ConfidencePill level={input.confidence} />
                               <Button
                                 type="button"
@@ -191,7 +232,7 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
                                       </p>
                                       <p className="mt-1 text-xs text-[--metis-paper-muted]">Full text as captured.</p>
                                     </div>
-                                    <div className="flex items-center gap-2 text-white/45">
+                                    <div className="flex items-center gap-2 text-[--metis-text-tertiary]">
                                       <span className="text-xs">Toggle</span>
                                       <ChevronDown className="h-4 w-4" />
                                     </div>
@@ -210,10 +251,10 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
               )}
             </section>
 
-            <div className="border-t border-white/8 pt-8">
+            <div className="border-t border-[--metis-outline-subtle] pt-8">
               <CollapsibleFormPanel
                 title="Add observation"
-                description="For bulk or secondary capture. Prefer the workspace for routine attributable notes."
+                description="Creates a saved internal observation record. Use these to resolve open questions and curate brief outputs."
                 addLabel="Add observation"
                 form={<InternalInputCreateForm issueId={issueId} />}
                 secondaryAction={
@@ -224,6 +265,9 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
               >
                 <div />
               </CollapsibleFormPanel>
+              <p className="mt-3 text-xs leading-6 text-[--metis-text-tertiary]">
+                Tip: notes capture and AI suggestions may be excluded from briefs by default until you curate them.
+              </p>
             </div>
           </div>
         </SurfaceCard>
@@ -235,7 +279,10 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
                 {operatorRules.map((item) => {
                   const Icon = item.icon;
                   return (
-                    <div key={item.text} className="grid grid-cols-[14px_minmax(0,1fr)] gap-3 border-t border-white/8 pt-3 first:border-t-0 first:pt-0">
+                    <div
+                      key={item.text}
+                      className="grid grid-cols-[14px_minmax(0,1fr)] gap-3 border-t border-[--metis-outline-subtle] pt-3 first:border-t-0 first:pt-0"
+                    >
                       <Icon className="mt-2 h-4 w-4 text-[--metis-brass]" />
                       <p>{item.text}</p>
                     </div>
@@ -259,8 +306,20 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
               <div />
             </ReviewRailCard>
 
-            <ReviewRailCard title="Next" tone="info" meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Move from notes to brief output and validation.</p>}>
+            <ReviewRailCard title="Next" tone="info" meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Jump to related registers and outputs.</p>}>
               <div className="grid gap-3">
+                <Button asChild variant="outline" size="sm" className="w-full">
+                  <Link className="inline-flex items-center justify-center gap-2" href={`/issues/${issueId}`}>
+                    Workspace
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" size="sm" className="w-full">
+                  <Link className="inline-flex items-center justify-center gap-2" href={`/issues/${issueId}/sources`}>
+                    Sources
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
                 <Button asChild variant="outline" size="sm" className="w-full">
                   <Link className="inline-flex items-center justify-center gap-2" href={`/issues/${issueId}/brief?mode=full`}>
                     <PlusCircle className="h-4 w-4" />

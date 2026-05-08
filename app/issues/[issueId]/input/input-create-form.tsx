@@ -80,8 +80,8 @@ export function InternalInputCreateForm({ issueId }: { issueId: string }) {
     <div className="overflow-hidden rounded-[1.45rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_55%,var(--metis-frame-soft))] shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_18%,transparent)]">
       <div className="flex flex-col gap-4 border-b border-[--metis-outline-subtle] px-5 pb-4 pt-5">
         <div>
-          <p className="text-[0.58rem] font-medium uppercase tracking-[0.18em] text-[--metis-ink-soft]">Capture internal input</p>
-          <p className="mt-1 text-sm text-[--metis-paper-muted]">Stored on the issue record for attribution and gap resolution.</p>
+          <p className="text-[0.58rem] font-medium uppercase tracking-[0.18em] text-[--metis-ink-soft]">Add observation</p>
+          <p className="mt-1 text-sm text-[--metis-paper-muted]">Creates a saved internal observation record for attribution and gap resolution.</p>
           <p className="mt-1 text-sm text-[--metis-paper-muted]">Fields marked (optional) can be left blank.</p>
         </div>
       </div>
@@ -89,7 +89,7 @@ export function InternalInputCreateForm({ issueId }: { issueId: string }) {
       <div className="flex flex-col gap-4 px-5 py-4">
         <div className="grid gap-3 md:grid-cols-2">
           <label className="space-y-2">
-            <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Confidence</span>
+            <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Internal confidence</span>
             <select
               value={confidence}
               onChange={(e) => setConfidence(e.target.value as InternalInputConfidence)}
@@ -101,6 +101,7 @@ export function InternalInputCreateForm({ issueId }: { issueId: string }) {
                 </option>
               ))}
             </select>
+            <p className="text-xs leading-5 text-[--metis-text-tertiary]">Confidence is internal readiness, not external proof.</p>
           </label>
           <label className="space-y-2">
             <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Timestamp label (optional)</span>
