@@ -257,18 +257,26 @@ export function ActivityTimelineClient({ issueId, items }: Props) {
                           ) : null}
 
                           {a.refType || a.refId ? (
-                            <span>
+                            <span className="min-w-0 break-words">
                               <span className="text-[--metis-ink-soft]">Related</span>
                               {" · "}
-                              <span className="font-mono text-[0.7rem] text-[--metis-text-tertiary]">
-                                {activityDisplayRefType(a.refType)}
-                              </span>
-                              {a.refId ? (
+                              {a.refRecordCode ? (
+                                <span className="font-mono text-[0.7rem] text-[--metis-text-tertiary] tabular-nums">
+                                  {a.refRecordCode}
+                                </span>
+                              ) : (
                                 <>
-                                  {" · "}
-                                  <span className="font-mono text-[0.7rem]">{shortActivityRefId(a.refId)}</span>
+                                  <span className="font-mono text-[0.7rem] text-[--metis-text-tertiary]">
+                                    {activityDisplayRefType(a.refType)}
+                                  </span>
+                                  {a.refId ? (
+                                    <>
+                                      {" · "}
+                                      <span className="font-mono text-[0.7rem]">{shortActivityRefId(a.refId)}</span>
+                                    </>
+                                  ) : null}
                                 </>
-                              ) : null}
+                              )}
                             </span>
                           ) : null}
                         </div>

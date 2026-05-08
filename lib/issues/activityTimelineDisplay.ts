@@ -13,6 +13,8 @@ export type SerializedActivityRow = {
 /** Activity row with optional join-derived headline (issue activity page). */
 export type ActivityTimelineItem = SerializedActivityRow & {
   enrichedSummary?: string | null;
+  /** When ref is a Gap or InternalInput with a known record, e.g. `Q-003` or `OBS-002`. */
+  refRecordCode?: string | null;
 };
 
 export const ACTIVITY_KIND_LABELS: Record<string, string> = {
@@ -86,6 +88,7 @@ export function activitySearchBlob(row: ActivityTimelineItem): string {
     row.actorLabel ?? "",
     row.refType ?? "",
     row.refId ?? "",
+    row.refRecordCode ?? "",
     formatActivityTimestamp(row.createdAt),
   ];
   return parts.join(" ").toLowerCase();

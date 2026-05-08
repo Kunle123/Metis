@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db/prisma";
+import { formatGapCode, formatObservationCode } from "@/lib/issueRecordCodes";
 
 import type { ActivityTimelineItem, SerializedActivityRow } from "@/lib/issues/activityTimelineDisplay";
 
@@ -19,6 +20,8 @@ export async function enrichActivityRowsForIssue(
   const messageIds = new Set<string>();
   const exportIds = new Set<string>();
   const circulationIds = new Set<string>();
+  const gapIds = new Set<string>();
+  const internalInputIds = new Set<string>();
 
   for (const r of rows) {
     if (!r.refId?.trim()) continue;
@@ -26,9 +29,11 @@ export async function enrichActivityRowsForIssue(
     else if (r.refType === "MessageVariant") messageIds.add(r.refId);
     else if (r.refType === "ArtifactExport") exportIds.add(r.refId);
     else if (r.refType === "CirculationEvent") circulationIds.add(r.refId);
+    else if (r.refType === "Gap") gapIds.add(r.refId);
+    else if (r.refType === "InternalInput") internalInputIds.add(r.refId);
   }
 
-  const [briefRows, messageRows, exportRows, circulationRows] = await Promise.all([
+  const [briefRows, messageRows, exportRows, circulationRows, gapRows, internalInputRows] = await Promise.all([
     briefIds.size
       ? prisma.briefVersion.findMany({
           where: { issueId, id: { in: [...briefIds] } },
@@ -61,15 +66,40 @@ export async function enrichActivityRowsForIssue(
           },
         })
       : [],
+    gapIds.size
+      ? prisma.gap.findMany({
+          where: { issueId, id: { in: [...gapIds] } },
+          select: { id: true, gapNumber: true },
+        })
+      : [],
+    internalInputIds.size
+      ? prisma.internalInput.findMany({
+          where: { issueId, id: { in: [...internalInputIds] } },
+          select: { id: true, observationNumber: true },
+        })
+      : [],
   ]);
 
   const briefMap = new Map(briefRows.map((b) => [b.id, b]));
   const messageMap = new Map(messageRows.map((m) => [m.id, m]));
   const exportMap = new Map(exportRows.map((e) => [e.id, e]));
   const circulationMap = new Map(circulationRows.map((c) => [c.id, c]));
+  const gapRecordCodeById = new Map(
+    gapRows.map((g) => [g.id, formatGapCode(g.gapNumber)] as [string, string | null]),
+  );
+  const observationRecordCodeById = new Map(
+    internalInputRows.map((i) => [i.id, formatObservationCode(i.observationNumber)] as [string, string | null]),
+  );
 
   return rows.map((row) => {
     let enrichedSummary: string | null = null;
+    let refRecordCode: string | null = null;
+
+    if (row.refType === "Gap" && row.refId) {
+      refRecordCode = gapRecordCodeById.get(row.refId) ?? null;
+    } else if (row.refType === "InternalInput" && row.refId) {
+      refRecordCode = observationRecordCodeById.get(row.refId) ?? null;
+    }
 
     if (row.kind === "brief_version_created" && row.refType === "BriefVersion" && row.refId) {
       const b = briefMap.get(row.refId);
@@ -91,6 +121,6 @@ export async function enrichActivityRowsForIssue(
       }
     }
 
-    return { ...row, enrichedSummary };
+    return { ...row, enrichedSummary, refRecordCode };
   });
 }
