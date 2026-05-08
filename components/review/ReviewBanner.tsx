@@ -14,7 +14,7 @@ const toneStyles: Record<ReviewBannerTone, { wrap: string; title: string; body: 
     body: "text-[--metis-paper-muted]",
   },
   neutral: {
-    wrap: "border-white/10 bg-white/5",
+    wrap: "border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_40%,var(--metis-surface-page))]",
     title: "text-[--metis-paper]",
     body: "text-[--metis-paper-muted]",
   },

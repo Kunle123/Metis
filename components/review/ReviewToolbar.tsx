@@ -21,7 +21,7 @@ export function ReviewToolbar({
   return (
     <div
       className={cn(
-        "rounded-[1.2rem] border border-white/10 bg-[rgba(0,0,0,0.14)] px-4 py-4 sm:px-5",
+        "rounded-[1.2rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_52%,var(--metis-surface-page))] px-4 py-4 shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_22%,transparent)] sm:px-5",
         className,
       )}
     >
