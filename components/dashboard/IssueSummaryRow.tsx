@@ -2,7 +2,6 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
 import type { DashboardIssueVM } from "@/lib/dashboard/getDashboardSnapshot";
-import { Badge } from "@/components/ui/badge";
 
 import { IssueMetaStrip } from "./IssueMetaStrip";
 import { IssueStatTile } from "./IssueStatTile";
@@ -13,20 +12,63 @@ export type DashboardIssue = DashboardIssueVM;
 /** Compact secondary actions — at most one `emphasize` for stale brief refresh only. */
 function rowActionClass(emphasize?: boolean) {
   if (emphasize) {
-    return "rounded-md px-1 py-0.5 text-[0.72rem] font-medium text-[--metis-brass-soft] underline-offset-4 transition hover:text-[--metis-brass] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[rgba(0,0,0,0.35)]";
+    return "rounded-md px-1 py-0.5 text-[0.72rem] font-medium text-[--metis-brass-soft] underline-offset-4 transition hover:text-[--metis-brass] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[--metis-ring-offset]";
   }
-  return "rounded-md px-1 py-0.5 text-[0.72rem] text-[--metis-paper-muted] underline-offset-4 transition hover:text-[--metis-paper] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:ring-offset-2 focus-visible:ring-offset-[rgba(0,0,0,0.35)]";
+  return "rounded-md px-1 py-0.5 text-[0.72rem] text-[--metis-paper-muted] underline-offset-4 transition hover:text-[--metis-paper] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklab,var(--metis-outline-strong)_80%,transparent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[--metis-ring-offset]";
 }
 
 /** Metric tiles stay neutral — no brass; subtle grouped hover on the tile. */
 const metricTileWrapClass =
-  "group/stat block h-full min-w-0 rounded-[1rem] outline-none ring-offset-2 ring-offset-[rgba(0,0,0,0.2)] focus-visible:ring-2 focus-visible:ring-white/25";
+  "group/stat block h-full min-w-0 rounded-[1rem] outline-none ring-offset-2 ring-offset-[--metis-ring-offset] focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklab,var(--metis-outline-strong)_80%,transparent)]";
+
+/** Row meta pills: standalone classes so Badge defaults cannot flatten semantic tokens (`cn` here is concat-only). */
+const rowMetaChipShell =
+  "inline-flex max-w-full min-w-0 shrink-0 items-center whitespace-normal rounded-full border px-3 py-1 text-[0.72rem] font-medium leading-snug sm:whitespace-nowrap";
 
 function chipClass(tone: "neutral" | "warning") {
   if (tone === "warning") {
     return "inline-flex items-center rounded-full border border-[--metis-status-warning-border] bg-[color-mix(in_oklab,var(--metis-status-warning-bg)_52%,transparent)] px-3 py-1 text-[0.66rem] font-medium uppercase tracking-[0.18em] text-[--metis-status-warning-fg]";
   }
   return "inline-flex items-center rounded-full border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_55%,transparent)] px-3 py-1 text-[0.66rem] font-medium uppercase tracking-[0.18em] text-[--metis-text-secondary]";
+}
+
+/** Aligns with `issueSeverityBadgeClass` in MetisShell; adds issue-model severities from workspace (`Important`, `Watch`). */
+function severityChipClass(severity: string) {
+  if (severity === "Critical") {
+    return `${rowMetaChipShell} border-[--metis-status-danger-border] bg-[color-mix(in_oklab,var(--metis-status-danger-bg)_46%,transparent)] text-[--metis-status-danger-fg]`;
+  }
+  if (severity === "High") {
+    return `${rowMetaChipShell} border-[--metis-status-danger-border] bg-[color-mix(in_oklab,var(--metis-status-danger-bg)_46%,transparent)] text-[--metis-status-danger-fg]`;
+  }
+  if (severity === "Important" || severity === "Moderate") {
+    return `${rowMetaChipShell} border-[--metis-status-warning-border] bg-[color-mix(in_oklab,var(--metis-status-warning-bg)_46%,transparent)] text-[--metis-status-warning-fg]`;
+  }
+  if (severity === "Watch" || severity === "Low") {
+    return `${rowMetaChipShell} border-[--metis-status-neutral-border] bg-[color-mix(in_oklab,var(--metis-status-neutral-bg)_72%,transparent)] text-[--metis-status-neutral-fg]`;
+  }
+  return `${rowMetaChipShell} border-[--metis-status-neutral-border] bg-[color-mix(in_oklab,var(--metis-status-neutral-bg)_72%,transparent)] text-[--metis-status-neutral-fg]`;
+}
+
+function priorityChipClass(priority: DashboardIssueVM["priority"]) {
+  if (priority === "Critical") {
+    return `${rowMetaChipShell} border-[--metis-status-danger-border] bg-[color-mix(in_oklab,var(--metis-status-danger-bg)_46%,transparent)] text-[--metis-status-danger-fg]`;
+  }
+  if (priority === "High") {
+    return `${rowMetaChipShell} border-[--metis-status-warning-border] bg-[color-mix(in_oklab,var(--metis-status-warning-bg)_46%,transparent)] text-[--metis-status-warning-fg]`;
+  }
+  return `${rowMetaChipShell} border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_48%,transparent)] text-[--metis-text-tertiary]`;
+}
+
+function statusChipClass(status: string) {
+  const looksReady = /\bready\b/i.test(status) && !/\bneeds\b/i.test(status);
+  if (looksReady) {
+    return `${rowMetaChipShell} border-[--metis-status-success-border] bg-[color-mix(in_oklab,var(--metis-status-success-bg)_46%,transparent)] text-[--metis-status-success-fg]`;
+  }
+  return `${rowMetaChipShell} border-[--metis-status-neutral-border] bg-[color-mix(in_oklab,var(--metis-status-neutral-bg)_72%,transparent)] text-[--metis-status-neutral-fg]`;
+}
+
+function issueTypeChipClass() {
+  return `${rowMetaChipShell} border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_55%,transparent)] text-[--metis-text-secondary]`;
 }
 
 export function IssueSummaryRow({ issue }: { issue: DashboardIssueVM }) {
@@ -57,17 +99,11 @@ export function IssueSummaryRow({ issue }: { issue: DashboardIssueVM }) {
   return (
     <div className="grid min-w-0 items-start gap-4 rounded-[1.45rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-card)_72%,transparent)] p-4 shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_10%,transparent)] sm:p-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(9rem,0.72fr)_minmax(13.5rem,1fr)] lg:gap-x-6">
       <div className="min-w-0 space-y-3 lg:py-0.5">
-        <div className="flex flex-wrap gap-2">
-          <Badge className="border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_55%,transparent)] text-[--metis-text-secondary]">
-            {issue.issueType}
-          </Badge>
-          <Badge className="border border-[--metis-status-danger-border] bg-[color-mix(in_oklab,var(--metis-status-danger-bg)_46%,transparent)] text-[--metis-status-danger-fg]">
-            {issue.severity}
-          </Badge>
-          <Badge className="border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_48%,transparent)] text-[--metis-text-tertiary]">
-            {issue.status}
-          </Badge>
-          {showPriority ? <Badge className="border-0 bg-amber-950/40 text-amber-100">{priority} priority</Badge> : null}
+        <div className="flex min-w-0 flex-wrap gap-2">
+          <span className={issueTypeChipClass()}>{issue.issueType}</span>
+          <span className={severityChipClass(issue.severity)}>{issue.severity}</span>
+          <span className={statusChipClass(issue.status)}>{issue.status}</span>
+          {showPriority ? <span className={priorityChipClass(priority)}>{priority} priority</span> : null}
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-[0.68rem] font-medium uppercase tracking-[0.18em] text-[--metis-ink-soft]">Attention</span>
