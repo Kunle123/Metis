@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { CollapsibleSection } from "@/components/review/CollapsibleSection";
 import { DenseSection } from "@/components/review/DenseSection";
 import { ReviewRailCard } from "@/components/review/ReviewRailCard";
+import { SourceReliabilityMeta } from "@/components/review/SourceReliabilityMeta";
 import { ReviewToolbar } from "@/components/review/ReviewToolbar";
 import { prisma } from "@/lib/db/prisma";
 import { getIssueById } from "@/lib/issues/getIssueContext";
@@ -486,16 +487,14 @@ export default async function IssueBriefPage({
                 <div className="space-y-3">
                   {linkedSources.map((s) => (
                     <div key={s.id} className="border-t border-[--metis-outline-subtle] pt-3 first:border-t-0 first:pt-0">
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
+                      <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+                        <div className="min-w-0 flex-1">
                           <p className="text-sm font-medium text-[--metis-paper]">{s.sourceCode} · {s.title}</p>
                           <p className="mt-1 text-[0.68rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">
                             {s.tier} · {s.linkedSection ?? "—"}
                           </p>
                         </div>
-                        <Badge className="border-0 bg-[color-mix(in_oklab,var(--metis-surface-elevated)_70%,transparent)] text-[--metis-text-secondary]">
-                          {s.reliability ?? "In use"}
-                        </Badge>
+                        <SourceReliabilityMeta reliability={s.reliability} align="end" />
                       </div>
                     </div>
                   ))}
@@ -574,16 +573,14 @@ export default async function IssueBriefPage({
                 {evidenceItems.length ? (
                   evidenceItems.map((s) => (
                     <div key={s.id} className="border-t border-[--metis-outline-subtle] pt-3 first:border-t-0 first:pt-0">
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
+                      <div className="flex min-w-0 flex-col gap-2">
+                        <div className="min-w-0">
                           <p className="text-sm font-medium text-[--metis-paper]">{s.sourceCode}</p>
                           <p className="mt-1 text-[0.68rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">
                             {s.tier} · {s.linkedSection ?? "—"}
                           </p>
                         </div>
-                        <Badge className="border-0 bg-[color-mix(in_oklab,var(--metis-surface-elevated)_70%,transparent)] text-[--metis-text-secondary]">
-                          {s.reliability ?? "In use"}
-                        </Badge>
+                        <SourceReliabilityMeta reliability={s.reliability} />
                       </div>
                     </div>
                   ))
