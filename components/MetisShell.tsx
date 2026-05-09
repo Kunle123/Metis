@@ -475,36 +475,39 @@ export function MetisShell({
             </nav>
           </div>
 
-          <div className="space-y-4">
-            <SurfaceCard className="metis-support-surface overflow-hidden border-[--metis-brass]/18">
-              <div className="space-y-2.5 p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <h3 className="text-[0.72rem] font-medium uppercase tracking-[0.22em] text-[--metis-ink-soft]">
-                    Current issue
-                  </h3>
-                  <Badge className={issueSeverityBadgeClass(activeIssue?.severity ?? null)}>
-                    {activeIssue?.severity ?? "—"}
-                  </Badge>
-                </div>
-
-                <div className="min-w-0">
-                  <p
-                    className={cn(
-                      "text-sm leading-6 text-[--metis-paper-muted]",
-                      "overflow-hidden text-ellipsis [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]",
-                    )}
-                  >
-                    {activeIssue?.title ?? "Select an issue from the ledger."}
-                  </p>
-                </div>
-
-                {activeIssue ? (
-                  <p className="text-[0.72rem] leading-snug text-[--metis-text-tertiary]">
-                    {(activeIssue.openGapsCount ?? 0).toString()} open questions · Updated {formatLondonDateTime(activeIssue.updatedAt)}
-                  </p>
-                ) : null}
+          <div className="shrink-0 border-t border-[color-mix(in_oklab,var(--metis-outline-subtle)_72%,transparent)] pt-3">
+            <div className="rounded-lg border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_26%,transparent)] px-2.5 py-2">
+              <div className="flex items-start justify-between gap-2">
+                <h3 className="pt-0.5 text-[0.62rem] font-medium uppercase tracking-[0.18em] text-[--metis-text-tertiary]">
+                  Current issue
+                </h3>
+                <Badge
+                  className={cn(
+                    "rounded-md px-2 py-0.5 text-[0.6rem] font-semibold uppercase tracking-[0.08em]",
+                    issueSeverityBadgeClass(activeIssue?.severity ?? null),
+                  )}
+                >
+                  {activeIssue?.severity ?? "—"}
+                </Badge>
               </div>
-            </SurfaceCard>
+
+              <div className="mt-1.5 min-w-0">
+                <p
+                  className={cn(
+                    "text-[0.8125rem] leading-snug text-[--metis-text-secondary]",
+                    "overflow-hidden text-ellipsis [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]",
+                  )}
+                >
+                  {activeIssue?.title ?? "Select an issue from the ledger."}
+                </p>
+              </div>
+
+              {activeIssue ? (
+                <p className="mt-1 text-[0.68rem] leading-snug text-[--metis-text-tertiary]">
+                  {(activeIssue.openGapsCount ?? 0).toString()} open questions · Updated {formatLondonDateTime(activeIssue.updatedAt)}
+                </p>
+              ) : null}
+            </div>
           </div>
         </aside>
 

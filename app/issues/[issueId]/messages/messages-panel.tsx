@@ -14,7 +14,6 @@ import { renderMessageVariantMarkdown } from "@/lib/messages/generateExternalCus
 import { renderInternalStaffUpdateMarkdown } from "@/lib/messages/generateInternalStaffUpdate";
 import { renderMediaHoldingLineMarkdown } from "@/lib/messages/generateMediaHoldingLine";
 import { CollapsibleSection } from "@/components/review/CollapsibleSection";
-import { ReviewBanner } from "@/components/review/ReviewBanner";
 import { ReviewRailCard } from "@/components/review/ReviewRailCard";
 
 type AudienceGroupOption = { id: string; label: string };
@@ -412,28 +411,39 @@ export function MessagesPanel({
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0 space-y-2">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_70%,transparent)] px-3 py-1 text-[0.66rem] font-medium uppercase tracking-[0.22em] text-[--metis-paper]">
-                  {latest ? `Saved draft v${latest.versionNumber}` : "Preview only"}
+                <span className="rounded-md border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_70%,transparent)] px-2 py-0.5 text-[0.62rem] font-medium uppercase tracking-[0.16em] text-[--metis-text-primary]">
+                  {latest ? savedDraftLabel : "Preview only"}
                 </span>
                 {latest ? (
                   <span
-                    className={`rounded-full border px-3 py-1 text-[0.66rem] font-medium uppercase tracking-[0.22em] ${
+                    className={`rounded-md border px-2 py-0.5 text-[0.62rem] font-medium uppercase tracking-[0.16em] ${
                       inSync
                         ? "border-[--metis-status-neutral-border] bg-[--metis-status-neutral-bg] text-[--metis-status-neutral-fg]"
-                        : "border-[--metis-status-info-border] bg-[--metis-status-info-bg] text-[--metis-status-info-fg]"
+                        : "border-[--metis-status-warning-border] bg-[--metis-status-warning-bg] text-[--metis-status-warning-fg]"
                     }`}
                   >
-                    {inSync ? "Up to date" : "Stale"}
+                    {inSync ? "Up to date" : "Needs refresh"}
                   </span>
                 ) : null}
               </div>
 
               {latest ? (
-                <p className="text-[0.78rem] leading-snug text-[--metis-paper-muted]">
-                  Draft version is the saved row; freshness reflects whether the issue changed since it was saved.
+                <p className="text-[0.78rem] leading-snug text-[--metis-text-secondary]">
+                  {inSync ? (
+                    <>
+                      Saved <span className="text-[--metis-text-primary]">{savedDraftLabel}</span> reflects the numbered draft for this template. Freshness compares
+                      the issue record to when that draft was generated.
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-[--metis-text-primary]">Needs refresh:</span> this draft was saved before the issue changed.{" "}
+                      <span className="font-medium text-[--metis-text-primary]">Refresh saved draft</span> replaces the saved draft with new text regenerated from the
+                      current issue — it does not store free-typed edits from the preview (you regenerate from the snapshot).
+                    </>
+                  )}
                 </p>
               ) : (
-                <p className="text-[0.78rem] leading-snug text-[--metis-paper-muted]">Preview is computed from the current issue. Save to create a numbered draft.</p>
+                <p className="text-[0.78rem] leading-snug text-[--metis-text-secondary]">Preview is computed from the current issue. Save draft to store a numbered version.</p>
               )}
 
               <p className="text-[0.72rem] leading-snug text-[--metis-paper-muted]">
@@ -465,7 +475,7 @@ export function MessagesPanel({
                 disabled={loading}
                 onClick={() => void saveDeterministicVariant()}
               >
-                {loading ? "Saving…" : latest ? "Save updated draft" : "Save draft"}
+                {loading ? "Saving…" : !latest ? "Save draft" : inSync ? "Save new version" : "Refresh saved draft"}
               </Button>
 
               <Button type="button" variant="outline" disabled={!markdown} onClick={() => void copyMd()}>
@@ -480,8 +490,16 @@ export function MessagesPanel({
               ) : null}
             </div>
 
-            <div className="min-w-0 text-[0.72rem] leading-snug text-[--metis-paper-muted]">
-              {!latest ? <span className="text-[--metis-paper]">Copying preview does not create a saved draft version.</span> : null}
+            <div className="min-w-0 text-[0.72rem] leading-snug text-[--metis-text-secondary]">
+              {!latest ? (
+                <span className="text-[--metis-text-primary]">Copying preview does not create a saved draft version.</span>
+              ) : (
+                <span>
+                  {!inSync
+                    ? "Refresh saved draft calls the server to regenerate from the latest issue snapshot and bumps the draft version."
+                    : "Save new version records another draft generated from the current issue snapshot (use when wording should be re-derived)."}
+                </span>
+              )}
               {copyFeedback ? (
                 <span className="ml-2" role="status">
                   {copyFeedback}
@@ -516,11 +534,14 @@ export function MessagesPanel({
           title="Draft status"
           tone="info"
           meta={
-            <ReviewBanner
-              title="Draft for review"
-              body="Not approved for circulation. Check for sensitive, legal, personal, security, or unverified claims before using this draft in any channel."
-              tone="warning"
-            />
+            <div className="space-y-2">
+              <span className="inline-flex max-w-full rounded-md border border-[--metis-status-warning-border] bg-[--metis-status-warning-bg] px-2 py-0.5 text-[0.62rem] font-medium uppercase tracking-[0.14em] text-[--metis-status-warning-fg]">
+                Draft for review
+              </span>
+              <p className="text-sm leading-6 text-[--metis-text-secondary]">
+                Not approved for circulation. Check for sensitive, legal, personal, security, or unverified claims before using this draft in any channel.
+              </p>
+            </div>
           }
         >
             <div className="space-y-3 text-sm leading-6 text-[--metis-paper-muted]">
@@ -552,18 +573,18 @@ export function MessagesPanel({
                         className={
                           inSync
                             ? "text-right text-sm font-medium text-[--metis-status-neutral-fg]"
-                            : "text-right text-sm font-medium text-[--metis-status-info-fg]"
+                            : "text-right text-sm font-medium text-[--metis-status-warning-fg]"
                         }
                       >
-                        {inSync ? "Up to date" : "Stale"}
+                        {inSync ? "Up to date" : "Needs refresh"}
                       </span>
                       {!inSync ? (
-                        <span className="max-w-[14rem] text-right text-[0.72rem] leading-snug text-[--metis-paper-muted]">
-                          Save or regenerate wording because the issue changed after this draft.
+                        <span className="max-w-[16rem] text-right text-[0.72rem] leading-snug text-[--metis-text-secondary]">
+                          Issue updated after this draft — use <span className="text-[--metis-text-primary]">Refresh saved draft</span> in the actions bar above.
                         </span>
                       ) : (
-                        <span className="max-w-[14rem] text-right text-[0.72rem] leading-snug text-[--metis-paper-muted]">
-                          Compares the issue record to when this draft was saved — not the draft number.
+                        <span className="max-w-[16rem] text-right text-[0.72rem] leading-snug text-[--metis-text-secondary]">
+                          Compares the saved draft&apos;s issue snapshot to today — separate from Original vs AI-enhanced wording above.
                         </span>
                       )}
                     </div>

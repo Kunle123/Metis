@@ -34,13 +34,14 @@ export function BriefModeToggle({ issueId, mode: serverMode }: { issueId: string
       <SegmentedControl<BriefMode>
         label="Brief mode"
         disabled={isPending}
+        allowLabelWrap
         value={displayMode}
         options={[
           { id: "full", label: "Full brief" },
           { id: "executive", label: "Executive brief" },
         ]}
         onChange={(next) => go(next)}
-        className="w-full min-w-0 sm:w-auto sm:min-w-[260px]"
+        className="w-full min-w-0 sm:w-auto sm:min-w-[min(22rem,calc(100vw-12rem))] lg:min-w-[24rem]"
       />
       {isPending ? (
         <span
