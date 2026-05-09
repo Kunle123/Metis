@@ -396,8 +396,14 @@ export function MetisShell({
     <div className="metis-shell-root min-h-screen bg-[--background] text-[--foreground]">
       <div className="metis-shell-vignette pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top_left,rgba(164,132,82,0.08),transparent_28%),radial-gradient(circle_at_top_right,rgba(56,84,103,0.06),transparent_18%),radial-gradient(circle_at_bottom_right,rgba(27,59,55,0.09),transparent_24%)]" />
       <div className="relative grid lg:grid-cols-[286px_minmax(0,1fr)]">
-        <aside className="metis-shell-aside hidden border-r border-white/6 bg-[linear-gradient(180deg,rgba(7,10,11,0.99),rgba(11,15,16,0.985))] px-6 py-8 lg:flex lg:flex-col lg:justify-between">
-          <div className="space-y-8">
+        <aside
+          className={cn(
+            "metis-shell-aside hidden border-r border-white/6 bg-[linear-gradient(180deg,rgba(7,10,11,0.99),rgba(11,15,16,0.985))] px-6 py-8",
+            // Desktop: keep nav in shot; lock width; scroll inner content only.
+            "lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-[286px] lg:min-w-[286px] lg:max-w-[286px] lg:shrink-0 lg:flex-col",
+          )}
+        >
+          <div className="flex min-h-0 flex-1 flex-col space-y-8 overflow-y-auto overscroll-contain">
             <div className="metis-shell-aside-header space-y-4 border-b border-white/8 pb-7">
               <div className="inline-flex items-center gap-3">
                 <div className="metis-shell-aside-brand-mark flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-white/5 shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
@@ -471,30 +477,32 @@ export function MetisShell({
 
           <div className="space-y-4">
             <SurfaceCard className="metis-support-surface overflow-hidden border-[--metis-brass]/18">
-              <div className="space-y-4 p-5">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <h3 className="text-base font-medium leading-6 text-[--metis-paper]">Active issue</h3>
-                    <p className="mt-1 text-sm text-[--metis-paper-muted]">
-                      {activeIssue?.title ?? "Select an issue from the ledger."}
-                    </p>
-                  </div>
+              <div className="space-y-2.5 p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <h3 className="text-[0.72rem] font-medium uppercase tracking-[0.22em] text-[--metis-ink-soft]">
+                    Current issue
+                  </h3>
                   <Badge className={issueSeverityBadgeClass(activeIssue?.severity ?? null)}>
                     {activeIssue?.severity ?? "—"}
                   </Badge>
                 </div>
-                <div className="grid grid-cols-2 gap-3 text-xs text-[--metis-paper-muted]">
-                  <div className="rounded-2xl border border-white/8 bg-[rgba(0,0,0,0.16)] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
-                  <div className="text-[0.68rem] uppercase tracking-[0.2em] text-[--metis-ink-soft]">Open questions</div>
-                    <div className="mt-2 text-xl text-[--metis-paper]">{activeIssue?.openGapsCount ?? "—"}</div>
-                  </div>
-                  <div className="rounded-2xl border border-white/8 bg-[rgba(0,0,0,0.16)] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
-                    <div className="text-[0.68rem] uppercase tracking-[0.2em] text-[--metis-ink-soft]">Updated</div>
-                    <div className="mt-2 text-sm text-[--metis-paper]">
-                      {formatLondonDateTime(activeIssue?.updatedAt)}
-                    </div>
-                  </div>
+
+                <div className="min-w-0">
+                  <p
+                    className={cn(
+                      "text-sm leading-6 text-[--metis-paper-muted]",
+                      "overflow-hidden text-ellipsis [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]",
+                    )}
+                  >
+                    {activeIssue?.title ?? "Select an issue from the ledger."}
+                  </p>
                 </div>
+
+                {activeIssue ? (
+                  <p className="text-[0.72rem] leading-snug text-[--metis-text-tertiary]">
+                    {(activeIssue.openGapsCount ?? 0).toString()} open questions · Updated {formatLondonDateTime(activeIssue.updatedAt)}
+                  </p>
+                ) : null}
               </div>
             </SurfaceCard>
           </div>
