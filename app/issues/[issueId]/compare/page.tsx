@@ -8,6 +8,8 @@ import { getIssueById } from "@/lib/issues/getIssueContext";
 import { BriefModeSchema, BriefArtifactSchema, type BriefMode, type BriefArtifact } from "@metis/shared/briefVersion";
 import type { CompareGroupId, CompareSummary, CirculationState } from "@metis/shared/compare";
 import { compareBriefArtifacts } from "@/lib/brief/compareBriefVersions";
+import { resolveCompareVersionPair } from "@/lib/brief/resolveCompareVersions";
+import { CompareVersionSelectors } from "@/app/issues/[issueId]/compare/compare-version-selector.client";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +37,10 @@ function versionLabel(v: { versionNumber: number; createdAt: Date }) {
   return `v${v.versionNumber} · ${date}`;
 }
 
+function snapshotLabel(iso: Date) {
+  return `Generated from issue update · ${iso.toLocaleString()}`;
+}
+
 const EXEC_PREVIEW_LABEL = "Executive summary";
 
 /** Side-by-side preview lines: Full uses stored executive-summary section body; Executive uses the executive-summary block shown in Exec brief UI. */
@@ -57,14 +63,6 @@ function normalizePreviewExcerptSlices(lines: string[]): string {
   return lines.map((line) => line.trim().replace(/\s+/g, " ").trim()).join("\n");
 }
 
-async function getLatestTwo(issueId: string, mode: BriefMode) {
-  return prisma.briefVersion.findMany({
-    where: { issueId, mode },
-    orderBy: { createdAt: "desc" },
-    take: 2,
-  });
-}
-
 export default async function IssueComparePage({
   params,
   searchParams,
@@ -77,6 +75,8 @@ export default async function IssueComparePage({
   const modeRaw = typeof sp.mode === "string" ? sp.mode : Array.isArray(sp.mode) ? sp.mode[0] : undefined;
   const parsedMode = BriefModeSchema.safeParse(modeRaw ?? "full");
   const mode = parsedMode.success ? parsedMode.data : ("full" as const);
+  const fromRaw = typeof sp.from === "string" ? sp.from : Array.isArray(sp.from) ? sp.from[0] : undefined;
+  const toRaw = typeof sp.to === "string" ? sp.to : Array.isArray(sp.to) ? sp.to[0] : undefined;
 
   const issue = await getIssueById(issueId);
   if (!issue) {
@@ -89,12 +89,21 @@ export default async function IssueComparePage({
     );
   }
 
-  const versions = await getLatestTwo(issue.id, mode);
-  const current = versions[0] ?? null;
-  const prior = versions[1] ?? null;
+  const allVersions = await prisma.briefVersion.findMany({
+    where: { issueId: issue.id, mode },
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      versionNumber: true,
+      createdAt: true,
+      generatedFromIssueUpdatedAt: true,
+      circulationNotes: true,
+      artifact: true,
+    },
+  });
 
   // 0 versions: show empty state.
-  if (!current) {
+  if (allVersions.length === 0) {
     return (
       <MetisShell
         activePath="/compare"
@@ -114,20 +123,29 @@ export default async function IssueComparePage({
     );
   }
 
-  const currentArtifact = BriefArtifactSchema.parse(current.artifact) as BriefArtifact;
-  const currentSummary = summarizeArtifactPreview(currentArtifact, mode);
+  const pair = resolveCompareVersionPair(
+    allVersions.map((v) => ({ id: v.id, versionNumber: v.versionNumber, createdAt: v.createdAt })),
+    fromRaw,
+    toRaw,
+  );
+  const versionById = new Map(allVersions.map((v) => [v.id, v]));
+  const toRow = pair.to ? versionById.get(pair.to.id)! : allVersions[0]!;
+  const fromRow = pair.from ? versionById.get(pair.from.id) ?? null : null;
+
+  const toArtifact = BriefArtifactSchema.parse(toRow.artifact) as BriefArtifact;
+  const toSummary = summarizeArtifactPreview(toArtifact, mode);
 
   let compare: { summary: CompareSummary; changeCount: number };
-  let priorArtifact: BriefArtifact | null = null;
-  let priorSummary: string[] = [];
+  let fromArtifact: BriefArtifact | null = null;
+  let fromSummary: string[] = [];
 
-  if (!prior) {
-    compare = { summary: compareBriefArtifacts(currentArtifact, currentArtifact, mode), changeCount: 0 };
+  if (!fromRow) {
+    compare = { summary: compareBriefArtifacts(toArtifact, toArtifact, mode), changeCount: 0 };
   } else {
-    priorArtifact = BriefArtifactSchema.parse(prior.artifact) as BriefArtifact;
-    priorSummary = summarizeArtifactPreview(priorArtifact, mode);
+    fromArtifact = BriefArtifactSchema.parse(fromRow.artifact) as BriefArtifact;
+    fromSummary = summarizeArtifactPreview(fromArtifact, mode);
 
-    const summary = compareBriefArtifacts(priorArtifact, currentArtifact, mode);
+    const summary = compareBriefArtifacts(fromArtifact, toArtifact, mode);
     const changeCount = summary.groups.reduce((acc, g) => acc + g.items.length, 0);
     compare = { summary, changeCount };
   }
@@ -141,16 +159,22 @@ export default async function IssueComparePage({
 
   const groupsWithItems = deltaGroups.filter((g) => g.items.length > 0);
   const groupsWithoutItems = deltaGroups.filter((g) => !g.items.length);
-  const hasPrior = Boolean(prior);
+  const hasFrom = Boolean(fromRow);
   const previewExcerptUnchanged =
-    hasPrior && normalizePreviewExcerptSlices(priorSummary) === normalizePreviewExcerptSlices(currentSummary);
+    hasFrom && normalizePreviewExcerptSlices(fromSummary) === normalizePreviewExcerptSlices(toSummary);
   const changedPreviewGroupTitles = groupsWithItems.map((g) => g.title);
   const showOpeningPreviewUnchangedExplain =
-    hasPrior && compare.changeCount > 0 && previewExcerptUnchanged;
+    hasFrom && !pair.sameVersionSelected && compare.changeCount > 0 && previewExcerptUnchanged;
   const modeComparisonTitle = mode === "full" ? "Full brief comparison" : "Executive brief comparison";
   const modeGeneratePhrase = mode === "full" ? "full" : "executive";
 
   const readinessMovement = compare.summary.readinessMovement ?? [];
+
+  const versionPickerRows = allVersions.map((v) => ({
+    id: v.id,
+    primaryLabel: versionLabel(v),
+    secondaryLabel: snapshotLabel(v.generatedFromIssueUpdatedAt),
+  }));
 
   return (
     <MetisShell
@@ -172,11 +196,11 @@ export default async function IssueComparePage({
               <div className="min-w-0 space-y-2">
                 <p className="text-sm font-medium text-[--metis-paper]">{modeComparisonTitle}</p>
                 <p className="text-[0.62rem] uppercase tracking-[0.18em] text-[rgba(176,171,160,0.62)]">
-                  {prior ? `${versionLabel(prior)} → ${versionLabel(current)}` : versionLabel(current)}
+                  {fromRow ? `${versionLabel(fromRow)} → ${versionLabel(toRow)}` : versionLabel(toRow)}
                 </p>
               </div>
               <div className="flex shrink-0 flex-wrap items-center gap-2">
-                {hasPrior && compare.changeCount > 0 ? (
+                {hasFrom && !pair.sameVersionSelected && compare.changeCount > 0 ? (
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(112,191,232,0.48)] bg-[rgba(19,86,118,0.6)] px-2.5 py-1 text-[0.62rem] font-medium uppercase tracking-[0.18em] text-sky-50 ring-1 ring-[rgba(138,214,250,0.2)] shadow-[0_10px_24px_rgba(14,48,73,0.18),inset_0_1px_0_rgba(255,255,255,0.06)]">
                     {compare.changeCount} {compare.changeCount === 1 ? "change" : "changes"} detected
                   </span>
@@ -185,15 +209,47 @@ export default async function IssueComparePage({
             </div>
           </div>
 
+          <div className="border-b border-white/8 px-6 py-5 sm:px-7">
+            <CompareVersionSelectors
+              issueId={issue.id}
+              mode={mode}
+              versionsNewestFirst={versionPickerRows}
+              selectedFromId={fromRow?.id ?? null}
+              selectedToId={toRow.id}
+            />
+          </div>
+
           <article className="min-w-0 space-y-8 px-7 py-8 sm:px-8">
-            {!hasPrior ? (
+            {pair.selectionCoercion === "invalid_params_ignored" ? (
+              <div className="rounded-[1.1rem] border border-[--metis-status-warning-border] bg-[color-mix(in_oklab,var(--metis-status-warning-bg)_38%,transparent)] px-5 py-4 text-sm leading-relaxed text-[--metis-status-warning-fg]">
+                <p className="font-medium text-[--metis-text-primary]">Version selection adjusted</p>
+                <p className="mt-2 text-[--metis-text-secondary]">
+                  One or both version IDs in the URL were missing or invalid for this issue and mode; Metis defaulted to a valid pair below.
+                </p>
+              </div>
+            ) : null}
+
+            {pair.sameVersionSelected ? (
+              <div className="rounded-[1.1rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-card)_82%,transparent)] px-5 py-4 text-sm leading-relaxed text-[--metis-text-secondary]">
+                <p className="font-medium text-[--metis-text-primary]">Same revision selected twice</p>
+                <p className="mt-2">
+                  Select two different versions for a meaningful delta — there is none when “From” and “To” match. Excerpts below are identical; choose another pair (
+                  <Link href={`/issues/${issue.id}/compare?mode=${mode}`} className="font-medium text-[--metis-brass-soft] underline underline-offset-[0.2em] hover:text-[--metis-text-primary]">
+                    reset to defaults
+                  </Link>
+                  ).
+                </p>
+              </div>
+            ) : null}
+
+            {!hasFrom ? (
               <div className="rounded-[1.1rem] border border-white/10 bg-[rgba(255,255,255,0.04)] px-5 py-4 text-sm leading-relaxed text-[--metis-paper-muted]">
                 <p className="font-medium text-[--metis-paper]">No prior version yet</p>
                 <p className="mt-2">
                   Generate another <span className="text-[--metis-paper]">{modeGeneratePhrase}</span> brief to compare changes.
                 </p>
               </div>
-            ) : compare.changeCount === 0 ? (
+            ) : !pair.sameVersionSelected && compare.changeCount === 0 ? (
               <div className="rounded-[1.1rem] border border-white/10 bg-[rgba(255,255,255,0.04)] px-5 py-4 text-sm leading-relaxed text-[--metis-paper-muted]">
                 <p className="font-medium text-[--metis-paper]">No material text changes detected</p>
                 <p className="mt-2">
@@ -220,7 +276,7 @@ export default async function IssueComparePage({
               )}
             </p>
 
-            {showOpeningPreviewUnchangedExplain ? (
+            {pair.sameVersionSelected ? null : showOpeningPreviewUnchangedExplain ? (
               <div className="min-w-0 rounded-[1.1rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-card)_70%,var(--metis-surface-page))] px-5 py-4 text-sm leading-relaxed text-[--metis-text-secondary] shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_18%,transparent)]">
                 <p className="font-medium text-[--metis-text-primary]">Opening preview unchanged</p>
                 <p className="mt-2">
@@ -243,7 +299,7 @@ export default async function IssueComparePage({
               </div>
             ) : null}
 
-            {hasPrior && previewExcerptUnchanged ? (
+            {!pair.sameVersionSelected && hasFrom && previewExcerptUnchanged ? (
               showOpeningPreviewUnchangedExplain ? null : (
                 <p className="text-[0.72rem] leading-relaxed text-[--metis-ink-soft]">Preview excerpt unchanged</p>
               )
@@ -251,12 +307,12 @@ export default async function IssueComparePage({
 
             <section className="grid min-w-0 gap-5 xl:grid-cols-2">
               <div className="metis-surface metis-support-surface rounded-[1.35rem] border px-5 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
-                <p className="text-[0.68rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Prior</p>
+                <p className="text-[0.68rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">From</p>
                 <div className="mt-4 space-y-3">
-                  {prior ? (
-                    priorSummary.map((item, idx) => (
+                  {fromRow ? (
+                    fromSummary.map((item, idx) => (
                       <div
-                        key={`prior-${idx}`}
+                        key={`from-${idx}`}
                         className="grid min-w-0 grid-cols-[14px_minmax(0,1fr)] gap-3 text-sm leading-7 text-[--metis-paper-muted]"
                       >
                         <span className="mt-3 h-1.5 w-1.5 shrink-0 rounded-full bg-white/30" />
@@ -264,17 +320,17 @@ export default async function IssueComparePage({
                       </div>
                     ))
                   ) : (
-                    <p className="text-sm leading-7 text-[--metis-paper-muted]">No prior version yet.</p>
+                    <p className="text-sm leading-7 text-[--metis-paper-muted]">No “From” revision — generate another brief to compare.</p>
                   )}
                 </div>
               </div>
 
               <div className="rounded-[1.35rem] border border-[rgba(224,183,111,0.22)] bg-[linear-gradient(180deg,rgba(224,183,111,0.12),rgba(255,255,255,0.04))] px-5 py-5 shadow-[0_18px_42px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.05)]">
-                <p className="text-[0.68rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Current</p>
+                <p className="text-[0.68rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">To</p>
                 <div className="mt-4 space-y-3">
-                  {currentSummary.map((item, idx) => (
+                  {toSummary.map((item, idx) => (
                     <div
-                      key={`current-${idx}`}
+                      key={`to-${idx}`}
                       className="grid min-w-0 grid-cols-[14px_minmax(0,1fr)] gap-3 text-sm leading-7 text-[--metis-paper]"
                     >
                       <span className="mt-3 h-1.5 w-1.5 shrink-0 rounded-full bg-[--metis-brass]" />
@@ -285,7 +341,7 @@ export default async function IssueComparePage({
               </div>
             </section>
 
-            {hasPrior ? (
+            {hasFrom && !pair.sameVersionSelected ? (
               <section id="compare-changes" className="scroll-mt-24 space-y-4 border-t border-white/8 pt-8">
                 <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
                   <h3 className="font-[Cormorant_Garamond] min-w-0 text-[2rem] leading-none text-[--metis-paper]">
@@ -370,7 +426,7 @@ export default async function IssueComparePage({
                   <ReadinessPill state="Needs validation" />
                 </div>
                 <div className="mt-3 space-y-1">
-                  <p>{current.circulationNotes ?? "Internal review open."}</p>
+                  <p>{toRow.circulationNotes ?? "Internal review open."}</p>
                   <p>Wider circulation held.</p>
                 </div>
               </div>
