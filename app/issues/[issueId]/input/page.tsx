@@ -31,6 +31,7 @@ export default async function IssueInternalInputPage({ params }: { params: Promi
     <MetisShell
       activePath="/input"
       pageTitle="Internal observations"
+      organisationMembershipRole={pageCtx.context.membership.role}
       issueRoutePrefix={`/issues/${issue.id}`}
       activeIssue={{
         title: issue.title,

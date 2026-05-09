@@ -29,3 +29,9 @@ export async function requireActiveOrganisationWriteContext(
 
 /** Alias for mutation handlers (membership must allow `write`). */
 export const requireOrgMutation = requireActiveOrganisationWriteContext;
+
+export async function requireActiveOrganisationManageUsersContext(
+  request: Request,
+): Promise<ActiveOrganisationContext | NextResponse> {
+  return requireActiveOrganisationCapability(request, "manage_users");
+}

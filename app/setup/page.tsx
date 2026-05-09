@@ -1,6 +1,7 @@
 import { Paperclip } from "lucide-react";
 
 import { MetisShell, SurfaceCard } from "@/components/MetisShell";
+import { resolvePageOrganisationGate } from "@/lib/organisations/pageOrganisationGate";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { setupPlaceholderAttachments, setupPlaceholderTemplate } from "./setup-templates";
@@ -9,8 +10,11 @@ import { SetupForm } from "./setup-form";
 export const dynamic = "force-dynamic";
 
 export default async function SetupPage() {
+  const gate = await resolvePageOrganisationGate();
+  const organisationMembershipRole = gate.ok ? gate.context.membership.role : null;
+
   return (
-    <MetisShell activePath="/setup" pageTitle="New issue">
+    <MetisShell activePath="/setup" pageTitle="New issue" organisationMembershipRole={organisationMembershipRole}>
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <SurfaceCard className="overflow-hidden">
           <div className="border-b border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_45%,transparent)] px-6 py-5 sm:px-7">

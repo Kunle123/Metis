@@ -48,6 +48,7 @@ export default async function IssueGapsPage({ params }: { params: Promise<{ issu
     <MetisShell
       activePath="/gaps"
       pageTitle="Open questions"
+      organisationMembershipRole={pageCtx.context.membership.role}
       issueRoutePrefix={`/issues/${issue.id}`}
       activeIssue={{
         title: issue.title,

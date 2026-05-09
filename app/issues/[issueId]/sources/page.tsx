@@ -100,6 +100,7 @@ export default async function IssueSourcesPage({ params }: { params: Promise<{ i
     <MetisShell
       activePath="/sources"
       pageTitle="Sources"
+      organisationMembershipRole={pageCtx.context.membership.role}
       issueRoutePrefix={`/issues/${issue.id}`}
       activeIssue={{
         title: issue.title,

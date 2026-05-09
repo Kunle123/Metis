@@ -105,6 +105,7 @@ export default async function IssueComparePage({
       <MetisShell
         activePath="/compare"
         pageTitle="Brief Delta"
+        organisationMembershipRole={pageCtx.context.membership.role}
         issueRoutePrefix={`/issues/${issue.id}`}
         activeIssue={{
           title: issue.title,
@@ -177,6 +178,7 @@ export default async function IssueComparePage({
     <MetisShell
       activePath="/compare"
       pageTitle="Brief Delta"
+      organisationMembershipRole={pageCtx.context.membership.role}
       issueRoutePrefix={`/issues/${issue.id}`}
       activeIssue={{
         title: issue.title,

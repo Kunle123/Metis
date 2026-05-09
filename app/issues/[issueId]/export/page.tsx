@@ -118,6 +118,7 @@ export default async function IssueExportPage({
       <MetisShell
         activePath="/export"
         pageTitle="Circulation Package"
+        organisationMembershipRole={pageCtx.context.membership.role}
         issueRoutePrefix={`/issues/${issue.id}`}
         activeIssue={{
           title: issue.title,
@@ -274,6 +275,7 @@ export default async function IssueExportPage({
     <MetisShell
       activePath="/export"
       pageTitle="Circulation Package"
+      organisationMembershipRole={pageCtx.context.membership.role}
       issueRoutePrefix={`/issues/${issue.id}`}
       activeIssue={{
         title: issue.title,

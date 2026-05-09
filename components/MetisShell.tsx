@@ -185,7 +185,7 @@ const issueToolIds = new Set<string>(issueToolsNav.map((i) => i.id));
 function filterGlobalNavItems(_issueRoutePrefix: string | undefined) {
   // Keep global navigation stable; issue-context tools are rendered as an additional group.
   // Avoid hiding global "All issues tools" when an issue is active.
-  return (_item: (typeof primaryNav)[number]) => true;
+  return (_item: { path: string }) => true;
 }
 
 function formatLondonDateTime(value: Date | null | undefined) {
@@ -212,6 +212,8 @@ export function MetisShell({
   showOperationalSnapshot,
   /** When set (e.g. Issues Dashboard), renders real DB-backed KPI strip. Must not contain placeholder trend copy. */
   operationalSnapshotMetrics,
+  /** Metis `Membership.role` for the active organisation — shows Settings → Workspace users when `Admin`. */
+  organisationMembershipRole = null,
   issueRoutePrefix,
   activeIssue,
 }: {
@@ -221,6 +223,7 @@ export function MetisShell({
   children: ReactNode;
   showOperationalSnapshot?: boolean;
   operationalSnapshotMetrics?: OperationalSnapshotMetric[] | null;
+  organisationMembershipRole?: string | null;
   /**
    * When viewing issue-scoped workspace pages, keep left-rail navigation inside the same issue.
    * Example: `/issues/<issueId>`
@@ -236,7 +239,20 @@ export function MetisShell({
 }) {
   const shouldShowOperationalSnapshot = showOperationalSnapshot ?? activePath === "/";
   const globalNavItemVisible = filterGlobalNavItems(issueRoutePrefix);
-  const activeGroup = primaryNav.find((item) => item.path === activePath && globalNavItemVisible(item))?.group ?? null;
+  const settingsNavItems =
+    organisationMembershipRole === "Admin"
+      ? [
+          ...settingsNav,
+          {
+            id: "workspace-users",
+            group: "Settings" as GlobalNavGroup,
+            path: "/admin/users",
+            shortLabel: "Workspace users",
+          },
+        ]
+      : [...settingsNav];
+  const activeGroup =
+    [...workNav, ...settingsNavItems].find((item) => item.path === activePath && globalNavItemVisible(item))?.group ?? null;
 
   function issueHrefForItem(item: IssueScopedNavItem) {
     if (!issueRoutePrefix) return item.path;
@@ -244,7 +260,7 @@ export function MetisShell({
     return `${issueRoutePrefix}${item.path}`;
   }
 
-  function navHrefForItem(item: (typeof primaryNav)[number]) {
+  function navHrefForItem(item: { path: string }) {
     return item.path;
   }
 
@@ -468,7 +484,7 @@ export function MetisShell({
               {renderNavGroup({
                 group: "Settings",
                 activeGroupLabel: activeGroup,
-                items: settingsNav
+                items: settingsNavItems
                   .filter(globalNavItemVisible)
                   .map((i) => ({ id: i.id, href: navHrefForItem(i), label: i.shortLabel, isActive: i.path === activePath })),
               })}

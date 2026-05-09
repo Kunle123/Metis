@@ -230,6 +230,7 @@ export default async function IssueBriefPage({
     <MetisShell
       activePath="/brief"
       pageTitle={title}
+      organisationMembershipRole={pageCtx.context.membership.role}
       issueRoutePrefix={`/issues/${issue.id}`}
       activeIssue={{
         title: issue.title,

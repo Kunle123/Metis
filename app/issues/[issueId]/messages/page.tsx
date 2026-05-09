@@ -171,6 +171,7 @@ export default async function IssueMessagesPage({
     <MetisShell
       activePath="/messages"
       pageTitle="Message variants"
+      organisationMembershipRole={pageCtx.context.membership.role}
       issueRoutePrefix={`/issues/${issue.id}`}
       activeIssue={{
         title: issue.title,

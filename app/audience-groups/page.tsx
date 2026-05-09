@@ -26,7 +26,12 @@ export default async function AudienceGroupsPage() {
   const inactiveCount = Math.max(0, groups.length - activeCount);
 
   return (
-    <MetisShell activePath="/audience-groups" pageMeta="Settings" pageTitle="Audience groups">
+    <MetisShell
+      activePath="/audience-groups"
+      pageMeta="Settings"
+      pageTitle="Audience groups"
+      organisationMembershipRole={gate.context.membership.role}
+    >
       <SurfaceCard className="min-w-0 overflow-hidden">
         <div className="border-b border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_45%,transparent)] px-6 py-5 sm:px-7">
           <div className="space-y-2">

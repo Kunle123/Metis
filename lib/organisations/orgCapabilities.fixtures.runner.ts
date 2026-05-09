@@ -12,4 +12,8 @@ assert.equal(organisationMembershipAllowsCapability("Admin", "write"), true);
 assert.equal(organisationMembershipAllowsCapability("User", "write"), true);
 assert.equal(organisationMembershipAllowsCapability("Viewer", "write"), false);
 
+assert.equal(organisationMembershipAllowsCapability("Admin", "manage_users"), true);
+assert.equal(organisationMembershipAllowsCapability("User", "manage_users"), false);
+assert.equal(organisationMembershipAllowsCapability("Viewer", "manage_users"), false);
+
 console.log("orgCapabilities fixtures: ok");

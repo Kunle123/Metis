@@ -44,6 +44,7 @@ export default async function IssueCommsPlanPage({ params }: { params: Promise<{
     <MetisShell
       activePath="/comms-plan"
       pageTitle="Comms plan"
+      organisationMembershipRole={pageCtx.context.membership.role}
       issueRoutePrefix={`/issues/${issue.id}`}
       activeIssue={{
         title: issue.title,

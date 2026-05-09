@@ -87,7 +87,12 @@ export default async function DashboardPage() {
     : [...dashboardQuickLinksBase];
 
   return (
-    <MetisShell activePath="/" pageTitle="Issues Dashboard" operationalSnapshotMetrics={operationalSnapshotMetrics}>
+    <MetisShell
+      activePath="/"
+      pageTitle="Issues Dashboard"
+      organisationMembershipRole={gate.context.membership.role}
+      operationalSnapshotMetrics={operationalSnapshotMetrics}
+    >
       <div className="space-y-8">
         <div className="flex flex-wrap justify-end gap-3">
           <Button asChild className="rounded-full bg-[--metis-brass] px-5 text-[--metis-dark] hover:bg-[--metis-brass-soft]">
