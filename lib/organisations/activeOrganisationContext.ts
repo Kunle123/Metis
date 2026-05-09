@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { Membership, Organisation } from "@prisma/client";
 
+import { readClerkBridgeHintsFromAuth } from "@/lib/auth/clerkUserBridge";
 import { getCurrentAuthUserFromRequest } from "@/lib/auth/getCurrentUser";
 import { prisma } from "@/lib/db/prisma";
 import type { AuthUser } from "@metis/shared/auth";
@@ -19,7 +20,15 @@ export type ActiveOrganisationContext = {
   role: string;
 };
 
-function pickMembership(memberships: MembershipWithOrganisation[]): MembershipWithOrganisation {
+function pickMembership(
+  memberships: MembershipWithOrganisation[],
+  opts?: { clerkOrganisationIdHint: string | null },
+): MembershipWithOrganisation {
+  if (opts?.clerkOrganisationIdHint) {
+    const hinted = memberships.find((m) => m.organisation.clerkOrgId === opts.clerkOrganisationIdHint);
+    if (hinted) return hinted;
+  }
+
   if (memberships.length === 1) return memberships[0]!;
 
   const demoMembership = memberships.find((m) => m.organisationId === DEMO_ORGANISATION_ID);
@@ -52,7 +61,10 @@ export async function resolveActiveOrganisationContext(request: Request): Promis
     return { ok: false, httpStatus: 403, error: "No organisation membership" };
   }
 
-  const picked = pickMembership(memberships);
+  const clerkHints = await readClerkBridgeHintsFromAuth();
+  const picked = pickMembership(memberships, {
+    clerkOrganisationIdHint: clerkHints?.clerkOrgId ?? null,
+  });
   return {
     ok: true,
     context: {

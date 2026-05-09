@@ -1,8 +1,8 @@
 # Production readiness & first-customer onboarding
 
-This guide describes how Metis is intended to be operated across **local/dev**, **staging**, and **production** for pilot and first-customer onboarding. Where the codebase does not yet reflect a capability (multi-tenant organisations, Clerk, etc.), behaviour is labelled **planned** rather than implying it already exists.
+This guide describes how Metis is intended to be operated across **local/dev**, **staging**, and **production** for pilot and first-customer onboarding. Where behaviour is still aspirational rather than coded, sections are labelled **planned**.
 
-Today’s deployed app assumes a **PostgreSQL database per environment**, **email/password sign-in backed by Prisma `User` rows**, and **JWT cookies** (`lib/auth/`). Replacing auth with Clerk and adding organisation isolation are **planned** architectural steps.
+Today’s baseline is **PostgreSQL per environment**, **workspace isolation via Metis `Organisation` / `Membership`**, and **`Membership.role` gated writes**. Authentication is intentionally **transitional**: legacy **JWT + bcrypt** persists (`lib/auth/session.ts`), and **Clerk is an optional SSO bridge** when `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` are set (`lib/auth/clerkUserBridge.ts`, `middleware.ts`). Product authorisation remains **Metis memberships** (`requireActiveOrganisationContext`, `membershipAllowsOrgWrite`); Clerk organisations only **hint active workspace** when `Organisation.clerkOrgId` matches the Clerk org id carried in session.
 
 ---
 
@@ -65,7 +65,7 @@ Use this before cutting over a pilot tenant.
 
 ### Planned (until implemented)
 
-- [ ] **Clerk** production instance and keys (**planned** §9)  
+- [ ] **Clerk** production instance and keys (**optional SSO bridge shipped** — set env vars plus operational policy; webhook-driven membership sync still **planned** §9)  
 - [ ] Outbound **email**/notification provider (**planned**: no SMTP env vars wired in-repo today beyond product intent)  
 
 ### Operational
@@ -263,8 +263,8 @@ Mark these **planned**, not promised in current UI:
 
 | Item | Note |
 |------|------|
-| **Clerk** (auth / session replacement) | Product decision recorded in context; codebase still bcrypt + JWT |
-| **Organization + membership tenancy** | DB schema today is single-tenant; pilot isolation may be DB-per-env today |
+| **Clerk** (lifecycle + sync) | **Session bridge landed** alongside JWT; **full IdP lifecycle** still means webhooks/dashboards syncing Clerk memberships → Metis `Membership` (**deferred**) and admin tooling |
+| **`Organisation` / `Membership` parity with Clerk tenants** | Metis memberships are authoritative; automatic provisioning from Clerk invitations/orgs **not wired** outside manual DB / scripting |
 | **Admin user lifecycle UI** | Provision script + eventual IdP dashboards |
 | **Restricted internal observations** | Policy layer beyond schema flags (`excludedFromBrief` exists mechanically) |
 | **Approval workflows** | Not surfaced as workflow engine |

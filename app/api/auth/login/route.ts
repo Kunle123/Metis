@@ -18,6 +18,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
   }
 
+  if (!user.passwordHash) {
+    return NextResponse.json(
+      {
+        error: "Password sign-in is not enabled for this account — use organisation SSO.",
+      },
+      { status: 401 },
+    );
+  }
+
   const ok = await verifyPassword(parsed.data.password, user.passwordHash);
   if (!ok) {
     return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });

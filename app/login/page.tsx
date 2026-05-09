@@ -1,11 +1,15 @@
 import { Suspense } from "react";
 
+import { ClerkEmbeddedSignIn } from "@/components/auth/ClerkEmbeddedSignIn";
 import { MetisShell, SurfaceCard } from "@/components/MetisShell";
+import { isMetisClerkEnabled } from "@/lib/auth/clerkEnv";
 import { LoginForm } from "./login-form";
 
 export const dynamic = "force-dynamic";
 
 export default function LoginPage() {
+  const clerkEnabled = isMetisClerkEnabled();
+
   return (
     <MetisShell activePath="/" pageTitle="Sign in" showOperationalSnapshot={false}>
       <div className="mx-auto w-full max-w-md">
@@ -15,6 +19,11 @@ export default function LoginPage() {
             <Suspense fallback={<div className="text-sm text-[--metis-paper-muted]">Loading…</div>}>
               <LoginForm />
             </Suspense>
+            {clerkEnabled ? (
+              <Suspense fallback={<div className="text-sm text-[--metis-paper-muted]">Loading SSO…</div>}>
+                <ClerkEmbeddedSignIn />
+              </Suspense>
+            ) : null}
           </div>
         </SurfaceCard>
       </div>
