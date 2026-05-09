@@ -648,7 +648,7 @@ export default async function IssueBriefPage({
                 </Link>
               </Button>
               <Button asChild variant="outline" className="w-full justify-start">
-                <Link href={`/issues/${issue.id}/compare`}>
+                <Link href={`/issues/${issue.id}/compare?mode=${mode}`}>
                   <RefreshCcw className="mr-2 h-4 w-4" />
                   Open delta
                 </Link>

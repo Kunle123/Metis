@@ -2,7 +2,6 @@ import Link from "next/link";
 import { ArrowDownRight, ArrowUpRight, FileOutput, RefreshCcw, ScanSearch, TrendingUp } from "lucide-react";
 
 import { MetisShell, ReadinessPill, SurfaceCard } from "@/components/MetisShell";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/db/prisma";
 import { getIssueById } from "@/lib/issues/getIssueContext";
@@ -119,10 +118,17 @@ export default async function IssueComparePage({
   }
 
   const deltaGroups = compare.summary.groups.map((g) => ({
+    id: g.id,
     title: groupTitle(g.id),
     state: groupState(g.id),
     items: g.items,
   }));
+
+  const groupsWithItems = deltaGroups.filter((g) => g.items.length > 0);
+  const groupsWithoutItems = deltaGroups.filter((g) => !g.items.length);
+  const hasPrior = Boolean(prior);
+  const modeComparisonTitle = mode === "full" ? "Full brief comparison" : "Executive brief comparison";
+  const modeGeneratePhrase = mode === "full" ? "full" : "executive";
 
   const readinessMovement = compare.summary.readinessMovement ?? [];
 
@@ -139,32 +145,61 @@ export default async function IssueComparePage({
         updatedAt: issue.updatedAt,
       }}
     >
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_330px]">
-        <SurfaceCard className="overflow-hidden">
+      <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_330px]">
+        <SurfaceCard className="min-w-0 overflow-hidden">
           <div className="border-b border-white/8 bg-[rgba(255,255,255,0.025)] px-6 py-5">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-[0.62rem] uppercase tracking-[0.18em] text-[rgba(176,171,160,0.62)]">
-                {prior ? `${versionLabel(prior)} → ${versionLabel(current)}` : versionLabel(current)}
-              </p>
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(112,191,232,0.48)] bg-[rgba(19,86,118,0.6)] px-2.5 py-1 text-[0.62rem] font-medium uppercase tracking-[0.18em] text-sky-50 ring-1 ring-[rgba(138,214,250,0.2)] shadow-[0_10px_24px_rgba(14,48,73,0.18),inset_0_1px_0_rgba(255,255,255,0.06)]">
-                  Updated
-                </span>
-                <Badge className="border-0 bg-white/8 text-[--metis-paper-muted]">{compare.changeCount} changes</Badge>
+            <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
+              <div className="min-w-0 space-y-2">
+                <p className="text-sm font-medium text-[--metis-paper]">{modeComparisonTitle}</p>
+                <p className="text-[0.62rem] uppercase tracking-[0.18em] text-[rgba(176,171,160,0.62)]">
+                  {prior ? `${versionLabel(prior)} → ${versionLabel(current)}` : versionLabel(current)}
+                </p>
+              </div>
+              <div className="flex shrink-0 flex-wrap items-center gap-2">
+                {hasPrior && compare.changeCount > 0 ? (
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(112,191,232,0.48)] bg-[rgba(19,86,118,0.6)] px-2.5 py-1 text-[0.62rem] font-medium uppercase tracking-[0.18em] text-sky-50 ring-1 ring-[rgba(138,214,250,0.2)] shadow-[0_10px_24px_rgba(14,48,73,0.18),inset_0_1px_0_rgba(255,255,255,0.06)]">
+                    {compare.changeCount} {compare.changeCount === 1 ? "change" : "changes"} detected
+                  </span>
+                ) : null}
               </div>
             </div>
           </div>
 
-          <article className="space-y-8 px-7 py-8 sm:px-8">
-            <section className="grid gap-5 xl:grid-cols-2">
+          <article className="min-w-0 space-y-8 px-7 py-8 sm:px-8">
+            {!hasPrior ? (
+              <div className="rounded-[1.1rem] border border-white/10 bg-[rgba(255,255,255,0.04)] px-5 py-4 text-sm leading-relaxed text-[--metis-paper-muted]">
+                <p className="font-medium text-[--metis-paper]">No prior version yet</p>
+                <p className="mt-2">
+                  Generate another <span className="text-[--metis-paper]">{modeGeneratePhrase}</span> brief to compare changes.
+                </p>
+              </div>
+            ) : compare.changeCount === 0 ? (
+              <div className="rounded-[1.1rem] border border-white/10 bg-[rgba(255,255,255,0.04)] px-5 py-4 text-sm leading-relaxed text-[--metis-paper-muted]">
+                <p className="font-medium text-[--metis-paper]">No material text changes detected</p>
+                <p className="mt-2">
+                  These revisions may still differ in metadata or generation time, but{" "}
+                  <span className="text-[--metis-paper]">no new compared lines</span> were found in the selected brief text sections.
+                </p>
+              </div>
+            ) : null}
+
+            <p className="text-xs leading-relaxed text-[--metis-ink-soft]">
+              Compared text is drawn from executive summary, current position and open questions, and recommended actions within the brief artifact. Sources, tracker
+              records, observations, alternate wording hooks, and export appendices are not fully compared yet.
+            </p>
+
+            <section className="grid min-w-0 gap-5 xl:grid-cols-2">
               <div className="metis-surface metis-support-surface rounded-[1.35rem] border px-5 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
                 <p className="text-[0.68rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Prior</p>
                 <div className="mt-4 space-y-3">
                   {prior ? (
-                    priorSummary.map((item) => (
-                      <div key={item} className="grid grid-cols-[14px_minmax(0,1fr)] gap-3 text-sm leading-7 text-[--metis-paper-muted]">
-                        <span className="mt-3 h-1.5 w-1.5 rounded-full bg-white/30" />
-                        <p>{item}</p>
+                    priorSummary.map((item, idx) => (
+                      <div
+                        key={`prior-${idx}`}
+                        className="grid min-w-0 grid-cols-[14px_minmax(0,1fr)] gap-3 text-sm leading-7 text-[--metis-paper-muted]"
+                      >
+                        <span className="mt-3 h-1.5 w-1.5 shrink-0 rounded-full bg-white/30" />
+                        <p className="min-w-0 break-words">{item}</p>
                       </div>
                     ))
                   ) : (
@@ -176,43 +211,63 @@ export default async function IssueComparePage({
               <div className="rounded-[1.35rem] border border-[rgba(224,183,111,0.22)] bg-[linear-gradient(180deg,rgba(224,183,111,0.12),rgba(255,255,255,0.04))] px-5 py-5 shadow-[0_18px_42px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.05)]">
                 <p className="text-[0.68rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Current</p>
                 <div className="mt-4 space-y-3">
-                  {currentSummary.map((item) => (
-                    <div key={item} className="grid grid-cols-[14px_minmax(0,1fr)] gap-3 text-sm leading-7 text-[--metis-paper]">
-                      <span className="mt-3 h-1.5 w-1.5 rounded-full bg-[--metis-brass]" />
-                      <p>{item}</p>
+                  {currentSummary.map((item, idx) => (
+                    <div
+                      key={`current-${idx}`}
+                      className="grid min-w-0 grid-cols-[14px_minmax(0,1fr)] gap-3 text-sm leading-7 text-[--metis-paper]"
+                    >
+                      <span className="mt-3 h-1.5 w-1.5 shrink-0 rounded-full bg-[--metis-brass]" />
+                      <p className="min-w-0 break-words">{item}</p>
                     </div>
                   ))}
                 </div>
               </div>
             </section>
 
-            <section className="space-y-4 border-t border-white/8 pt-8">
-              <div className="flex items-center justify-between gap-3">
-                <h3 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper]">Changes</h3>
-              </div>
-              <div className="space-y-4">
-                {deltaGroups.map((group) => (
-                  <section key={group.title} className="rounded-[1.35rem] border border-white/10 bg-[rgba(255,255,255,0.05)] px-5 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <h4 className="text-lg font-medium text-[--metis-paper]">{group.title}</h4>
-                      <ReadinessPill state={group.state} />
-                    </div>
-                    <div className="mt-4 space-y-3">
-                      {group.items.length ? (
-                        group.items.map((item) => (
-                          <div key={item} className="grid grid-cols-[16px_minmax(0,1fr)] gap-3 text-sm leading-7 text-[--metis-paper]">
-                            <span className="mt-3 h-1.5 w-1.5 rounded-full bg-[--metis-brass]" />
-                            <p>{item}</p>
-                          </div>
-                        ))
-                      ) : (
-                        <p className="text-sm leading-7 text-[--metis-paper-muted]">No changes recorded.</p>
-                      )}
-                    </div>
-                  </section>
-                ))}
-              </div>
-            </section>
+            {hasPrior ? (
+              <section className="space-y-4 border-t border-white/8 pt-8">
+                <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
+                  <h3 className="font-[Cormorant_Garamond] min-w-0 text-[2rem] leading-none text-[--metis-paper]">Compared text changes</h3>
+                </div>
+
+                {compare.changeCount > 0 ? (
+                  <div className="space-y-4">
+                    {groupsWithItems.map((group) => (
+                      <section
+                        key={group.id}
+                        className="rounded-[1.35rem] border border-white/10 bg-[rgba(255,255,255,0.05)] px-5 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+                      >
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                          <h4 className="text-lg font-medium text-[--metis-paper]">{group.title}</h4>
+                          <ReadinessPill state={group.state} />
+                        </div>
+                        <div className="mt-4 space-y-3">
+                          {group.items.map((item, idx) => (
+                            <div
+                              key={`${group.id}-${idx}`}
+                              className="grid min-w-0 grid-cols-[16px_minmax(0,1fr)] gap-3 text-sm leading-7 text-[--metis-paper]"
+                            >
+                              <span className="mt-3 h-1.5 w-1.5 shrink-0 rounded-full bg-[--metis-brass]" />
+                              <p className="min-w-0 break-words">{item}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </section>
+                    ))}
+                    {groupsWithoutItems.length ? (
+                      <p className="text-[0.7rem] leading-relaxed text-[--metis-ink-soft] opacity-90">
+                        No compared text changes in{" "}
+                        {groupsWithoutItems.map((g) => g.title).join("; ")}.
+                      </p>
+                    ) : null}
+                  </div>
+                ) : (
+                  <p className="text-sm leading-relaxed text-[--metis-ink-soft]">
+                    No entries in tracked change categories for this comparison (see banner above).
+                  </p>
+                )}
+              </section>
+            ) : null}
           </article>
         </SurfaceCard>
 
@@ -260,7 +315,7 @@ export default async function IssueComparePage({
 
             <div className="grid gap-3 px-5 py-5">
               <Button asChild variant="outline" className="w-full rounded-full">
-                <Link href={`/issues/${issue.id}/export`}>
+                <Link href={`/issues/${issue.id}/export?mode=${mode}`}>
                   <FileOutput className="mr-2 h-4 w-4" />
                   Open export
                 </Link>
