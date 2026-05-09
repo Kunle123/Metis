@@ -172,7 +172,13 @@ export default async function IssueBriefPage({
   const evidenceItems = linkedSources.slice(0, 12);
   const briefAiSynthesisEnabled = process.env.BRIEF_AI_SYNTHESIS_ENABLED === "true";
   const executivePolishPreviewContext =
-    mode === "executive" && briefVersion ? { issueId: issue.id, briefVersionId: briefVersion.id } : null;
+    mode === "executive" && briefVersion
+      ? {
+          issueId: issue.id,
+          briefVersionId: briefVersion.id,
+          hasExistingAlternate: executiveExecAlternateWording?.status === "succeeded",
+        }
+      : null;
   const storedBriefRevisionLabel = briefVersion
     ? `${mode === "full" ? "Full" : "Executive"} brief v${briefVersion.versionNumber}`
     : null;

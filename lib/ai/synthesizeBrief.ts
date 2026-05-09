@@ -53,6 +53,40 @@ function collectAllowedNumberTokens(input: string) {
   return set;
 }
 
+const MIN_POLISHED_SAVE_CHARS = 20;
+
+/**
+ * Same safety bar as model output, for persisting user-approved polished text on save.
+ * `input` must use the current deterministic executive summary body in `deterministicExecutiveSummaryBody`.
+ */
+export function evaluateExecutivePolishedBodyForSave(
+  input: BriefSynthesisInput,
+  polishedBody: string,
+): { ok: true } | { ok: false; message: string } {
+  const trimmed = polishedBody.trim();
+  if (trimmed.length < MIN_POLISHED_SAVE_CHARS) {
+    return { ok: false, message: "Polished wording is empty or too short to save." };
+  }
+
+  const payload = JSON.stringify(input);
+  const allowedNumbers = collectAllowedNumberTokens(payload);
+  const hasOpenQuestions =
+    input.issue.openQuestionsIntake.length > 0 || input.topTrackerOpenQuestions.length > 0;
+
+  if (
+    !isBriefExecutiveSummaryRewriteSafe({
+      rewritten: trimmed,
+      allowedNumbers,
+      hasOpenQuestions,
+      maxChars: MAX_REWRITE_CHARS,
+    })
+  ) {
+    return { ok: false, message: "Polished wording did not pass safety checks." };
+  }
+
+  return { ok: true };
+}
+
 function outputIntroducesNewNumbers(output: string, allowed: Set<string>) {
   const matches = output.match(/\b\d+(?:\.\d+)?\b/g) ?? [];
   for (const m of matches) {

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 import { AiProvenance } from "@/components/ui/ai-provenance";
 import { Badge } from "@/components/ui/badge";
@@ -31,11 +32,20 @@ export function BriefExecutiveSummaryCompare({
   deterministicBody: string;
   alternateWording: NormalizedAlternateWording;
   briefAiSynthesisEnabled: boolean;
-  /** When set (executive brief only), show on-demand polish preview controls. Does not persist. */
-  polishPreview?: { issueId: string; briefVersionId: string } | null;
+  polishPreview?: { issueId: string; briefVersionId: string; hasExistingAlternate: boolean } | null;
 }) {
+  const router = useRouter();
   const [variant, setVariant] = useState<CompareVariant>("original");
   const [polishState, setPolishState] = useState<PolishPreviewState>({ kind: "idle" });
+  const [savePolishLoading, setSavePolishLoading] = useState(false);
+  const [savePolishError, setSavePolishError] = useState<string | null>(null);
+  const [savedFlash, setSavedFlash] = useState(false);
+
+  useEffect(() => {
+    if (!savedFlash) return;
+    const id = window.setTimeout(() => setSavedFlash(false), 6000);
+    return () => window.clearTimeout(id);
+  }, [savedFlash]);
 
   const alternateBody = alternateWording?.status === "succeeded" ? alternateWording.aiAlternateBody.trim() : "";
   const canCompare =
@@ -46,15 +56,22 @@ export function BriefExecutiveSummaryCompare({
   const polishSection =
     polishPreview && briefAiSynthesisEnabled ? (
       <div className="space-y-3 border-t border-[--metis-outline-subtle] pt-3">
+        {savedFlash ? (
+          <p className="text-[0.8rem] font-medium leading-relaxed text-[--metis-status-success-fg]">
+            Saved as alternate draft · shown under “Alternate draft”.
+          </p>
+        ) : null}
+
         <div className="flex flex-wrap items-center gap-2">
           <Button
             type="button"
             variant="outline"
             size="sm"
             className="text-[0.8rem]"
-            disabled={polishState.kind === "loading"}
+            disabled={polishState.kind === "loading" || savePolishLoading}
             onClick={async () => {
               setPolishState({ kind: "loading" });
+              setSavePolishError(null);
               try {
                 const res = await fetch(`/api/issues/${polishPreview.issueId}/brief/polish-preview`, {
                   method: "POST",
@@ -115,6 +132,12 @@ export function BriefExecutiveSummaryCompare({
             <p className="text-[0.72rem] leading-snug text-[--metis-text-tertiary]">
               Polished wording improves clarity and flow but does not change the underlying record. Review before circulation.
             </p>
+            <p className="text-[0.72rem] leading-snug text-[--metis-text-tertiary]">
+              Saved polished wording becomes the alternate draft for this brief version. It does not change the structured brief.
+              {polishPreview.hasExistingAlternate ? (
+                <span className="text-[--metis-text-secondary]"> This replaces the saved alternate draft for this section.</span>
+              ) : null}
+            </p>
             <AiProvenance
               mode="ai"
               variant="enhanced-draft"
@@ -124,12 +147,19 @@ export function BriefExecutiveSummaryCompare({
               <p className="text-[0.72rem] leading-snug text-[--metis-text-tertiary]">{polishState.limitations.trim()}</p>
             ) : null}
             <p className="max-w-4xl whitespace-pre-line text-[0.85rem] leading-7 text-[--metis-text-secondary]">{polishState.text}</p>
+            <p className="text-[0.68rem] leading-snug text-[--metis-text-tertiary]">
+              If the issue record changes materially, regenerate the brief or re-polish before circulation.
+            </p>
+            {savePolishError ? (
+              <p className="text-[0.8rem] leading-relaxed text-[--metis-status-danger-fg]">{savePolishError}</p>
+            ) : null}
             <div className="flex flex-wrap gap-2 pt-1">
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 className="text-[0.8rem]"
+                disabled={savePolishLoading}
                 onClick={async () => {
                   try {
                     await navigator.clipboard.writeText(polishState.text);
@@ -140,7 +170,58 @@ export function BriefExecutiveSummaryCompare({
               >
                 Copy preview
               </Button>
-              <Button type="button" variant="ghost" size="sm" className="text-[0.8rem]" onClick={() => setPolishState({ kind: "idle" })}>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="text-[0.8rem]"
+                disabled={savePolishLoading}
+                onClick={async () => {
+                  setSavePolishError(null);
+                  setSavePolishLoading(true);
+                  try {
+                    const res = await fetch(`/api/issues/${polishPreview.issueId}/brief/polish-save`, {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      credentials: "include",
+                      body: JSON.stringify({
+                        mode: "executive",
+                        scope: "executive-summary",
+                        briefVersionId: polishPreview.briefVersionId,
+                        polishedBody: polishState.text,
+                        attemptedAtIso: polishState.attemptedAtIso,
+                        limitations: polishState.limitations ?? undefined,
+                      }),
+                    });
+                    const data = (await res.json()) as { success?: boolean; message?: string };
+                    if (!res.ok || data.success !== true) {
+                      setSavePolishError(typeof data.message === "string" ? data.message : `Save failed (${res.status}).`);
+                      return;
+                    }
+                    setPolishState({ kind: "idle" });
+                    setVariant("alternate");
+                    setSavedFlash(true);
+                    router.refresh();
+                  } catch {
+                    setSavePolishError("Network error while saving polished wording.");
+                  } finally {
+                    setSavePolishLoading(false);
+                  }
+                }}
+              >
+                {savePolishLoading ? "Saving…" : "Save polished wording"}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="text-[0.8rem]"
+                disabled={savePolishLoading}
+                onClick={() => {
+                  setSavePolishError(null);
+                  setPolishState({ kind: "idle" });
+                }}
+              >
                 Discard preview
               </Button>
             </div>

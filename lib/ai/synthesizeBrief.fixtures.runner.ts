@@ -4,7 +4,7 @@
  */
 import assert from "node:assert/strict";
 
-import { isBriefExecutiveSummaryRewriteSafe } from "./synthesizeBrief";
+import { evaluateExecutivePolishedBodyForSave, isBriefExecutiveSummaryRewriteSafe, type BriefSynthesisInput } from "./synthesizeBrief";
 
 const allowed = new Set(["2", "2024"]);
 
@@ -41,6 +41,35 @@ assert.equal(
     allowedNumbers: new Set(["3"]),
     hasOpenQuestions: true,
   }),
+  true,
+);
+
+const saveInputStub: BriefSynthesisInput = {
+  issue: {
+    title: "T",
+    summary: "S",
+    context: "",
+    confirmedFacts: "",
+    openQuestionsIntake: ["What next?"],
+    audienceContextSummary: "Note",
+  },
+  topTrackerOpenQuestions: [{ text: "Open gap", severity: null, linkedSection: null }],
+  topSources: [],
+  topObservations: [],
+  deterministicExecutiveSummaryBody: "Open questions remain about the 2024 timetable; subject to change pending review.",
+};
+
+assert.equal(evaluateExecutivePolishedBodyForSave(saveInputStub, "").ok, false);
+assert.equal(evaluateExecutivePolishedBodyForSave(saveInputStub, "Short").ok, false);
+assert.deepEqual(evaluateExecutivePolishedBodyForSave(saveInputStub, "x".repeat(19)), {
+  ok: false,
+  message: "Polished wording is empty or too short to save.",
+});
+assert.equal(
+  evaluateExecutivePolishedBodyForSave(
+    saveInputStub,
+    "Open questions remain; the 2024 timetable is not yet confirmed and remains subject to change.",
+  ).ok,
   true,
 );
 
