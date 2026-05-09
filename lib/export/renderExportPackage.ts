@@ -3,6 +3,9 @@ import type { Issue } from "@prisma/client";
 import type { BriefArtifact, BriefMode } from "@metis/shared/briefVersion";
 import type { ExportFormat, ExportOutputType } from "@metis/shared/export";
 
+import type { ExportAuditAppendixInput } from "@/lib/export/buildExportAuditAppendix";
+import { buildExportAuditAppendixHtml, buildExportAuditAppendixMarkdown } from "@/lib/export/buildExportAuditAppendix";
+
 export type RenderedExportDeliverable =
   | { mimeType: "text/markdown" | "text/plain"; content: string }
   | { mimeType: "text/html"; content: string };
@@ -175,11 +178,14 @@ export function renderExportPackage({
   mode,
   format,
   artifact,
+  auditAppendix,
 }: {
   issue: Pick<Issue, "title">;
   mode: BriefMode;
   format: ExportFormat;
   artifact: BriefArtifact;
+  /** Export-time issue ledger; only appended for `full-issue-brief` Markdown. */
+  auditAppendix?: ExportAuditAppendixInput | null;
 }) {
   const title = normalizeExportTerminology(issue.title);
 
@@ -220,9 +226,13 @@ export function renderExportPackage({
 
   // full-issue-brief
   const sections = artifact.full.sections.map((s) => section(normalizeExportTerminology(s.title), normalizeExportTerminology(s.body))).join("");
+  let content = `${mdHeader(title)}\n${section("Lede", normalizeExportTerminology(artifact.lede))}${sections}`.trim() + "\n";
+  if (format === "full-issue-brief" && auditAppendix) {
+    content += buildExportAuditAppendixMarkdown(auditAppendix);
+  }
   return {
     mimeType: "text/markdown" as const,
-    content: `${mdHeader(title)}\n${section("Lede", normalizeExportTerminology(artifact.lede))}${sections}`.trim() + "\n",
+    content,
   };
 }
 
@@ -235,11 +245,14 @@ export function renderExportPackageHtml({
   mode,
   format,
   artifact,
+  auditAppendix,
 }: {
   issue: Pick<Issue, "title">;
   mode: BriefMode;
   format: ExportFormat;
   artifact: BriefArtifact;
+  /** Export-time issue ledger; only appended for `full-issue-brief` HTML. */
+  auditAppendix?: ExportAuditAppendixInput | null;
 }) {
   const titlePlain = normalizeExportTerminology(issue.title);
 
@@ -280,7 +293,10 @@ export function renderExportPackageHtml({
     })
     .join("\n");
   const ledeSlug = "metis-section-lede";
-  const inner = `<header><h1>${escapeHtml(titlePlain)}</h1></header>\n<section aria-labelledby="${ledeSlug}"><h2 id="${ledeSlug}">${escapeHtml("Lede")}</h2>\n${bodyFragmentsToParagraphHtml(ledeFormatted)}</section>\n${sectionBlocks}`;
+  let inner = `<header><h1>${escapeHtml(titlePlain)}</h1></header>\n<section aria-labelledby="${ledeSlug}"><h2 id="${ledeSlug}">${escapeHtml("Lede")}</h2>\n${bodyFragmentsToParagraphHtml(ledeFormatted)}</section>\n${sectionBlocks}`;
+  if (format === "full-issue-brief" && auditAppendix) {
+    inner += buildExportAuditAppendixHtml(auditAppendix);
+  }
   return {
     mimeType: "text/html" as const,
     content: wrapStandaloneHtml(inner, titlePlain),

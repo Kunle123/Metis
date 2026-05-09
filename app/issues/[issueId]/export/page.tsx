@@ -13,6 +13,7 @@ import { prisma } from "@/lib/db/prisma";
 import { getIssueById } from "@/lib/issues/getIssueContext";
 import { BriefModeSchema, BriefArtifactSchema, type BriefArtifact } from "@metis/shared/briefVersion";
 import { ExportFormatSchema, type ExportFormat, type ExportOutputType } from "@metis/shared/export";
+import { loadExportAuditAppendixPayload } from "@/lib/export/buildExportAuditAppendix";
 import { resolveBriefVersionForExport } from "@/lib/export/resolveBriefVersionForExport";
 import { renderExportDeliverable } from "@/lib/export/renderExportPackage";
 import { ExportActionsClient } from "@/app/issues/[issueId]/export/export-actions.client";
@@ -182,12 +183,17 @@ export default async function IssueExportPage({
   const { briefVersion, sourceMode, executiveBriefUsesFullBriefFallback } = resolved;
 
   const artifact = BriefArtifactSchema.parse(briefVersion.artifact) as BriefArtifact;
+  const auditAppendix =
+    selectedFormat === "full-issue-brief" && (exportPreviewOutput === "markdown" || exportPreviewOutput === "html")
+      ? await loadExportAuditAppendixPayload(issue.id)
+      : null;
   const rendered = renderExportDeliverable({
     issue,
     mode: sourceMode,
     format: selectedFormat,
     artifact,
     outputType: exportPreviewOutput,
+    auditAppendix,
   });
 
   const downloadExtension =

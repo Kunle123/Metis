@@ -11,6 +11,7 @@ import {
 } from "@metis/shared/export";
 import { ArtifactExportResponseSchema, CreateArtifactExportInputSchema } from "@metis/shared/circulation";
 import { prisma } from "@/lib/db/prisma";
+import { loadExportAuditAppendixPayload } from "@/lib/export/buildExportAuditAppendix";
 import { renderExportDeliverable } from "@/lib/export/renderExportPackage";
 import { IssueActivityKinds } from "@/lib/issues/activityKinds";
 import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
@@ -71,12 +72,17 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
   const artifact = BriefArtifactSchema.parse(briefVersion.artifact);
   const ot = resolvedOutputTypeForExport(parsedFormat.data, requestedOutputType);
+  const auditAppendix =
+    parsedFormat.data === "full-issue-brief" && (ot === "markdown" || ot === "html")
+      ? await loadExportAuditAppendixPayload(issueId)
+      : null;
   const rendered = renderExportDeliverable({
     issue,
     mode: parsedMode.data,
     format: parsedFormat.data,
     artifact,
     outputType: ot,
+    auditAppendix,
   });
 
   const now = new Date();
@@ -167,7 +173,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const postureState = CirculationStateSchema.parse(briefVersion.circulationState);
   const artifact = BriefArtifactSchema.parse(briefVersion.artifact);
   const ot = resolvedOutputTypeForExport(format, outputTypeBody);
-  const rendered = renderExportDeliverable({ issue, mode: parsedMode.data, format, artifact, outputType: ot });
+  const auditAppendix =
+    format === "full-issue-brief" && (ot === "markdown" || ot === "html") ? await loadExportAuditAppendixPayload(issueId) : null;
+  const rendered = renderExportDeliverable({ issue, mode: parsedMode.data, format, artifact, outputType: ot, auditAppendix });
   const ext = exportFileExtensionForMime(rendered.mimeType);
   const filename = `metis-${issueId}-${format}-v${briefVersion.versionNumber}.${ext}`;
 
