@@ -301,11 +301,25 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
               title="Current effect"
               tone="info"
               meta={
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-sm leading-6 text-[--metis-paper-muted]">
+                <div className="space-y-2">
+                  <p className="text-sm leading-6 text-[--metis-paper-muted]">
                     Observations are stored for attribution and can close clarification gaps when explicitly linked.
-                  </span>
-                  <ReadinessPill state="Updated since last version" />
+                  </p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-[0.7rem] font-medium uppercase tracking-[0.14em] text-[--metis-text-tertiary]">
+                      Status
+                    </span>
+                    <Badge
+                      className={[
+                        "rounded-lg border border-[--metis-status-info-border] bg-[color-mix(in_oklab,var(--metis-status-info-bg)_52%,transparent)]",
+                        "text-[--metis-status-info-fg] shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_18%,transparent)]",
+                        "px-2.5 py-1 text-[0.66rem] font-medium uppercase tracking-[0.18em] whitespace-nowrap",
+                      ].join(" ")}
+                      title="This issue has new or edited observations compared with the last saved revision."
+                    >
+                      Updated since last version
+                    </Badge>
+                  </div>
                 </div>
               }
             >
