@@ -1,5 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 
+import { seedShowcase2222 } from "./seedShowcase2222";
+
 const prisma = new PrismaClient();
 
 const DEMO_ACTOR = "demo.operator@metis.local";
@@ -661,17 +663,91 @@ async function main() {
       },
     });
 
+    /** Extra persisted rows only for issue 22222222 — briefs/messages/export for showcase walkthroughs. */
+    const showcase2222 =
+      createdIssue.id === "22222222-2222-2222-2222-222222222222"
+        ? await seedShowcase2222(prisma)
+        : null;
+
     // Minimal audit trail to make the Activity page useful in demos.
     // Keep timestamps staggered but deterministic in order.
-    const base = new Date("2026-04-01T09:00:00.000Z");
-    const steps = [
-      { kind: "issue_created", summary: `Issue created: ${createdIssue.title}`, refType: "Issue", refId: createdIssue.id },
-      { kind: "source_created", summary: `Source ${sources[0]?.sourceCode ?? "SRC"} created`, refType: "Source", refId: sources[0]?.id ?? null },
-      { kind: "internal_input_created", summary: "Internal input created", refType: "InternalInput", refId: internalInputs[0]?.id ?? null },
-      { kind: "gap_created", summary: "Gap created", refType: "Gap", refId: gaps[0]?.id ?? null },
-    ] as const;
+    type SeedActivityStep = {
+      kind: string;
+      summary: string;
+      refType: string | null;
+      refId: string | null;
+    };
+    const coreSteps: SeedActivityStep[] = [
+      {
+        kind: "issue_created",
+        summary: `Issue created: ${createdIssue.title}`,
+        refType: "Issue",
+        refId: createdIssue.id,
+      },
+      {
+        kind: "source_created",
+        summary: `Source ${sources[0]?.sourceCode ?? "SRC"} created`,
+        refType: "Source",
+        refId: sources[0]?.id ?? null,
+      },
+      {
+        kind: "internal_input_created",
+        summary: "Internal observation created",
+        refType: "InternalInput",
+        refId: internalInputs[0]?.id ?? null,
+      },
+      {
+        kind: "gap_created",
+        summary: "Open question recorded",
+        refType: "Gap",
+        refId: gaps[0]?.id ?? null,
+      },
+    ];
 
-    const activityIdsByIssue: Record<string, [string, string, string, string]> = {
+    const steps: SeedActivityStep[] =
+      showcase2222 === null
+        ? coreSteps
+        : [
+            ...coreSteps,
+            {
+              kind: "brief_version_created",
+              summary: "Full brief v1 stored (demo baseline)",
+              refType: "BriefVersion",
+              refId: showcase2222.fullV1Id,
+            },
+            {
+              kind: "brief_version_created",
+              summary: "Executive brief v1 stored (demo baseline)",
+              refType: "BriefVersion",
+              refId: showcase2222.execV1Id,
+            },
+            {
+              kind: "brief_version_created",
+              summary: "Full brief iteration stored",
+              refType: "BriefVersion",
+              refId: showcase2222.fullV2Id,
+            },
+            {
+              kind: "brief_version_created",
+              summary: "Executive brief iteration stored (includes alternate wording on file)",
+              refType: "BriefVersion",
+              refId: showcase2222.execV2Id,
+            },
+            {
+              kind: "export_created",
+              summary: "Export package packaged from latest full brief revision",
+              refType: "ArtifactExport",
+              refId: showcase2222.artifactExportId,
+            },
+            {
+              kind: "message_variant_created",
+              summary: "Internal staff update drafted (deterministic demo)",
+              refType: "MessageVariant",
+              refId: showcase2222.messageVariantId,
+            },
+          ];
+
+    const activityIdsByIssue: Record<string, readonly string[]> = {
       "11111111-1111-1111-1111-111111111111": [
         "11111111-aaaa-aaaa-aaaa-aaaaaaaaaa01",
         "11111111-aaaa-aaaa-aaaa-aaaaaaaaaa02",
@@ -683,6 +759,12 @@ async function main() {
         "22222222-bbbb-bbbb-bbbb-bbbbbbbbbb02",
         "22222222-bbbb-bbbb-bbbb-bbbbbbbbbb03",
         "22222222-bbbb-bbbb-bbbb-bbbbbbbbbb04",
+        "22222222-bbbb-bbbb-bbbb-bbbbbbbbbb05",
+        "22222222-bbbb-bbbb-bbbb-bbbbbbbbbb06",
+        "22222222-bbbb-bbbb-bbbb-bbbbbbbbbb07",
+        "22222222-bbbb-bbbb-bbbb-bbbbbbbbbb08",
+        "22222222-bbbb-bbbb-bbbb-bbbbbbbbbb09",
+        "22222222-bbbb-bbbb-bbbb-bbbbbbbbbb0a",
       ],
       "33333333-3333-3333-3333-333333333333": [
         "33333333-cccc-cccc-cccc-cccccccccc01",
@@ -693,12 +775,19 @@ async function main() {
     };
 
     const activityIds = activityIdsByIssue[createdIssue.id];
+    if (!activityIds || activityIds.length !== steps.length) {
+      throw new Error(
+        `Seed activity/id length mismatch for ${createdIssue.id} (steps=${steps.length}, ids=${activityIds?.length ?? "none"})`,
+      );
+    }
+    const base = new Date("2026-04-01T09:00:00.000Z");
+
     for (let idx = 0; idx < steps.length; idx += 1) {
-      const step = steps[idx];
+      const step = steps[idx]!;
       const createdAt = new Date(base.getTime() + idx * 60 * 60 * 1000);
       await prisma.issueActivity.create({
         data: {
-          id: activityIds[idx],
+          id: activityIds[idx]!,
           issueId: createdIssue.id,
           kind: step.kind,
           summary: step.summary,

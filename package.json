@@ -26,6 +26,7 @@
     "db:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
+    "db:clean-validation-users": "tsx scripts/clean-validation-users.ts",
     "provision:user": "node scripts/provision-user.mjs"
   },
   "prisma": {
