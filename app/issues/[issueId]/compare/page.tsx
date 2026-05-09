@@ -52,6 +52,11 @@ function summarizeArtifactPreview(artifact: BriefArtifact, mode: BriefMode) {
     .slice(0, 3);
 }
 
+/** Matches visible preview lines after trim + whitespace collapse per line (then joined); used only for excerpt equality, not the diff engine. */
+function normalizePreviewExcerptSlices(lines: string[]): string {
+  return lines.map((line) => line.trim().replace(/\s+/g, " ").trim()).join("\n");
+}
+
 async function getLatestTwo(issueId: string, mode: BriefMode) {
   return prisma.briefVersion.findMany({
     where: { issueId, mode },
@@ -137,6 +142,11 @@ export default async function IssueComparePage({
   const groupsWithItems = deltaGroups.filter((g) => g.items.length > 0);
   const groupsWithoutItems = deltaGroups.filter((g) => !g.items.length);
   const hasPrior = Boolean(prior);
+  const previewExcerptUnchanged =
+    hasPrior && normalizePreviewExcerptSlices(priorSummary) === normalizePreviewExcerptSlices(currentSummary);
+  const changedPreviewGroupTitles = groupsWithItems.map((g) => g.title);
+  const showOpeningPreviewUnchangedExplain =
+    hasPrior && compare.changeCount > 0 && previewExcerptUnchanged;
   const modeComparisonTitle = mode === "full" ? "Full brief comparison" : "Executive brief comparison";
   const modeGeneratePhrase = mode === "full" ? "full" : "executive";
 
@@ -210,6 +220,35 @@ export default async function IssueComparePage({
               )}
             </p>
 
+            {showOpeningPreviewUnchangedExplain ? (
+              <div className="min-w-0 rounded-[1.1rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-card)_70%,var(--metis-surface-page))] px-5 py-4 text-sm leading-relaxed text-[--metis-text-secondary] shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_18%,transparent)]">
+                <p className="font-medium text-[--metis-text-primary]">Opening preview unchanged</p>
+                <p className="mt-2">
+                  The visible preview excerpt is the same; the detected {compare.changeCount === 1 ? "change is" : "changes are"} in the compared sections below.
+                </p>
+                {changedPreviewGroupTitles.length ? (
+                  <p className="mt-2 text-[--metis-text-tertiary]">
+                    Changes detected below in{" "}
+                    <span className="font-medium text-[--metis-text-primary]">{changedPreviewGroupTitles.join(", ")}</span>.
+                  </p>
+                ) : null}
+                <p className="mt-3">
+                  <a
+                    href="#compare-changes"
+                    className="text-[0.8125rem] font-medium text-[--metis-brass-soft] underline underline-offset-[0.22em] transition hover:text-[--metis-text-primary]"
+                  >
+                    Jump to changes
+                  </a>
+                </p>
+              </div>
+            ) : null}
+
+            {hasPrior && previewExcerptUnchanged ? (
+              showOpeningPreviewUnchangedExplain ? null : (
+                <p className="text-[0.72rem] leading-relaxed text-[--metis-ink-soft]">Preview excerpt unchanged</p>
+              )
+            ) : null}
+
             <section className="grid min-w-0 gap-5 xl:grid-cols-2">
               <div className="metis-surface metis-support-surface rounded-[1.35rem] border px-5 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
                 <p className="text-[0.68rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">Prior</p>
@@ -247,7 +286,7 @@ export default async function IssueComparePage({
             </section>
 
             {hasPrior ? (
-              <section className="space-y-4 border-t border-white/8 pt-8">
+              <section id="compare-changes" className="scroll-mt-24 space-y-4 border-t border-white/8 pt-8">
                 <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
                   <h3 className="font-[Cormorant_Garamond] min-w-0 text-[2rem] leading-none text-[--metis-paper]">
                     {mode === "executive" ? "Compared executive text" : "Compared full brief text"}
