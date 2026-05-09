@@ -1,5 +1,7 @@
 import type { Issue } from "@prisma/client";
+import type { IssueActivityKind } from "@metis/shared/activity";
 
+import { isStoredBriefModeStale } from "@/lib/brief/briefFreshness";
 import { prisma } from "@/lib/db/prisma";
 
 export type DashboardIssueVM = Issue & {
@@ -31,7 +33,7 @@ export type DashboardSnapshot = {
     issuesWithNoSources: number;
     issuesWithMessages: number;
     issuesWithExportedPackage: number;
-    /** Stored brief exists but predates latest issue edits (regeneration may be needed). */
+    /** Stored brief revision may not reflect briefing inputs since substantive activity or issue drift. */
     issuesNeedingBriefRegeneration: number;
   };
   /** Header strip KPIs derived from persisted rows (sums / counts — not estimates). */
@@ -95,6 +97,31 @@ export async function getDashboardSnapshot(): Promise<DashboardSnapshot> {
 
   const latestByIssue = latestBriefDatesByIssue(briefs);
 
+  let earliestBriefGenMs = Infinity;
+  for (const modes of latestByIssue.values()) {
+    for (const d of modes.values()) earliestBriefGenMs = Math.min(earliestBriefGenMs, d.getTime());
+  }
+
+  const freshnessActivityRows =
+    issueIds.length > 0 && Number.isFinite(earliestBriefGenMs)
+      ? await prisma.issueActivity.findMany({
+          where: {
+            issueId: { in: issueIds },
+            /** Pull a small window before oldest revision stamp so crossing activities still apply. */
+            createdAt: { gt: new Date(Math.max(0, earliestBriefGenMs - 60_000)) },
+          },
+          select: { issueId: true, kind: true, createdAt: true },
+          orderBy: { createdAt: "asc" },
+        })
+      : [];
+
+  const activitiesByIssue = new Map<string, { kind: IssueActivityKind; createdAt: Date }[]>();
+  for (const row of freshnessActivityRows) {
+    const list = activitiesByIssue.get(row.issueId) ?? [];
+    list.push({ kind: row.kind as IssueActivityKind, createdAt: row.createdAt });
+    activitiesByIssue.set(row.issueId, list);
+  }
+
   const issues: DashboardIssueVM[] = issuesRaw.map((row) => {
     const { _count, ...issue } = row;
     const modes = latestByIssue.get(row.id);
@@ -102,8 +129,20 @@ export async function getDashboardSnapshot(): Promise<DashboardSnapshot> {
     const execAt = modes?.get("executive");
     const hasFullBrief = Boolean(fullAt);
     const hasExecutiveBrief = Boolean(execAt);
-    const fullBriefStale = hasFullBrief && fullAt!.getTime() < row.updatedAt.getTime();
-    const executiveBriefStale = hasExecutiveBrief && execAt!.getTime() < row.updatedAt.getTime();
+    const postRevisionActs = activitiesByIssue.get(row.id) ?? [];
+
+    const fullBriefStale = isStoredBriefModeStale({
+      hasStoredBrief: hasFullBrief,
+      generatedFromIssueUpdatedAt: fullAt ?? null,
+      issueUpdatedAt: row.updatedAt,
+      activitiesStrictlyAfterRevision: postRevisionActs,
+    });
+    const executiveBriefStale = isStoredBriefModeStale({
+      hasStoredBrief: hasExecutiveBrief,
+      generatedFromIssueUpdatedAt: execAt ?? null,
+      issueUpdatedAt: row.updatedAt,
+      activitiesStrictlyAfterRevision: postRevisionActs,
+    });
 
     return {
       ...issue,

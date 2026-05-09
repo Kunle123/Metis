@@ -77,11 +77,11 @@ export function IssueSummaryRow({ issue }: { issue: DashboardIssueVM }) {
   const showPriority = priority === "Critical" || priority === "High";
   const attention: { href: string; label: string }[] = [];
   if (issue.sourcesCount === 0) attention.push({ href: `${base}/sources`, label: "Add sources" });
-  if (issue.fullBriefStale || issue.executiveBriefStale) {
-    attention.push({
-      href: issue.fullBriefStale ? `${base}/brief?mode=full` : `${base}/brief?mode=executive`,
-      label: "Refresh brief",
-    });
+  if (issue.fullBriefStale) {
+    attention.push({ href: `${base}/brief?mode=full`, label: "Refresh Full brief" });
+  }
+  if (issue.executiveBriefStale) {
+    attention.push({ href: `${base}/brief?mode=executive`, label: "Refresh Executive brief" });
   }
   const criticalOpenQuestions = issue.openGapsCount > 0 && showPriority;
   if (criticalOpenQuestions) {

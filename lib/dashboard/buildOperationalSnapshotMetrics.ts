@@ -25,7 +25,9 @@ export function buildOperationalSnapshotMetrics(snapshot: DashboardSnapshot): Op
           .join(" · ");
 
   const briefsDetail =
-    issuesWithAnyBriefStored === 0 ? "None stored yet" : `${aggregates.issuesNeedingBriefRegeneration} may need refresh`;
+    issuesWithAnyBriefStored === 0
+      ? "None stored yet"
+      : `${aggregates.issuesNeedingBriefRegeneration} may need regenerate (inputs drift)`;
 
   const oqDetail =
     aggregates.totalIssues === 0 ? "—" : `${workspacePulse.criticalOpenGapsInWorkspace} critical`;

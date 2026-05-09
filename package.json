@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "tsc -p tsconfig.json --noEmit",
     "test:brief-generate": "tsx lib/brief/generateBriefFromIssue.fixtures.runner.ts",
+    "test:brief-freshness": "tsx lib/brief/briefFreshness.fixtures.runner.ts",
     "test:rank-evidence": "tsx lib/evidence/rankEvidence.fixtures.runner.ts",
     "test:capture-notes-extract": "tsx lib/ai/extractIssueNotes.fixtures.runner.ts",
     "test:message-cleanup": "tsx lib/ai/cleanupMessageDraft.fixtures.runner.ts",

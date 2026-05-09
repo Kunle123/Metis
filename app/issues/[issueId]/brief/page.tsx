@@ -11,7 +11,10 @@ import { SourceReliabilityMeta } from "@/components/review/SourceReliabilityMeta
 import { ReviewToolbar } from "@/components/review/ReviewToolbar";
 import { prisma } from "@/lib/db/prisma";
 import { getIssueById } from "@/lib/issues/getIssueContext";
+import type { IssueActivityKind } from "@metis/shared/activity";
 import { BriefModeSchema, type BriefMode, type BriefConfidence, type BriefArtifact } from "@metis/shared/briefVersion";
+
+import { isStoredBriefModeStale } from "@/lib/brief/briefFreshness";
 import { GenerateBriefButton } from "@/app/brief/generate-brief-button";
 import { IntakeSuggestionsPanel } from "@/app/issues/[issueId]/brief/intake-suggestions-panel";
 import { BriefModeToggle } from "@/app/issues/[issueId]/brief/brief-mode-toggle";
@@ -95,6 +98,23 @@ export default async function IssueBriefPage({
   const briefVersion = await getLatestBriefVersion(issue.id, mode);
   const artifact = (briefVersion?.artifact ?? null) as BriefArtifact | null;
   const hasBriefForMode = Boolean(artifact);
+  const freshnessActivitiesRaw =
+    briefVersion && briefVersion.generatedFromIssueUpdatedAt.getTime() < issue.updatedAt.getTime()
+      ? await prisma.issueActivity.findMany({
+          where: {
+            issueId: issue.id,
+            createdAt: {
+              gt: new Date(Math.max(0, briefVersion.generatedFromIssueUpdatedAt.getTime() - 60_000)),
+            },
+          },
+          select: { kind: true, createdAt: true },
+          orderBy: { createdAt: "asc" },
+        })
+      : [];
+  const freshnessActivities: { kind: IssueActivityKind; createdAt: Date }[] = freshnessActivitiesRaw.map((r) => ({
+    kind: r.kind as IssueActivityKind,
+    createdAt: r.createdAt,
+  }));
   const fullExecAlternateWording = getAlternateWordingForTarget(artifact, {
     mode: "full",
     kind: "section",
@@ -105,19 +125,26 @@ export default async function IssueBriefPage({
     kind: "block",
     id: "Executive summary",
   });
+  const briefStaleForCurrentMode = briefVersion
+    ? isStoredBriefModeStale({
+        hasStoredBrief: true,
+        generatedFromIssueUpdatedAt: briefVersion.generatedFromIssueUpdatedAt,
+        issueUpdatedAt: issue.updatedAt,
+        activitiesStrictlyAfterRevision: freshnessActivities,
+      })
+    : false;
   const briefSyncHint = (() => {
     if (!hasBriefForMode) {
       return "No stored brief for this mode.";
     }
     if (!briefVersion) return null;
-    const inSync = issue.updatedAt.getTime() === briefVersion.generatedFromIssueUpdatedAt.getTime();
-    return inSync
-      ? "Matches the current issue record."
-      : "Issue or linked data changed since this was generated; regenerate to refresh.";
+    const modePhrase = mode === "full" ? "Full brief" : "Executive brief";
+    if (!briefStaleForCurrentMode) {
+      return `This ${modePhrase.toLowerCase()} matches the issue record and linked briefing inputs — exports and circulation do not invalidate it by themselves.`;
+    }
+    return `Regenerate updates this ${modePhrase.toLowerCase()} only; Full and Executive are separate stored revisions after brief inputs changed.`;
   })();
-  const briefInSync = Boolean(
-    artifact && briefVersion && issue.updatedAt.getTime() === briefVersion.generatedFromIssueUpdatedAt.getTime(),
-  );
+  const briefInSync = Boolean(artifact && briefVersion && !briefStaleForCurrentMode);
   const linkedSources = await prisma.source.findMany({
     where: { issueId: issue.id },
     orderBy: [{ createdAt: "desc" }],
@@ -185,6 +212,14 @@ export default async function IssueBriefPage({
   const exportPrepareHref = `/issues/${issue.id}/export?mode=${mode}&format=${mode === "executive" ? "executive-brief" : "full-issue-brief"}`;
   /** Shown only under Generate (Step 3); Step 2 holds definitions only. */
   const generationSyncHint = hasBriefForMode && briefInSync ? null : briefSyncHint;
+  const generateButtonLabel =
+    mode === "full"
+      ? hasBriefForMode
+        ? "Regenerate Full brief"
+        : "Generate Full brief"
+      : hasBriefForMode
+        ? "Regenerate Executive brief"
+        : "Generate Executive brief";
 
   return (
     <MetisShell
@@ -251,8 +286,8 @@ export default async function IssueBriefPage({
               </dl>
               <p className="text-[0.72rem] leading-snug text-[--metis-text-tertiary]">
                 <span className="text-[--metis-text-secondary]">Stored revision</span> is the numbered brief on file for this mode.{" "}
-                <span className="text-[--metis-text-secondary]">Freshness</span> is whether the issue record changed after that revision was generated — not a
-                different version number.
+                <span className="text-[--metis-text-secondary]">Freshness</span> watches whether briefing inputs changed after this revision — not exporting,
+                circulating, or saving another mode&apos;s revision. It is not tied only to issue version numbering.
               </p>
             </section>
 
@@ -264,10 +299,15 @@ export default async function IssueBriefPage({
                   (for example after substantive edits).
                 </p>
               ) : null}
+              <p className="text-[0.72rem] leading-snug text-[--metis-text-tertiary]">
+                {mode === "full"
+                  ? "Generates or refreshes the Full issue brief only. Executive has its own stored revision."
+                  : "Generates or refreshes the Executive brief only. Full has its own stored revision."}
+              </p>
               <GenerateBriefButton
                 issueId={issue.id}
                 mode={mode}
-                label={hasBriefForMode ? "Regenerate brief" : "Generate brief"}
+                label={generateButtonLabel}
                 syncHint={generationSyncHint}
                 hintAlign="start"
                 variant={hasBriefForMode && briefInSync ? "outline" : "default"}

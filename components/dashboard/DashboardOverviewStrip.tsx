@@ -37,7 +37,7 @@ export function DashboardOverviewStrip({
           {criticalOpenGaps} critical open questions
         </Badge>
         <Badge className="border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_48%,transparent)] text-[--metis-text-tertiary]">
-          {aggregates.issuesNeedingBriefRegeneration} briefs may need refresh
+          {aggregates.issuesNeedingBriefRegeneration} Full/Executive brief(s) may need regenerate
         </Badge>
         <Badge className="border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_48%,transparent)] text-[--metis-text-tertiary]">
           {totalStoredExportPackages} saved exports
@@ -47,7 +47,7 @@ export function DashboardOverviewStrip({
       <p className="mt-2 text-[0.72rem] leading-relaxed text-[--metis-paper-muted]">
         Sorted by recent activity (not urgency). Attention chips highlight simple heuristics:{" "}
         <span className="text-[--metis-paper]">{attentionBreakdown.noSources}</span> with no sources,{" "}
-        <span className="text-[--metis-paper]">{attentionBreakdown.staleBrief}</span> with stale briefs,{" "}
+        <span className="text-[--metis-paper]">{attentionBreakdown.staleBrief}</span> with a stale Full or Executive brief,{" "}
         <span className="text-[--metis-paper]">{attentionBreakdown.criticalOpenQuestions}</span> with critical/high-priority open questions. Templates on the right are illustrative — not live monitoring.
       </p>
     </section>
