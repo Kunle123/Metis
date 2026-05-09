@@ -1,5 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 
+import { assertAllowedNonProductionDataScript } from "@/scripts/guards/assertNonProductionDataScript";
+
 import { seedShowcase2222 } from "./seedShowcase2222";
 
 const prisma = new PrismaClient();
@@ -147,6 +149,8 @@ const stakeholderGroups = [
 ] as const;
 
 async function main() {
+  assertAllowedNonProductionDataScript("prisma db seed (db/prisma/seed.ts)");
+
   // Remove prior fixed-id demo issues so reseeding is deterministic and non-incident by default.
   await prisma.issue.deleteMany({
     where: {

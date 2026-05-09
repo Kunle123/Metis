@@ -5,12 +5,15 @@
  * Invoke: npm run db:clean-validation-users
  */
 
+import { assertAllowedNonProductionDataScript } from "./guards/assertNonProductionDataScript";
 import { PrismaClient } from "@prisma/client";
 
 /** Strict allow-list — extend only when a clearly disposable local email alias is documented. */
 const DISPOSABLE_VALIDATION_EMAILS = ["live-brief-check@metis.local", "smoke-slice1@metis.local"] as const;
 
 async function main() {
+  assertAllowedNonProductionDataScript("npm run db:clean-validation-users (scripts/clean-validation-users.ts)");
+
   const prisma = new PrismaClient();
   const result = await prisma.user.deleteMany({
     where: { email: { in: [...DISPOSABLE_VALIDATION_EMAILS] } },
