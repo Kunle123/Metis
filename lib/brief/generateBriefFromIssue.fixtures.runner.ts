@@ -343,4 +343,29 @@ assertNoDanglingOpenParen("Recommendations", execParenStress.executive.blocks.fi
 const fullKeyUnknowns = fullTierEvidence.executive.blocks.find((b) => b.label === "Key unknowns / open questions")?.body ?? "";
 assert.match(fullKeyUnknowns, /Key unknowns|open questions|No open questions/i);
 
+/** Intake + tracker duplicate (near-identical wording) — Full brief summary should list once. */
+const thresholdText =
+  "What is the internal threshold for material change driven by feedback, and who signs it off?";
+const fullDedup = generateBriefFromIssue(
+  {
+    issue: { ...baseIssue, openQuestions: thresholdText, openGapsCount: 3 },
+    sources: [],
+    gaps: [
+      gap({
+        id: "gap-thresh",
+        prompt: thresholdText,
+        title: "Threshold",
+        severity: "Important",
+        linkedSection: "Programme",
+      }),
+    ],
+    internalInputs: [] as InternalInput[],
+  },
+  "full",
+);
+const confirmedVs = fullDedup.full.sections.find((s) => s.id === "confirmed-vs-unclear")?.body ?? "";
+const threshHits = [...confirmedVs.matchAll(/internal threshold for material change/gi)];
+assert.ok(threshHits.length <= 1, "Open questions (summary) should not repeat the same near-duplicate line");
+assert.match(confirmedVs, /Open questions \(summary\)/);
+
 console.log("generateBriefFromIssue fixtures: OK");

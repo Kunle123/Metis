@@ -10,7 +10,8 @@ import {
 
 const CAP_EX_SOURCES = 8;
 const MAX_QUESTION_BULLETS = 12;
-const MAX_QUESTION_BULLET_CHARS = 220;
+/** Intake question bullets in Full brief; slightly higher cap with safe clipping to reduce mid-parenthesis cuts. */
+const MAX_QUESTION_BULLET_CHARS = 300;
 const CAP_EX_OPEN_GAPS = 8;
 const CAP_EX_OBS = 5;
 const CAP_FULL_GAPS = 20;
@@ -112,10 +113,25 @@ export function splitOpenQuestionsToBullets(text: string): string[] {
 
   const clipped = parts
     .slice(0, MAX_QUESTION_BULLETS)
-    .map((p) => clipAtWordBoundary(p.trim(), MAX_QUESTION_BULLET_CHARS))
+    .map((p) => {
+      const raw = clipAtWordBoundary(p.trim(), MAX_QUESTION_BULLET_CHARS);
+      if (!raw) return "";
+      return sanitizeClippedFragment(raw);
+    })
     .filter(Boolean);
-  if (clipped.length) return clipped;
-  const fallback = clipAtWordBoundary(t, MAX_QUESTION_BULLET_CHARS);
+
+  const unique: string[] = [];
+  const seenNorm = new Set<string>();
+  for (const line of clipped) {
+    const k = normalizeNeedText(line);
+    if (!k || seenNorm.has(k)) continue;
+    seenNorm.add(k);
+    unique.push(line);
+  }
+
+  if (unique.length) return unique;
+  const fallbackRaw = clipAtWordBoundary(t, MAX_QUESTION_BULLET_CHARS);
+  const fallback = fallbackRaw ? sanitizeClippedFragment(fallbackRaw) : "";
   return fallback ? [fallback] : [];
 }
 
@@ -526,11 +542,19 @@ export function dedupeExecutiveNearDuplicateQuestions(items: readonly TopOpenQue
   return bySevGapScore;
 }
 
+const MAX_FULL_SUMMARY_QUESTION_DISPLAY = 360;
+
 function formatTopOpenQuestionsBody(records: readonly TopOpenQuestionRecord[]): string {
   const out = records.map((q) => {
     const sev = q.source === "gap" && q.severity ? `[${q.severity}] ` : "";
     const section = q.source === "gap" && q.section ? ` — ${q.section}` : "";
-    return `- ${sev}${stripTrailingPunctuation(q.text)}${section}`;
+    let oneLine = q.text.replace(/\s+/g, " ").trim();
+    if (oneLine.length > MAX_FULL_SUMMARY_QUESTION_DISPLAY) {
+      oneLine = sanitizeClippedFragment(clipAtWordBoundary(oneLine, MAX_FULL_SUMMARY_QUESTION_DISPLAY));
+      if (!/[.!?…]$/u.test(oneLine)) oneLine = `${stripTrailingPunctuation(oneLine)}…`;
+    }
+    const body = fixMalformedQuestionText(oneLine);
+    return `- ${sev}${body}${section}`;
   });
   return out.join("\n");
 }
@@ -579,7 +603,8 @@ function topOpenQuestionsSummary({
   openGaps: Gap[];
   cap?: number;
 }) {
-  const ranked = gatherTopOpenQuestionRecords(openQuestionsRaw, openGaps).slice(0, cap);
+  const merged = dedupeExecutiveNearDuplicateQuestions(gatherTopOpenQuestionRecords(openQuestionsRaw, openGaps));
+  const ranked = merged.slice(0, cap);
   return formatTopOpenQuestionsBody(ranked);
 }
 
@@ -945,16 +970,15 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
         return "Confirm timeline, decision points, and sign-off milestones for the next update.";
       if (/\bstakeholder\b|\bsector\b|\bcommunity\b|\bconcerns?\b/i.test(q))
         return "Align expected stakeholder concerns and who will support detail on the day.";
-      const short = clipAtWordBoundary(stripTrailingPunctuation(q), 92);
+      const clipped = clipAtWordBoundary(stripTrailingPunctuation(q), 92);
+      const short = clipped ? sanitizeClippedFragment(clipped) : "";
       return short ? `Confirm the current position on: ${short}` : "";
     };
 
-    const candidates = [
-      ...splitIntakeOpenQuestions(openQuestions),
-      ...rankedOpenGaps.map((g) => (g.prompt || g.title || "").trim()),
-    ].filter(Boolean);
+    const mergedForActions = dedupeExecutiveNearDuplicateQuestions(gatherTopOpenQuestionRecords(openQuestions, rankedOpenGaps));
     const seen = new Set<string>();
-    for (const c of candidates) {
+    for (const r of mergedForActions) {
+      const c = r.text;
       const key = normalizeQuestionThemeKey(c) || normalizeQuestionKey(c) || normalizeNeedText(c);
       if (!key || seen.has(key)) continue;
       seen.add(key);
