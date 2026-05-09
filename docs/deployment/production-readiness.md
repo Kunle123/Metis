@@ -62,10 +62,20 @@ Use this before cutting over a pilot tenant.
 - [ ] **`DATABASE_URL`** (production) injected via secret store — not committed  
 - [ ] **`METIS_SESSION_SECRET`** unique, high-entropy, rotated with a documented JWT invalidation consequence ([`lib/auth/jwt.ts`](../../lib/auth/jwt.ts): missing secret throws at token mint/verify time)  
 - [ ] **`ALLOW_PRODUCTION_DATA_SCRIPT` unset** in production normally — only emergency operator override  
+- [ ] **`CLERK_WEBHOOK_SIGNING_SECRET`** (or **`CLERK_WEBHOOK_SECRET`**) for [`POST /api/clerk/webhooks`](../../app/api/clerk/webhooks/route.ts) — must match the signing secret shown in the Clerk Dashboard for that endpoint  
+
+#### Clerk pilot onboarding (webhooks + Metis memberships)
+
+1. Create the Clerk application; set **`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`** and **`CLERK_SECRET_KEY`** in the app runtime.  
+2. Create the Clerk organisation (e.g. Acme). Either let **`organization.created`** create a Metis `Organisation`, or pre-create one in Metis and link ids: `npx tsx scripts/link-clerk-org.ts <metisOrganisationId> <clerkOrgId>`.  
+3. In Clerk → **Webhooks**, add **`https://<your-host>/api/clerk/webhooks`**, subscribe at minimum to **`organization.created`**, **`organization.updated`**, **`organization.deleted`**, **`organizationMembership.created`**, **`organizationMembership.updated`**, **`organizationMembership.deleted`**, and optionally **`user.created`** / **`user.updated`**.  
+4. Copy the endpoint **signing secret** into **`CLERK_WEBHOOK_SIGNING_SECRET`** (alias **`CLERK_WEBHOOK_SECRET`**).  
+5. Invite users in Clerk; after deliveries, confirm Metis **`User`** (by `clerkUserId` / email) and **`Membership`** rows. If an event was missed, repair with `npx tsx scripts/provision-clerk-membership.ts <email> <orgSlugOrId> <Admin|User|Viewer>`.  
+6. Sign in via Clerk, confirm the dashboard resolves the correct workspace (`Organisation.clerkOrgId` + active Clerk org), and confirm **`Membership.role`** still governs writes (Viewer read-only).  
 
 ### Planned (until implemented)
 
-- [ ] **Clerk** production instance and keys (**optional SSO bridge shipped** — set env vars plus operational policy; webhook-driven membership sync still **planned** §9)  
+- [ ] **Clerk** production instance and keys (**SSO bridge + org/membership webhook sync shipped** — configure keys, webhook URL, signing secret; invitation UX / admin UI still **planned** §9)  
 - [ ] Outbound **email**/notification provider (**planned**: no SMTP env vars wired in-repo today beyond product intent)  
 
 ### Operational
@@ -263,8 +273,8 @@ Mark these **planned**, not promised in current UI:
 
 | Item | Note |
 |------|------|
-| **Clerk** (lifecycle + sync) | **Session bridge landed** alongside JWT; **full IdP lifecycle** still means webhooks/dashboards syncing Clerk memberships → Metis `Membership` (**deferred**) and admin tooling |
-| **`Organisation` / `Membership` parity with Clerk tenants** | Metis memberships are authoritative; automatic provisioning from Clerk invitations/orgs **not wired** outside manual DB / scripting |
+| **Clerk** (lifecycle + sync) | **`POST /api/clerk/webhooks`** syncs org + membership events into Metis (see `lib/organisations/clerkOrgSync.ts`); **invitation-only flows** and in-app admin CRUD remain **planned** |
+| **`Organisation` / `Membership` parity with Clerk tenants** | Metis **`Membership.role`** remains authoritative for writes; Clerk org roles are **mapped into** Metis on webhook; repair via `scripts/provision-clerk-membership.ts` / `scripts/link-clerk-org.ts` if events are missed |
 | **Admin user lifecycle UI** | Provision script + eventual IdP dashboards |
 | **Restricted internal observations** | Policy layer beyond schema flags (`excludedFromBrief` exists mechanically) |
 | **Approval workflows** | Not surfaced as workflow engine |

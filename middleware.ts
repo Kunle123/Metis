@@ -10,7 +10,9 @@ function isApiPath(pathname: string) {
 }
 
 function isPublicApi(pathname: string) {
-  return pathname.startsWith("/api/auth");
+  if (pathname.startsWith("/api/auth")) return true;
+  if (pathname === "/api/clerk/webhooks" || pathname.startsWith("/api/clerk/webhooks/")) return true;
+  return false;
 }
 
 function isStaticAssetPath(pathname: string) {
