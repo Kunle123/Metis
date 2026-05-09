@@ -1,7 +1,8 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
+import { NoOrganisationMembershipShell } from "@/components/organisation/NoOrganisationMembership";
 import { prisma } from "@/lib/db/prisma";
-import { getIssueById } from "@/lib/issues/getIssueContext";
+import { loadIssuePageContext } from "@/lib/organisations/loadIssuePageContext";
 import { MetisShell } from "@/components/MetisShell";
 import { internalInputDbRowToWire } from "@/lib/internalInputs/internalInputWireFormat";
 
@@ -11,8 +12,11 @@ export const dynamic = "force-dynamic";
 
 export default async function IssueInternalInputPage({ params }: { params: Promise<{ issueId: string }> }) {
   const { issueId } = await params;
-  const issue = await getIssueById(issueId);
-  if (!issue) notFound();
+  const pageCtx = await loadIssuePageContext(issueId);
+  if (pageCtx.outcome === "unauthorized") redirect("/login");
+  if (pageCtx.outcome === "no_membership") return <NoOrganisationMembershipShell />;
+  if (pageCtx.outcome === "not_found") notFound();
+  const { issue } = pageCtx;
 
   const inputsRaw = await prisma.internalInput.findMany({
     where: { issueId: issue.id },

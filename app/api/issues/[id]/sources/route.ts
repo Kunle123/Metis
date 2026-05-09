@@ -6,7 +6,8 @@ import { formatNumericSourceCode, parseNumericSourceCodeOrdinal } from "@/lib/is
 import { prisma } from "@/lib/db/prisma";
 import { IssueActivityKinds } from "@/lib/issues/activityKinds";
 import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
-import { requireMutation } from "@/lib/governance/requireMutation";
+import { requireActiveOrgIssue } from "@/lib/organisations/requireActiveOrgIssue";
+import { isMutationRole } from "@/lib/auth/session";
 
 const tierOrder = ["Official", "Internal", "Major media", "Market signal"] as const;
 
@@ -25,8 +26,11 @@ function nextSourceCode(existing: string[]) {
   return formatNumericSourceCode(max + 1);
 }
 
-export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id: issueId } = await params;
+
+  const gated = await requireActiveOrgIssue(request, issueId);
+  if (gated instanceof NextResponse) return gated;
 
   const sources = await prisma.source.findMany({
     where: { issueId },
@@ -54,10 +58,13 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const user = await requireMutation(request);
-  if (user instanceof NextResponse) return user;
-
   const { id: issueId } = await params;
+
+  const gated = await requireActiveOrgIssue(request, issueId);
+  if (gated instanceof NextResponse) return gated;
+  if (!isMutationRole(gated.ctx.user.role)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
   const json = await request.json();
   const parsed = CreateSourceInputSchema.safeParse(json);
 
@@ -77,9 +84,6 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   if (!tierParsed.success) {
     return NextResponse.json({ error: "Invalid tier" }, { status: 400 });
   }
-
-  const issue = await prisma.issue.findUnique({ where: { id: issueId } });
-  if (!issue) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const created = await prisma.$transaction(async (tx) => {
     const existingCodes = await tx.source.findMany({
@@ -118,7 +122,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       summary: `Source ${source.sourceCode} created`,
       refType: "Source",
       refId: source.id,
-      actorLabel: user.email ?? null,
+      actorLabel: gated.ctx.user.email ?? null,
     });
 
     return source;

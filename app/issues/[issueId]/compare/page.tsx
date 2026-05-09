@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { ArrowDownRight, ArrowUpRight, FileOutput, RefreshCcw, ScanSearch, TrendingUp } from "lucide-react";
+import { notFound, redirect } from "next/navigation";
 
+import { NoOrganisationMembershipShell } from "@/components/organisation/NoOrganisationMembership";
 import { MetisShell, ReadinessPill, SurfaceCard } from "@/components/MetisShell";
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/db/prisma";
-import { getIssueById } from "@/lib/issues/getIssueContext";
+import { loadIssuePageContext } from "@/lib/organisations/loadIssuePageContext";
 import { BriefModeSchema, BriefArtifactSchema, type BriefMode, type BriefArtifact } from "@metis/shared/briefVersion";
 import type { CompareGroupId, CompareSummary, CirculationState } from "@metis/shared/compare";
 import { compareBriefArtifacts } from "@/lib/brief/compareBriefVersions";
@@ -78,16 +80,11 @@ export default async function IssueComparePage({
   const fromRaw = typeof sp.from === "string" ? sp.from : Array.isArray(sp.from) ? sp.from[0] : undefined;
   const toRaw = typeof sp.to === "string" ? sp.to : Array.isArray(sp.to) ? sp.to[0] : undefined;
 
-  const issue = await getIssueById(issueId);
-  if (!issue) {
-    return (
-      <MetisShell activePath="/compare" pageTitle="Brief Delta" issueRoutePrefix={`/issues/${issueId}`}>
-        <SurfaceCard>
-          <div className="px-6 py-6 text-[--metis-paper]">Issue not found.</div>
-        </SurfaceCard>
-      </MetisShell>
-    );
-  }
+  const pageCtx = await loadIssuePageContext(issueId);
+  if (pageCtx.outcome === "unauthorized") redirect("/login");
+  if (pageCtx.outcome === "no_membership") return <NoOrganisationMembershipShell />;
+  if (pageCtx.outcome === "not_found") notFound();
+  const { issue } = pageCtx;
 
   const allVersions = await prisma.briefVersion.findMany({
     where: { issueId: issue.id, mode },

@@ -1,10 +1,12 @@
 import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
 
+import { NoOrganisationMembershipShell } from "@/components/organisation/NoOrganisationMembership";
 import { MetisShell, SurfaceCard } from "@/components/MetisShell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/db/prisma";
-import { getIssueById } from "@/lib/issues/getIssueContext";
+import { loadIssuePageContext } from "@/lib/organisations/loadIssuePageContext";
 import { enrichActivityRowsForIssue } from "@/lib/issues/enrichActivityTimeline";
 import { activityKindLabel, activityTimelineDisplaySummary, formatActivityTimestamp } from "@/lib/issues/activityTimelineDisplay";
 import type { SerializedActivityRow } from "@/lib/issues/activityTimelineDisplay";
@@ -15,17 +17,11 @@ export const dynamic = "force-dynamic";
 
 export default async function IssueActivityPage({ params }: { params: Promise<{ issueId: string }> }) {
   const { issueId } = await params;
-  const issue = await getIssueById(issueId);
-
-  if (!issue) {
-    return (
-      <MetisShell activePath="/activity" pageTitle="Activity timeline" issueRoutePrefix={`/issues/${issueId}`}>
-        <SurfaceCard>
-          <div className="px-6 py-6 text-[--metis-paper]">Issue not found.</div>
-        </SurfaceCard>
-      </MetisShell>
-    );
-  }
+  const page = await loadIssuePageContext(issueId);
+  if (page.outcome === "unauthorized") redirect("/login");
+  if (page.outcome === "no_membership") return <NoOrganisationMembershipShell />;
+  if (page.outcome === "not_found") notFound();
+  const { issue } = page;
 
   const activities = await prisma.issueActivity.findMany({
     where: { issueId: issue.id },

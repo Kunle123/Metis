@@ -2,9 +2,8 @@ import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 
 import { prisma } from "@/lib/db/prisma";
-import { DEMO_ORGANISATION_ID } from "@/lib/organisations/demoOrganisation";
-import { requireAuth } from "@/lib/auth/requireAuth";
-import { requireMutation } from "@/lib/governance/requireMutation";
+import { requireActiveOrganisationContext } from "@/lib/organisations/activeOrganisationContext";
+import { isMutationRole } from "@/lib/auth/session";
 import { CreateStakeholderGroupInputSchema, StakeholderGroupSensitivitySchema } from "@metis/shared/stakeholder";
 
 function serializeGroup(g: {
@@ -34,10 +33,11 @@ function serializeGroup(g: {
 }
 
 export async function GET(request: Request) {
-  const gate = await requireAuth(request);
-  if (gate instanceof NextResponse) return gate;
+  const ctx = await requireActiveOrganisationContext(request);
+  if (ctx instanceof NextResponse) return ctx;
 
   const groups = await prisma.stakeholderGroup.findMany({
+    where: { organisationId: ctx.organisation.id },
     orderBy: [{ isActive: "desc" }, { displayOrder: "asc" }, { name: "asc" }],
   });
 
@@ -45,8 +45,12 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const gate = await requireMutation(request);
-  if (gate instanceof NextResponse) return gate;
+  const ctx = await requireActiveOrganisationContext(request);
+  if (ctx instanceof NextResponse) return ctx;
+
+  if (!isMutationRole(ctx.user.role)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const json = await request.json();
   const parsed = CreateStakeholderGroupInputSchema.safeParse(json);
@@ -59,7 +63,7 @@ export async function POST(request: Request) {
 
   const created = await prisma.stakeholderGroup.create({
     data: {
-      organisationId: DEMO_ORGANISATION_ID,
+      organisationId: ctx.organisation.id,
       name: nameTrimmed,
       description: parsed.data.description ?? null,
       defaultSensitivity: parsed.data.defaultSensitivity ?? null,

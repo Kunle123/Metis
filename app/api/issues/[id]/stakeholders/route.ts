@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 
 import { prisma } from "@/lib/db/prisma";
-import { requireAuth } from "@/lib/auth/requireAuth";
-import { requireMutation } from "@/lib/governance/requireMutation";
+import { requireActiveOrgIssue } from "@/lib/organisations/requireActiveOrgIssue";
+import { isMutationRole } from "@/lib/auth/session";
 import { CreateIssueStakeholderInputSchema, IssueStakeholderPrioritySchema, StakeholderGroupSensitivitySchema } from "@metis/shared/stakeholder";
 
 function serializeIssueStakeholder(row: {
@@ -61,12 +61,10 @@ function serializeIssueStakeholder(row: {
 }
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const gate = await requireAuth(request);
-  if (gate instanceof NextResponse) return gate;
-
   const { id: issueId } = await params;
-  const issue = await prisma.issue.findUnique({ where: { id: issueId }, select: { id: true } });
-  if (!issue) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  const gated = await requireActiveOrgIssue(request, issueId);
+  if (gated instanceof NextResponse) return gated;
 
   const rows = await prisma.issueStakeholder.findMany({
     where: { issueId },
@@ -78,12 +76,13 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const gate = await requireMutation(request);
-  if (gate instanceof NextResponse) return gate;
-
   const { id: issueId } = await params;
-  const issue = await prisma.issue.findUnique({ where: { id: issueId }, select: { id: true } });
-  if (!issue) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  const gated = await requireActiveOrgIssue(request, issueId);
+  if (gated instanceof NextResponse) return gated;
+  if (!isMutationRole(gated.ctx.user.role)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const json = await request.json();
   const parsed = CreateIssueStakeholderInputSchema.safeParse(json);
@@ -91,7 +90,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: "Invalid request", issues: parsed.error.issues }, { status: 400 });
   }
 
-  const group = await prisma.stakeholderGroup.findUnique({ where: { id: parsed.data.stakeholderGroupId } });
+  const group = await prisma.stakeholderGroup.findFirst({
+    where: { id: parsed.data.stakeholderGroupId, organisationId: gated.ctx.organisation.id },
+  });
   if (!group) return NextResponse.json({ error: "Stakeholder group not found" }, { status: 404 });
 
   const created = await prisma.issueStakeholder.create({

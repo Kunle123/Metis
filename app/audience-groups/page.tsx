@@ -1,12 +1,25 @@
+import { redirect } from "next/navigation";
+
+import { NoOrganisationMembershipShell } from "@/components/organisation/NoOrganisationMembership";
 import { MetisShell, SurfaceCard } from "@/components/MetisShell";
 import { prisma } from "@/lib/db/prisma";
+import { resolvePageOrganisationGate } from "@/lib/organisations/pageOrganisationGate";
 
 import { StakeholderLibrary } from "./stakeholder-library";
 
 export const dynamic = "force-dynamic";
 
 export default async function AudienceGroupsPage() {
+  const gate = await resolvePageOrganisationGate();
+  if (!gate.ok) {
+    if (gate.httpStatus === 401) redirect("/login");
+    return <NoOrganisationMembershipShell />;
+  }
+
+  const organisationId = gate.context.organisation.id;
+
   const groups = await prisma.stakeholderGroup.findMany({
+    where: { organisationId },
     orderBy: [{ isActive: "desc" }, { displayOrder: "asc" }, { name: "asc" }],
   });
   const activeCount = groups.filter((g) => g.isActive).length;

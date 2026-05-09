@@ -5,11 +5,17 @@ import { PatchIssueTriageInputSchema } from "@metis/shared/activity";
 import { prisma } from "@/lib/db/prisma";
 import { IssueActivityKinds } from "@/lib/issues/activityKinds";
 import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
-import { requireMutation } from "@/lib/governance/requireMutation";
+import { requireActiveOrganisationContext } from "@/lib/organisations/activeOrganisationContext";
+import { isMutationRole } from "@/lib/auth/session";
 
-export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const ctx = await requireActiveOrganisationContext(request);
+  if (ctx instanceof NextResponse) return ctx;
+
   const { id } = await params;
-  const issue = await prisma.issue.findUnique({ where: { id } });
+  const issue = await prisma.issue.findFirst({
+    where: { id, organisationId: ctx.organisation.id },
+  });
 
   if (!issue) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
@@ -22,8 +28,12 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
 }
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const user = await requireMutation(request);
-  if (user instanceof NextResponse) return user;
+  const ctx = await requireActiveOrganisationContext(request);
+  if (ctx instanceof NextResponse) return ctx;
+
+  if (!isMutationRole(ctx.user.role)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const { id } = await params;
   const json = await request.json();
@@ -46,7 +56,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     }
 
     const updated = await prisma.$transaction(async (tx) => {
-      const existing = await tx.issue.findUnique({ where: { id } });
+      const existing = await tx.issue.findFirst({
+        where: { id, organisationId: ctx.organisation.id },
+      });
       if (!existing) throw new Error("Not found");
 
       const next = await tx.issue.update({
@@ -73,7 +85,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
           summary: changes.join(" · "),
           refType: "Issue",
           refId: id,
-          actorLabel: user.email ?? null,
+          actorLabel: ctx.user.email ?? null,
         });
 
         // Return a fresh read so PATCH reflects persisted lastActivityAt.

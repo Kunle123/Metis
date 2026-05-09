@@ -1,7 +1,9 @@
 import { prisma } from "@/lib/db/prisma";
 
-export async function getIssueById(issueId: string) {
+export async function getIssueForOrganisation(issueId: string, organisationId: string) {
   if (!issueId || typeof issueId !== "string") return null;
-  return prisma.issue.findUnique({ where: { id: issueId } });
+  return prisma.issue.findFirst({
+    where: { id: issueId, organisationId },
+  });
 }
 

@@ -1,9 +1,11 @@
 import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
 
+import { NoOrganisationMembershipShell } from "@/components/organisation/NoOrganisationMembership";
 import { MetisShell, SurfaceCard } from "@/components/MetisShell";
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/db/prisma";
-import { getIssueById } from "@/lib/issues/getIssueContext";
+import { loadIssuePageContext } from "@/lib/organisations/loadIssuePageContext";
 import {
   CommsPlanOutputTypeSchema,
   CommsPlanScheduleTypeSchema,
@@ -20,17 +22,11 @@ export const dynamic = "force-dynamic";
 
 export default async function IssueCommsPlanPage({ params }: { params: Promise<{ issueId: string }> }) {
   const { issueId } = await params;
-  const issue = await getIssueById(issueId);
-
-  if (!issue) {
-    return (
-      <MetisShell activePath="/comms-plan" pageTitle="Comms plan" issueRoutePrefix={`/issues/${issueId}`}>
-        <SurfaceCard>
-          <div className="px-6 py-6 text-[--metis-paper]">Issue not found.</div>
-        </SurfaceCard>
-      </MetisShell>
-    );
-  }
+  const pageCtx = await loadIssuePageContext(issueId);
+  if (pageCtx.outcome === "unauthorized") redirect("/login");
+  if (pageCtx.outcome === "no_membership") return <NoOrganisationMembershipShell />;
+  if (pageCtx.outcome === "not_found") notFound();
+  const { issue, organisationId } = pageCtx;
 
   const [items, activeGroups] = await Promise.all([
     prisma.commsPlanItem.findMany({
@@ -39,7 +35,7 @@ export default async function IssueCommsPlanPage({ params }: { params: Promise<{
       include: { stakeholderGroup: { select: { name: true } } },
     }),
     prisma.stakeholderGroup.findMany({
-      where: { isActive: true },
+      where: { organisationId, isActive: true },
       orderBy: [{ displayOrder: "asc" }, { name: "asc" }],
     }),
   ]);

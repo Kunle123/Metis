@@ -6,7 +6,8 @@ import { prisma } from "@/lib/db/prisma";
 import { isOpenGapStatus } from "@/lib/gaps/openGapsCount";
 import { IssueActivityKinds } from "@/lib/issues/activityKinds";
 import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
-import { requireMutation } from "@/lib/governance/requireMutation";
+import { requireActiveOrgIssue } from "@/lib/organisations/requireActiveOrgIssue";
+import { isMutationRole } from "@/lib/auth/session";
 
 function serializeGap(gap: {
   id: string;
@@ -61,11 +62,11 @@ function sortGapsForUi<T extends { status: string; severity: string; createdAt: 
   });
 }
 
-export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id: issueId } = await params;
 
-  const issue = await prisma.issue.findUnique({ where: { id: issueId } });
-  if (!issue) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  const gated = await requireActiveOrgIssue(request, issueId);
+  if (gated instanceof NextResponse) return gated;
 
   const gaps = await prisma.gap.findMany({
     where: { issueId },
@@ -75,10 +76,13 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const user = await requireMutation(request);
-  if (user instanceof NextResponse) return user;
-
   const { id: issueId } = await params;
+
+  const gated = await requireActiveOrgIssue(request, issueId);
+  if (gated instanceof NextResponse) return gated;
+  if (!isMutationRole(gated.ctx.user.role)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
   const json = await request.json();
   const parsed = CreateGapInputSchema.safeParse(json);
 
@@ -95,9 +99,6 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   if (!titleTrimmed.length || !whyItMattersTrimmed.length || !stakeholderTrimmed.length || !promptTrimmed.length) {
     return NextResponse.json({ error: "Missing required fields." }, { status: 400 });
   }
-
-  const issue = await prisma.issue.findUnique({ where: { id: issueId } });
-  if (!issue) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const status = parsed.data.status ?? "Open";
   const severityParsed = GapSeveritySchema.safeParse(parsed.data.severity);
@@ -146,7 +147,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       summary: "Gap created",
       refType: "Gap",
       refId: gap.id,
-      actorLabel: user.email ?? null,
+      actorLabel: gated.ctx.user.email ?? null,
     });
 
     return gap;

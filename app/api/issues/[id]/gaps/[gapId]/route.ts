@@ -6,7 +6,8 @@ import { prisma } from "@/lib/db/prisma";
 import { isOpenGapStatus } from "@/lib/gaps/openGapsCount";
 import { IssueActivityKinds } from "@/lib/issues/activityKinds";
 import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
-import { requireMutation } from "@/lib/governance/requireMutation";
+import { requireActiveOrgIssue } from "@/lib/organisations/requireActiveOrgIssue";
+import { isMutationRole } from "@/lib/auth/session";
 
 function serializeGap(gap: {
   id: string;
@@ -40,8 +41,11 @@ function serializeGap(gap: {
   };
 }
 
-export async function GET(_: Request, { params }: { params: Promise<{ id: string; gapId: string }> }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string; gapId: string }> }) {
   const { id: issueId, gapId } = await params;
+
+  const gated = await requireActiveOrgIssue(request, issueId);
+  if (gated instanceof NextResponse) return gated;
 
   const gap = await prisma.gap.findFirst({
     where: { id: gapId, issueId },
@@ -53,10 +57,13 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
 }
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string; gapId: string }> }) {
-  const user = await requireMutation(request);
-  if (user instanceof NextResponse) return user;
-
   const { id: issueId, gapId } = await params;
+
+  const gated = await requireActiveOrgIssue(request, issueId);
+  if (gated instanceof NextResponse) return gated;
+  if (!isMutationRole(gated.ctx.user.role)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
   const json = await request.json();
   const parsed = PatchGapInputSchema.safeParse(json);
 
@@ -136,7 +143,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
           summary: "Gap resolved",
           refType: "Gap",
           refId: gap.id,
-          actorLabel: user.email ?? null,
+          actorLabel: gated.ctx.user.email ?? null,
         });
       } else if (existing.status === "Resolved" && gap.status === "Open") {
         await writeIssueActivity(tx, {
@@ -145,7 +152,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
           summary: "Gap reopened",
           refType: "Gap",
           refId: gap.id,
-          actorLabel: user.email ?? null,
+          actorLabel: gated.ctx.user.email ?? null,
         });
       }
     }

@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ArrowRight, Star } from "lucide-react";
 
+import { NoOrganisationMembershipShell } from "@/components/organisation/NoOrganisationMembership";
 import { DashboardOverviewStrip } from "@/components/dashboard/DashboardOverviewStrip";
 import { DashboardRecentActivity } from "@/components/dashboard/DashboardRecentActivity";
 import { IssueSummaryRow } from "@/components/dashboard/IssueSummaryRow";
@@ -9,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { buildOperationalSnapshotMetrics } from "@/lib/dashboard/buildOperationalSnapshotMetrics";
 import { getDashboardSnapshot } from "@/lib/dashboard/getDashboardSnapshot";
+import { resolvePageOrganisationGate } from "@/lib/organisations/pageOrganisationGate";
 
 export const dynamic = "force-dynamic";
 
@@ -42,7 +45,15 @@ const dashboardQuickLinksBase = [
 ] as const;
 
 export default async function DashboardPage() {
-  const snapshot = await getDashboardSnapshot();
+  const gate = await resolvePageOrganisationGate();
+  if (!gate.ok) {
+    if (gate.httpStatus === 401) redirect("/login");
+    return <NoOrganisationMembershipShell />;
+  }
+
+  const snapshot = await getDashboardSnapshot({
+    organisationId: gate.context.organisation.id,
+  });
   const { issues, aggregates, recentActivity, workspacePulse } = snapshot;
   const operationalSnapshotMetrics = buildOperationalSnapshotMetrics(snapshot);
 

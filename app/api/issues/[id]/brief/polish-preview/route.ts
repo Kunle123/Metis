@@ -5,7 +5,8 @@ import { BriefArtifactSchema } from "@metis/shared/briefVersion";
 import { prisma } from "@/lib/db/prisma";
 import { buildBriefSynthesisInput } from "@/lib/brief/buildBriefSynthesisInput";
 import { executeBriefAlternateWordingSynthesis, type BriefAlternateWordingSynthesisOutcome } from "@/lib/ai/synthesizeBrief";
-import { requireMutation } from "@/lib/governance/requireMutation";
+import { requireActiveOrgIssue } from "@/lib/organisations/requireActiveOrgIssue";
+import { isMutationRole } from "@/lib/auth/session";
 
 const PolishPreviewRequestSchema = z.object({
   mode: z.string(),
@@ -31,10 +32,13 @@ function messageForSynthesisErrorCode(error: Extract<BriefAlternateWordingSynthe
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const user = await requireMutation(request);
-  if (user instanceof NextResponse) return user;
-
   const { id: issueId } = await params;
+
+  const gated = await requireActiveOrgIssue(request, issueId);
+  if (gated instanceof NextResponse) return gated;
+  if (!isMutationRole(gated.ctx.user.role)) {
+    return NextResponse.json({ success: false, code: "forbidden", message: "Forbidden." }, { status: 403 });
+  }
 
   let json: unknown;
   try {
@@ -58,8 +62,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     );
   }
 
-  const issue = await prisma.issue.findUnique({ where: { id: issueId } });
-  if (!issue) return NextResponse.json({ success: false, code: "not_found", message: "Issue not found." }, { status: 404 });
+  const issue = gated.issue;
 
   const briefVersion = parsedBody.data.briefVersionId
     ? await prisma.briefVersion.findFirst({

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { ListIssueActivityResponseSchema } from "@metis/shared/activity";
 import { prisma } from "@/lib/db/prisma";
+import { requireActiveOrgIssue } from "@/lib/organisations/requireActiveOrgIssue";
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id: issueId } = await params;
@@ -9,8 +10,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   const limitRaw = url.searchParams.get("limit");
   const limit = Math.max(1, Math.min(100, limitRaw ? Number(limitRaw) : 40));
 
-  const issue = await prisma.issue.findUnique({ where: { id: issueId }, select: { id: true } });
-  if (!issue) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  const gated = await requireActiveOrgIssue(request, issueId);
+  if (gated instanceof NextResponse) return gated;
 
   const items = await prisma.issueActivity.findMany({
     where: { issueId },

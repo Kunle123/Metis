@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 
 import { prisma } from "@/lib/db/prisma";
-import { requireAuth } from "@/lib/auth/requireAuth";
-import { requireMutation } from "@/lib/governance/requireMutation";
+import { requireActiveOrgIssue } from "@/lib/organisations/requireActiveOrgIssue";
+import { isMutationRole } from "@/lib/auth/session";
 import {
   IssueStakeholderPrioritySchema,
   PatchIssueStakeholderInputSchema,
@@ -65,10 +65,11 @@ function serializeIssueStakeholder(row: {
 }
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string; issueStakeholderId: string }> }) {
-  const gate = await requireAuth(request);
-  if (gate instanceof NextResponse) return gate;
-
   const { id: issueId, issueStakeholderId } = await params;
+
+  const gated = await requireActiveOrgIssue(request, issueId);
+  if (gated instanceof NextResponse) return gated;
+
   const row = await prisma.issueStakeholder.findFirst({
     where: { id: issueStakeholderId, issueId },
     include: { stakeholderGroup: true },
@@ -81,10 +82,14 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string; issueStakeholderId: string }> },
 ) {
-  const gate = await requireMutation(request);
-  if (gate instanceof NextResponse) return gate;
-
   const { id: issueId, issueStakeholderId } = await params;
+
+  const gated = await requireActiveOrgIssue(request, issueId);
+  if (gated instanceof NextResponse) return gated;
+  if (!isMutationRole(gated.ctx.user.role)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const existing = await prisma.issueStakeholder.findFirst({ where: { id: issueStakeholderId, issueId } });
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
@@ -118,10 +123,14 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string; issueStakeholderId: string }> },
 ) {
-  const gate = await requireMutation(request);
-  if (gate instanceof NextResponse) return gate;
-
   const { id: issueId, issueStakeholderId } = await params;
+
+  const gated = await requireActiveOrgIssue(request, issueId);
+  if (gated instanceof NextResponse) return gated;
+  if (!isMutationRole(gated.ctx.user.role)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
 
   const existing = await prisma.issueStakeholder.findFirst({ where: { id: issueStakeholderId, issueId } });
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });

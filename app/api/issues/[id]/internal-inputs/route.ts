@@ -5,14 +5,15 @@ import { CreateInternalInputInputSchema, InternalInputConfidenceSchema } from "@
 import { prisma } from "@/lib/db/prisma";
 import { IssueActivityKinds } from "@/lib/issues/activityKinds";
 import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
-import { requireMutation } from "@/lib/governance/requireMutation";
+import { requireActiveOrgIssue } from "@/lib/organisations/requireActiveOrgIssue";
+import { isMutationRole } from "@/lib/auth/session";
 import { internalInputDbRowToWire } from "@/lib/internalInputs/internalInputWireFormat";
 
-export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id: issueId } = await params;
 
-  const issue = await prisma.issue.findUnique({ where: { id: issueId } });
-  if (!issue) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  const gated = await requireActiveOrgIssue(request, issueId);
+  if (gated instanceof NextResponse) return gated;
 
   const inputs = await prisma.internalInput.findMany({
     where: { issueId },
@@ -25,10 +26,13 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const user = await requireMutation(request);
-  if (user instanceof NextResponse) return user;
-
   const { id: issueId } = await params;
+
+  const gated = await requireActiveOrgIssue(request, issueId);
+  if (gated instanceof NextResponse) return gated;
+  if (!isMutationRole(gated.ctx.user.role)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
   const json = await request.json();
   const parsed = CreateInternalInputInputSchema.safeParse(json);
 
@@ -43,9 +47,6 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   if (!roleTrimmed.length || !nameTrimmed.length || !responseTrimmed.length) {
     return NextResponse.json({ error: "Missing required fields." }, { status: 400 });
   }
-
-  const issue = await prisma.issue.findUnique({ where: { id: issueId } });
-  if (!issue) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const confidenceParsed = InternalInputConfidenceSchema.safeParse(parsed.data.confidence);
   if (!confidenceParsed.success) {
@@ -81,7 +82,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       summary: "Internal input created",
       refType: "InternalInput",
       refId: input.id,
-      actorLabel: user.email ?? null,
+      actorLabel: gated.ctx.user.email ?? null,
     });
 
     return input;

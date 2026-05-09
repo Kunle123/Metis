@@ -65,8 +65,11 @@ function latestBriefDatesByIssue(
   return byIssue;
 }
 
-export async function getDashboardSnapshot(): Promise<DashboardSnapshot> {
+export async function getDashboardSnapshot(opts: { organisationId: string }): Promise<DashboardSnapshot> {
+  const { organisationId } = opts;
+
   const issuesRaw = await prisma.issue.findMany({
+    where: { organisationId },
     orderBy: [{ lastActivityAt: "desc" }, { updatedAt: "desc" }],
     include: {
       _count: {

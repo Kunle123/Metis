@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 
 import { prisma } from "@/lib/db/prisma";
-import { requireAuth } from "@/lib/auth/requireAuth";
-import { requireMutation } from "@/lib/governance/requireMutation";
+import { requireActiveOrgIssue } from "@/lib/organisations/requireActiveOrgIssue";
+import { isMutationRole } from "@/lib/auth/session";
 import { IssueActivityKinds } from "@/lib/issues/activityKinds";
 import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
 import { CreateCommsPlanItemInputSchema } from "@metis/shared/commsPlan";
@@ -13,10 +13,10 @@ function toIsoOrNull(d: Date | null) {
 }
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const gate = await requireAuth(request);
-  if (gate instanceof NextResponse) return gate;
-
   const { id: issueId } = await params;
+
+  const gated = await requireActiveOrgIssue(request, issueId);
+  if (gated instanceof NextResponse) return gated;
   const items = await prisma.commsPlanItem.findMany({
     where: { issueId },
     orderBy: [{ nextDueAt: "asc" }, { createdAt: "desc" }],
@@ -56,10 +56,13 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const user = await requireMutation(request);
-  if (user instanceof NextResponse) return user;
-
   const { id: issueId } = await params;
+
+  const gatedAuth = await requireActiveOrgIssue(request, issueId);
+  if (gatedAuth instanceof NextResponse) return gatedAuth;
+  if (!isMutationRole(gatedAuth.ctx.user.role)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
   const json = await request.json();
   const parsed = CreateCommsPlanItemInputSchema.safeParse(json);
   if (!parsed.success) {
@@ -93,7 +96,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       summary: "Comms plan item created",
       refType: "CommsPlanItem",
       refId: row.id,
-      actorLabel: user.email ?? null,
+      actorLabel: gatedAuth.ctx.user.email ?? null,
     });
 
     return row;

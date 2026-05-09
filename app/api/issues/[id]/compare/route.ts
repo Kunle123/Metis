@@ -3,7 +3,8 @@ import { NextResponse } from "next/server";
 import { CompareRequestSchema, CompareResponseSchema, CirculationStateSchema } from "@metis/shared/compare";
 import { prisma } from "@/lib/db/prisma";
 import { compareBriefArtifacts } from "@/lib/brief/compareBriefVersions";
-import { requireMutation } from "@/lib/governance/requireMutation";
+import { requireActiveOrgIssue } from "@/lib/organisations/requireActiveOrgIssue";
+import { isMutationRole } from "@/lib/auth/session";
 
 function serializeBriefVersionMeta(v: {
   id: string;
@@ -25,6 +26,10 @@ function serializeBriefVersionMeta(v: {
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id: issueId } = await params;
+
+  const gated = await requireActiveOrgIssue(request, issueId);
+  if (gated instanceof NextResponse) return gated;
+
   const url = new URL(request.url);
 
   const parsed = CompareRequestSchema.safeParse({
@@ -76,10 +81,13 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const gate = await requireMutation(request);
-  if (gate instanceof NextResponse) return gate;
-
   const { id: issueId } = await params;
+
+  const gated = await requireActiveOrgIssue(request, issueId);
+  if (gated instanceof NextResponse) return gated;
+  if (!isMutationRole(gated.ctx.user.role)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
   const json = await request.json();
   const parsed = CompareRequestSchema.safeParse(json);
 

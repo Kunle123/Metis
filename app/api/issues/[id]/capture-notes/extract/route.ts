@@ -3,7 +3,8 @@ import { z } from "zod";
 
 import { prisma } from "@/lib/db/prisma";
 import { callExtractIssueNotesModel, ExtractIssueNotesError, MAX_CAPTURE_NOTES_CHARS, MIN_CAPTURE_NOTES_CHARS } from "@/lib/ai/extractIssueNotes";
-import { requireMutation } from "@/lib/governance/requireMutation";
+import { requireActiveOrgIssue } from "@/lib/organisations/requireActiveOrgIssue";
+import { isMutationRole } from "@/lib/auth/session";
 
 const BodySchema = z.object({
   rawNotes: z.string().max(MAX_CAPTURE_NOTES_CHARS),
@@ -19,10 +20,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: "Not found." }, { status: 404 });
   }
 
-  const gate = await requireMutation(request);
-  if (gate instanceof NextResponse) return gate;
-
   const { id: issueId } = await params;
+
+  const gated = await requireActiveOrgIssue(request, issueId);
+  if (gated instanceof NextResponse) return gated;
+  if (!isMutationRole(gated.ctx.user.role)) {
+    return NextResponse.json({ error: "Forbidden." }, { status: 403 });
+  }
 
   let json: unknown;
   try {
@@ -47,13 +51,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     );
   }
 
-  const issue = await prisma.issue.findUnique({
-    where: { id: issueId },
-    select: { id: true, title: true, summary: true },
-  });
-  if (!issue) {
-    return NextResponse.json({ error: "Not found." }, { status: 404 });
-  }
+  const issue = gated.issue;
 
   if (!process.env.OPENAI_API_KEY?.trim()) {
     return NextResponse.json({ error: "AI assist is not configured." }, { status: 503 });

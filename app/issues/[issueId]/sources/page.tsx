@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
 import { ArrowRight, ChevronDown, ChevronRight, ExternalLink, Link2, ShieldCheck } from "lucide-react";
 
 import { MetisShell, SurfaceCard } from "@/components/MetisShell";
@@ -8,8 +9,9 @@ import { CollapsibleSection } from "@/components/review/CollapsibleSection";
 import { DenseSection } from "@/components/review/DenseSection";
 import { ReviewRailCard } from "@/components/review/ReviewRailCard";
 import { ReviewToolbar } from "@/components/review/ReviewToolbar";
+import { NoOrganisationMembershipShell } from "@/components/organisation/NoOrganisationMembership";
 import { prisma } from "@/lib/db/prisma";
-import { getIssueById } from "@/lib/issues/getIssueContext";
+import { loadIssuePageContext } from "@/lib/organisations/loadIssuePageContext";
 import type { SourceTier } from "@metis/shared/source";
 import { SourceEntryForm } from "./source-entry-form";
 import { CollapsibleFormPanel } from "@/app/issues/[issueId]/collapsible-form-panel";
@@ -69,17 +71,11 @@ function clampText(s: string, max = 220) {
 
 export default async function IssueSourcesPage({ params }: { params: Promise<{ issueId: string }> }) {
   const { issueId } = await params;
-  const issue = await getIssueById(issueId);
-
-  if (!issue) {
-    return (
-      <MetisShell activePath="/sources" pageTitle="Sources" issueRoutePrefix={`/issues/${issueId}`}>
-        <SurfaceCard>
-          <div className="px-6 py-6 text-[--metis-paper]">Issue not found.</div>
-        </SurfaceCard>
-      </MetisShell>
-    );
-  }
+  const pageCtx = await loadIssuePageContext(issueId);
+  if (pageCtx.outcome === "unauthorized") redirect("/login");
+  if (pageCtx.outcome === "no_membership") return <NoOrganisationMembershipShell />;
+  if (pageCtx.outcome === "not_found") notFound();
+  const { issue } = pageCtx;
 
   const sources = await prisma.source.findMany({
     where: { issueId: issue.id },

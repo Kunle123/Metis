@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { BriefArtifactSchema, BriefModeSchema } from "@metis/shared/briefVersion";
 import { ExportFormatSchema } from "@metis/shared/export";
 import { prisma } from "@/lib/db/prisma";
+import { requireActiveOrgIssue } from "@/lib/organisations/requireActiveOrgIssue";
 import { loadExportAuditAppendixPayload } from "@/lib/export/buildExportAuditAppendix";
 import { EXPORT_DOCX_MIME, isExportDocxSupported, renderExportPackageDocx } from "@/lib/export/renderExportDocx";
 
@@ -12,6 +13,10 @@ import { EXPORT_DOCX_MIME, isExportDocxSupported, renderExportPackageDocx } from
  */
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id: issueId } = await params;
+
+  const gated = await requireActiveOrgIssue(request, issueId);
+  if (gated instanceof NextResponse) return gated;
+
   const url = new URL(request.url);
 
   const briefVersionId = url.searchParams.get("briefVersionId");
@@ -27,12 +32,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     return NextResponse.json({ error: "DOCX is not available for this format" }, { status: 400 });
   }
 
-  const [issue, briefVersion] = await Promise.all([
-    prisma.issue.findUnique({ where: { id: issueId } }),
-    prisma.briefVersion.findUnique({ where: { id: briefVersionId } }),
-  ]);
+  const briefVersion = await prisma.briefVersion.findUnique({ where: { id: briefVersionId } });
+  const issue = gated.issue;
 
-  if (!issue || !briefVersion || briefVersion.issueId !== issueId) {
+  if (!briefVersion || briefVersion.issueId !== issueId) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 

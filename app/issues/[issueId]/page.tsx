@@ -1,9 +1,11 @@
 import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
 
+import { NoOrganisationMembershipShell } from "@/components/organisation/NoOrganisationMembership";
 import { MetisShell, SurfaceCard } from "@/components/MetisShell";
 import { Badge } from "@/components/ui/badge";
 import { prisma } from "@/lib/db/prisma";
-import { getIssueById } from "@/lib/issues/getIssueContext";
+import { loadIssuePageContext } from "@/lib/organisations/loadIssuePageContext";
 
 import { SourceEntryForm } from "./sources/source-entry-form";
 import { GapCreateForm } from "./gaps/gap-create-form";
@@ -28,16 +30,11 @@ function sectionNavItem(id: string, label: string) {
 
 export default async function IssueWorkspacePage({ params }: { params: Promise<{ issueId: string }> }) {
   const { issueId } = await params;
-  const issue = await getIssueById(issueId);
-  if (!issue) {
-    return (
-      <MetisShell activePath="/workspace" pageTitle="Issue workspace" issueRoutePrefix={`/issues/${issueId}`}>
-        <SurfaceCard>
-          <div className="px-6 py-6 text-[--metis-paper]">Issue not found.</div>
-        </SurfaceCard>
-      </MetisShell>
-    );
-  }
+  const page = await loadIssuePageContext(issueId);
+  if (page.outcome === "unauthorized") redirect("/login");
+  if (page.outcome === "no_membership") return <NoOrganisationMembershipShell />;
+  if (page.outcome === "not_found") notFound();
+  const { issue } = page;
 
   const [sources, gaps, inputs] = await Promise.all([
     prisma.source.findMany({ where: { issueId: issue.id }, orderBy: [{ createdAt: "desc" }] }),

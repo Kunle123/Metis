@@ -15,7 +15,8 @@ import { loadExportAuditAppendixPayload } from "@/lib/export/buildExportAuditApp
 import { renderExportDeliverable } from "@/lib/export/renderExportPackage";
 import { IssueActivityKinds } from "@/lib/issues/activityKinds";
 import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
-import { requireMutation } from "@/lib/governance/requireMutation";
+import { requireActiveOrgIssue } from "@/lib/organisations/requireActiveOrgIssue";
+import { isMutationRole } from "@/lib/auth/session";
 
 function exportFileExtensionForMime(mimeType: string) {
   if (mimeType === "text/html") return "html";
@@ -30,6 +31,10 @@ function resolvedOutputTypeForExport(format: ExportFormat, requested: ExportOutp
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id: issueId } = await params;
+
+  const gated = await requireActiveOrgIssue(request, issueId);
+  if (gated instanceof NextResponse) return gated;
+
   const url = new URL(request.url);
 
   const briefVersionId = url.searchParams.get("briefVersionId");
@@ -40,12 +45,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 
-  const [issue, briefVersion] = await Promise.all([
-    prisma.issue.findUnique({ where: { id: issueId } }),
-    prisma.briefVersion.findUnique({ where: { id: briefVersionId } }),
-  ]);
+  const briefVersion = await prisma.briefVersion.findUnique({ where: { id: briefVersionId } });
+  const issue = gated.issue;
 
-  if (!issue || !briefVersion || briefVersion.issueId !== issueId) {
+  if (!briefVersion || briefVersion.issueId !== issueId) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
@@ -108,10 +111,13 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const user = await requireMutation(request);
-  if (user instanceof NextResponse) return user;
-
   const { id: issueId } = await params;
+
+  const gatedAuth = await requireActiveOrgIssue(request, issueId);
+  if (gatedAuth instanceof NextResponse) return gatedAuth;
+  if (!isMutationRole(gatedAuth.ctx.user.role)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   let body: unknown;
   const contentType = request.headers.get("content-type") ?? "";
@@ -156,12 +162,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   const { briefVersionId, format, outputType: outputTypeBody, logEvent } = parsed.data;
 
-  const [issue, briefVersion] = await Promise.all([
-    prisma.issue.findUnique({ where: { id: issueId } }),
-    prisma.briefVersion.findUnique({ where: { id: briefVersionId } }),
-  ]);
+  const briefVersion = await prisma.briefVersion.findUnique({ where: { id: briefVersionId } });
+  const issue = gatedAuth.issue;
 
-  if (!issue || !briefVersion || briefVersion.issueId !== issueId) {
+  if (!briefVersion || briefVersion.issueId !== issueId) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
@@ -199,7 +203,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       summary: `Export package created from ${briefModeLabel} brief v${briefVersion.versionNumber}`,
       refType: "ArtifactExport",
       refId: exportRow.id,
-      actorLabel: user.email ?? null,
+      actorLabel: gatedAuth.ctx.user.email ?? null,
     });
 
     if (logEvent) {
@@ -223,7 +227,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         summary: "Circulation event logged",
         refType: "CirculationEvent",
         refId: event.id,
-        actorLabel: user.email ?? null,
+        actorLabel: gatedAuth.ctx.user.email ?? null,
       });
     }
 

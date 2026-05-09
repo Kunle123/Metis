@@ -3,11 +3,15 @@ import { revalidatePath } from "next/cache";
 
 import { PatchInternalInputInputSchema } from "@metis/shared/internalInput";
 import { prisma } from "@/lib/db/prisma";
-import { requireMutation } from "@/lib/governance/requireMutation";
+import { requireActiveOrgIssue } from "@/lib/organisations/requireActiveOrgIssue";
+import { isMutationRole } from "@/lib/auth/session";
 import { internalInputDbRowToWire } from "@/lib/internalInputs/internalInputWireFormat";
 
-export async function GET(_: Request, { params }: { params: Promise<{ id: string; internalInputId: string }> }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string; internalInputId: string }> }) {
   const { id: issueId, internalInputId } = await params;
+
+  const gated = await requireActiveOrgIssue(request, issueId);
+  if (gated instanceof NextResponse) return gated;
 
   const input = await prisma.internalInput.findFirst({
     where: { id: internalInputId, issueId },
@@ -24,10 +28,13 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
 }
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string; internalInputId: string }> }) {
-  const gate = await requireMutation(request);
-  if (gate instanceof NextResponse) return gate;
-
   const { id: issueId, internalInputId } = await params;
+
+  const gated = await requireActiveOrgIssue(request, issueId);
+  if (gated instanceof NextResponse) return gated;
+  if (!isMutationRole(gated.ctx.user.role)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
   const json = await request.json();
   const parsed = PatchInternalInputInputSchema.safeParse(json);
 

@@ -3,13 +3,17 @@ import { NextResponse } from "next/server";
 import { CreateCirculationEventInputSchema, CirculationEventResponseSchema } from "@metis/shared/circulation";
 import { CirculationStateSchema } from "@metis/shared/compare";
 import { prisma } from "@/lib/db/prisma";
-import { requireMutation } from "@/lib/governance/requireMutation";
+import { requireActiveOrgIssue } from "@/lib/organisations/requireActiveOrgIssue";
+import { isMutationRole } from "@/lib/auth/session";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const gate = await requireMutation(request);
-  if (gate instanceof NextResponse) return gate;
-
   const { id: issueId } = await params;
+
+  const gated = await requireActiveOrgIssue(request, issueId);
+  if (gated instanceof NextResponse) return gated;
+  if (!isMutationRole(gated.ctx.user.role)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   let body: unknown;
   try {

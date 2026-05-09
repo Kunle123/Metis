@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 
 import { prisma } from "@/lib/db/prisma";
-import { requireMutation } from "@/lib/governance/requireMutation";
+import { requireActiveOrgIssue } from "@/lib/organisations/requireActiveOrgIssue";
+import { isMutationRole } from "@/lib/auth/session";
 import { IssueActivityKinds } from "@/lib/issues/activityKinds";
 import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
 import { UpdateCommsPlanItemInputSchema } from "@metis/shared/commsPlan";
@@ -12,10 +13,13 @@ function toIsoOrNull(d: Date | null) {
 }
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string; itemId: string }> }) {
-  const user = await requireMutation(request);
-  if (user instanceof NextResponse) return user;
-
   const { id: issueId, itemId } = await params;
+
+  const gated = await requireActiveOrgIssue(request, issueId);
+  if (gated instanceof NextResponse) return gated;
+  if (!isMutationRole(gated.ctx.user.role)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
   const json = await request.json();
   const parsed = UpdateCommsPlanItemInputSchema.safeParse(json);
   if (!parsed.success) {
@@ -83,7 +87,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       summary: activitySummary,
       refType: "CommsPlanItem",
       refId: row.id,
-      actorLabel: user.email ?? null,
+      actorLabel: gated.ctx.user.email ?? null,
     });
 
     return row;
@@ -124,10 +128,13 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 }
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string; itemId: string }> }) {
-  const user = await requireMutation(request);
-  if (user instanceof NextResponse) return user;
-
   const { id: issueId, itemId } = await params;
+
+  const gated = await requireActiveOrgIssue(request, issueId);
+  if (gated instanceof NextResponse) return gated;
+  if (!isMutationRole(gated.ctx.user.role)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const deleted = await prisma.$transaction(async (tx) => {
     const existing = await tx.commsPlanItem.findFirst({ where: { id: itemId, issueId } });
@@ -141,7 +148,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
       summary: "Comms plan item deleted",
       refType: "CommsPlanItem",
       refId: itemId,
-      actorLabel: user.email ?? null,
+      actorLabel: gated.ctx.user.email ?? null,
     });
 
     return existing;

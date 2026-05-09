@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
 import { AlertTriangle, FileOutput, Library, RefreshCcw, ScanSearch } from "lucide-react";
 
+import { NoOrganisationMembershipShell } from "@/components/organisation/NoOrganisationMembership";
 import { ConfidencePill, SurfaceCard, MetisShell } from "@/components/MetisShell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,7 +12,7 @@ import { ReviewRailCard } from "@/components/review/ReviewRailCard";
 import { SourceReliabilityMeta } from "@/components/review/SourceReliabilityMeta";
 import { ReviewToolbar } from "@/components/review/ReviewToolbar";
 import { prisma } from "@/lib/db/prisma";
-import { getIssueById } from "@/lib/issues/getIssueContext";
+import { loadIssuePageContext } from "@/lib/organisations/loadIssuePageContext";
 import type { IssueActivityKind } from "@metis/shared/activity";
 import { BriefModeSchema, type BriefMode, type BriefConfidence, type BriefArtifact } from "@metis/shared/briefVersion";
 
@@ -84,16 +86,11 @@ export default async function IssueBriefPage({
   const parsedMode = BriefModeSchema.safeParse(modeRaw ?? "full");
   const mode = parsedMode.success ? parsedMode.data : ("full" as const);
 
-  const issue = await getIssueById(issueId);
-  if (!issue) {
-    return (
-      <MetisShell activePath="/brief" pageTitle="Full Issue Brief" issueRoutePrefix={`/issues/${issueId}`}>
-        <SurfaceCard>
-          <div className="px-6 py-6 text-[--metis-paper]">Issue not found.</div>
-        </SurfaceCard>
-      </MetisShell>
-    );
-  }
+  const pageCtx = await loadIssuePageContext(issueId);
+  if (pageCtx.outcome === "unauthorized") redirect("/login");
+  if (pageCtx.outcome === "no_membership") return <NoOrganisationMembershipShell />;
+  if (pageCtx.outcome === "not_found") notFound();
+  const { issue } = pageCtx;
 
   const briefVersion = await getLatestBriefVersion(issue.id, mode);
   const artifact = (briefVersion?.artifact ?? null) as BriefArtifact | null;

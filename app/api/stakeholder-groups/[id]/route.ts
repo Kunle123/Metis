@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 
 import { prisma } from "@/lib/db/prisma";
-import { requireAuth } from "@/lib/auth/requireAuth";
-import { requireMutation } from "@/lib/governance/requireMutation";
+import { requireActiveOrganisationContext } from "@/lib/organisations/activeOrganisationContext";
+import { isMutationRole } from "@/lib/auth/session";
 import { PatchStakeholderGroupInputSchema, StakeholderGroupSensitivitySchema } from "@metis/shared/stakeholder";
 
 function serializeGroup(g: {
@@ -33,21 +33,29 @@ function serializeGroup(g: {
 }
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const gate = await requireAuth(request);
-  if (gate instanceof NextResponse) return gate;
+  const ctx = await requireActiveOrganisationContext(request);
+  if (ctx instanceof NextResponse) return ctx;
 
   const { id } = await params;
-  const group = await prisma.stakeholderGroup.findUnique({ where: { id } });
+  const group = await prisma.stakeholderGroup.findFirst({
+    where: { id, organisationId: ctx.organisation.id },
+  });
   if (!group) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json(serializeGroup(group));
 }
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const gate = await requireMutation(request);
-  if (gate instanceof NextResponse) return gate;
+  const ctx = await requireActiveOrganisationContext(request);
+  if (ctx instanceof NextResponse) return ctx;
+
+  if (!isMutationRole(ctx.user.role)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const { id } = await params;
-  const existing = await prisma.stakeholderGroup.findUnique({ where: { id } });
+  const existing = await prisma.stakeholderGroup.findFirst({
+    where: { id, organisationId: ctx.organisation.id },
+  });
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const json = await request.json();

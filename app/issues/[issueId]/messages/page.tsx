@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import type { IssueActivityKind } from "@metis/shared/activity";
+import { NoOrganisationMembershipShell } from "@/components/organisation/NoOrganisationMembership";
 import { MetisShell, SurfaceCard } from "@/components/MetisShell";
 import { prisma } from "@/lib/db/prisma";
-import { getIssueById } from "@/lib/issues/getIssueContext";
+import { loadIssuePageContext } from "@/lib/organisations/loadIssuePageContext";
 import { isStoredMessageDraftStale } from "@/lib/messages/messageFreshness";
 import { MessageVariantArtifactSchema, MessageVariantTemplateIdSchema } from "@metis/shared/messageVariant";
 import {
@@ -41,19 +42,14 @@ export default async function IssueMessagesPage({
   const parsedTemplate = MessageVariantTemplateIdSchema.safeParse(templateRaw ?? "external_customer_resident_student");
   const templateId = parsedTemplate.success ? parsedTemplate.data : "external_customer_resident_student";
 
-  const issue = await getIssueById(issueId);
-  if (!issue) {
-    return (
-      <MetisShell activePath="/messages" pageTitle="Messages" issueRoutePrefix={`/issues/${issueId}`}>
-        <SurfaceCard>
-          <div className="px-6 py-6 text-[--metis-paper]">Issue not found.</div>
-        </SurfaceCard>
-      </MetisShell>
-    );
-  }
+  const pageCtx = await loadIssuePageContext(issueId);
+  if (pageCtx.outcome === "unauthorized") redirect("/login");
+  if (pageCtx.outcome === "no_membership") return <NoOrganisationMembershipShell />;
+  if (pageCtx.outcome === "not_found") notFound();
+  const { issue, organisationId } = pageCtx;
 
   const activeGroups = await prisma.stakeholderGroup.findMany({
-    where: { isActive: true },
+    where: { organisationId, isActive: true },
     orderBy: [{ displayOrder: "asc" }, { name: "asc" }],
   });
 

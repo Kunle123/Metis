@@ -12,7 +12,8 @@ import {
 } from "@metis/shared/messageVariant";
 import { cleanupMessageVariantsSections } from "@/lib/ai/cleanupMessageDraft";
 import { prisma } from "@/lib/db/prisma";
-import { requireMutation } from "@/lib/governance/requireMutation";
+import { requireActiveOrgIssue } from "@/lib/organisations/requireActiveOrgIssue";
+import { isMutationRole } from "@/lib/auth/session";
 import { IssueActivityKinds } from "@/lib/issues/activityKinds";
 import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
 import {
@@ -120,15 +121,18 @@ function whereForLens(stakeholderGroupId: string | null): { stakeholderGroupId: 
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id: issueId } = await params;
+
+  const gated = await requireActiveOrgIssue(request, issueId);
+  if (gated instanceof NextResponse) return gated;
+
+  const organisationId = gated.ctx.organisation.id;
+
   const url = new URL(request.url);
   const templateRaw = url.searchParams.get("templateId") ?? "external_customer_resident_student";
   const parsedTemplate = MessageVariantTemplateIdSchema.safeParse(templateRaw);
   if (!parsedTemplate.success) {
     return NextResponse.json({ error: "Invalid templateId", issues: parsedTemplate.error.issues }, { status: 400 });
   }
-
-  const issue = await prisma.issue.findUnique({ where: { id: issueId } });
-  if (!issue) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const lensParam = url.searchParams.get("lens");
   let scopedGroupId: string | null | undefined;
@@ -139,7 +143,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     if (!ok) {
       return NextResponse.json({ error: "Invalid lens (use issue or a StakeholderGroup id)" }, { status: 400 });
     }
-    const activeGroup = await prisma.stakeholderGroup.findFirst({ where: { id: lensParam, isActive: true } });
+    const activeGroup = await prisma.stakeholderGroup.findFirst({
+      where: { id: lensParam, organisationId, isActive: true },
+    });
     if (activeGroup) {
       scopedGroupId = lensParam;
     } else {
@@ -148,7 +154,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
         return NextResponse.json({ error: "Audience group not found or inactive" }, { status: 404 });
       }
       const groupForLegacy = await prisma.stakeholderGroup.findFirst({
-        where: { id: legacy.stakeholderGroupId, isActive: true },
+        where: { id: legacy.stakeholderGroupId, organisationId, isActive: true },
       });
       if (!groupForLegacy) {
         return NextResponse.json({ error: "Audience group not found or inactive" }, { status: 404 });
@@ -180,10 +186,14 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const user = await requireMutation(request);
-  if (user instanceof NextResponse) return user;
-
   const { id: issueId } = await params;
+
+  const gated = await requireActiveOrgIssue(request, issueId);
+  if (gated instanceof NextResponse) return gated;
+  if (!isMutationRole(gated.ctx.user.role)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const json = await request.json().catch(() => ({}));
   const parsed = CreateMessageVariantInputSchema.safeParse(json);
   if (!parsed.success) {
@@ -193,8 +203,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     );
   }
 
-  const issue = await prisma.issue.findUnique({ where: { id: issueId } });
-  if (!issue) return NextResponse.json({ error: "Not found", detail: "issue_not_found" }, { status: 404 });
+  const issue = gated.issue;
 
   const stakeholderGroupId = parsed.data.stakeholderGroupId ?? null;
 
@@ -205,7 +214,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   let group: StakeholderGroup | null = null;
 
   if (stakeholderGroupId) {
-    group = await prisma.stakeholderGroup.findFirst({ where: { id: stakeholderGroupId, isActive: true } });
+    group = await prisma.stakeholderGroup.findFirst({
+      where: { id: stakeholderGroupId, organisationId: gated.ctx.organisation.id, isActive: true },
+    });
     if (!group) {
       return NextResponse.json(
         { error: "Audience group not found or inactive", detail: "audience_group_not_found" },
@@ -367,7 +378,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       summary: `Message draft v${rowCreated.versionNumber} created (${rowCreated.templateId})`,
       refType: "MessageVariant",
       refId: rowCreated.id,
-      actorLabel: user.email ?? null,
+      actorLabel: gated.ctx.user.email ?? null,
     });
 
     const issueFresh = await tx.issue.findUniqueOrThrow({

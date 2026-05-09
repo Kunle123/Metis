@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
 
 import { MetisShell, SurfaceCard } from "@/components/MetisShell";
@@ -10,8 +10,9 @@ import { DenseSection } from "@/components/review/DenseSection";
 import { ReviewRailCard } from "@/components/review/ReviewRailCard";
 import { ReviewToolbar } from "@/components/review/ReviewToolbar";
 import { CirculationEventTypeSchema, CirculationChannelSchema } from "@metis/shared/circulation";
+import { NoOrganisationMembershipShell } from "@/components/organisation/NoOrganisationMembership";
 import { prisma } from "@/lib/db/prisma";
-import { getIssueById } from "@/lib/issues/getIssueContext";
+import { loadIssuePageContext } from "@/lib/organisations/loadIssuePageContext";
 import { BriefModeSchema, BriefArtifactSchema, type BriefArtifact } from "@metis/shared/briefVersion";
 import { ExportFormatSchema, type ExportFormat, type ExportOutputType } from "@metis/shared/export";
 import { loadExportAuditAppendixPayload } from "@/lib/export/buildExportAuditAppendix";
@@ -89,16 +90,11 @@ export default async function IssueExportPage({
 
   const outputRaw = typeof sp.output === "string" ? sp.output : Array.isArray(sp.output) ? sp.output[0] : undefined;
 
-  const issue = await getIssueById(issueId);
-  if (!issue) {
-    return (
-      <MetisShell activePath="/export" pageTitle="Circulation Package" issueRoutePrefix={`/issues/${issueId}`}>
-        <SurfaceCard>
-          <div className="px-6 py-6 text-[--metis-paper]">Issue not found.</div>
-        </SurfaceCard>
-      </MetisShell>
-    );
-  }
+  const pageCtx = await loadIssuePageContext(issueId);
+  if (pageCtx.outcome === "unauthorized") redirect("/login");
+  if (pageCtx.outcome === "no_membership") return <NoOrganisationMembershipShell />;
+  if (pageCtx.outcome === "not_found") notFound();
+  const { issue } = pageCtx;
 
   /** Email-ready is plain text only — strip `output` so we never keep e.g. `output=docx` in the URL. */
   if (selectedFormat === "email-ready" && outputRaw !== undefined) {

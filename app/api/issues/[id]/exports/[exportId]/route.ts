@@ -4,9 +4,13 @@ import { ArtifactExportResponseSchema } from "@metis/shared/circulation";
 import { BriefModeSchema } from "@metis/shared/briefVersion";
 import { ExportFormatSchema, ExportMimeTypeSchema, type ExportFormat, type ExportOutputType } from "@metis/shared/export";
 import { prisma } from "@/lib/db/prisma";
+import { requireActiveOrgIssue } from "@/lib/organisations/requireActiveOrgIssue";
 
-export async function GET(_: Request, { params }: { params: Promise<{ id: string; exportId: string }> }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string; exportId: string }> }) {
   const { id: issueId, exportId } = await params;
+
+  const gated = await requireActiveOrgIssue(request, issueId);
+  if (gated instanceof NextResponse) return gated;
 
   const exportRow = await prisma.artifactExport.findUnique({ where: { id: exportId } });
   if (!exportRow || exportRow.issueId !== issueId) {

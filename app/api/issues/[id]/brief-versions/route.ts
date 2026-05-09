@@ -6,14 +6,18 @@ import { generateBriefFromIssue } from "@/lib/brief/generateBriefFromIssue";
 import { buildBriefSynthesisInput } from "@/lib/brief/buildBriefSynthesisInput";
 import { IssueActivityKinds } from "@/lib/issues/activityKinds";
 import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
-import { requireMutation } from "@/lib/governance/requireMutation";
+import { requireActiveOrgIssue } from "@/lib/organisations/requireActiveOrgIssue";
+import { isMutationRole } from "@/lib/auth/session";
 import { synthesizeBriefAlternateWording, synthesizeBriefExecutiveSummary } from "@/lib/ai/synthesizeBrief";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const user = await requireMutation(request);
-  if (user instanceof NextResponse) return user;
-
   const { id: issueId } = await params;
+
+  const gated = await requireActiveOrgIssue(request, issueId);
+  if (gated instanceof NextResponse) return gated;
+  if (!isMutationRole(gated.ctx.user.role)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
   const json = await request.json();
   const parsed = CreateBriefVersionInputSchema.safeParse(json);
 
@@ -21,8 +25,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: "Invalid request", issues: parsed.error.issues }, { status: 400 });
   }
 
-  const issue = await prisma.issue.findUnique({ where: { id: issueId } });
-  if (!issue) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  const issue = gated.issue;
 
   const [sources, gaps, internalInputs, messageVariantsWithAudience] = await Promise.all([
     prisma.source.findMany({ where: { issueId }, orderBy: [{ createdAt: "desc" }] }),
@@ -194,7 +197,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       summary: `${briefModeLabel} brief v${briefVersion.versionNumber} created`,
       refType: "BriefVersion",
       refId: briefVersion.id,
-      actorLabel: user.email ?? null,
+      actorLabel: gated.ctx.user.email ?? null,
     });
 
     // `writeIssueActivity` updates `Issue.lastActivityAt`, which bumps `Issue.updatedAt` (@updatedAt).
