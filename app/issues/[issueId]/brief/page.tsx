@@ -210,6 +210,14 @@ export default async function IssueBriefPage({
     ? `${mode === "full" ? "Full" : "Executive"} brief v${briefVersion.versionNumber}`
     : null;
   const exportPrepareHref = `/issues/${issue.id}/export?mode=${mode}&format=${mode === "executive" ? "executive-brief" : "full-issue-brief"}`;
+  const regenerateSectionHref = `/issues/${issue.id}/brief?mode=${mode}#brief-regenerate-action`;
+  const regenerateLinkLabel = mode === "full" ? "Regenerate Full brief" : "Regenerate Executive brief";
+  const regenerateModeHelper =
+    mode === "full"
+      ? "This updates the Full brief only. The Executive brief is a separate stored revision."
+      : "This updates the Executive brief only. The Full brief is a separate stored revision.";
+  const freshnessActionLinkClass =
+    "rounded-sm text-[0.72rem] font-medium text-[--metis-brass-soft] underline-offset-4 outline-none transition-colors hover:underline focus-visible:ring-2 focus-visible:ring-[--metis-brass-soft] focus-visible:ring-offset-2 focus-visible:ring-offset-[--metis-surface-card]";
   /** Shown only under Generate (Step 3); Step 2 holds definitions only. */
   const generationSyncHint = hasBriefForMode && briefInSync ? null : briefSyncHint;
   const generateButtonLabel =
@@ -272,18 +280,35 @@ export default async function IssueBriefPage({
                   <dd className="text-[--metis-text-primary]">{storedBriefRevisionLabel ?? "No stored brief yet"}</dd>
                 </div>
                 {briefVersion ? (
-                  <div className="flex flex-wrap gap-x-2 gap-y-0.5">
-                    <dt className="font-medium uppercase tracking-[0.1em] text-[--metis-text-tertiary]">Freshness</dt>
-                    <dd
-                      className={
-                        briefInSync ? "font-medium text-[--metis-status-neutral-fg]" : "font-medium text-[--metis-status-info-fg]"
-                      }
-                    >
-                      {briefInSync ? "Up to date" : "Stale"}
+                  <div className="flex min-w-0 max-w-full flex-wrap items-baseline gap-x-2 gap-y-1">
+                    <dt className="shrink-0 font-medium uppercase tracking-[0.1em] text-[--metis-text-tertiary]">Freshness</dt>
+                    <dd className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-1">
+                      <span
+                        className={
+                          briefInSync ? "font-medium text-[--metis-status-neutral-fg]" : "font-medium text-[--metis-status-info-fg]"
+                        }
+                      >
+                        {briefInSync ? "Up to date" : "Needs refresh"}
+                      </span>
+                      {!briefInSync ? (
+                        <Link
+                          href={regenerateSectionHref}
+                          className={freshnessActionLinkClass}
+                          aria-describedby="brief-freshness-mode-helper"
+                        >
+                          {regenerateLinkLabel}
+                          <span aria-hidden> →</span>
+                        </Link>
+                      ) : null}
                     </dd>
                   </div>
                 ) : null}
               </dl>
+              {briefVersion && !briefInSync ? (
+                <p id="brief-freshness-mode-helper" className="mt-2 text-[0.72rem] leading-snug text-[--metis-text-tertiary]">
+                  {regenerateModeHelper}
+                </p>
+              ) : null}
               <p className="text-[0.72rem] leading-snug text-[--metis-text-tertiary]">
                 <span className="text-[--metis-text-secondary]">Stored revision</span> is the numbered brief on file for this mode.{" "}
                 <span className="text-[--metis-text-secondary]">Freshness</span> watches whether briefing inputs changed after this revision — not exporting,
@@ -291,7 +316,11 @@ export default async function IssueBriefPage({
               </p>
             </section>
 
-            <section className={WORKFLOW_STEP} aria-labelledby="brief-step-3">
+            <section
+              id="brief-regenerate-action"
+              className={`${WORKFLOW_STEP} scroll-mt-24`}
+              aria-labelledby="brief-step-3"
+            >
               <div id="brief-step-3">{briefStepLabel("3", "Generate or regenerate")}</div>
               {hasBriefForMode && briefInSync ? (
                 <p className="text-[0.8rem] leading-relaxed text-[--metis-text-tertiary]">
@@ -466,17 +495,34 @@ export default async function IssueBriefPage({
                     <span className="text-right text-[--metis-paper]">{storedBriefRevisionLabel ?? "No stored brief yet"}</span>
                   </div>
                   {briefVersion ? (
-                    <div className="flex items-center justify-between gap-3 border-t border-[--metis-outline-subtle] pt-2">
-                      <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Freshness</span>
-                      <span
-                        className={
-                          briefInSync
-                            ? "text-right text-sm font-medium text-[--metis-status-neutral-fg]"
-                            : "text-right text-sm font-medium text-[--metis-status-info-fg]"
-                        }
-                      >
-                        {briefInSync ? "Up to date" : "Stale"}
-                      </span>
+                    <div className="space-y-2 border-t border-[--metis-outline-subtle] pt-2">
+                      <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1">
+                        <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Freshness</span>
+                        <span
+                          className={
+                            briefInSync
+                              ? "text-right text-sm font-medium text-[--metis-status-neutral-fg]"
+                              : "text-right text-sm font-medium text-[--metis-status-info-fg]"
+                          }
+                        >
+                          {briefInSync ? "Up to date" : "Needs refresh"}
+                        </span>
+                      </div>
+                      {!briefInSync ? (
+                        <>
+                          <Link
+                            href={regenerateSectionHref}
+                            className={`${freshnessActionLinkClass} block text-right`}
+                            aria-describedby="brief-rail-freshness-helper"
+                          >
+                            {regenerateLinkLabel}
+                            <span aria-hidden> →</span>
+                          </Link>
+                          <p id="brief-rail-freshness-helper" className="text-[0.68rem] leading-snug text-[--metis-paper-muted]">
+                            {regenerateModeHelper}
+                          </p>
+                        </>
+                      ) : null}
                     </div>
                   ) : null}
                   <p className="border-t border-[--metis-outline-subtle] pt-2 text-[0.7rem] leading-snug text-[--metis-paper-muted]">
