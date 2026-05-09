@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { BriefArtifactSchema, BriefModeSchema } from "@metis/shared/briefVersion";
 import { ExportFormatSchema } from "@metis/shared/export";
 import { prisma } from "@/lib/db/prisma";
+import { loadExportAuditAppendixPayload } from "@/lib/export/buildExportAuditAppendix";
 import { EXPORT_DOCX_MIME, isExportDocxSupported, renderExportPackageDocx } from "@/lib/export/renderExportDocx";
 
 /**
@@ -42,6 +43,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
   const artifact = BriefArtifactSchema.parse(briefVersion.artifact);
 
+  const auditAppendix =
+    format === "full-issue-brief" ? await loadExportAuditAppendixPayload(issueId) : undefined;
+
   let buffer: Buffer;
   try {
     buffer = await renderExportPackageDocx({
@@ -49,6 +53,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       mode: parsedMode.data,
       format,
       artifact,
+      auditAppendix,
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Render failed";

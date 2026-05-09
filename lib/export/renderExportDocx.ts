@@ -8,6 +8,11 @@ import type { BriefArtifact, BriefMode } from "@metis/shared/briefVersion";
 import type { ExportFormat } from "@metis/shared/export";
 import { Document, HeadingLevel, Packer, Paragraph, TextRun } from "docx";
 
+import {
+  buildExportAuditAppendixDocStructure,
+  type ExportAuditAppendixDocNode,
+  type ExportAuditAppendixInput,
+} from "./buildExportAuditAppendix";
 import { executiveBriefExportBlockLabel, normalizeExportTerminology } from "./renderExportPackage";
 
 /** Brief packages that beta DOCX targets (matches UI / API guards). */
@@ -43,6 +48,42 @@ function flushBodyBlockAsParagraphs(block: string, out: Paragraph[]) {
   }
 }
 
+/** Audit appendix copy matches Markdown/HTML (no export terminology normalization on appendix strings). */
+function appendixDocNodesToParagraphs(nodes: ExportAuditAppendixDocNode[]): Paragraph[] {
+  const out: Paragraph[] = [];
+  for (const n of nodes) {
+    if (n.type === "heading2") {
+      out.push(
+        new Paragraph({
+          heading: HeadingLevel.HEADING_2,
+          children: [new TextRun(n.text)],
+        }),
+      );
+    } else if (n.type === "heading3") {
+      out.push(
+        new Paragraph({
+          heading: HeadingLevel.HEADING_3,
+          children: [new TextRun(n.text)],
+        }),
+      );
+    } else if (n.type === "italicParagraph") {
+      out.push(
+        new Paragraph({
+          children: [new TextRun({ text: n.text, italics: true })],
+        }),
+      );
+    } else {
+      out.push(
+        new Paragraph({
+          text: n.text,
+          bullet: { level: 0 },
+        }),
+      );
+    }
+  }
+  return out;
+}
+
 function bodyToDocxParagraphs(rawBody: string): Paragraph[] {
   const blocks = paragraphsFromBody(String(rawBody ?? "").trim());
   if (!blocks.length) return [new Paragraph({ children: [new TextRun({ text: "\u00a0" })] })];
@@ -52,12 +93,14 @@ function bodyToDocxParagraphs(rawBody: string): Paragraph[] {
 }
 
 export async function renderExportPackageDocx(opts: {
-  issue: Pick<Issue, "title">;
+  issue: Pick<Issue, "title" | "id">;
   mode: BriefMode;
   format: ExportFormat;
   artifact: BriefArtifact;
+  /** Required for full-issue-brief DOCX (audit appendix). Loaded by the API route. */
+  auditAppendix?: ExportAuditAppendixInput;
 }): Promise<Buffer> {
-  const { issue, mode, format, artifact } = opts;
+  const { issue, mode, format, artifact, auditAppendix } = opts;
 
   if (format === "email-ready") {
     throw new Error("DOCX export does not support email-ready format");
@@ -116,6 +159,11 @@ export async function renderExportPackageDocx(opts: {
       heading2(normalizeExportTerminology(s.title));
       body.push(...bodyToDocxParagraphs(normalizeExportTerminology(s.body)));
     });
+
+    if (!auditAppendix) {
+      throw new Error("full-issue-brief DOCX requires auditAppendix payload");
+    }
+    body.push(...appendixDocNodesToParagraphs(buildExportAuditAppendixDocStructure(auditAppendix)));
   }
 
   const doc = new Document({

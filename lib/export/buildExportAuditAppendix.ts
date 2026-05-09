@@ -257,3 +257,75 @@ export function buildExportAuditAppendixHtml(data: ExportAuditAppendixInput): st
   parts.push("</section>");
   return `\n${parts.join("\n")}\n`;
 }
+
+/** OOXML-friendly blocks for DOCX (same field/fallback rules as Markdown/HTML appendix). */
+export type ExportAuditAppendixDocNode =
+  | { type: "heading2"; text: string }
+  | { type: "heading3"; text: string }
+  | { type: "italicParagraph"; text: string }
+  | { type: "bullet"; text: string };
+
+export function buildExportAuditAppendixDocStructure(data: ExportAuditAppendixInput): ExportAuditAppendixDocNode[] {
+  const obsById = observationCodeById(data);
+  const nodes: ExportAuditAppendixDocNode[] = [];
+
+  nodes.push({ type: "heading2", text: "Audit appendix" });
+  nodes.push({ type: "italicParagraph", text: "Audit appendix reflects the issue record at export time." });
+
+  nodes.push({ type: "heading3", text: "Sources" });
+  if (!data.sources.length) {
+    nodes.push({ type: "bullet", text: "No sources recorded for this issue." });
+  } else {
+    for (const s of data.sources) {
+      const code = (s.sourceCode ?? "").trim();
+      const lead = code.length ? code : "Source";
+      const section = (s.linkedSection ?? "").trim() || "—";
+      const rel = (s.reliability ?? "").trim() || "—";
+      nodes.push({
+        type: "bullet",
+        text: `${lead} — ${clampLine(s.title, 200)} — ${s.tier} — Brief section: ${clampLine(section, 80)} — Reliability: ${clampLine(rel, 80)}`,
+      });
+    }
+  }
+
+  nodes.push({ type: "heading3", text: "Open questions" });
+  if (!data.gaps.length) {
+    nodes.push({ type: "bullet", text: "No open questions recorded for this issue." });
+  } else {
+    for (const g of data.gaps) {
+      const q = formatGapCode(g.gapNumber) ?? "Question ref unavailable";
+      const section = (g.linkedSection ?? "").trim() || "—";
+      let tail = "";
+      if ((g.status ?? "").trim() === "Resolved" && g.resolvedByInternalInputId) {
+        const obs = obsById.get(g.resolvedByInternalInputId);
+        if (obs) tail = ` — Answered by ${obs}`;
+        else tail = " — Answered by (observation ref unavailable)";
+      }
+      nodes.push({
+        type: "bullet",
+        text: `${q} — ${g.status} — ${g.severity} — Section: ${clampLine(section, 80)} — ${clampLine(g.prompt, 220)}${tail}`,
+      });
+    }
+  }
+
+  nodes.push({ type: "heading3", text: "Internal observations" });
+  nodes.push({
+    type: "italicParagraph",
+    text: "Internal observations are attributable internal records and may not be suitable for external circulation.",
+  });
+  if (!data.internalInputs.length) {
+    nodes.push({ type: "bullet", text: "No internal observations recorded for this issue." });
+  } else {
+    for (const i of data.internalInputs) {
+      const obs = formatObservationCode(i.observationNumber) ?? "Observation ref unavailable";
+      const section = (i.linkedSection ?? "").trim() || "—";
+      const brief = i.excludedFromBrief ? "Excluded from briefs" : "Included in briefs";
+      nodes.push({
+        type: "bullet",
+        text: `${obs} — ${clampLine(`${i.role} · ${i.name}`, 120)} — ${i.confidence} — Section: ${clampLine(section, 80)} — ${brief} — ${clampLine(i.response, 200)}`,
+      });
+    }
+  }
+
+  return nodes;
+}
