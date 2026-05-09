@@ -11,7 +11,13 @@ import { compareBriefArtifacts } from "@/lib/brief/compareBriefVersions";
 
 export const dynamic = "force-dynamic";
 
-function groupTitle(id: CompareGroupId) {
+function groupTitle(mode: BriefMode, id: CompareGroupId) {
+  if (mode === "executive") {
+    if (id === "new_facts") return "Executive summary";
+    if (id === "changed_assumptions") return "Other executive sections";
+    if (id === "resolved_uncertainties") return "Resolved uncertainties";
+    return "Immediate actions";
+  }
   if (id === "new_facts") return "New facts";
   if (id === "changed_assumptions") return "Changed assumptions";
   if (id === "resolved_uncertainties") return "Resolved uncertainties";
@@ -29,8 +35,16 @@ function versionLabel(v: { versionNumber: number; createdAt: Date }) {
   return `v${v.versionNumber} · ${date}`;
 }
 
-function summarizeArtifact(artifact: BriefArtifact) {
-  const primary = artifact.full.sections.find((s) => s.id === "executive-summary")?.body ?? artifact.lede;
+const EXEC_PREVIEW_LABEL = "Executive summary";
+
+/** Side-by-side preview lines: Full uses stored executive-summary section body; Executive uses the executive-summary block shown in Exec brief UI. */
+function summarizeArtifactPreview(artifact: BriefArtifact, mode: BriefMode) {
+  let primary =
+    artifact.full.sections.find((s) => s.id === "executive-summary")?.body ?? artifact.lede;
+  if (mode === "executive") {
+    const block = artifact.executive.blocks.find((b) => b.label === EXEC_PREVIEW_LABEL);
+    if (block?.body?.trim()) primary = block.body;
+  }
   return primary
     .split("\n")
     .map((l) => l.trim())
@@ -96,30 +110,26 @@ export default async function IssueComparePage({
   }
 
   const currentArtifact = BriefArtifactSchema.parse(current.artifact) as BriefArtifact;
-  const currentSummary = summarizeArtifact(currentArtifact);
+  const currentSummary = summarizeArtifactPreview(currentArtifact, mode);
 
-  let compare: { summary: CompareSummary; changeCount: number; persisted: boolean };
+  let compare: { summary: CompareSummary; changeCount: number };
   let priorArtifact: BriefArtifact | null = null;
   let priorSummary: string[] = [];
 
   if (!prior) {
-    compare = { summary: compareBriefArtifacts(currentArtifact, currentArtifact), changeCount: 0, persisted: false };
+    compare = { summary: compareBriefArtifacts(currentArtifact, currentArtifact, mode), changeCount: 0 };
   } else {
     priorArtifact = BriefArtifactSchema.parse(prior.artifact) as BriefArtifact;
-    priorSummary = summarizeArtifact(priorArtifact);
+    priorSummary = summarizeArtifactPreview(priorArtifact, mode);
 
-    const existing = await prisma.briefComparison.findUnique({
-      where: { fromBriefVersionId_toBriefVersionId: { fromBriefVersionId: prior.id, toBriefVersionId: current.id } },
-    });
-
-    const summary = existing ? (existing.summary as any) : compareBriefArtifacts(priorArtifact, currentArtifact);
-    const changeCount = existing ? existing.changeCount : summary.groups.reduce((acc: number, g: any) => acc + g.items.length, 0);
-    compare = { summary, changeCount, persisted: Boolean(existing) };
+    const summary = compareBriefArtifacts(priorArtifact, currentArtifact, mode);
+    const changeCount = summary.groups.reduce((acc, g) => acc + g.items.length, 0);
+    compare = { summary, changeCount };
   }
 
   const deltaGroups = compare.summary.groups.map((g) => ({
     id: g.id,
-    title: groupTitle(g.id),
+    title: groupTitle(mode, g.id),
     state: groupState(g.id),
     items: g.items,
   }));
@@ -178,14 +188,26 @@ export default async function IssueComparePage({
                 <p className="font-medium text-[--metis-paper]">No material text changes detected</p>
                 <p className="mt-2">
                   These revisions may still differ in metadata or generation time, but{" "}
-                  <span className="text-[--metis-paper]">no new compared lines</span> were found in the selected brief text sections.
+                  <span className="text-[--metis-paper]">no new compared lines</span> were found{" "}
+                  {mode === "executive"
+                    ? "among executive brief blocks and immediate actions."
+                    : "in these full brief excerpt sections."}
                 </p>
               </div>
             ) : null}
 
             <p className="text-xs leading-relaxed text-[--metis-ink-soft]">
-              Compared text is drawn from executive summary, current position and open questions, and recommended actions within the brief artifact. Sources, tracker
-              records, observations, alternate wording hooks, and export appendices are not fully compared yet.
+              {mode === "executive" ? (
+                <>
+                  Compared executive text includes the labeled blocks shown on the Executive brief plus immediate actions. Linked sources, tracker records, alternate
+                  wording storage, export appendices, and full-only sections are not fully compared yet.
+                </>
+              ) : (
+                <>
+                  Compared text excerpts the full brief artifact: executive summary, current position / open questions, and recommended actions. Sources, tracker
+                  records, observations, alternate wording hooks, and export appendices are not fully compared yet.
+                </>
+              )}
             </p>
 
             <section className="grid min-w-0 gap-5 xl:grid-cols-2">
@@ -227,7 +249,9 @@ export default async function IssueComparePage({
             {hasPrior ? (
               <section className="space-y-4 border-t border-white/8 pt-8">
                 <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
-                  <h3 className="font-[Cormorant_Garamond] min-w-0 text-[2rem] leading-none text-[--metis-paper]">Compared text changes</h3>
+                  <h3 className="font-[Cormorant_Garamond] min-w-0 text-[2rem] leading-none text-[--metis-paper]">
+                    {mode === "executive" ? "Compared executive text" : "Compared full brief text"}
+                  </h3>
                 </div>
 
                 {compare.changeCount > 0 ? (

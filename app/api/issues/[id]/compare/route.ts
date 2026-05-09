@@ -56,9 +56,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     where: { fromBriefVersionId_toBriefVersionId: { fromBriefVersionId, toBriefVersionId } },
   });
 
-  const computedSummary = compareBriefArtifacts(from.artifact as any, to.artifact as any);
-  const summary = existing ? (existing.summary as any) : computedSummary;
-  const changeCount = existing ? existing.changeCount : computedSummary.groups.reduce((acc, g) => acc + g.items.length, 0);
+  // Always recompute from artifacts so mode-specific logic and engine updates are never masked by stored rows.
+  const computedSummary = compareBriefArtifacts(from.artifact as any, to.artifact as any, mode);
+  const changeCount = computedSummary.groups.reduce((acc, g) => acc + g.items.length, 0);
 
   const response = {
     issueId,
@@ -66,7 +66,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     from: serializeBriefVersionMeta(from),
     to: serializeBriefVersionMeta(to),
     changeCount,
-    summary,
+    summary: computedSummary,
     persisted: Boolean(existing),
     comparisonId: existing?.id ?? null,
     createdAt: existing?.createdAt.toISOString() ?? null,
@@ -102,7 +102,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: "Mode mismatch" }, { status: 400 });
   }
 
-  const computedSummary = compareBriefArtifacts(from.artifact as any, to.artifact as any);
+  const computedSummary = compareBriefArtifacts(from.artifact as any, to.artifact as any, mode);
   const changeCount = computedSummary.groups.reduce((acc, g) => acc + g.items.length, 0);
 
   const created = await prisma.briefComparison.upsert({
