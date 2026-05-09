@@ -62,7 +62,13 @@ export function BriefExecutiveSummaryCompare({
           </p>
         ) : null}
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="space-y-2">
+          {polishPreview.hasExistingAlternate && polishState.kind !== "ready" ? (
+            <p className="max-w-xl text-[0.72rem] leading-snug text-[--metis-text-tertiary]">
+              Saving a polished preview will replace the saved alternate draft for this section.
+            </p>
+          ) : null}
+          <div className="flex flex-wrap items-center gap-2">
           <Button
             type="button"
             variant="outline"
@@ -111,6 +117,7 @@ export function BriefExecutiveSummaryCompare({
           >
             {polishState.kind === "loading" ? "Generating preview…" : "Preview polished wording"}
           </Button>
+          </div>
         </div>
 
         {polishState.kind === "disabled" ? (
@@ -135,7 +142,7 @@ export function BriefExecutiveSummaryCompare({
             <p className="text-[0.72rem] leading-snug text-[--metis-text-tertiary]">
               Saved polished wording becomes the alternate draft for this brief version. It does not change the structured brief.
               {polishPreview.hasExistingAlternate ? (
-                <span className="text-[--metis-text-secondary]"> This replaces the saved alternate draft for this section.</span>
+                <span className="text-[--metis-text-secondary]"> Save will replace the current alternate draft.</span>
               ) : null}
             </p>
             <AiProvenance
