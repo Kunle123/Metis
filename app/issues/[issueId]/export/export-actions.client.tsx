@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, Copy, Download, FileText, Mail, X } from "lucide-react";
+import { CheckCircle2, Copy, Download, Mail, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { ReviewRailCard } from "@/components/review/ReviewRailCard";
@@ -15,14 +15,16 @@ import { ArtifactExportResponseSchema } from "@metis/shared/circulation";
 import { htmlExportToPlainClipboardFallback } from "@/lib/export/htmlToPlainClipboardFallback";
 
 type PreviewMime = "text/markdown" | "text/plain" | "text/html";
+/** Step 2 URL query `output=` for brief packages — email-ready omits output. */
+export type ExportUrlOutput = "markdown" | "html" | "docx";
 type DeliverTab = "markdown" | "html";
 
 type Props = {
   issueId: string;
   briefVersionId: string;
   selectedFormat: ExportFormat;
-  /** Resolved delivery for brief packages (Markdown vs HTML preview); email-ready ignores this server-side. */
-  exportPreviewOutput: DeliverTab;
+  /** Query `output` for Markdown vs HTML vs DOCX; email-ready does not persist output in URL. */
+  urlExportOutput: ExportUrlOutput;
   /** Brief mode preserved in bookmarks / navigation (query param `mode`). */
   urlMode: "full" | "executive";
   /** Stored BriefVersion.mode powering this package preview and download/copy. */
@@ -33,13 +35,16 @@ type Props = {
   previewTitle: string;
   previewContent: string;
   previewMimeType: PreviewMime;
+  /** When DOCX is selected, show placeholder instead of an empty `<pre>`/iframe. */
+  previewIsDocxPlaceholder: boolean;
   eventTypes: { prepared: CirculationEventType; downloaded: CirculationEventType; copied: CirculationEventType };
   channels: { file: CirculationChannel; copy: CirculationChannel; email: CirculationChannel };
-  /** Same-origin GET URL for binary DOCX beta download, or null for email-ready / unavailable. */
-  docxBetaDownloadUrl: string | null;
+  /** Same-origin GET URL for binary DOCX download, or null for email-ready. */
+  docxDownloadUrl: string | null;
 };
 
-function formatLabel(previewMimeType: PreviewMime) {
+function formatLabel(previewMimeType: PreviewMime, docx: boolean) {
+  if (docx) return "DOCX";
   if (previewMimeType === "text/plain") return "Plain text";
   if (previewMimeType === "text/html") return "HTML";
   return "Markdown";
@@ -124,13 +129,10 @@ const STEP_PANEL =
 const SECONDARY_PATH =
   "rounded-[var(--metis-control-radius-md)] border border-dashed border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_45%,transparent)] px-4 py-3";
 
-const ADDITIONAL_DOWNLOAD =
-  "rounded-[var(--metis-control-radius-md)] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_65%,transparent)] px-4 py-3 border-l-2 border-l-[color-mix(in_oklab,var(--metis-outline-strong)_55%,transparent)]";
-
 const PREVIEW_SHELL =
   "rounded-[var(--metis-control-radius-md)] border border-[--metis-outline-subtle] bg-[--metis-frame-soft] px-4 py-4 sm:px-5 shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--metis-outline-strong)_30%,transparent)]";
 
-/** Wraps optional email-ready + DOCX; not numbered like steps 1–4. */
+/** Wraps optional email-ready plain-text shortcut; not numbered like steps 1–4. */
 const OPTIONAL_OUTPUTS_GROUP =
   "rounded-[var(--metis-control-radius-md)] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_32%,transparent)] px-4 py-4 space-y-4 max-w-xl";
 
@@ -154,36 +156,55 @@ export function ExportActionsClient(props: Props) {
   const [message, setMessage] = useState<null | { tone: "ok" | "bad"; text: string }>(null);
   const [expanded, setExpanded] = useState(false);
 
-  const deliveryForPost = props.selectedFormat === "email-ready" ? undefined : props.exportPreviewOutput;
+  const deliveryForPost: DeliverTab | undefined =
+    props.selectedFormat === "email-ready"
+      ? undefined
+      : props.urlExportOutput === "docx"
+        ? undefined
+        : props.urlExportOutput;
 
-  const navigateDelivery = (next: DeliverTab) => {
+  const navigateDelivery = (next: ExportUrlOutput) => {
     const q = new URLSearchParams({
       mode: props.urlMode,
       format: props.selectedFormat,
       output: next,
     });
-    router.push(`/issues/${props.issueId}/export?${q.toString()}`);
+    /** `replace` + `scroll: false` avoids snapping to top when toggling output format (Markdown/HTML/DOCX). */
+    router.replace(`/issues/${props.issueId}/export?${q.toString()}`, { scroll: false });
   };
 
   const copyLabel = useMemo(() => {
+    if (props.urlExportOutput === "docx") return "Copy not available for DOCX";
     if (props.selectedFormat === "email-ready") return "Copy email-ready package";
     if (props.previewMimeType === "text/html") return "Copy package (HTML + plain)";
     return "Copy package (Markdown)";
-  }, [props.previewMimeType, props.selectedFormat]);
+  }, [props.previewMimeType, props.selectedFormat, props.urlExportOutput]);
 
   const PreviewBody = ({
     mime,
+    docxPlaceholder,
     title,
     content,
     lightOnDark,
     expanded: isExpanded,
   }: {
     mime: PreviewMime;
+    docxPlaceholder: boolean;
     title: string;
     content: string;
     lightOnDark: boolean;
     expanded: boolean;
   }) => {
+    if (docxPlaceholder) {
+      return (
+        <div className="rounded-[1rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_55%,transparent)] px-4 py-5 text-sm leading-6">
+          <p className="font-medium text-[--metis-text-primary]">DOCX preview is not available.</p>
+          <p className="mt-2 text-[--metis-text-secondary]">
+            Download the Word document to review formatting. Clipboard copy is not available for DOCX on this page.
+          </p>
+        </div>
+      );
+    }
     if (mime === "text/html") {
       return (
         <div
@@ -249,37 +270,65 @@ export function ExportActionsClient(props: Props) {
   };
 
   const showEmailReadySecondary = props.selectedFormat !== "email-ready";
-  const showOptionalOutputsSection = showEmailReadySecondary || Boolean(props.docxBetaDownloadUrl);
+  const showOptionalOutputsSection = showEmailReadySecondary;
+  const docxFlow = props.urlExportOutput === "docx" && Boolean(props.docxDownloadUrl);
 
   return (
     <div className="space-y-6">
       <div className={`${STEP_PANEL} space-y-5`}>
         {/* Step 2 — Output format */}
         <div className="space-y-2">
-          {stepLabel("2", "Output format")}
+          {stepLabel("2", "Choose output format")}
           {props.selectedFormat !== "email-ready" ? (
-            <div className="max-w-xl space-y-2">
-              <SegmentedControl<DeliverTab>
+            <div className="max-w-xl space-y-3">
+              <SegmentedControl<ExportUrlOutput>
                 label="Output format"
-                value={props.exportPreviewOutput}
+                value={props.urlExportOutput}
                 disabled={busy !== null}
-                options={[
-                  { id: "markdown", label: "Markdown" },
-                  { id: "html", label: "HTML" },
-                ]}
+                allowLabelWrap
+                className="min-w-0"
+                options={
+                  props.docxDownloadUrl
+                    ? [
+                        { id: "markdown", label: "Markdown" },
+                        { id: "html", label: "HTML" },
+                        { id: "docx", label: "DOCX" },
+                      ]
+                    : [
+                        { id: "markdown", label: "Markdown" },
+                        { id: "html", label: "HTML" },
+                        { id: "docx", label: "DOCX", disabled: true },
+                      ]
+                }
                 onChange={(next) => navigateDelivery(next)}
               />
-              <p className="text-xs leading-relaxed text-[--metis-paper-muted]">
-                Download and copy create a stored package snapshot from <span className="text-[--metis-paper]">{props.sourceBriefRevisionLabel}</span>.{" "}
-                <span className="text-[--metis-paper]">Markdown</span> — portable source.{" "}
-                <span className="text-[--metis-paper]">HTML</span> — formatted for browser or rich paste; copy tries HTML with a plain-text fallback.
+              <ul className="list-inside list-disc space-y-1.5 text-[0.72rem] leading-snug text-[--metis-paper-muted]">
+                <li>
+                  <span className="font-medium text-[--metis-text-primary]">Markdown</span> — best for editing or pasting into internal docs.
+                </li>
+                <li>
+                  <span className="font-medium text-[--metis-text-primary]">HTML</span> — best for browser preview or publishing.
+                </li>
+                <li>
+                  <span className="font-medium text-[--metis-text-primary]">DOCX</span> — best for sharing as a Word document (download only; no preview here).
+                </li>
+              </ul>
+              <p className="text-[0.72rem] leading-snug text-[--metis-paper-muted]">
+                Copy and download snapshots are generated from{" "}
+                <span className="text-[--metis-text-primary]">{props.sourceBriefRevisionLabel}</span>. Full issue brief includes the Audit appendix in Markdown,
+                HTML, and DOCX; Executive brief and Board note have no appendix.
               </p>
             </div>
           ) : (
-            <p className="max-w-xl text-xs leading-relaxed text-[--metis-paper-muted]">
-              This package is <span className="text-[--metis-paper]">plain text only</span> (not Markdown/HTML encoding). Copy and download use the email-ready
-              circulation draft from <span className="text-[--metis-paper]">{props.sourceBriefRevisionLabel}</span>.
-            </p>
+            <div className="max-w-xl space-y-2">
+              <p className="text-xs leading-relaxed text-[--metis-paper-muted]">
+                This package is <span className="text-[--metis-text-primary]">plain text only</span> — not HTML or Word. Copy and download use the email-ready
+                circulation draft from <span className="text-[--metis-text-primary]">{props.sourceBriefRevisionLabel}</span>.
+              </p>
+              <p className="text-[0.72rem] leading-snug text-[--metis-status-neutral-fg]">
+                Email-ready is plain text only. Switch to Full issue brief, Executive brief, or Board note above for Markdown, HTML, or DOCX.
+              </p>
+            </div>
           )}
         </div>
 
@@ -288,28 +337,46 @@ export function ExportActionsClient(props: Props) {
         {/* Step 3 — Copy / download (current package only) */}
         <div className="space-y-2">
           {stepLabel("3", "Copy / download")}
-          <section className="grid max-w-xl gap-3 sm:grid-cols-2">
-            <Button
-              type="button"
-              className="w-full justify-start"
-              disabled={busy !== null}
-              onClick={() => doDownload(props.selectedFormat, props.channels.file)}
-            >
-              <Download className="mr-2 h-4 w-4" />
-              {busy === "download" ? "Preparing…" : "Download package file"}
-            </Button>
+          {docxFlow ? (
+            <section className="grid max-w-xl gap-3 sm:grid-cols-2">
+              <Button asChild className="w-full justify-start">
+                <a href={props.docxDownloadUrl!}>
+                  <Download className="mr-2 h-4 w-4" />
+                  Download Word document
+                </a>
+              </Button>
+              <Button type="button" variant="outline" className="w-full justify-start" disabled aria-label={copyLabel}>
+                <Copy className="mr-2 h-4 w-4 text-[--metis-text-tertiary]" />
+                {copyLabel}
+              </Button>
+            </section>
+          ) : (
+            <section className="grid max-w-xl gap-3 sm:grid-cols-2">
+              <Button
+                type="button"
+                className="w-full justify-start"
+                disabled={busy !== null}
+                onClick={() => doDownload(props.selectedFormat, props.channels.file)}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                {busy === "download" ? "Preparing…" : "Download package file"}
+              </Button>
 
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full justify-start"
-              disabled={busy !== null}
-              onClick={() => doCopy(props.selectedFormat, props.channels.copy)}
-            >
-              <Copy className="mr-2 h-4 w-4 text-[--metis-brass]" />
-              {busy === "copy" || (props.selectedFormat === "email-ready" && busy === "email") ? "Copying…" : copyLabel}
-            </Button>
-          </section>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full justify-start"
+                disabled={busy !== null}
+                onClick={() => doCopy(props.selectedFormat, props.channels.copy)}
+              >
+                <Copy className="mr-2 h-4 w-4 text-[--metis-brass]" />
+                {busy === "copy" || (props.selectedFormat === "email-ready" && busy === "email") ? "Copying…" : copyLabel}
+              </Button>
+            </section>
+          )}
+          {props.urlExportOutput === "docx" && !props.docxDownloadUrl ? (
+            <p className="max-w-xl text-xs text-[--metis-status-warning-fg]">DOCX is not available for this package.</p>
+          ) : null}
         </div>
       </div>
 
@@ -347,8 +414,8 @@ export function ExportActionsClient(props: Props) {
               <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Email-ready · plain circulation draft</p>
               <p className="text-xs leading-relaxed text-[--metis-paper-muted]">
                 <span className="text-[--metis-paper]">Optional alternative</span> — copies plain text from the separate{" "}
-                <span className="text-[--metis-paper]">Email-ready package</span>, not another encoding of your current Markdown/HTML selection. Same clipboard
-                action as switching to that package in step 1; skip this if your current package is enough.
+                <span className="text-[--metis-paper]">Email-ready package</span>, not another encoding of your current Markdown, HTML, or DOCX selection. Same
+                clipboard action as switching to that package in step 1; skip this if your current package is enough.
               </p>
               <Button
                 type="button"
@@ -363,26 +430,6 @@ export function ExportActionsClient(props: Props) {
             </div>
           ) : null}
 
-          {/* DOCX: optional on-demand Word file — outside main package flow */}
-          {props.docxBetaDownloadUrl ? (
-            <div className={`${ADDITIONAL_DOWNLOAD} space-y-2`}>
-              <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]">Word · DOCX beta (on-demand)</p>
-              <p className="text-xs leading-relaxed text-[--metis-paper-muted]">
-                <span className="text-[--metis-paper]">Optional additional download</span> — Word-compatible file built on demand from{" "}
-                <span className="text-[--metis-paper]">{props.sourceBriefRevisionLabel}</span>.{" "}
-                <span className="text-[--metis-paper]">Not part of</span> the main Markdown/HTML copy and download path on this page; formatting may differ from
-                previews.
-                Stored export packages and circulation logging for this page apply to Markdown/HTML/plain actions —{" "}
-                <span className="text-[--metis-paper]">not</span> this beta file.
-              </p>
-              <Button asChild variant="outline" className="w-fit justify-start">
-                <a href={props.docxBetaDownloadUrl}>
-                  <FileText className="mr-2 h-4 w-4" />
-                  Download DOCX beta
-                </a>
-              </Button>
-            </div>
-          ) : null}
         </section>
       ) : null}
 
@@ -408,11 +455,19 @@ export function ExportActionsClient(props: Props) {
           <div className="min-w-0 space-y-1">
             <div id="export-review-heading">{stepLabel("4", "Review before circulating")}</div>
             <p className="text-xs text-[--metis-paper-muted]">
-              <span className="text-[--metis-paper]">Recommended:</span> check this preview matches what you intend to circulate{props.selectedFormat === "email-ready" ? " (plain text for this package)" : ""}.{` `}
-              {props.executiveBriefUsesFullBriefFallback
-                ? `Shown from ${props.sourceBriefRevisionLabel} snapshot blocks until you generate or regenerate an Executive brief.`
-                : `Matches the package and format you chose for ${props.sourceBriefRevisionLabel}.`}{` `}
-              Export details remain in the summary panel →
+              <span className="text-[--metis-paper]">Recommended:</span>{" "}
+              {props.previewIsDocxPlaceholder
+                ? "DOCX has no in-page preview — download the Word document to review."
+                : <>
+                    check this preview matches what you intend to circulate
+                    {props.selectedFormat === "email-ready" ? " (plain text for this package)." : "."}
+                  </>}{" "}
+              {props.previewIsDocxPlaceholder
+                ? null
+                : props.executiveBriefUsesFullBriefFallback
+                  ? `Shown from ${props.sourceBriefRevisionLabel} snapshot blocks until you generate or regenerate an Executive brief.`
+                  : `Matches the package and format you chose for ${props.sourceBriefRevisionLabel}.`}{` `}
+              {!props.previewIsDocxPlaceholder ? <>Export details remain in the summary panel →</> : null}
             </p>
           </div>
           <div className="flex shrink-0 items-start">
@@ -425,6 +480,7 @@ export function ExportActionsClient(props: Props) {
         <div className="mt-4 max-h-[52vh] overflow-auto rounded-[1rem] border border-[--metis-outline-subtle] bg-[--metis-surface-card] p-4 shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_22%,transparent)]">
           <PreviewBody
             mime={props.previewMimeType}
+            docxPlaceholder={props.previewIsDocxPlaceholder}
             title={`Review · ${props.previewTitle}`}
             content={props.previewContent}
             lightOnDark={false}
@@ -440,20 +496,37 @@ export function ExportActionsClient(props: Props) {
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold text-[--metis-text-primary]">{props.previewTitle}</p>
                 <p className="mt-1 text-xs text-[--metis-text-secondary]">
-                  {formatLabel(props.previewMimeType)} · {props.sourceBriefRevisionLabel}
+                  {formatLabel(props.previewMimeType, props.previewIsDocxPlaceholder)} · {props.sourceBriefRevisionLabel}
                   {props.urlMode !== props.briefSourceMode ? ` · Bookmark mode: ${props.urlMode === "full" ? "Full" : "Executive"}` : ""}
                   {props.selectedFormat === "email-ready" ? " · Email-ready preview is plain text only." : ""}
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <Button type="button" variant="outline" size="sm" onClick={() => doCopy(props.selectedFormat, props.channels.copy)}>
-                  <Copy className="mr-2 h-4 w-4" />
-                  Copy
-                </Button>
-                <Button type="button" size="sm" onClick={() => doDownload(props.selectedFormat, props.channels.file)}>
-                  <Download className="mr-2 h-4 w-4" />
-                  Download
-                </Button>
+                {docxFlow ? (
+                  <>
+                    <Button type="button" variant="outline" size="sm" disabled>
+                      <Copy className="mr-2 h-4 w-4" />
+                      Copy
+                    </Button>
+                    <Button asChild size="sm">
+                      <a href={props.docxDownloadUrl!}>
+                        <Download className="mr-2 h-4 w-4" />
+                        Download Word
+                      </a>
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button type="button" variant="outline" size="sm" onClick={() => doCopy(props.selectedFormat, props.channels.copy)}>
+                      <Copy className="mr-2 h-4 w-4" />
+                      Copy
+                    </Button>
+                    <Button type="button" size="sm" onClick={() => doDownload(props.selectedFormat, props.channels.file)}>
+                      <Download className="mr-2 h-4 w-4" />
+                      Download
+                    </Button>
+                  </>
+                )}
                 <Button type="button" variant="outline" size="sm" onClick={() => setExpanded(false)}>
                   Close
                 </Button>
@@ -462,6 +535,7 @@ export function ExportActionsClient(props: Props) {
             <div className="flex-1 overflow-auto p-4">
               <PreviewBody
                 mime={props.previewMimeType}
+                docxPlaceholder={props.previewIsDocxPlaceholder}
                 title={`Expanded review · ${props.previewTitle}`}
                 content={props.previewContent}
                 lightOnDark

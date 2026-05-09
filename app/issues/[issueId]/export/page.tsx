@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
 
 import { MetisShell, SurfaceCard } from "@/components/MetisShell";
@@ -87,13 +88,6 @@ export default async function IssueExportPage({
   const selectedFormat = parsedFormat.success ? parsedFormat.data : ("executive-brief" as const);
 
   const outputRaw = typeof sp.output === "string" ? sp.output : Array.isArray(sp.output) ? sp.output[0] : undefined;
-  /** Delivery encoding for Markdown vs HTML preview/download (email-ready is always plain text). */
-  const exportPreviewOutput: Exclude<ExportOutputType, "plain"> =
-    selectedFormat === "email-ready"
-      ? "markdown"
-      : outputRaw === "html"
-        ? "html"
-        : "markdown";
 
   const issue = await getIssueById(issueId);
   if (!issue) {
@@ -105,6 +99,21 @@ export default async function IssueExportPage({
       </MetisShell>
     );
   }
+
+  /** Email-ready is plain text only — strip `output` so we never keep e.g. `output=docx` in the URL. */
+  if (selectedFormat === "email-ready" && outputRaw !== undefined) {
+    redirect(`/issues/${issue.id}/export?mode=${urlMode}&format=email-ready`);
+  }
+
+  /** URL state for Step 2 (Markdown · HTML · DOCX). Email-ready does not use `output`. */
+  const urlExportOutput: "markdown" | "html" | "docx" =
+    selectedFormat === "email-ready"
+      ? "markdown"
+      : outputRaw === "html"
+        ? "html"
+        : outputRaw === "docx"
+          ? "docx"
+          : "markdown";
 
   const resolved = await resolveBriefVersionForExport(issue.id, urlMode, selectedFormat);
 
@@ -183,48 +192,68 @@ export default async function IssueExportPage({
   const { briefVersion, sourceMode, executiveBriefUsesFullBriefFallback } = resolved;
 
   const artifact = BriefArtifactSchema.parse(briefVersion.artifact) as BriefArtifact;
+  const renderAsMarkdownOrHtml: Exclude<ExportOutputType, "plain"> =
+    urlExportOutput === "html" ? "html" : "markdown";
   const auditAppendix =
-    selectedFormat === "full-issue-brief" && (exportPreviewOutput === "markdown" || exportPreviewOutput === "html")
+    selectedFormat === "full-issue-brief" && urlExportOutput !== "docx"
       ? await loadExportAuditAppendixPayload(issue.id)
       : null;
-  const rendered = renderExportDeliverable({
-    issue,
-    mode: sourceMode,
-    format: selectedFormat,
-    artifact,
-    outputType: exportPreviewOutput,
-    auditAppendix,
-  });
+  const rendered =
+    urlExportOutput === "docx"
+      ? {
+          content: "",
+          mimeType: "text/plain" as const,
+        }
+      : renderExportDeliverable({
+          issue,
+          mode: sourceMode,
+          format: selectedFormat,
+          artifact,
+          outputType: selectedFormat === "email-ready" ? "plain" : renderAsMarkdownOrHtml,
+          auditAppendix,
+        });
 
   const downloadExtension =
-    selectedFormat === "email-ready"
-      ? ".txt"
-      : rendered.mimeType === "text/html"
-        ? ".html"
-        : rendered.mimeType === "text/plain"
-          ? ".txt"
-          : ".md";
+    urlExportOutput === "docx"
+      ? ".docx"
+      : selectedFormat === "email-ready"
+        ? ".txt"
+        : rendered.mimeType === "text/html"
+          ? ".html"
+          : rendered.mimeType === "text/plain"
+            ? ".txt"
+            : ".md";
 
   const copyBehaviorShort =
-    selectedFormat === "email-ready"
-      ? "Plain text (not HTML)"
-      : rendered.mimeType === "text/html"
-        ? "Rich HTML + plain fallback"
-        : rendered.mimeType === "text/markdown"
-          ? "Markdown plain text"
-          : "Plain text";
+    urlExportOutput === "docx"
+      ? "Download Word document — not copyable here"
+      : selectedFormat === "email-ready"
+        ? "Plain text (not HTML)"
+        : rendered.mimeType === "text/html"
+          ? "Rich HTML + plain fallback"
+          : rendered.mimeType === "text/markdown"
+            ? "Markdown plain text"
+            : "Plain text";
 
   const encodingLabel =
-    rendered.mimeType === "text/html" ? "HTML" : rendered.mimeType === "text/plain" ? "Plain text" : "Markdown";
+    urlExportOutput === "docx"
+      ? "DOCX"
+      : rendered.mimeType === "text/html"
+        ? "HTML"
+        : rendered.mimeType === "text/plain"
+          ? "Plain text"
+          : "Markdown";
 
   const sourceBriefRevisionLabel = `${sourceMode === "full" ? "Full" : "Executive"} brief v${briefVersion.versionNumber}`;
   const generatedFromBriefLine = `Generated from ${sourceBriefRevisionLabel}.`;
   const packageFromBriefDescription =
     selectedFormat === "email-ready"
       ? `Plain text package from ${sourceBriefRevisionLabel}`
-      : rendered.mimeType === "text/html"
-        ? `HTML rendering from ${sourceBriefRevisionLabel}`
-        : `Markdown rendering from ${sourceBriefRevisionLabel}`;
+      : urlExportOutput === "docx"
+        ? `DOCX (Word) from ${sourceBriefRevisionLabel}`
+        : rendered.mimeType === "text/html"
+          ? `HTML rendering from ${sourceBriefRevisionLabel}`
+          : `Markdown rendering from ${sourceBriefRevisionLabel}`;
 
   // Wave 4: strict event semantics for export actions.
   const preparedEvent = CirculationEventTypeSchema.parse("prepared");
@@ -318,7 +347,7 @@ export default async function IssueExportPage({
                     <Link
                       key={item.id}
                       href={`/issues/${issue.id}/export?mode=${urlMode}&format=${item.id}${
-                        item.id === "email-ready" ? "" : `&output=${exportPreviewOutput}`
+                        item.id === "email-ready" ? "" : `&output=${urlExportOutput}`
                       }`}
                       className={`block border-t border-[--metis-outline-subtle] px-4 py-3.5 first:border-t-0 sm:px-5 ${
                         isSelected
@@ -391,12 +420,12 @@ export default async function IssueExportPage({
               issueId={issue.id}
               briefVersionId={briefVersion.id}
               selectedFormat={selectedFormat}
-              exportPreviewOutput={exportPreviewOutput}
+              urlExportOutput={urlExportOutput}
               urlMode={urlMode}
               briefSourceMode={sourceMode}
               sourceBriefRevisionLabel={sourceBriefRevisionLabel}
               executiveBriefUsesFullBriefFallback={executiveBriefUsesFullBriefFallback}
-              docxBetaDownloadUrl={
+              docxDownloadUrl={
                 selectedFormat !== "email-ready"
                   ? `/api/issues/${issue.id}/export/docx?briefVersionId=${encodeURIComponent(briefVersion.id)}&format=${encodeURIComponent(selectedFormat)}`
                   : null
@@ -404,6 +433,7 @@ export default async function IssueExportPage({
               previewTitle={issue.title}
               previewContent={rendered.content}
               previewMimeType={rendered.mimeType}
+              previewIsDocxPlaceholder={urlExportOutput === "docx"}
               eventTypes={{ prepared: preparedEvent, downloaded: downloadedEvent, copied: copiedEvent }}
               channels={{ file: fileChannel, copy: copyChannel, email: emailChannel }}
             />
@@ -500,11 +530,13 @@ export default async function IssueExportPage({
                 <div className="flex items-start gap-3 border-t border-[--metis-outline-subtle] pt-4 text-sm leading-6 text-[--metis-paper-muted]">
                   <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-[--metis-brass]" />
                   <span>
-                    {rendered.mimeType === "text/plain"
-                      ? "Plain text package ready · download ends in .txt; copy is plain text only (no styled HTML)."
-                      : rendered.mimeType === "text/html"
-                        ? "HTML package ready · download ends in .html; copy tries formatted HTML plus a readable plain fallback if your browser supports it."
-                        : "Markdown package ready · download ends in .md; copy is Markdown plain text."}
+                    {urlExportOutput === "docx"
+                      ? "DOCX selected · download a .docx file; there is no in-page preview for Word layout."
+                      : rendered.mimeType === "text/plain"
+                        ? "Plain text package ready · download ends in .txt; copy is plain text only (no styled HTML)."
+                        : rendered.mimeType === "text/html"
+                          ? "HTML package ready · download ends in .html; copy tries formatted HTML plus a readable plain fallback if your browser supports it."
+                          : "Markdown package ready · download ends in .md; copy is Markdown plain text."}
                   </span>
                 </div>
               </div>
