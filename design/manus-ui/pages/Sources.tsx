@@ -27,14 +27,14 @@ const tierCounts = tierOrder.map((tier) => ({
 const orderedSources = tierOrder.flatMap((tier) => sourceItems.filter((item) => item.tier === tier));
 
 const sourceNoteOverrides: Record<string, string> = {
-  "SRC-01": "Operational chronology from incident bridge.",
-  "SRC-02": "Latest wording on access uncertainty.",
-  "SRC-03": "Terminology constraints pending threshold review.",
-  "SRC-04": "Early external cause speculation.",
-  "SRC-05": "Inbound ticket escalation data.",
-  "SRC-06": "Threshold guidance for notification decisions.",
-  "SRC-07": "Current holding statement wording.",
-  "SRC-08": "Board sensitivity context.",
+  "SRC-001": "Operational chronology from incident bridge.",
+  "SRC-002": "Latest wording on access uncertainty.",
+  "SRC-003": "Terminology constraints pending threshold review.",
+  "SRC-004": "Early external cause speculation.",
+  "SRC-005": "Inbound ticket escalation data.",
+  "SRC-006": "Threshold guidance for notification decisions.",
+  "SRC-007": "Current holding statement wording.",
+  "SRC-008": "Board sensitivity context.",
 };
 
 const sectionPosture = [

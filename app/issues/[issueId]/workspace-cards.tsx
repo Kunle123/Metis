@@ -34,7 +34,7 @@ type GapCardData = {
 
 type SourceCardData = {
   id: string;
-  /** Issue-scoped evidence code (`SRC-01`); optional for preview rows. */
+  /** Issue-scoped evidence code (`SRC-001`); optional for preview rows. */
   sourceCode?: string | null;
   title: string | null;
   note: string | null;

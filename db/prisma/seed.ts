@@ -182,7 +182,7 @@ async function main() {
         return [
           {
             id: "11111111-0000-0000-0000-000000000101",
-            sourceCode: "SRC-01",
+            sourceCode: "SRC-001",
             tier: "Official",
             title: "Draft consultation overview (internal working draft)",
             note:
@@ -196,7 +196,7 @@ async function main() {
           },
           {
             id: "11111111-0000-0000-0000-000000000102",
-            sourceCode: "SRC-02",
+            sourceCode: "SRC-002",
             tier: "Internal",
             title: "Footfall and session demand summary (last 12 months)",
             note:
@@ -210,7 +210,7 @@ async function main() {
           },
           {
             id: "11111111-0000-0000-0000-000000000103",
-            sourceCode: "SRC-03",
+            sourceCode: "SRC-003",
             tier: "Official",
             title: "Equality impact screening checklist (template) + initial notes",
             note:
@@ -228,7 +228,7 @@ async function main() {
         return [
           {
             id: "22222222-0000-0000-0000-000000000201",
-            sourceCode: "SRC-01",
+            sourceCode: "SRC-001",
             tier: "Official",
             title: "Programme concept brief (published summary)",
             note:
@@ -242,7 +242,7 @@ async function main() {
           },
           {
             id: "22222222-0000-0000-0000-000000000202",
-            sourceCode: "SRC-02",
+            sourceCode: "SRC-002",
             tier: "Major media",
             title: "Local news article: residents question consultation accessibility",
             note:
@@ -256,7 +256,7 @@ async function main() {
           },
           {
             id: "22222222-0000-0000-0000-000000000203",
-            sourceCode: "SRC-03",
+            sourceCode: "SRC-003",
             tier: "Internal",
             title: "Consultation participation snapshot (attendance + survey)",
             note:
@@ -273,7 +273,7 @@ async function main() {
       return [
         {
           id: "33333333-0000-0000-0000-000000000301",
-          sourceCode: "SRC-01",
+          sourceCode: "SRC-001",
           tier: "Official",
           title: "Roundtable agenda draft + invitee list (internal)",
           note:
@@ -287,7 +287,7 @@ async function main() {
         },
         {
           id: "33333333-0000-0000-0000-000000000302",
-          sourceCode: "SRC-02",
+          sourceCode: "SRC-002",
           tier: "Internal",
           title: "Performance proof points: access metrics and service improvements (one-pager)",
           note:
@@ -301,7 +301,7 @@ async function main() {
         },
         {
           id: "33333333-0000-0000-0000-000000000303",
-          sourceCode: "SRC-03",
+          sourceCode: "SRC-003",
           tier: "Official",
           title: "Stakeholder feedback themes from prior engagements (published summary)",
           note:

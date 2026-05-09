@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 
 import { CreateSourceInputSchema, SourceTierSchema } from "@metis/shared/source";
+import { formatNumericSourceCode, parseNumericSourceCodeOrdinal } from "@/lib/issueRecordCodes";
 import { prisma } from "@/lib/db/prisma";
 import { IssueActivityKinds } from "@/lib/issues/activityKinds";
 import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
@@ -18,11 +19,10 @@ function compareTier(a: string, b: string) {
 function nextSourceCode(existing: string[]) {
   let max = 0;
   for (const code of existing) {
-    const m = /^SRC-(\d+)$/.exec(code);
-    if (m) max = Math.max(max, Number(m[1]));
+    const n = parseNumericSourceCodeOrdinal(code);
+    if (n != null) max = Math.max(max, n);
   }
-  const next = max + 1;
-  return `SRC-${String(next).padStart(2, "0")}`;
+  return formatNumericSourceCode(max + 1);
 }
 
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
