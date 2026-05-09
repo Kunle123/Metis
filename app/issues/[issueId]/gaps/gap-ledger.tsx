@@ -8,7 +8,6 @@ import {
   ChevronDown,
   ChevronRight,
   Copy,
-  MessageSquareText,
   PencilLine,
   RotateCcw,
   Save,
@@ -111,36 +110,45 @@ function clampText(s: string, max = 180) {
   return `${t.slice(0, max).trimEnd()}…`;
 }
 
-function observationAnchorHref(issueId: string) {
-  return `/issues/${issueId}#input`;
+function observationInputHref(issueId: string) {
+  return `/issues/${issueId}/input`;
 }
 
-/** Guidance for resolving open questions — info tone, not an error record. */
+/** Text link — focus ring; keep next to passive chips, not on chips themselves. */
+const ADD_OBSERVATION_LINK_CLASS =
+  "rounded-sm font-medium text-[--metis-brass-soft] underline-offset-4 outline-none transition-colors hover:underline focus-visible:ring-2 focus-visible:ring-[--metis-brass-soft] focus-visible:ring-offset-2 focus-visible:ring-offset-[color-mix(in_oklab,var(--metis-surface-card)_96%,transparent)] text-[0.72rem]";
+
+/** When observations already exist — info tone; primary path is the selector below. */
 function ObservationRequiredGuide({ issueId }: { issueId: string }) {
-  const href = observationAnchorHref(issueId);
+  const href = observationInputHref(issueId);
   return (
     <div className="rounded-[1rem] border border-[--metis-status-info-border] bg-[color-mix(in_oklab,var(--metis-status-info-bg)_22%,var(--metis-surface-toolbar)_88%)] px-3.5 py-3 shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_10%,transparent)]">
       <p className="text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-[--metis-status-info-fg]">Observation required</p>
       <p className="mt-2 text-xs leading-relaxed text-[--metis-paper-muted]">
-        To mark this question answered, select the saved observation that contains the attributable answer. If you have not captured one yet, add an observation
-        first.
+        To mark this question answered, select the saved observation that contains the attributable answer below.
       </p>
-      <Button asChild variant="outline" size="sm" className="mt-3 w-full justify-center sm:inline-flex sm:w-auto">
-        <Link href={href}>Add observation</Link>
-      </Button>
+      <p className="mt-2 min-w-0">
+        <Link href={href} className={ADD_OBSERVATION_LINK_CLASS} aria-label="Add another observation — opens Internal observations">
+          Add another observation<span aria-hidden> →</span>
+        </Link>
+      </p>
     </div>
   );
 }
 
 function NoObservationsEmptyState({ issueId }: { issueId: string }) {
-  const href = observationAnchorHref(issueId);
+  const href = observationInputHref(issueId);
   return (
     <div className="rounded-[1rem] border border-[color-mix(in_oklab,var(--metis-status-warning-border)_55%,var(--metis-outline-subtle))] bg-[color-mix(in_oklab,var(--metis-status-warning-bg)_14%,var(--metis-surface-toolbar)_92%)] px-3.5 py-3 shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_8%,transparent)]">
       <p className="text-sm font-medium text-[--metis-status-warning-fg]">No observations available yet</p>
-      <p className="mt-1 text-xs leading-relaxed text-[--metis-paper-muted]">Add an observation before marking this question answered.</p>
-      <Button asChild variant="outline" size="sm" className="mt-3 w-full justify-center sm:inline-flex sm:w-auto">
-        <Link href={href}>Add observation</Link>
-      </Button>
+      <p className="mt-1 text-xs leading-relaxed text-[--metis-paper-muted]">
+        Create a saved observation first, then return here to mark the question answered.
+      </p>
+      <p className="mt-2 min-w-0">
+        <Link href={href} className={ADD_OBSERVATION_LINK_CLASS} aria-label="Add observation — opens Internal observations">
+          Add observation<span aria-hidden> →</span>
+        </Link>
+      </p>
     </div>
   );
 }
@@ -165,7 +173,7 @@ export function GapLedger({
   const [busyGapId, setBusyGapId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const observationWorkspaceHref = observationAnchorHref(issueId);
+  const observationInputPageHref = observationInputHref(issueId);
 
   const inputsById = useMemo(() => new Map(internalInputs.map((i) => [i.id, i])), [internalInputs]);
 
@@ -506,11 +514,11 @@ export function GapLedger({
                                 </DenseSection>
                                 <DenseSection title="Resolution" titleClassName="text-[0.62rem]">
                                   <div className="space-y-3">
-                                    <ObservationRequiredGuide issueId={issueId} />
                                     {internalInputs.length === 0 ? (
                                       <NoObservationsEmptyState issueId={issueId} />
                                     ) : (
                                       <>
+                                        <ObservationRequiredGuide issueId={issueId} />
                                         <label className="block space-y-2">
                                           <span className="text-[0.62rem] font-medium uppercase tracking-[0.14em] text-[--metis-text-tertiary]">
                                             Answering observation
@@ -548,12 +556,6 @@ export function GapLedger({
                                 </DenseSection>
 
                                 <div className="grid gap-2 pt-1">
-                                  <Button asChild variant="outline" className="w-full justify-start">
-                                    <Link href={observationWorkspaceHref}>
-                                      <MessageSquareText className="mr-2 h-4 w-4" />
-                                      Add observation
-                                    </Link>
-                                  </Button>
                                   <Button variant="outline" onClick={() => startEditing(gap)} className="w-full justify-start">
                                     <PencilLine className="mr-2 h-4 w-4" />
                                     Edit question
@@ -781,7 +783,9 @@ export function GapLedger({
           >
             <div className="grid gap-3">
               <Button asChild variant="outline" className="w-full justify-start">
-                <Link href={observationWorkspaceHref}>Add observation</Link>
+                <Link href={observationInputPageHref}>
+                  Add observation<span aria-hidden> →</span>
+                </Link>
               </Button>
               <Button asChild variant="outline" className="w-full justify-start">
                 <Link href={`/issues/${issueId}/sources`}>Sources</Link>
