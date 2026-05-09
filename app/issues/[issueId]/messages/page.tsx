@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import type { IssueActivityKind } from "@metis/shared/activity";
 import { MetisShell, SurfaceCard } from "@/components/MetisShell";
 import { prisma } from "@/lib/db/prisma";
 import { getIssueById } from "@/lib/issues/getIssueContext";
+import { isStoredMessageDraftStale } from "@/lib/messages/messageFreshness";
 import { MessageVariantArtifactSchema, MessageVariantTemplateIdSchema } from "@metis/shared/messageVariant";
 import {
   buildAudienceSnapshot,
@@ -85,6 +87,34 @@ export default async function IssueMessagesPage({
     orderBy: [{ versionNumber: "desc" }],
   });
 
+  const messageFreshnessActivitiesRaw =
+    latestRow && latestRow.generatedFromIssueUpdatedAt.getTime() < issue.updatedAt.getTime()
+      ? await prisma.issueActivity.findMany({
+          where: {
+            issueId: issue.id,
+            createdAt: {
+              gt: new Date(Math.max(0, latestRow.generatedFromIssueUpdatedAt.getTime() - 60_000)),
+            },
+          },
+          select: { kind: true, createdAt: true },
+          orderBy: { createdAt: "asc" },
+        })
+      : [];
+  const messageFreshnessActivities: { kind: IssueActivityKind; createdAt: Date }[] = messageFreshnessActivitiesRaw.map(
+    (r) => ({
+      kind: r.kind as IssueActivityKind,
+      createdAt: r.createdAt,
+    }),
+  );
+  const savedDraftContentInSync = latestRow
+    ? !isStoredMessageDraftStale({
+        hasStoredDraft: true,
+        generatedFromIssueUpdatedAt: latestRow.generatedFromIssueUpdatedAt,
+        issueUpdatedAt: issue.updatedAt,
+        activitiesStrictlyAfterRevision: messageFreshnessActivities,
+      })
+    : false;
+
   const messagesAiCleanupEnabled = process.env.MESSAGES_AI_CLEANUP_ENABLED === "true";
 
   const audienceGroupOptions = activeGroups.map((g) => ({
@@ -165,7 +195,7 @@ export default async function IssueMessagesPage({
           <MessagesPanel
             issueId={issue.id}
             issueTitle={issue.title}
-            issueUpdatedAt={issue.updatedAt.toISOString()}
+            savedDraftContentInSync={savedDraftContentInSync}
             selectedTemplateId={templateId}
             audienceGroupOptions={audienceGroupOptions}
             selectedStakeholderGroupId={selectedStakeholderGroupId}

@@ -240,7 +240,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     (latestForLens.stakeholderGroupId ?? null) === stakeholderGroupId &&
     readStoredWordingPolish(latestForLens.artifact) === desiredPolish
   ) {
-    return NextResponse.json(serializeMessageVariant(latestForLens));
+    return NextResponse.json({
+      ...serializeMessageVariant(latestForLens),
+      issueUpdatedAt: issue.updatedAt.toISOString(),
+    });
   }
 
   const globalLatest = await prisma.messageVariant.findFirst({
@@ -344,8 +347,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   const audienceSnapshot = buildAudienceSnapshot(issue, audience);
 
-  const created = await prisma.$transaction(async (tx) => {
-    const row = await tx.messageVariant.create({
+  const { syncedRow, issueUpdatedAfterSave } = await prisma.$transaction(async (tx) => {
+    const rowCreated = await tx.messageVariant.create({
       data: {
         issueId,
         templateId: parsed.data.templateId,
@@ -361,13 +364,27 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     await writeIssueActivity(tx, {
       issueId,
       kind: IssueActivityKinds.message_variant_created,
-      summary: `Message draft v${row.versionNumber} created (${row.templateId})`,
+      summary: `Message draft v${rowCreated.versionNumber} created (${rowCreated.templateId})`,
       refType: "MessageVariant",
-      refId: row.id,
+      refId: rowCreated.id,
       actorLabel: user.email ?? null,
     });
 
-    return row;
+    const issueFresh = await tx.issue.findUniqueOrThrow({
+      where: { id: issueId },
+      select: { updatedAt: true },
+    });
+
+    /** `Issue.updatedAt` advances when `lastActivityAt` is written — align draft stamp so UI does not read “Needs refresh”. */
+    const syncedRow =
+      rowCreated.generatedFromIssueUpdatedAt.getTime() === issueFresh.updatedAt.getTime()
+        ? rowCreated
+        : await tx.messageVariant.update({
+            where: { id: rowCreated.id },
+            data: { generatedFromIssueUpdatedAt: issueFresh.updatedAt },
+          });
+
+    return { syncedRow, issueUpdatedAfterSave: issueFresh.updatedAt };
   });
 
   revalidatePath(`/issues/${issueId}/messages`);
@@ -376,7 +393,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   revalidatePath("/");
 
   const body = {
-    ...serializeMessageVariant(created),
+    ...serializeMessageVariant(syncedRow),
+    issueUpdatedAt: issueUpdatedAfterSave.toISOString(),
     ...(parsed.data.improveWithAi && aiCleanup ? { aiCleanup } : {}),
   };
   return NextResponse.json(body);

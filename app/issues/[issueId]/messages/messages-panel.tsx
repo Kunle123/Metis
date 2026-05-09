@@ -43,7 +43,6 @@ const MESSAGES_AI_USER_FAILURE_NOTE =
 export function MessagesPanel({
   issueId,
   issueTitle,
-  issueUpdatedAt,
   selectedTemplateId,
   audienceGroupOptions,
   selectedStakeholderGroupId,
@@ -51,10 +50,12 @@ export function MessagesPanel({
   initialLatest,
   messagesAiCleanupEnabled,
   deterministicPreview,
+  savedDraftContentInSync,
 }: {
   issueId: string;
   issueTitle: string;
-  issueUpdatedAt: string;
+  /** Server-derived freshness (ignores benign activity like saving this draft); false when no saved draft row. */
+  savedDraftContentInSync: boolean;
   selectedTemplateId: MessageVariantTemplateId;
   audienceGroupOptions: AudienceGroupOption[];
   /** null = general / no organisation audience group; URL retains `lens` query for backwards compatibility. */
@@ -69,6 +70,7 @@ export function MessagesPanel({
   const router = useRouter();
   const pathname = usePathname();
   const [latest, setLatest] = useState<LatestPayload>(initialLatest);
+  const [savedDraftSynced, setSavedDraftSynced] = useState(savedDraftContentInSync);
   const [loading, setLoading] = useState(false);
   const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
   const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
@@ -86,6 +88,17 @@ export function MessagesPanel({
     initialLatest?.generatedFromIssueUpdatedAt,
     initialLatest?.stakeholderGroupId,
     initialLatest?.issueStakeholderId,
+    selectedStakeholderGroupId,
+    selectedTemplateId,
+  ]);
+
+  useEffect(() => {
+    setSavedDraftSynced(savedDraftContentInSync);
+  }, [
+    savedDraftContentInSync,
+    initialLatest?.id,
+    initialLatest?.versionNumber,
+    initialLatest?.generatedFromIssueUpdatedAt,
     selectedStakeholderGroupId,
     selectedTemplateId,
   ]);
@@ -116,10 +129,12 @@ export function MessagesPanel({
     return aiRow?.artifact ?? deterministicPreview;
   }, [aiToggleOn, aiRow, deterministicPreview]);
 
-  const inSync = useMemo(() => {
-    if (!latest) return false;
-    return new Date(latest.generatedFromIssueUpdatedAt).getTime() === new Date(issueUpdatedAt).getTime();
-  }, [latest, issueUpdatedAt]);
+  const inSync = !latest ? false : savedDraftSynced;
+
+  function ingestSuccessfulVariantSave(row: NonNullable<LatestPayload>) {
+    setLatest(row);
+    setSavedDraftSynced(true);
+  }
 
   const savedDraftLabel = latest ? `Message draft v${latest.versionNumber}` : null;
 
@@ -174,14 +189,7 @@ export function MessagesPanel({
         issueStakeholderId: string | null;
         artifact: MessageVariantArtifact;
       };
-      setLatest({
-        id: row.id,
-        versionNumber: row.versionNumber,
-        generatedFromIssueUpdatedAt: row.generatedFromIssueUpdatedAt,
-        stakeholderGroupId: row.stakeholderGroupId,
-        issueStakeholderId: row.issueStakeholderId,
-        artifact: row.artifact,
-      });
+      ingestSuccessfulVariantSave(row);
       router.refresh();
     } catch (e) {
       console.error(e);
@@ -236,14 +244,7 @@ export function MessagesPanel({
         aiCleanup?: { ok: boolean; error?: string; detail?: string };
       };
 
-      setLatest({
-        id: row.id,
-        versionNumber: row.versionNumber,
-        generatedFromIssueUpdatedAt: row.generatedFromIssueUpdatedAt,
-        stakeholderGroupId: row.stakeholderGroupId,
-        issueStakeholderId: row.issueStakeholderId,
-        artifact: row.artifact,
-      });
+      ingestSuccessfulVariantSave(row);
 
       if (row.aiCleanup?.ok === false) {
         if (process.env.NODE_ENV === "development") {
