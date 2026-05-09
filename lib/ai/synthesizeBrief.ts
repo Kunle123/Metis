@@ -117,15 +117,29 @@ export type BriefSynthesisInput = {
   deterministicExecutiveSummaryBody: string;
 };
 
-export async function synthesizeBriefAlternateWording(params: {
+export type BriefAlternateWordingSynthesisOutcome =
+  | { status: "success"; rewrite: string; limitations: string }
+  | {
+      status: "error";
+      error:
+        | "missing_api_key"
+        | "openai_http"
+        | "empty_response"
+        | "parse_failed"
+        | "invalid_payload"
+        | "safety_rejected";
+    };
+
+/**
+ * Runs the alternate-wording model and safety checks. Does not read `BRIEF_AI_SYNTHESIS_ENABLED`;
+ * callers must gate on org/product policy before invoking.
+ */
+export async function executeBriefAlternateWordingSynthesis(params: {
   input: BriefSynthesisInput;
   targetLabel: string;
-}): Promise<{ rewrite: string; limitations: string } | null> {
-  const enabled = process.env.BRIEF_AI_SYNTHESIS_ENABLED === "true";
-  if (!enabled) return null;
-
+}): Promise<BriefAlternateWordingSynthesisOutcome> {
   const key = process.env.OPENAI_API_KEY?.trim();
-  if (!key) return null;
+  if (!key) return { status: "error", error: "missing_api_key" };
 
   const model = process.env.OPENAI_MODEL?.trim() || OPENAI_DEFAULT_MODEL;
 
@@ -168,23 +182,23 @@ ${payload}`,
     }),
   });
 
-  if (!res.ok) return null;
+  if (!res.ok) return { status: "error", error: "openai_http" };
 
   const data = (await res.json()) as {
     choices?: { message?: { content?: string } }[];
   };
   const content = data.choices?.[0]?.message?.content;
-  if (!content?.trim()) return null;
+  if (!content?.trim()) return { status: "error", error: "empty_response" };
 
   let parsed: unknown;
   try {
     parsed = parseJsonObjectFromAssistantContent(content);
   } catch {
-    return null;
+    return { status: "error", error: "parse_failed" };
   }
 
   const safe = parseRewritePayload(parsed);
-  if (!safe) return null;
+  if (!safe) return { status: "error", error: "invalid_payload" };
 
   const rewritten = safe.rewrite.trim();
   if (
@@ -195,10 +209,24 @@ ${payload}`,
       maxChars: MAX_REWRITE_CHARS,
     })
   ) {
-    return null;
+    return { status: "error", error: "safety_rejected" };
   }
 
-  return { rewrite: rewritten, limitations: safe.limitations ?? "" };
+  return { status: "success", rewrite: rewritten, limitations: safe.limitations ?? "" };
+}
+
+export async function synthesizeBriefAlternateWording(params: {
+  input: BriefSynthesisInput;
+  targetLabel: string;
+}): Promise<{ rewrite: string; limitations: string } | null> {
+  const enabled = process.env.BRIEF_AI_SYNTHESIS_ENABLED === "true";
+  if (!enabled) return null;
+
+  const outcome = await executeBriefAlternateWordingSynthesis(params);
+  if (outcome.status === "success") {
+    return { rewrite: outcome.rewrite, limitations: outcome.limitations };
+  }
+  return null;
 }
 
 export async function synthesizeBriefExecutiveSummary(

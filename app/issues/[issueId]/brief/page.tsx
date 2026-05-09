@@ -171,6 +171,8 @@ export default async function IssueBriefPage({
 
   const evidenceItems = linkedSources.slice(0, 12);
   const briefAiSynthesisEnabled = process.env.BRIEF_AI_SYNTHESIS_ENABLED === "true";
+  const executivePolishPreviewContext =
+    mode === "executive" && briefVersion ? { issueId: issue.id, briefVersionId: briefVersion.id } : null;
   const storedBriefRevisionLabel = briefVersion
     ? `${mode === "full" ? "Full" : "Executive"} brief v${briefVersion.versionNumber}`
     : null;
@@ -309,6 +311,7 @@ export default async function IssueBriefPage({
                                   deterministicBody={section.body}
                                   alternateWording={fullExecAlternateWording}
                                   briefAiSynthesisEnabled={briefAiSynthesisEnabled}
+                                  polishPreview={null}
                                 />
                               ) : (
                                 <p className="max-w-4xl whitespace-pre-line leading-7 text-[--metis-text-secondary]">{section.body}</p>
@@ -352,6 +355,7 @@ export default async function IssueBriefPage({
                                 deterministicBody={block.body}
                                 alternateWording={executiveExecAlternateWording}
                                 briefAiSynthesisEnabled={briefAiSynthesisEnabled}
+                                polishPreview={executivePolishPreviewContext}
                               />
                             ) : (
                               <p className="max-w-4xl whitespace-pre-line leading-7 text-[--metis-text-secondary]">{block.body}</p>

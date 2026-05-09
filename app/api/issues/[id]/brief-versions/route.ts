@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { BriefArtifactSchema, CreateBriefVersionInputSchema } from "@metis/shared/briefVersion";
 import { prisma } from "@/lib/db/prisma";
 import { generateBriefFromIssue } from "@/lib/brief/generateBriefFromIssue";
-import { rankInternalInputsForIssue, rankOpenGapsForIssue, rankSourcesForIssue } from "@/lib/evidence/rankEvidence";
+import { buildBriefSynthesisInput } from "@/lib/brief/buildBriefSynthesisInput";
 import { IssueActivityKinds } from "@/lib/issues/activityKinds";
 import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
 import { requireMutation } from "@/lib/governance/requireMutation";
@@ -78,66 +78,19 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
     const attemptedAtIso = new Date().toISOString();
 
-    const rankedSources = rankSourcesForIssue(sources);
-    const rankedOpenGaps = rankOpenGapsForIssue(gaps, { onlyOpen: true });
-    const rankedInputsForBrief = rankInternalInputsForIssue(internalInputs, { excludeFromBrief: true });
-    const topObservations = rankedInputsForBrief.slice(0, 2).map((i) => ({
-      role: i.role,
-      name: i.name,
-      confidence: i.confidence ?? null,
-      linkedSection: i.linkedSection ?? null,
-      response: String(i.response ?? "").slice(0, 360),
-    }));
-
-    const topSources = rankedSources.slice(0, 2).map((s) => ({
-      sourceCode: s.sourceCode,
-      tier: s.tier,
-      title: s.title,
-      linkedSection: s.linkedSection ?? null,
-    }));
-
-    const openTracker = rankedOpenGaps
-      .slice(0, 5)
-      .map((g) => ({
-        severity: g.severity ?? null,
-        linkedSection: (g as any).linkedSection ?? null,
-        text: (g.prompt || g.title || "").trim(),
-      }))
-      .filter((x) => x.text.length);
-
-    const openQuestionsIntake = String(issue.openQuestions ?? "")
-      .split(/\r?\n/)
-      .map((l) => l.trim())
-      .filter(Boolean)
-      .slice(0, 6);
-
-    const audienceNote = String(issue.audience ?? "").trim();
-    const audienceContextSummary = audienceNote
-      ? `Audience note: ${audienceNote}`
-      : "No specific audience note is recorded on the issue.";
-
-    const synthesisInput = {
-      issue: {
-        title: issue.title,
-        summary: issue.summary,
-        context: issue.context ?? "",
-        confirmedFacts: issue.confirmedFacts ?? "",
-        openQuestionsIntake,
-        audienceContextSummary,
-      },
-      topTrackerOpenQuestions: openTracker,
-      topSources,
-      topObservations,
-      deterministicExecutiveSummaryBody: "",
-    };
-
     const items = [];
 
     if (parsed.data.mode === "full") {
       const exec = artifactDeterministic.full.sections.find((s) => s.id === "executive-summary");
       if (!exec?.body?.trim()) return artifactDeterministic;
 
-      synthesisInput.deterministicExecutiveSummaryBody = exec.body;
+      const synthesisInput = buildBriefSynthesisInput({
+        issue,
+        sources,
+        gaps,
+        internalInputs,
+        deterministicExecutiveSummaryBody: exec.body,
+      });
       const rewrite = await synthesizeBriefExecutiveSummary(synthesisInput);
 
       const fullTarget = { mode: "full" as const, kind: "section" as const, id: "executive-summary" };
@@ -185,7 +138,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const execBlock = artifactDeterministic.executive.blocks.find((b) => b.label.trim() === "Executive summary");
     if (!execBlock?.body?.trim()) return artifactDeterministic;
 
-    synthesisInput.deterministicExecutiveSummaryBody = execBlock.body;
+    const synthesisInput = buildBriefSynthesisInput({
+      issue,
+      sources,
+      gaps,
+      internalInputs,
+      deterministicExecutiveSummaryBody: execBlock.body,
+    });
     const rewrite = await synthesizeBriefAlternateWording({
       input: synthesisInput,
       targetLabel: 'Executive brief “Executive summary” block',
