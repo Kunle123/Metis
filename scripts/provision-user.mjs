@@ -4,6 +4,22 @@ import bcrypt from "bcryptjs";
 
 const ROLES = new Set(["Viewer", "Operator", "Admin"]);
 
+/** Keep aligned with `lib/organisations/demoOrganisation.ts` and migration `20260509154500_add_organisation_membership`. */
+const DEMO_ORGANISATION_ID = "00000000-0000-4000-a000-000000000001";
+
+function membershipRoleFromGlobalUserRole(globalRole) {
+  switch (globalRole) {
+    case "Admin":
+      return "Admin";
+    case "Operator":
+      return "User";
+    case "Viewer":
+      return "Viewer";
+    default:
+      return "Viewer";
+  }
+}
+
 function requireEnv(name) {
   const v = process.env[name];
   if (!v || v.trim().length === 0) {
@@ -28,6 +44,23 @@ async function main() {
     where: { email },
     create: { email, passwordHash, role },
     update: { passwordHash, role },
+  });
+
+  const membershipRole = membershipRoleFromGlobalUserRole(user.role);
+
+  await prisma.membership.upsert({
+    where: {
+      userId_organisationId: {
+        userId: user.id,
+        organisationId: DEMO_ORGANISATION_ID,
+      },
+    },
+    create: {
+      userId: user.id,
+      organisationId: DEMO_ORGANISATION_ID,
+      role: membershipRole,
+    },
+    update: { role: membershipRole },
   });
 
   console.log(

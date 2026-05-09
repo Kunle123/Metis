@@ -7,90 +7,133 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Organisation {
+  id         String   @id @default(uuid())
+  name       String
+  slug       String   @unique
+  clerkOrgId String?  @unique
+  status     String   @default("Active")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  issues            Issue[]
+  stakeholderGroups StakeholderGroup[]
+  memberships       Membership[]
+}
+
+model Membership {
+  id             String   @id @default(uuid())
+  userId         String
+  organisationId String
+  role           String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, organisationId])
+  @@index([organisationId])
+  @@index([userId])
+}
+
 model User {
-  id           String   @id @default(uuid())
-  email        String   @unique
+  id           String       @id @default(uuid())
+  email        String       @unique
   passwordHash String
   role         String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  clerkUserId  String?      @unique
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  memberships  Membership[]
 }
 
 model Issue {
-  id            String   @id @default(uuid())
-  title         String
-  summary       String
-  confirmedFacts String?
-  openQuestions  String?
-  context        String?
-  issueType     String
-  severity      String
-  status        String
-  priority      String   @default("Normal")
-  operatorPosture String @default("Monitoring")
-  ownerName     String?
-  audience      String?
-  openGapsCount Int      @default(0)
-  sourcesCount  Int      @default(0)
-  /** Last assigned open-question ordinal within this issue (`Q-{padded}` in UI); next create uses increment. */
-  gapCodeSeq         Int @default(0)
-  /** Last assigned observation ordinal within this issue (`OBS-{padded}` in UI); next create uses increment. */
-  observationCodeSeq Int @default(0)
-  lastActivityAt DateTime @default(now())
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  briefVersions BriefVersion[]
-  briefComparisons BriefComparison[]
-  artifactExports ArtifactExport[]
-  circulationEvents CirculationEvent[]
-  activities    IssueActivity[]
-  sources       Source[]
-  gaps          Gap[]
-  internalInputs InternalInput[]
-  issueStakeholders IssueStakeholder[]
-  messageVariants MessageVariant[]
-  commsPlanItems CommsPlanItem[]
+  id                 String             @id @default(uuid())
+  organisationId     String
+  title              String
+  summary            String
+  confirmedFacts     String?
+  openQuestions      String?
+  context            String?
+  issueType          String
+  severity           String
+  status             String
+  priority           String             @default("Normal")
+  operatorPosture    String             @default("Monitoring")
+  ownerName          String?
+  audience           String?
+  openGapsCount      Int                @default(0)
+  sourcesCount       Int                @default(0)
+  /**
+   * Last assigned open-question ordinal within this issue (`Q-{padded}` in UI); next create uses increment.
+   */
+  gapCodeSeq         Int                @default(0)
+  /**
+   * Last assigned observation ordinal within this issue (`OBS-{padded}` in UI); next create uses increment.
+   */
+  observationCodeSeq Int                @default(0)
+  lastActivityAt     DateTime           @default(now())
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  briefVersions      BriefVersion[]
+  briefComparisons   BriefComparison[]
+  artifactExports    ArtifactExport[]
+  circulationEvents  CirculationEvent[]
+  activities         IssueActivity[]
+  sources            Source[]
+  gaps               Gap[]
+  internalInputs     InternalInput[]
+  issueStakeholders  IssueStakeholder[]
+  messageVariants    MessageVariant[]
+  commsPlanItems     CommsPlanItem[]
+  organisation       Organisation       @relation(fields: [organisationId], references: [id], onDelete: Restrict)
 
+  @@index([organisationId])
   @@index([updatedAt])
   @@index([lastActivityAt])
 }
 
 model StakeholderGroup {
-  id                 String   @id @default(uuid())
-  name               String   @unique
-  description        String?
-  defaultSensitivity String?
-  defaultChannels    String?
+  id                  String   @id @default(uuid())
+  organisationId      String
+  name                String
+  description         String?
+  defaultSensitivity  String?
+  defaultChannels     String?
   defaultToneGuidance String?
-  displayOrder       Int      @default(0)
-  isActive           Boolean  @default(true)
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  displayOrder        Int      @default(0)
+  isActive            Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 
   issueStakeholders IssueStakeholder[]
   messageVariants   MessageVariant[]
   commsPlanItems    CommsPlanItem[]
+  organisation      Organisation       @relation(fields: [organisationId], references: [id], onDelete: Restrict)
 
+  @@unique([organisationId, name])
+  @@index([organisationId])
   @@index([displayOrder])
   @@index([isActive, displayOrder])
 }
 
 model IssueStakeholder {
   id                 String   @id @default(uuid())
-  issueId             String
-  stakeholderGroupId  String
-  priority            String   @default("Normal")
-  needsToKnow         String   @default("")
-  issueRisk           String   @default("")
-  channelGuidance     String   @default("")
-  toneAdjustment      String?
-  notes               String?
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  issueId            String
+  stakeholderGroupId String
+  priority           String   @default("Normal")
+  needsToKnow        String   @default("")
+  issueRisk          String   @default("")
+  channelGuidance    String   @default("")
+  toneAdjustment     String?
+  notes              String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
-  issue Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  issue            Issue            @relation(fields: [issueId], references: [id], onDelete: Cascade)
   stakeholderGroup StakeholderGroup @relation(fields: [stakeholderGroupId], references: [id], onDelete: Cascade)
-  messageVariants MessageVariant[]
+  messageVariants  MessageVariant[]
 
   @@unique([issueId, stakeholderGroupId])
   @@index([issueId, createdAt])
@@ -99,22 +142,24 @@ model IssueStakeholder {
 }
 
 model MessageVariant {
-  id                           String   @id @default(uuid())
-  issueId                      String
-  templateId                   String
-  versionNumber                Int
-  generatedFromIssueUpdatedAt  DateTime
-  /** Organisation audience bucket; null = issue setup audience note only. */
-  stakeholderGroupId           String?
-  issueStakeholderId           String?
-  audienceSnapshot             Json
-  artifact                     Json
-  createdAt                    DateTime @default(now())
+  id                          String   @id @default(uuid())
+  issueId                     String
+  templateId                  String
+  versionNumber               Int
+  generatedFromIssueUpdatedAt DateTime
+  /**
+   * Organisation audience bucket; null = issue setup audience note only.
+   */
+  stakeholderGroupId          String?
+  issueStakeholderId          String?
+  audienceSnapshot            Json
+  artifact                    Json
+  createdAt                   DateTime @default(now())
 
-  issue              Issue              @relation(fields: [issueId], references: [id], onDelete: Cascade)
-  stakeholderGroup   StakeholderGroup?  @relation(fields: [stakeholderGroupId], references: [id], onDelete: SetNull)
-  issueStakeholder   IssueStakeholder?  @relation(fields: [issueStakeholderId], references: [id], onDelete: SetNull)
-  preparedCommsPlanItems CommsPlanItem[] @relation("CommsPlanItemPreparedMessageVariant")
+  issue                  Issue             @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  stakeholderGroup       StakeholderGroup? @relation(fields: [stakeholderGroupId], references: [id], onDelete: SetNull)
+  issueStakeholder       IssueStakeholder? @relation(fields: [issueStakeholderId], references: [id], onDelete: SetNull)
+  preparedCommsPlanItems CommsPlanItem[]   @relation("CommsPlanItemPreparedMessageVariant")
 
   @@unique([issueId, templateId, versionNumber])
   @@index([issueId, templateId, createdAt])
@@ -123,37 +168,37 @@ model MessageVariant {
 }
 
 model CommsPlanItem {
-  id                       String   @id @default(uuid())
-  issueId                   String
-  stakeholderGroupId        String?
-  title                     String
-  outputType                String
-  messageTemplateId         String?
-  briefMode                 String?
-  exportFormat              String?
-  channel                   String
-  scheduleType              String
-  cadenceMinutes            Int?
-  triggerType               String?
-  nextDueAt                 DateTime?
-  owner                     String?
-  status                    String   @default("planned")
-  notes                     String?
-  lastPreparedAt            DateTime?
-  lastSentAt                DateTime?
-  lastSkippedAt             DateTime?
-  skipReason                String?
+  id                           String    @id @default(uuid())
+  issueId                      String
+  stakeholderGroupId           String?
+  title                        String
+  outputType                   String
+  messageTemplateId            String?
+  briefMode                    String?
+  exportFormat                 String?
+  channel                      String
+  scheduleType                 String
+  cadenceMinutes               Int?
+  triggerType                  String?
+  nextDueAt                    DateTime?
+  owner                        String?
+  status                       String    @default("planned")
+  notes                        String?
+  lastPreparedAt               DateTime?
+  lastSentAt                   DateTime?
+  lastSkippedAt                DateTime?
+  skipReason                   String?
   preparedFromMessageVariantId String?
   preparedFromBriefVersionId   String?
   preparedFromExportId         String?
-  createdAt                 DateTime @default(now())
-  updatedAt                 DateTime @updatedAt
+  createdAt                    DateTime  @default(now())
+  updatedAt                    DateTime  @updatedAt
 
-  issue            Issue            @relation(fields: [issueId], references: [id], onDelete: Cascade)
-  stakeholderGroup StakeholderGroup? @relation(fields: [stakeholderGroupId], references: [id], onDelete: SetNull)
-  preparedFromMessageVariant MessageVariant? @relation("CommsPlanItemPreparedMessageVariant", fields: [preparedFromMessageVariantId], references: [id], onDelete: SetNull)
-  preparedFromBriefVersion   BriefVersion?   @relation("CommsPlanItemPreparedBriefVersion", fields: [preparedFromBriefVersionId], references: [id], onDelete: SetNull)
-  preparedFromExport         ArtifactExport? @relation("CommsPlanItemPreparedExport", fields: [preparedFromExportId], references: [id], onDelete: SetNull)
+  issue                      Issue             @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  stakeholderGroup           StakeholderGroup? @relation(fields: [stakeholderGroupId], references: [id], onDelete: SetNull)
+  preparedFromMessageVariant MessageVariant?   @relation("CommsPlanItemPreparedMessageVariant", fields: [preparedFromMessageVariantId], references: [id], onDelete: SetNull)
+  preparedFromBriefVersion   BriefVersion?     @relation("CommsPlanItemPreparedBriefVersion", fields: [preparedFromBriefVersionId], references: [id], onDelete: SetNull)
+  preparedFromExport         ArtifactExport?   @relation("CommsPlanItemPreparedExport", fields: [preparedFromExportId], references: [id], onDelete: SetNull)
 
   @@index([issueId, createdAt])
   @@index([issueId, status, nextDueAt])
@@ -164,42 +209,42 @@ model CommsPlanItem {
 }
 
 model BriefVersion {
-  id                        String   @id @default(uuid())
-  issueId                    String
-  mode                       String
-  versionNumber              Int
+  id                          String   @id @default(uuid())
+  issueId                     String
+  mode                        String
+  versionNumber               Int
   generatedFromIssueUpdatedAt DateTime
-  circulationState           String   @default("Ready for review")
-  circulationNotes           String?
-  derivedFromBriefVersionId  String?
-  artifact                   Json
-  createdAt                  DateTime @default(now())
+  circulationState            String   @default("Ready for review")
+  circulationNotes            String?
+  derivedFromBriefVersionId   String?
+  artifact                    Json
+  createdAt                   DateTime @default(now())
 
-  issue Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
-  derivedFromBriefVersion BriefVersion? @relation("BriefVersionDerivation", fields: [derivedFromBriefVersionId], references: [id], onDelete: SetNull)
-  derivedVersions        BriefVersion[] @relation("BriefVersionDerivation")
-  comparisonsFrom        BriefComparison[] @relation("BriefComparisonFrom")
-  comparisonsTo          BriefComparison[] @relation("BriefComparisonTo")
-  artifactExports        ArtifactExport[]
-  circulationEvents      CirculationEvent[]
-  preparedCommsPlanItems CommsPlanItem[] @relation("CommsPlanItemPreparedBriefVersion")
+  issue                   Issue              @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  derivedFromBriefVersion BriefVersion?      @relation("BriefVersionDerivation", fields: [derivedFromBriefVersionId], references: [id], onDelete: SetNull)
+  derivedVersions         BriefVersion[]     @relation("BriefVersionDerivation")
+  comparisonsFrom         BriefComparison[]  @relation("BriefComparisonFrom")
+  comparisonsTo           BriefComparison[]  @relation("BriefComparisonTo")
+  artifactExports         ArtifactExport[]
+  circulationEvents       CirculationEvent[]
+  preparedCommsPlanItems  CommsPlanItem[]    @relation("CommsPlanItemPreparedBriefVersion")
 
-  @@index([issueId, mode, createdAt])
   @@unique([issueId, mode, versionNumber])
+  @@index([issueId, mode, createdAt])
   @@index([derivedFromBriefVersionId])
 }
 
 model BriefComparison {
-  id               String   @id @default(uuid())
-  issueId           String
-  mode              String
+  id                 String   @id @default(uuid())
+  issueId            String
+  mode               String
   fromBriefVersionId String
   toBriefVersionId   String
-  changeCount       Int
-  summary           Json
-  createdAt         DateTime @default(now())
+  changeCount        Int
+  summary            Json
+  createdAt          DateTime @default(now())
 
-  issue          Issue        @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  issue            Issue        @relation(fields: [issueId], references: [id], onDelete: Cascade)
   fromBriefVersion BriefVersion @relation("BriefComparisonFrom", fields: [fromBriefVersionId], references: [id], onDelete: Cascade)
   toBriefVersion   BriefVersion @relation("BriefComparisonTo", fields: [toBriefVersionId], references: [id], onDelete: Cascade)
 
@@ -208,7 +253,7 @@ model BriefComparison {
 }
 
 model ArtifactExport {
-  id            String   @id @default(uuid())
+  id             String   @id @default(uuid())
   issueId        String
   briefVersionId String
   mode           String
@@ -218,17 +263,17 @@ model ArtifactExport {
   content        String
   createdAt      DateTime @default(now())
 
-  issue        Issue       @relation(fields: [issueId], references: [id], onDelete: Cascade)
-  briefVersion BriefVersion @relation(fields: [briefVersionId], references: [id], onDelete: Cascade)
-  circulationEvents CirculationEvent[]
-  preparedCommsPlanItems CommsPlanItem[] @relation("CommsPlanItemPreparedExport")
+  issue                  Issue              @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  briefVersion           BriefVersion       @relation(fields: [briefVersionId], references: [id], onDelete: Cascade)
+  circulationEvents      CirculationEvent[]
+  preparedCommsPlanItems CommsPlanItem[]    @relation("CommsPlanItemPreparedExport")
 
   @@index([issueId, createdAt])
   @@index([briefVersionId, createdAt])
 }
 
 model CirculationEvent {
-  id            String   @id @default(uuid())
+  id             String   @id @default(uuid())
   issueId        String
   briefVersionId String
   exportId       String?
@@ -240,8 +285,8 @@ model CirculationEvent {
   note           String?
   createdAt      DateTime @default(now())
 
-  issue        Issue        @relation(fields: [issueId], references: [id], onDelete: Cascade)
-  briefVersion BriefVersion @relation(fields: [briefVersionId], references: [id], onDelete: Cascade)
+  issue        Issue           @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  briefVersion BriefVersion    @relation(fields: [briefVersionId], references: [id], onDelete: Cascade)
   export       ArtifactExport? @relation(fields: [exportId], references: [id], onDelete: SetNull)
 
   @@index([issueId, createdAt])
@@ -250,14 +295,14 @@ model CirculationEvent {
 }
 
 model IssueActivity {
-  id        String   @id @default(uuid())
-  issueId   String
-  kind      String
-  summary   String
-  refType   String?
-  refId     String?
+  id         String   @id @default(uuid())
+  issueId    String
+  kind       String
+  summary    String
+  refType    String?
+  refId      String?
   actorLabel String?
-  createdAt DateTime @default(now())
+  createdAt  DateTime @default(now())
 
   issue Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
 
@@ -267,8 +312,8 @@ model IssueActivity {
 
 model Source {
   id             String   @id @default(uuid())
-  issueId         String
-  sourceCode      String
+  issueId        String
+  sourceCode     String
   tier           String
   title          String
   note           String?
@@ -281,27 +326,29 @@ model Source {
 
   issue Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
 
-  @@index([issueId, tier, createdAt])
   @@unique([issueId, sourceCode])
+  @@index([issueId, tier, createdAt])
 }
 
 model Gap {
-  id                          String   @id @default(uuid())
-  issueId                     String
-  /** Per-issue stable ordinal for human-readable `Q-###` codes (not renumbered on delete). */
-  gapNumber                   Int
-  title                       String
-  whyItMatters                String
-  stakeholder                 String
-  linkedSection               String?
-  severity                    String
-  status                      String
-  prompt                      String
-  resolvedByInternalInputId   String?
-  createdAt                   DateTime @default(now())
-  updatedAt                   DateTime @updatedAt
+  id                        String   @id @default(uuid())
+  issueId                   String
+  /**
+   * Per-issue stable ordinal for human-readable `Q-###` codes (not renumbered on delete).
+   */
+  gapNumber                 Int
+  title                     String
+  whyItMatters              String
+  stakeholder               String
+  linkedSection             String?
+  severity                  String
+  status                    String
+  prompt                    String
+  resolvedByInternalInputId String?
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
 
-  issue Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  issue                   Issue          @relation(fields: [issueId], references: [id], onDelete: Cascade)
   resolvedByInternalInput InternalInput? @relation("GapResolvedByInternalInput", fields: [resolvedByInternalInputId], references: [id], onDelete: Restrict)
 
   @@unique([issueId, gapNumber])
@@ -310,24 +357,25 @@ model Gap {
 }
 
 model InternalInput {
-  id             String   @id @default(uuid())
-  issueId        String
-  /** Per-issue stable ordinal for human-readable `OBS-###` codes (not renumbered on delete). */
+  id                String   @id @default(uuid())
+  issueId           String
+  /**
+   * Per-issue stable ordinal for human-readable `OBS-###` codes (not renumbered on delete).
+   */
   observationNumber Int
-  role           String
-  name           String
-  response       String
-  confidence     String
-  excludedFromBrief Boolean @default(false)
-  linkedSection  String?
-  visibility     String?
-  timestampLabel String?
-  createdAt      DateTime @default(now())
+  role              String
+  name              String
+  response          String
+  confidence        String
+  excludedFromBrief Boolean  @default(false)
+  linkedSection     String?
+  visibility        String?
+  timestampLabel    String?
+  createdAt         DateTime @default(now())
 
-  issue Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  issue        Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
   resolvedGaps Gap[] @relation("GapResolvedByInternalInput")
 
   @@unique([issueId, observationNumber])
   @@index([issueId, createdAt])
 }
-

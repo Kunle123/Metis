@@ -7,8 +7,11 @@ import type { Gap, InternalInput, Issue, Source } from "@prisma/client";
 
 import { buildBriefSynthesisInput } from "./buildBriefSynthesisInput";
 
+import { DEMO_ORGANISATION_ID } from "@/lib/organisations/demoOrganisation";
+
 const baseIssue = {
   id: "i1",
+  organisationId: DEMO_ORGANISATION_ID,
   title: "Sample title",
   summary: "Summary line",
   context: "Ctx",

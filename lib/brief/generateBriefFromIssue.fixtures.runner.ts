@@ -14,6 +14,8 @@ import {
 } from "./generateBriefFromIssue";
 import type { Gap, InternalInput, Issue, Source } from "@prisma/client";
 
+import { DEMO_ORGANISATION_ID } from "@/lib/organisations/demoOrganisation";
+
 /** Executive Evidence base block avoids internal jargon and keeps an audit trail pointer. */
 function assertExecutiveEvidencePointerLanguage(which: string, body: string) {
   assert.ok(!/placeholder/i.test(body), `${which}: avoid placeholder wording in Executive evidence`);
@@ -26,6 +28,7 @@ function assertExecutiveEvidencePointerLanguage(which: string, body: string) {
 
 const baseIssue: Issue = {
   id: "issue-1",
+  organisationId: DEMO_ORGANISATION_ID,
   title: "Sample board brief",
   summary: "We are aligning on vendor impact before external lines.",
   confirmedFacts: null,

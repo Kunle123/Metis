@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { CreateIssueInputSchema } from "@metis/shared/issue";
 import { prisma } from "@/lib/db/prisma";
+import { DEMO_ORGANISATION_ID } from "@/lib/organisations/demoOrganisation";
 import { IssueActivityKinds } from "@/lib/issues/activityKinds";
 import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
 import { requireMutation } from "@/lib/governance/requireMutation";
@@ -43,6 +44,7 @@ export async function POST(request: Request) {
   const created = await prisma.$transaction(async (tx) => {
     const issue = await tx.issue.create({
       data: {
+        organisationId: DEMO_ORGANISATION_ID,
         title: titleTrimmed,
         summary: summaryTrimmed,
         confirmedFacts: parsed.data.confirmedFacts ?? null,

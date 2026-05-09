@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 
 import { prisma } from "@/lib/db/prisma";
+import { DEMO_ORGANISATION_ID } from "@/lib/organisations/demoOrganisation";
 import { requireAuth } from "@/lib/auth/requireAuth";
 import { requireMutation } from "@/lib/governance/requireMutation";
 import { CreateStakeholderGroupInputSchema, StakeholderGroupSensitivitySchema } from "@metis/shared/stakeholder";
@@ -58,6 +59,7 @@ export async function POST(request: Request) {
 
   const created = await prisma.stakeholderGroup.create({
     data: {
+      organisationId: DEMO_ORGANISATION_ID,
       name: nameTrimmed,
       description: parsed.data.description ?? null,
       defaultSensitivity: parsed.data.defaultSensitivity ?? null,

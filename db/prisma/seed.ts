@@ -1,5 +1,9 @@
 import { PrismaClient } from "@prisma/client";
 
+import {
+  DEMO_ORGANISATION_ID,
+  DEMO_ORGANISATION_SLUG,
+} from "@/lib/organisations/demoOrganisation";
 import { assertAllowedNonProductionDataScript } from "@/scripts/guards/assertNonProductionDataScript";
 
 import { seedShowcase2222 } from "./seedShowcase2222";
@@ -151,6 +155,21 @@ const stakeholderGroups = [
 async function main() {
   assertAllowedNonProductionDataScript("prisma db seed (db/prisma/seed.ts)");
 
+  await prisma.organisation.upsert({
+    where: { slug: DEMO_ORGANISATION_SLUG },
+    create: {
+      id: DEMO_ORGANISATION_ID,
+      name: "Demo Organisation",
+      slug: DEMO_ORGANISATION_SLUG,
+      status: "Active",
+    },
+    update: {
+      name: "Demo Organisation",
+      slug: DEMO_ORGANISATION_SLUG,
+      status: "Active",
+    },
+  });
+
   // Remove prior fixed-id demo issues so reseeding is deterministic and non-incident by default.
   await prisma.issue.deleteMany({
     where: {
@@ -169,8 +188,13 @@ async function main() {
 
   for (const group of stakeholderGroups) {
     await prisma.stakeholderGroup.upsert({
-      where: { name: group.name },
-      create: group,
+      where: {
+        organisationId_name: {
+          organisationId: DEMO_ORGANISATION_ID,
+          name: group.name,
+        },
+      },
+      create: { ...group, organisationId: DEMO_ORGANISATION_ID },
       update: {
         description: group.description,
         defaultSensitivity: group.defaultSensitivity,
@@ -181,6 +205,7 @@ async function main() {
       },
     });
   }
+
 
   for (const issue of seededIssues) {
     const sources = (() => {
@@ -549,6 +574,7 @@ async function main() {
     const createdIssue = await prisma.issue.create({
       data: {
         id: issue.id,
+        organisationId: DEMO_ORGANISATION_ID,
         title: issue.title,
         summary: issue.summary,
         confirmedFacts: issue.confirmedFacts,
