@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { PatchInternalInputInputSchema } from "@metis/shared/internalInput";
 import { prisma } from "@/lib/db/prisma";
 import { requireActiveOrgIssue } from "@/lib/organisations/requireActiveOrgIssue";
-import { isMutationRole } from "@/lib/auth/session";
+import { membershipAllowsOrgWrite } from "@/lib/organisations/orgCapabilities";
 import { internalInputDbRowToWire } from "@/lib/internalInputs/internalInputWireFormat";
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string; internalInputId: string }> }) {
@@ -32,7 +32,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
   const gated = await requireActiveOrgIssue(request, issueId);
   if (gated instanceof NextResponse) return gated;
-  if (!isMutationRole(gated.ctx.user.role)) {
+  if (!membershipAllowsOrgWrite(gated.ctx.membership.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   const json = await request.json();

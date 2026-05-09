@@ -3,7 +3,7 @@ import { revalidatePath } from "next/cache";
 
 import { prisma } from "@/lib/db/prisma";
 import { requireActiveOrgIssue } from "@/lib/organisations/requireActiveOrgIssue";
-import { isMutationRole } from "@/lib/auth/session";
+import { membershipAllowsOrgWrite } from "@/lib/organisations/orgCapabilities";
 import { IssueActivityKinds } from "@/lib/issues/activityKinds";
 import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
 import { UpdateCommsPlanItemInputSchema } from "@metis/shared/commsPlan";
@@ -17,7 +17,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
   const gated = await requireActiveOrgIssue(request, issueId);
   if (gated instanceof NextResponse) return gated;
-  if (!isMutationRole(gated.ctx.user.role)) {
+  if (!membershipAllowsOrgWrite(gated.ctx.membership.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   const json = await request.json();
@@ -132,7 +132,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
 
   const gated = await requireActiveOrgIssue(request, issueId);
   if (gated instanceof NextResponse) return gated;
-  if (!isMutationRole(gated.ctx.user.role)) {
+  if (!membershipAllowsOrgWrite(gated.ctx.membership.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

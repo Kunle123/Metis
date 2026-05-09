@@ -4,7 +4,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db/prisma";
 import { callExtractIssueNotesModel, ExtractIssueNotesError, MAX_CAPTURE_NOTES_CHARS, MIN_CAPTURE_NOTES_CHARS } from "@/lib/ai/extractIssueNotes";
 import { requireActiveOrgIssue } from "@/lib/organisations/requireActiveOrgIssue";
-import { isMutationRole } from "@/lib/auth/session";
+import { membershipAllowsOrgWrite } from "@/lib/organisations/orgCapabilities";
 
 const BodySchema = z.object({
   rawNotes: z.string().max(MAX_CAPTURE_NOTES_CHARS),
@@ -24,7 +24,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   const gated = await requireActiveOrgIssue(request, issueId);
   if (gated instanceof NextResponse) return gated;
-  if (!isMutationRole(gated.ctx.user.role)) {
+  if (!membershipAllowsOrgWrite(gated.ctx.membership.role)) {
     return NextResponse.json({ error: "Forbidden." }, { status: 403 });
   }
 

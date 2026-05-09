@@ -3,7 +3,7 @@ import { revalidatePath } from "next/cache";
 
 import { prisma } from "@/lib/db/prisma";
 import { requireActiveOrgIssue } from "@/lib/organisations/requireActiveOrgIssue";
-import { isMutationRole } from "@/lib/auth/session";
+import { membershipAllowsOrgWrite } from "@/lib/organisations/orgCapabilities";
 import { IssueActivityKinds } from "@/lib/issues/activityKinds";
 import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
 import { CreateCommsPlanItemInputSchema } from "@metis/shared/commsPlan";
@@ -60,7 +60,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   const gatedAuth = await requireActiveOrgIssue(request, issueId);
   if (gatedAuth instanceof NextResponse) return gatedAuth;
-  if (!isMutationRole(gatedAuth.ctx.user.role)) {
+  if (!membershipAllowsOrgWrite(gatedAuth.ctx.membership.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   const json = await request.json();

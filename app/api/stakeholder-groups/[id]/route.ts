@@ -3,7 +3,7 @@ import { revalidatePath } from "next/cache";
 
 import { prisma } from "@/lib/db/prisma";
 import { requireActiveOrganisationContext } from "@/lib/organisations/activeOrganisationContext";
-import { isMutationRole } from "@/lib/auth/session";
+import { requireActiveOrganisationWriteContext } from "@/lib/organisations/requireOrganisationCapability";
 import { PatchStakeholderGroupInputSchema, StakeholderGroupSensitivitySchema } from "@metis/shared/stakeholder";
 
 function serializeGroup(g: {
@@ -45,12 +45,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 }
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const ctx = await requireActiveOrganisationContext(request);
+  const ctx = await requireActiveOrganisationWriteContext(request);
   if (ctx instanceof NextResponse) return ctx;
-
-  if (!isMutationRole(ctx.user.role)) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
 
   const { id } = await params;
   const existing = await prisma.stakeholderGroup.findFirst({

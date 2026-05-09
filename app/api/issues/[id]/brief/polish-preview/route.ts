@@ -6,7 +6,7 @@ import { prisma } from "@/lib/db/prisma";
 import { buildBriefSynthesisInput } from "@/lib/brief/buildBriefSynthesisInput";
 import { executeBriefAlternateWordingSynthesis, type BriefAlternateWordingSynthesisOutcome } from "@/lib/ai/synthesizeBrief";
 import { requireActiveOrgIssue } from "@/lib/organisations/requireActiveOrgIssue";
-import { isMutationRole } from "@/lib/auth/session";
+import { membershipAllowsOrgWrite } from "@/lib/organisations/orgCapabilities";
 
 const PolishPreviewRequestSchema = z.object({
   mode: z.string(),
@@ -36,7 +36,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   const gated = await requireActiveOrgIssue(request, issueId);
   if (gated instanceof NextResponse) return gated;
-  if (!isMutationRole(gated.ctx.user.role)) {
+  if (!membershipAllowsOrgWrite(gated.ctx.membership.role)) {
     return NextResponse.json({ success: false, code: "forbidden", message: "Forbidden." }, { status: 403 });
   }
 

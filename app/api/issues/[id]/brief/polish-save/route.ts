@@ -9,7 +9,7 @@ import { buildBriefSynthesisInput } from "@/lib/brief/buildBriefSynthesisInput";
 import { upsertExecutiveExecutiveSummaryAlternateSucceeded } from "@/lib/brief/upsertExecutiveSummaryAlternate";
 import { evaluateExecutivePolishedBodyForSave } from "@/lib/ai/synthesizeBrief";
 import { requireActiveOrgIssue } from "@/lib/organisations/requireActiveOrgIssue";
-import { isMutationRole } from "@/lib/auth/session";
+import { membershipAllowsOrgWrite } from "@/lib/organisations/orgCapabilities";
 
 const PolishSaveRequestSchema = z.object({
   mode: z.string(),
@@ -37,7 +37,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   const gated = await requireActiveOrgIssue(request, issueId);
   if (gated instanceof NextResponse) return gated;
-  if (!isMutationRole(gated.ctx.user.role)) {
+  if (!membershipAllowsOrgWrite(gated.ctx.membership.role)) {
     return NextResponse.json({ success: false, message: "Forbidden." }, { status: 403 });
   }
 

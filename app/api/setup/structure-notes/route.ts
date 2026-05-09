@@ -2,14 +2,14 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { StructureSetupError, StructureSetupResponseSchema, callStructureSetupModel } from "@/lib/ai/structureSetupNotes";
-import { requireMutation } from "@/lib/governance/requireMutation";
+import { requireOrgMutation } from "@/lib/organisations/requireOrganisationCapability";
 
 const BodySchema = z.object({
   rawNotes: z.string().max(32_000),
 });
 
 export async function POST(request: Request) {
-  const gate = await requireMutation(request);
+  const gate = await requireOrgMutation(request);
   if (gate instanceof NextResponse) return gate;
 
   let json: unknown;

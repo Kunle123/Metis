@@ -4,14 +4,14 @@ import { CreateCirculationEventInputSchema, CirculationEventResponseSchema } fro
 import { CirculationStateSchema } from "@metis/shared/compare";
 import { prisma } from "@/lib/db/prisma";
 import { requireActiveOrgIssue } from "@/lib/organisations/requireActiveOrgIssue";
-import { isMutationRole } from "@/lib/auth/session";
+import { membershipAllowsOrgWrite } from "@/lib/organisations/orgCapabilities";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id: issueId } = await params;
 
   const gated = await requireActiveOrgIssue(request, issueId);
   if (gated instanceof NextResponse) return gated;
-  if (!isMutationRole(gated.ctx.user.role)) {
+  if (!membershipAllowsOrgWrite(gated.ctx.membership.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
