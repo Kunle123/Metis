@@ -37,9 +37,13 @@ type InternalInputListItem = {
   createdAt: string;
 };
 
-/** Neutral metadata badge for stable record codes (`Q-###`); keep visually quieter than severity/status. */
-const GAP_RECORD_BADGE_CLASS =
-  "border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_58%,transparent)] text-[--metis-text-tertiary] font-normal tabular-nums tracking-[0.04em]";
+/** Base pill for ledger row chips — no `Badge` component defaults so semantic tokens aren’t overwritten by duplicate utilities. */
+const LEDGER_ROW_CHIP =
+  "inline-flex max-w-full min-w-0 shrink-0 items-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-[0.68rem] leading-none tabular-nums";
+
+/** Neutral metadata chip for stable record codes (`Q-###`); visually quieter than severity. */
+const GAP_RECORD_CHIP_CLASS =
+  "border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_58%,transparent)] font-normal uppercase tracking-[0.04em] text-[--metis-text-tertiary]";
 
 function formatIsoShortLondon(iso: string) {
   const d = new Date(iso);
@@ -68,20 +72,30 @@ function observationAttributionSecondary(resolvedId: string | null, inputsById: 
   return `Observation ref · ${resolvedId.slice(0, 8)} · ${inp.role} · ${inp.name}`;
 }
 
-const severityTone: Record<string, string> = {
+/** Severity on register rows — must read clearly in light/dark (`Badge` defaults were visually flattening these). */
+const severityChipClass: Record<string, string> = {
   Critical:
-    "border border-[--metis-status-danger-border] bg-[color-mix(in_oklab,var(--metis-status-danger-bg)_55%,transparent)] text-[--metis-status-danger-fg]",
+    "border border-[--metis-status-danger-border] bg-[color-mix(in_oklab,var(--metis-status-danger-bg)_62%,transparent)] font-semibold text-[--metis-status-danger-fg]",
   Important:
-    "border border-[--metis-status-warning-border] bg-[color-mix(in_oklab,var(--metis-status-warning-bg)_55%,transparent)] text-[--metis-status-warning-fg]",
+    "border border-[--metis-status-warning-border] bg-[color-mix(in_oklab,var(--metis-status-warning-bg)_58%,transparent)] font-semibold text-[--metis-status-warning-fg]",
   Watch:
-    "border border-[--metis-status-neutral-border] bg-[color-mix(in_oklab,var(--metis-status-neutral-bg)_70%,transparent)] text-[--metis-status-neutral-fg]",
+    "border border-[--metis-status-neutral-border] bg-[color-mix(in_oklab,var(--metis-status-neutral-bg)_72%,transparent)] font-medium text-[--metis-status-neutral-fg]",
 };
 
-const statusTone: Record<string, string> = {
+/** Register row status: Open stays neutral versus severity chips; Resolved keeps success. */
+const registerStatusChipClass: Record<string, string> = {
   Open:
-    "border border-[--metis-status-warning-border] bg-[color-mix(in_oklab,var(--metis-status-warning-bg)_52%,transparent)] text-[--metis-status-warning-fg]",
+    "border border-[--metis-status-neutral-border] bg-[color-mix(in_oklab,var(--metis-status-neutral-bg)_68%,transparent)] font-medium text-[--metis-status-neutral-fg]",
   Resolved:
-    "border border-[--metis-status-success-border] bg-[color-mix(in_oklab,var(--metis-status-success-bg)_52%,transparent)] text-[--metis-status-success-fg]",
+    "border border-[--metis-status-success-border] bg-[color-mix(in_oklab,var(--metis-status-success-bg)_46%,transparent)] font-medium text-[--metis-status-success-fg]",
+};
+
+/** Overview / rail summary aggregates — same semantics; Open count is informational, not a warning. */
+const summaryStatusChipClass: Record<string, string> = {
+  Open:
+    "border border-[--metis-status-neutral-border] bg-[color-mix(in_oklab,var(--metis-status-neutral-bg)_65%,transparent)] font-medium text-[--metis-status-neutral-fg]",
+  Resolved:
+    "border border-[--metis-status-success-border] bg-[color-mix(in_oklab,var(--metis-status-success-bg)_46%,transparent)] font-medium text-[--metis-status-success-fg]",
 };
 
 const rowTone: Record<string, string> = {
@@ -337,13 +351,18 @@ export function GapLedger({
             <div className="rounded-[1.1rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_38%,transparent)] px-4 py-3 sm:px-5 shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_14%,transparent)]">
               <p className="text-[0.65rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Overview</p>
               <div className="mt-2 flex flex-wrap items-center gap-2">
-                <Badge className={statusTone.Open}>{openCount} open</Badge>
-                <Badge className={statusTone.Resolved}>{resolvedCount} resolved</Badge>
-                <Badge className={severityTone.Critical}>{criticalOpenCount} critical open</Badge>
+                <span className={cn(LEDGER_ROW_CHIP, summaryStatusChipClass.Open)}>{openCount} open</span>
+                <span className={cn(LEDGER_ROW_CHIP, summaryStatusChipClass.Resolved)}>{resolvedCount} resolved</span>
+                <span className={cn(LEDGER_ROW_CHIP, severityChipClass.Critical)}>{criticalOpenCount} critical open</span>
                 {!openCountMatchesIssue ? (
-                  <Badge className="border border-[--metis-status-danger-border] bg-[color-mix(in_oklab,var(--metis-status-danger-bg)_48%,transparent)] text-[--metis-status-danger-fg]">
+                  <span
+                    className={cn(
+                      LEDGER_ROW_CHIP,
+                      "border border-[--metis-status-danger-border] bg-[color-mix(in_oklab,var(--metis-status-danger-bg)_48%,transparent)] font-medium text-[--metis-status-danger-fg]",
+                    )}
+                  >
                     Count drift
-                  </Badge>
+                  </span>
                 ) : null}
               </div>
               {!openCountMatchesIssue ? (
@@ -404,11 +423,17 @@ export function GapLedger({
                         >
                           <div className="min-w-0 flex-1">
                             <div className="flex flex-wrap items-center gap-2">
-                              <Badge className={GAP_RECORD_BADGE_CLASS}>{gapRecordBadgeLabel(gap)}</Badge>
+                              <span className={cn(LEDGER_ROW_CHIP, GAP_RECORD_CHIP_CLASS)}>{gapRecordBadgeLabel(gap)}</span>
                               <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-text-tertiary]">Severity</span>
-                              <Badge className={severityTone[gap.severity] ?? severityTone.Watch}>{gap.severity}</Badge>
+                              <span className={cn(LEDGER_ROW_CHIP, severityChipClass[gap.severity] ?? severityChipClass.Watch)}>
+                                {gap.severity}
+                              </span>
                               <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-text-tertiary]">Status</span>
-                              <Badge className={statusTone[gap.status] ?? statusTone.Open}>{gap.status}</Badge>
+                              <span
+                                className={cn(LEDGER_ROW_CHIP, registerStatusChipClass[gap.status] ?? registerStatusChipClass.Open)}
+                              >
+                                {gap.status}
+                              </span>
                             </div>
 
                             <p className="mt-2 text-sm font-medium leading-6 text-[--metis-paper] sm:text-[0.95rem]">{gap.title}</p>
@@ -596,14 +621,24 @@ export function GapLedger({
                         >
                           <div className="min-w-0 flex-1">
                             <div className="flex flex-wrap items-center gap-2">
-                              <Badge className={GAP_RECORD_BADGE_CLASS}>{gapRecordBadgeLabel(gap)}</Badge>
+                              <span className={cn(LEDGER_ROW_CHIP, GAP_RECORD_CHIP_CLASS)}>{gapRecordBadgeLabel(gap)}</span>
                               <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-text-tertiary]">Severity</span>
-                              <Badge className={severityTone[gap.severity] ?? severityTone.Watch}>{gap.severity}</Badge>
+                              <span className={cn(LEDGER_ROW_CHIP, severityChipClass[gap.severity] ?? severityChipClass.Watch)}>{gap.severity}</span>
                               <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-text-tertiary]">Status</span>
-                              <Badge className={statusTone[gap.status] ?? statusTone.Open}>{gap.status}</Badge>
-                              <Badge className="border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_48%,transparent)] text-[--metis-text-secondary]">
+                              <span
+                                className={cn(LEDGER_ROW_CHIP, registerStatusChipClass[gap.status] ?? registerStatusChipClass.Open)}
+                              >
+                                {gap.status}
+                              </span>
+                              <span
+                                className={cn(
+                                  LEDGER_ROW_CHIP,
+                                  "max-w-[min(100%,20rem)] truncate border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_48%,transparent)] font-normal text-[--metis-text-secondary]",
+                                )}
+                                title={resolvedObservationLine ?? undefined}
+                              >
                                 Observation · {resolvedObservationLine ?? "—"}
-                              </Badge>
+                              </span>
                             </div>
 
                             <p className="mt-2 text-sm font-medium leading-6 text-[--metis-paper] sm:text-[0.95rem]">{gap.title}</p>
@@ -702,15 +737,14 @@ export function GapLedger({
                         {item.open} open · {item.resolved} resolved
                       </p>
                     </div>
-                    <Badge
-                      className={
-                        item.open > 0
-                          ? statusTone.Open
-                          : statusTone.Resolved
-                      }
+                    <span
+                      className={cn(
+                        LEDGER_ROW_CHIP,
+                        item.open > 0 ? summaryStatusChipClass.Open : summaryStatusChipClass.Resolved,
+                      )}
                     >
                       {item.open > 0 ? "Open" : "Clear"}
-                    </Badge>
+                    </span>
                   </div>
                 </div>
               ))}
