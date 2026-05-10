@@ -370,7 +370,7 @@ const fullDedup = generateBriefFromIssue(
 const confirmedVs = fullDedup.full.sections.find((s) => s.id === "confirmed-vs-unclear")?.body ?? "";
 const threshHits = [...confirmedVs.matchAll(/internal threshold for material change/gi)];
 assert.ok(threshHits.length <= 1, "Open questions (summary) should not repeat the same near-duplicate line");
-assert.match(confirmedVs, /Open questions \(summary\)/);
+assert.match(confirmedVs, /## Open questions \(summary\)/);
 
 function sampleClaim(p: Partial<Claim> & Pick<Claim, "claimNumber" | "text" | "status">): Claim {
   const now = new Date();
@@ -402,14 +402,111 @@ const withClaims: BriefGenerationInput = {
 };
 
 const execClaims = generateBriefFromIssue(withClaims, "executive");
-const execConfirmedWithClaims = execClaims.executive.blocks.find((b) => b.label === "Confirmed facts")?.body ?? "";
-assert.match(execConfirmedWithClaims, /Claims register/i);
-assert.match(execConfirmedWithClaims, /CLM-001/);
-assert.match(execConfirmedWithClaims, /CLM-003/);
-assert.ok(!execConfirmedWithClaims.includes("CLM-004"), "superseded claim should not appear in briefing context");
+const execConfirmedOnly = execClaims.executive.blocks.find((b) => b.label === "Confirmed facts")?.body ?? "";
+assert.ok(
+  !execConfirmedOnly.includes("CLM-"),
+  "Confirmed facts block must list intake facts only — claims live under Claims and assumptions",
+);
+const execClaimsBlock = execClaims.executive.blocks.find((b) => b.label === "Claims and assumptions")?.body ?? "";
+assert.match(execClaimsBlock, /### Confirmed claims/);
+assert.match(execClaimsBlock, /CLM-001/);
+assert.match(execClaimsBlock, /### Assumptions — phrase conditionally/);
+assert.match(execClaimsBlock, /CLM-002/);
+assert.match(execClaimsBlock, /### Needs validation — do not state as fact/);
+assert.match(execClaimsBlock, /CLM-003/);
+assert.ok(!execClaimsBlock.includes("CLM-004"), "superseded claim should not appear in briefing context");
+
+const execNoClaims = generateBriefFromIssue(intakeOnly, "executive");
+assert.ok(
+  !execNoClaims.executive.blocks.some((b) => b.label === "Claims and assumptions"),
+  "omit Claims section when register is empty",
+);
+
+function internalInputRow(p: Partial<InternalInput> & Pick<InternalInput, "response" | "name" | "role">): InternalInput {
+  const now = new Date();
+  return {
+    id: p.id ?? "obs-1",
+    issueId: p.issueId ?? "issue-1",
+    observationNumber: p.observationNumber ?? 1,
+    role: p.role,
+    name: p.name,
+    response: p.response,
+    confidence: p.confidence ?? "Medium",
+    excludedFromBrief: p.excludedFromBrief ?? false,
+    linkedSection: p.linkedSection ?? null,
+    visibility: p.visibility ?? "Organisation",
+    createdByUserId: p.createdByUserId ?? null,
+    timestampLabel: p.timestampLabel ?? null,
+    createdAt: p.createdAt ?? now,
+  };
+}
+
+const excludedOnlyObs: BriefGenerationInput = {
+  issue: baseIssue,
+  sources: [],
+  gaps: [],
+  internalInputs: [
+    internalInputRow({
+      id: "obs-ex",
+      response: "Sensitive operator note.",
+      name: "Ops",
+      role: "Operator",
+      excludedFromBrief: true,
+    }),
+  ],
+};
+const execExcludedObs = generateBriefFromIssue(excludedOnlyObs, "executive");
+const obsExcludedBody =
+  execExcludedObs.executive.blocks.find((b) => b.label === "Observations")?.body ?? "";
+assert.match(
+  obsExcludedBody,
+  /No internal observations are included in this brief\. 1 observation exists but is excluded from brief output\./,
+);
+
+const includedPlusExcluded: BriefGenerationInput = {
+  ...excludedOnlyObs,
+  internalInputs: [
+    internalInputRow({
+      id: "obs-in",
+      observationNumber: 1,
+      response: "Included note for the brief.",
+      name: "Comms",
+      role: "Comms lead",
+      excludedFromBrief: false,
+    }),
+    internalInputRow({
+      id: "obs-ex2",
+      observationNumber: 2,
+      response: "Excluded sensitive line.",
+      name: "Ops",
+      role: "Operator",
+      excludedFromBrief: true,
+    }),
+  ],
+};
+const execMixedObs = generateBriefFromIssue(includedPlusExcluded, "executive").executive.blocks.find(
+  (b) => b.label === "Observations",
+)?.body ?? "";
+assert.match(execMixedObs, /Included note for the brief/);
+assert.match(execMixedObs, /1 observation is excluded from brief output\./);
 
 const fullClaims = generateBriefFromIssue(withClaims, "full");
 const confirmedVsWithClaims = fullClaims.full.sections.find((s) => s.id === "confirmed-vs-unclear")?.body ?? "";
-assert.match(confirmedVsWithClaims, /Claims register/i);
+assert.match(confirmedVsWithClaims, /## Claims and assumptions/);
+assert.match(confirmedVsWithClaims, /## Confirmed facts/);
+assert.ok(!confirmedVsWithClaims.includes("Claims register"), "prefer Claims and assumptions heading");
+
+const wrongIssueClaim = sampleClaim({
+  id: "foreign",
+  issueId: "some-other-issue",
+  claimNumber: 9,
+  text: "Belongs to another issue row in DB — generator trusts caller filtering.",
+  status: "Confirmed",
+});
+const execForeign = generateBriefFromIssue({ ...withClaims, claims: [wrongIssueClaim] }, "executive");
+assert.ok(
+  execForeign.executive.blocks.find((b) => b.label === "Claims and assumptions")?.body.includes("Belongs to another issue"),
+  "generateBriefFromIssue does not filter by claim.issueId — API/loaders must scope rows",
+);
 
 console.log("generateBriefFromIssue fixtures: OK");

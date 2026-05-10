@@ -200,7 +200,7 @@ export async function executeBriefAlternateWordingSynthesis(params: {
     const any = c.confirmed.length + c.assumptions.length + c.needsValidation.length > 0;
     if (!any) return "";
     return `
-Claims register (in input JSON under "claims"):
+Claims and assumptions (in input JSON under "claims"):
 - Superseded claims are omitted; do not resurrect them.
 - "confirmed": may phrase as factual for this workspace only when consistent with other fields.
 - "assumptions": use conditional / hedged language (working assumption, subject to verification).

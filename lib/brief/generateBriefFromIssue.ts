@@ -7,7 +7,11 @@ import {
   rankOpenGapsForIssue,
   rankSourcesForIssue,
 } from "@/lib/evidence/rankEvidence";
-import { formatClaimsBriefBlock } from "@/lib/claims/claimsForGeneration";
+import {
+  formatClaimsBriefBlock,
+  formatExecutiveClaimsAndAssumptionsBody,
+  hasActiveClaimsForBriefing,
+} from "@/lib/claims/claimsForGeneration";
 
 const CAP_EX_SOURCES = 8;
 const MAX_QUESTION_BULLETS = 12;
@@ -688,6 +692,32 @@ function formatGapsForFull(gaps: Gap[], cap: number) {
   return lines.join("\n");
 }
 
+function formatExecutiveObservationsBlock(
+  rankedIncluded: InternalInput[],
+  excludedFromBriefCount: number,
+  cap: number,
+  options?: { leadership?: boolean },
+): string {
+  const leadership = options?.leadership ?? false;
+  if (!rankedIncluded.length) {
+    if (excludedFromBriefCount === 0) {
+      return "No internal observations recorded yet.";
+    }
+    const n = excludedFromBriefCount;
+    if (n === 1) {
+      return "No internal observations are included in this brief. 1 observation exists but is excluded from brief output.";
+    }
+    return `No internal observations are included in this brief. ${n} observations exist but are excluded from brief output.`;
+  }
+
+  const main = formatObsForExecutive(rankedIncluded, cap, { leadership });
+  if (excludedFromBriefCount <= 0) return main;
+
+  const ex = excludedFromBriefCount;
+  const tail = ex === 1 ? "1 observation is excluded from brief output." : `${ex} observations are excluded from brief output.`;
+  return `${main}\n\n${tail}`;
+}
+
 function formatObsForExecutive(inputs: InternalInput[], cap: number, options?: { leadership?: boolean }) {
   if (!inputs.length) return "No internal observations recorded yet.";
   const leadership = options?.leadership ?? false;
@@ -913,7 +943,6 @@ function sourcesNarrativeFull(sources: Source[], total: number) {
 
 export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefMode): BriefArtifact {
   const { issue, sources, gaps, internalInputs, messageAudienceGroupNames = [], claims: claimsRows = [] } = input;
-  const claimsRegisterAppend = `\n\nClaims register\n${formatClaimsBriefBlock(claimsRows)}`;
   const orderedMessageAudienceNames = normalizeMessageAudienceGroupNames(messageAudienceGroupNames);
   const isExecutive = mode === "executive";
   const updatedAtLabel = nowLabel();
@@ -1209,6 +1238,15 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
     return [contextBlock, whyItMatters, leadershipNotes].filter(Boolean).join("\n\n");
   })();
 
+  const hasCriticalOpenGap = rankedOpenGaps.some(
+    (g) => String(g.status ?? "").trim() === "Open" && String(g.severity ?? "").trim() === "Critical",
+  );
+  const leadershipStatusLabel = (() => {
+    const raw = String(issue.status ?? "").trim();
+    if (hasCriticalOpenGap && raw === "Ready to brief") return "Ready for internal briefing with caveats";
+    return raw || "—";
+  })();
+
   const currentAssessment = [
     `Status: ${issue.status}`,
     `Severity: ${issue.severity}`,
@@ -1219,7 +1257,7 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
   ].join("\n");
 
   const currentAssessmentLeadership = [
-    `Status: ${issue.status}`,
+    `Status: ${leadershipStatusLabel}`,
     `Severity: ${issue.severity}`,
     `Urgency: ${issue.priority}`,
     `Briefing posture: ${issue.operatorPosture}`,
@@ -1250,8 +1288,10 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
     } else {
       base = "No confirmed facts are recorded in intake yet.";
     }
-    return `${base}${claimsRegisterAppend}`;
+    return base;
   })();
+
+  const executiveClaimsBlockBody = formatExecutiveClaimsAndAssumptionsBody(claimsRows);
 
   const audienceBlock = formatAudienceImplications(issue.audience, messageAudienceGroupNames);
 
@@ -1260,13 +1300,16 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
         { label: "Executive summary", body: situationBodyLeadership },
         { label: "Current assessment", body: currentAssessmentLeadership },
         { label: "Confirmed facts", body: confirmedFactsBlockExecutive },
+        ...(executiveClaimsBlockBody.trim()
+          ? [{ label: "Claims and assumptions", body: executiveClaimsBlockBody }]
+          : []),
         { label: "Open questions and unresolved needs", body: keyUnknownsLeadership },
         { label: "Evidence base", body: evidenceExecutiveConfidenceSummary(rankedSources, rankedSources.length) },
         {
           label: "Observations",
-          body:
-            formatObsForExecutive(rankedInternalForBrief, CAP_EX_OBS, { leadership: true }) +
-            (excludedObsCount ? `\n\n${excludedObsCount} observation(s) are excluded from brief output.` : ""),
+          body: formatExecutiveObservationsBlock(rankedInternalForBrief, excludedObsCount, CAP_EX_OBS, {
+            leadership: true,
+          }),
         },
         { label: "Audience implications", body: audienceBlock },
         { label: "Recommended decisions / next actions", body: recommendedBodyForLeadership },
@@ -1275,14 +1318,15 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
     : [
         { label: "Situation", body: situationBody },
         { label: "Current assessment", body: currentAssessment },
-        { label: "Confirmed facts", body: `${confirmedBlock}${claimsRegisterAppend}` },
+        { label: "Confirmed facts", body: confirmedBlock },
+        ...(hasActiveClaimsForBriefing(claimsRows)
+          ? [{ label: "Claims and assumptions", body: formatClaimsBriefBlock(claimsRows) }]
+          : []),
         { label: "Key unknowns / open questions", body: keyUnknownsCombined },
         { label: "Evidence base", body: evidenceBaseExecutive(rankedSources, rankedSources.length) },
         {
           label: "Observations",
-          body:
-            formatObsForExecutive(rankedInternalForBrief, CAP_EX_OBS) +
-            (excludedObsCount ? `\n\n${excludedObsCount} observation(s) are excluded from brief output.` : ""),
+          body: formatExecutiveObservationsBlock(rankedInternalForBrief, excludedObsCount, CAP_EX_OBS),
         },
         { label: "Audience implications", body: audienceBlock },
         { label: "Recommended decisions / next actions", body: recommendedBodyForFull },
@@ -1328,13 +1372,16 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
     const openSummary = topOpenQuestions ? capBulletBlock(topOpenQuestions, 5) : "";
     const openLine =
       openSummary.length > 0
-        ? `Open questions (summary)\n${openSummary}\n\nSee Workspace → Open questions for the full register.`
-        : "Open questions (summary)\nNo open questions recorded yet.";
+        ? `## Open questions (summary)\n\n${openSummary}\n\nSee Workspace → Open questions for the full register.`
+        : "## Open questions (summary)\n\nNo open questions recorded yet.";
     const note =
       rankedOpenGaps.length > 0
         ? `Tracker note: ${rankedOpenGaps.length} open question(s) are recorded in the open-questions tracker.`
         : "Tracker note: no open questions are recorded in the tracker.";
-    return ["Confirmed facts", confirmed, "", openLine, "", note, claimsRegisterAppend.trim()].join("\n");
+    const claimsSection = hasActiveClaimsForBriefing(claimsRows)
+      ? `\n\n## Claims and assumptions\n\n${formatClaimsBriefBlock(claimsRows)}`
+      : "";
+    return [`## Confirmed facts`, "", confirmed, "", openLine, "", note, claimsSection].join("\n");
   })();
 
   const narrativeBody = (() => {

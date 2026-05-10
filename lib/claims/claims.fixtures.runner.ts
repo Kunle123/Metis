@@ -7,7 +7,12 @@ import type { Claim } from "@prisma/client";
 
 import { coerceClaimStatus } from "./coerceClaimStatus";
 import { claimStatusDisplayLabel } from "./claimStatusUi";
-import { formatClaimsBriefBlock, groupClaimsForSynthesis } from "./claimsForGeneration";
+import {
+  formatClaimsBriefBlock,
+  formatExecutiveClaimsAndAssumptionsBody,
+  groupClaimsForSynthesis,
+  hasActiveClaimsForBriefing,
+} from "./claimsForGeneration";
 import { formatClaimCode } from "@/lib/issueRecordCodes";
 
 assert.equal(coerceClaimStatus(null), "NeedsValidation");
@@ -52,9 +57,16 @@ assert.equal(grouped.confirmed[0]?.code, "CLM-001");
 
 const briefBlock = formatClaimsBriefBlock(sampleClaims);
 assert.match(briefBlock, /CLM-001/);
-assert.match(briefBlock, /Confirmed claims/);
-assert.match(briefBlock, /Needs validation/);
+assert.match(briefBlock, /### Confirmed claims/);
+assert.match(briefBlock, /### Needs validation — do not state as fact/);
 assert.ok(!briefBlock.includes("CLM-999"), "superseded claim omitted from briefing block");
 assert.match(briefBlock, /Superseded claims/i);
+
+assert.equal(hasActiveClaimsForBriefing(sampleClaims), true);
+assert.equal(hasActiveClaimsForBriefing([c({ claimNumber: 999, text: "Old", status: "Superseded" })]), false);
+
+const execCompact = formatExecutiveClaimsAndAssumptionsBody(sampleClaims);
+assert.ok(execCompact.includes("CLM-001"));
+assert.ok(!execCompact.includes("Claims register"));
 
 console.log("claims.fixtures.runner: ok");

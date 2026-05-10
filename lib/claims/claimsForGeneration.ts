@@ -39,43 +39,79 @@ export function groupClaimsForSynthesis(claims: Claim[]) {
   };
 }
 
-export function formatClaimsBriefBlock(claims: Claim[]): string {
+export type FormatClaimsBriefOptions = {
+  /** Executive brief: keep register concise. */
+  maxPerGroup?: number;
+};
+
+function sliceRows(rows: ClaimGenerationRow[], max?: number): { shown: ClaimGenerationRow[]; truncated: boolean } {
+  if (max == null || rows.length <= max) return { shown: rows, truncated: false };
+  return { shown: rows.slice(0, max), truncated: true };
+}
+
+/**
+ * Markdown-friendly claims register for briefs and internal message artifacts.
+ * Superseded rows are omitted from lists; a tally line is appended when superseded rows exist.
+ */
+export function formatClaimsBriefBlock(claims: Claim[], options?: FormatClaimsBriefOptions): string {
   const g = groupClaimsForSynthesis(claims);
+  const max = options?.maxPerGroup;
   const lines: string[] = [];
 
-  const pushSection = (title: string, items: ClaimGenerationRow[], guidance: string) => {
-    if (!items.length) return;
-    lines.push(title);
-    lines.push(guidance);
-    for (const it of items) {
+  const { shown: confShown, truncated: confTrunc } = sliceRows(g.confirmed, max);
+  if (confShown.length) {
+    lines.push("### Confirmed claims");
+    for (const it of confShown) {
       lines.push(`- ${it.code}: ${it.text}${it.notes ? ` (${it.notes})` : ""}`);
     }
+    if (confTrunc) lines.push(`- …${g.confirmed.length - confShown.length} more confirmed claim(s) — see Claims.`);
     lines.push("");
-  };
+  }
 
-  pushSection(
-    "Confirmed claims (may be stated as established for this workspace)",
-    g.confirmed,
-    "Treat as factual for internal drafts only where consistent with Sources and intake.",
-  );
-  pushSection(
-    "Assumptions (phrase conditionally)",
-    g.assumptions,
-    "Use hedged language — e.g. working assumption, subject to verification.",
-  );
-  pushSection(
-    "Needs validation (do not assert)",
-    g.needsValidation,
-    "Flag uncertainty; do not present as settled fact until validated.",
-  );
+  const { shown: asmShown, truncated: asmTrunc } = sliceRows(g.assumptions, max);
+  if (asmShown.length) {
+    lines.push("### Assumptions — phrase conditionally");
+    lines.push(
+      "Use hedged language such as “current working assumption”, “appears”, “suggests”, or “subject to confirmation”.",
+    );
+    for (const it of asmShown) {
+      lines.push(`- ${it.code}: ${it.text}${it.notes ? ` (${it.notes})` : ""}`);
+    }
+    if (asmTrunc) lines.push(`- …${g.assumptions.length - asmShown.length} more assumption(s) — see Claims.`);
+    lines.push("");
+  }
+
+  const { shown: nvShown, truncated: nvTrunc } = sliceRows(g.needsValidation, max);
+  if (nvShown.length) {
+    lines.push("### Needs validation — do not state as fact");
+    lines.push("Treat these as unresolved until confirmed by source or accountable owner.");
+    for (const it of nvShown) {
+      lines.push(`- ${it.code}: ${it.text}${it.notes ? ` (${it.notes})` : ""}`);
+    }
+    if (nvTrunc) lines.push(`- …${g.needsValidation.length - nvShown.length} more item(s) — see Claims.`);
+    lines.push("");
+  }
 
   const supersededCount = claims.filter((c) => coerceClaimStatus(c.status) === "Superseded").length;
   if (supersededCount > 0) {
-    lines.push(`Superseded claims: ${supersededCount} omitted from briefing context (see Claims register).`, "");
+    lines.push(`Superseded claims: ${supersededCount} omitted from briefing output.`, "");
   }
 
   if (!lines.length) return "No active claims recorded yet.";
   return lines.join("\n").trimEnd();
+}
+
+/** True when at least one non-superseded claim exists for briefing lists. */
+export function hasActiveClaimsForBriefing(claims: Claim[]): boolean {
+  return claimsToGenerationRows(claims).length > 0;
+}
+
+/**
+ * Body for the executive “Claims and assumptions” block — concise register only (no intake facts).
+ */
+export function formatExecutiveClaimsAndAssumptionsBody(claims: Claim[]): string {
+  if (!hasActiveClaimsForBriefing(claims)) return "";
+  return formatClaimsBriefBlock(claims, { maxPerGroup: 5 }).trimEnd();
 }
 
 export function formatClaimsGuardrailLine(): string {
