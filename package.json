@@ -26,6 +26,7 @@
     "test:clerk-sync": "tsx lib/organisations/clerkSync.fixtures.runner.ts",
     "test:membership-admin-policy": "tsx lib/organisations/membershipAdminPolicy.fixtures.runner.ts",
     "test:approval-status": "tsx lib/approvals/approvalStatus.fixtures.runner.ts",
+    "test:issue-attention": "tsx lib/issues/issueAttentionSummary.fixtures.runner.ts",
     "test:observation-visibility": "tsx lib/internalInputs/internalObservationVisibility.fixtures.runner.ts",
     "smoke:prod": "node scripts/prod-smoke.mjs",
     "prisma": "prisma",

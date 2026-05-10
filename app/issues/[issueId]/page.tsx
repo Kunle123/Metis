@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { prisma } from "@/lib/db/prisma";
 import { loadIssuePageContext } from "@/lib/organisations/loadIssuePageContext";
 import { prismaWhereInternalInputsVisibleToViewer } from "@/lib/internalInputs/internalObservationVisibility";
+import { gatherIssueAttentionSummary } from "@/lib/issues/gatherIssueAttentionSummary";
+import { IssueAttentionSummaryCard } from "@/components/issues/IssueAttentionSummary";
 
 import { SourceEntryForm } from "./sources/source-entry-form";
 import { GapCreateForm } from "./gaps/gap-create-form";
@@ -48,6 +50,14 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
     prisma.claim.count({ where: { issueId: issue.id } }),
   ]);
 
+  const attentionItems = await gatherIssueAttentionSummary({
+    issueId: issue.id,
+    issueUpdatedAt: issue.updatedAt,
+    issueRoutePrefix: `/issues/${issue.id}`,
+    viewer: workspaceViewer,
+    gaps: gaps.map((g) => ({ status: g.status, severity: g.severity })),
+  });
+
   const captureNotesAiEnabled = process.env.NOTES_CAPTURE_AI_ENABLED?.trim() === "true";
 
   return (
@@ -65,6 +75,7 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
       }}
     >
       <div className="space-y-6">
+        <IssueAttentionSummaryCard attentionItems={attentionItems} />
         <SurfaceCard className="overflow-hidden">
           <div className="border-b border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_45%,transparent)] px-6 py-5 sm:px-7">
             <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between lg:items-end">
