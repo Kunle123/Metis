@@ -18,8 +18,13 @@ import { renderInternalStaffUpdateMarkdown } from "@/lib/messages/generateIntern
 import { renderMediaHoldingLineMarkdown } from "@/lib/messages/generateMediaHoldingLine";
 import { CollapsibleSection } from "@/components/review/CollapsibleSection";
 import { ReviewRailCard } from "@/components/review/ReviewRailCard";
+import type { ClaimAlignmentFinding } from "@/lib/conflicts/claimAlignment";
 
 type AudienceGroupOption = { id: string; label: string };
+
+type ClaimAlignmentReview =
+  | { mode: "saved_draft"; findings: ClaimAlignmentFinding[] }
+  | { mode: "preview_only" };
 
 type SavedDraftRow = {
   id: string;
@@ -48,6 +53,17 @@ function normalizeForDiff(text: string) {
 const MESSAGES_AI_USER_FAILURE_NOTE =
   "AI-enhanced wording could not be generated. Original draft is still available.";
 
+function claimFindingToneClass(sev: ClaimAlignmentFinding["severity"]) {
+  switch (sev) {
+    case "critical":
+      return "border-[--metis-status-danger-border] bg-[color-mix(in_oklab,var(--metis-status-danger-bg)_42%,transparent)] text-[--metis-status-danger-fg]";
+    case "warning":
+      return "border-[--metis-status-warning-border] bg-[color-mix(in_oklab,var(--metis-status-warning-bg)_42%,transparent)] text-[--metis-status-warning-fg]";
+    default:
+      return "border-[--metis-info-border] bg-[color-mix(in_oklab,var(--metis-info-bg)_48%,transparent)] text-[--metis-text-secondary]";
+  }
+}
+
 export function MessagesPanel({
   issueId,
   issueTitle,
@@ -60,6 +76,7 @@ export function MessagesPanel({
   deterministicPreview,
   savedDraftContentInSync,
   canUpdateMessageApprovalStatus,
+  claimAlignmentReview,
 }: {
   issueId: string;
   issueTitle: string;
@@ -77,6 +94,8 @@ export function MessagesPanel({
   messagesAiCleanupEnabled: boolean;
   /** Deterministic preview computed from issue record (no DB write). */
   deterministicPreview: MessageVariantArtifact;
+  /** Passive heuristic review for the persisted message draft — never blocks actions. */
+  claimAlignmentReview: ClaimAlignmentReview;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -685,6 +704,66 @@ export function MessagesPanel({
                 </>
               ) : null}
             </div>
+        </ReviewRailCard>
+
+        <ReviewRailCard
+          title="Claim alignment"
+          tone="neutral"
+          meta={
+            claimAlignmentReview.mode === "preview_only" ? (
+              <p className="text-sm leading-6 text-[--metis-paper-muted]">
+                Heuristic checker against Claims — save a numbered draft version to analyse what is stored server-side against the Claims register for this lens.
+              </p>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-sm leading-6 text-[--metis-paper-muted]">
+                  Review risks applies to the <span className="text-[--metis-paper]">saved draft</span> wording only (preview changes before&nbsp;refresh are excluded).
+                  This is a heuristic check — verify before trusting it under pressure.
+                </p>
+                <p className="text-[0.72rem] leading-snug text-[--metis-text-tertiary]">
+                  Does not alter approval, staleness, or activity — passive review only.
+                </p>
+              </div>
+            )
+          }
+        >
+          <div className="space-y-3 text-sm leading-6 text-[--metis-paper-muted]">
+            {claimAlignmentReview.mode === "preview_only" ? (
+              <p>Copy, generate, or save drafts as usual. Claim alignment flags appear once Metis persists a numbered message draft row.</p>
+            ) : claimAlignmentReview.findings.length === 0 ? (
+              <p className="text-[--metis-status-neutral-fg]">
+                No claim alignment risks detected for this saved draft and the Claims already on file.
+              </p>
+            ) : (
+              <ul className="space-y-2.5">
+                {claimAlignmentReview.findings.map((f) => (
+                  <li
+                    key={f.id}
+                    className={`rounded-[0.95rem] border px-3 py-2 text-[0.78rem] leading-snug ${claimFindingToneClass(f.severity)}`}
+                  >
+                    <div className="flex flex-wrap items-baseline gap-2">
+                      <span className="font-semibold">{f.severity.charAt(0).toUpperCase() + f.severity.slice(1)}</span>
+                      <span className="rounded border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_62%,transparent)] px-2 py-0.5 text-[0.66rem] font-medium uppercase tracking-[0.04em]">
+                        {f.claimCode}
+                      </span>
+                    </div>
+                    <p className="mt-1.5 text-[--metis-paper]">{f.message}</p>
+                    <p className="mt-1 text-[--metis-text-secondary]">
+                      <span className="font-medium text-[--metis-text-tertiary]">Suggested:&nbsp;</span>
+                      {f.suggestedAction}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <p className="text-[0.72rem] leading-snug text-[--metis-text-tertiary]">
+              Reference the{" "}
+              <Link href={`/issues/${issueId}/claims`} className="text-[--metis-brass-soft] underline-offset-4 hover:underline">
+                Claims
+              </Link>{" "}
+              register to adjust statuses — findings never expose observation evidence details.
+            </p>
+          </div>
         </ReviewRailCard>
 
         <ReviewRailCard

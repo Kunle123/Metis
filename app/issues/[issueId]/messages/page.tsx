@@ -11,6 +11,9 @@ import { coerceMessageApprovalStatus } from "@/lib/approvals/coerceMessageApprov
 import { isStoredMessageDraftStale } from "@/lib/messages/messageFreshness";
 import { membershipAllowsOrgWrite } from "@/lib/organisations/orgCapabilities";
 import { MessageVariantArtifactSchema, MessageVariantTemplateIdSchema } from "@metis/shared/messageVariant";
+import { evaluateClaimAlignmentForText, flattenMessageArtifactForClaimAlignment } from "@/lib/conflicts/claimAlignment";
+import { coerceClaimStatus } from "@/lib/claims/coerceClaimStatus";
+import { formatClaimCode } from "@/lib/issueRecordCodes";
 import {
   buildAudienceSnapshot,
   generateExternalCustomerResidentStudentArtifact,
@@ -170,6 +173,26 @@ export default async function IssueMessagesPage({
     mediaAudience = { kind: "setup" };
   }
 
+  const claimsForAlignmentInputs = claims.map((c) => ({
+    id: c.id,
+    claimCode: formatClaimCode(c.claimNumber) ?? `CLM-${String(c.claimNumber).padStart(3, "0")}`,
+    text: c.text,
+    status: coerceClaimStatus(c.status),
+    notes: c.notes ?? null,
+  }));
+
+  const claimAlignmentReview = initialLatest
+    ? ({
+        mode: "saved_draft",
+        findings: evaluateClaimAlignmentForText(
+          flattenMessageArtifactForClaimAlignment(initialLatest.artifact),
+          claimsForAlignmentInputs,
+        ),
+      } as const)
+    : ({
+        mode: "preview_only",
+      } as const);
+
   const deterministicPreview = (() => {
     if (templateId === "external_customer_resident_student") {
       return generateExternalCustomerResidentStudentArtifact({ issue, sources, gaps, claims, audience });
@@ -214,6 +237,7 @@ export default async function IssueMessagesPage({
             initialLatest={initialLatest}
             messagesAiCleanupEnabled={messagesAiCleanupEnabled}
             deterministicPreview={deterministicPreview}
+            claimAlignmentReview={claimAlignmentReview}
           />
           <div className="mt-8 border-t border-[--metis-outline-subtle] pt-6">
             <Link href={`/issues/${issue.id}/export`} className="text-sm text-[--metis-brass-soft] underline-offset-4 hover:underline">
