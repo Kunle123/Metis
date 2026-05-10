@@ -75,7 +75,7 @@ export function CaptureNotesForm({
           response: trimmedNotes,
           confidence: "Needs validation",
           excludedFromBrief: true,
-          visibility: "Internal",
+          visibility: "Organisation",
           linkedSection: null,
           timestampLabel: labelTrimmed.length ? labelTrimmed : null,
         }),

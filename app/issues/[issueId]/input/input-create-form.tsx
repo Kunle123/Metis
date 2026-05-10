@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { confidenceDisplayLabel } from "@/lib/ui/confidenceDisplayLabel";
 import { useUnsavedChangesWarning } from "@/lib/hooks/useUnsavedChangesWarning";
-import type { InternalInputConfidence } from "@metis/shared/internalInput";
+import type { InternalInputConfidence, InternalObservationVisibility } from "@metis/shared/internalInput";
 
 const confidenceLevels: InternalInputConfidence[] = ["Confirmed", "Likely", "Unclear", "Needs validation"];
 
@@ -19,7 +19,8 @@ export function InternalInputCreateForm({ issueId }: { issueId: string }) {
   const defaultConfidence: InternalInputConfidence = "Likely";
   const [confidence, setConfidence] = useState<InternalInputConfidence>(defaultConfidence);
   const [linkedSection, setLinkedSection] = useState("");
-  const [visibility, setVisibility] = useState("");
+  const defaultVisibility: InternalObservationVisibility = "Organisation";
+  const [visibility, setVisibility] = useState<InternalObservationVisibility>(defaultVisibility);
   const [timestampLabel, setTimestampLabel] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,7 +33,7 @@ export function InternalInputCreateForm({ issueId }: { issueId: string }) {
     name.trim().length > 0 ||
     response.trim().length > 0 ||
     linkedSection.trim().length > 0 ||
-    visibility.trim().length > 0 ||
+    visibility !== defaultVisibility ||
     timestampLabel.trim().length > 0;
 
   useUnsavedChangesWarning({ isDirty, isSaving });
@@ -51,7 +52,7 @@ export function InternalInputCreateForm({ issueId }: { issueId: string }) {
           response,
           confidence,
           linkedSection: linkedSection.trim() ? linkedSection : null,
-          visibility: visibility.trim() ? visibility : null,
+          visibility,
           timestampLabel: timestampLabel.trim() ? timestampLabel : null,
         }),
       });
@@ -66,7 +67,7 @@ export function InternalInputCreateForm({ issueId }: { issueId: string }) {
       setResponse("");
       setConfidence("Likely");
       setLinkedSection("");
-      setVisibility("");
+      setVisibility("Organisation");
       setTimestampLabel("");
       router.refresh();
     } catch (e) {
@@ -104,15 +105,30 @@ export function InternalInputCreateForm({ issueId }: { issueId: string }) {
             <p className="text-xs leading-5 text-[--metis-text-tertiary]">Confidence is internal readiness, not external proof.</p>
           </label>
           <label className="space-y-2">
-            <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Timestamp label (optional)</span>
-            <Input
-              value={timestampLabel}
-              onChange={(e) => setTimestampLabel(e.target.value)}
-              className="h-11 rounded-full"
-              placeholder="e.g., 07:10 CET"
-            />
+            <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Who can see this observation</span>
+            <select
+              value={visibility}
+              onChange={(e) => setVisibility(e.target.value as InternalObservationVisibility)}
+              className="h-11 w-full rounded-full border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-4 text-sm text-[--metis-paper] shadow-[inset_0_1px_0_var(--metis-control-inset)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
+            >
+              <option value="Organisation">Visible to organisation</option>
+              <option value="Restricted">Restricted</option>
+            </select>
+            <p className="text-xs leading-5 text-[--metis-text-tertiary]">
+              Restricted observations are visible only to organisation Admins and the author.
+            </p>
           </label>
         </div>
+
+        <label className="space-y-2">
+          <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Timestamp label (optional)</span>
+          <Input
+            value={timestampLabel}
+            onChange={(e) => setTimestampLabel(e.target.value)}
+            className="h-11 rounded-full"
+            placeholder="e.g., 07:10 CET"
+          />
+        </label>
 
         <div className="grid gap-3 md:grid-cols-2">
           <label className="space-y-2">
@@ -136,30 +152,23 @@ export function InternalInputCreateForm({ issueId }: { issueId: string }) {
           />
         </label>
 
-        <div className="grid gap-3 md:grid-cols-2">
-          <label className="space-y-2">
-            <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Linked section (optional)</span>
-            <Input
-              value={linkedSection}
-              onChange={(e) => setLinkedSection(e.target.value)}
-              className="h-11 rounded-full"
-              placeholder="Free-text section label"
-            />
-          </label>
-          <label className="space-y-2">
-            <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Visibility (optional)</span>
-            <Input
-              value={visibility}
-              onChange={(e) => setVisibility(e.target.value)}
-              className="h-11 rounded-full"
-              placeholder="e.g., Internal legal"
-            />
-          </label>
-        </div>
+        <label className="space-y-2">
+          <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Linked section (optional)</span>
+          <Input
+            value={linkedSection}
+            onChange={(e) => setLinkedSection(e.target.value)}
+            className="h-11 rounded-full"
+            placeholder="Free-text section label"
+          />
+        </label>
       </div>
 
       <footer className="space-y-3 border-t border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_48%,transparent)] px-5 py-4">
-        {error ? <p className="text-sm text-[--metis-status-danger-fg]" role="alert">{error}</p> : null}
+        {error ? (
+          <p className="text-sm text-[--metis-status-danger-fg]" role="alert">
+            {error}
+          </p>
+        ) : null}
         {missingRequired && !isSaving ? (
           <p className="text-sm leading-6 text-[--metis-paper-muted]">Complete required fields to continue.</p>
         ) : null}

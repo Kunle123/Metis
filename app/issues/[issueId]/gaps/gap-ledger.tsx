@@ -65,7 +65,7 @@ function observationSelectLabel(i: InternalInputListItem) {
 function observationAttributionSecondary(resolvedId: string | null, inputsById: Map<string, InternalInputListItem>): string | null {
   if (!resolvedId) return null;
   const inp = inputsById.get(resolvedId);
-  if (!inp) return `Observation ref · ${resolvedId.slice(0, 8)}`;
+  if (!inp) return `Restricted observation`;
   const code = formatObservationCode(inp.observationNumber);
   if (code) return `${code} · ${inp.role} · ${inp.name}`;
   return `Observation ref · ${resolvedId.slice(0, 8)} · ${inp.role} · ${inp.name}`;

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ArrowRight, ChevronDown, ChevronRight, Link2, Lock, PencilLine, PlusCircle } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { ConfidencePill, ReadinessPill, SurfaceCard } from "@/components/MetisShell";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +12,11 @@ import { DenseSection } from "@/components/review/DenseSection";
 import { ReviewRailCard } from "@/components/review/ReviewRailCard";
 import { ReviewToolbar } from "@/components/review/ReviewToolbar";
 import { formatObservationCode } from "@/lib/issueRecordCodes";
-import type { InternalInput } from "@metis/shared/internalInput";
+import type { InternalObservationVisibility, InternalInput } from "@metis/shared/internalInput";
+import {
+  organisationMembershipIsAdmin,
+  normalizeObservationVisibility,
+} from "@/lib/internalInputs/internalObservationVisibility";
 
 import { InternalInputCreateForm } from "./input-create-form";
 import { CollapsibleFormPanel } from "../collapsible-form-panel";
@@ -32,7 +36,17 @@ function clampText(s: string, max = 220) {
 const OBS_RECORD_BADGE_CLASS =
   "border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_58%,transparent)] text-[--metis-text-tertiary] font-normal tabular-nums tracking-[0.04em]";
 
-export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; inputs: InternalInput[] }) {
+export function InternalInputWorkspace({
+  issueId,
+  inputs,
+  membershipRole,
+  currentUserId,
+}: {
+  issueId: string;
+  inputs: InternalInput[];
+  membershipRole: string;
+  currentUserId: string;
+}) {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
   const [excludedById, setExcludedById] = useState<Record<string, boolean>>(() => {
@@ -40,9 +54,52 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
     for (const i of inputs) init[i.id] = Boolean((i as any).excludedFromBrief);
     return init;
   });
+  const [visibilityById, setVisibilityById] = useState<Record<string, InternalObservationVisibility>>(() => {
+    const init: Record<string, InternalObservationVisibility> = {};
+    for (const i of inputs)
+      init[i.id] = normalizeObservationVisibility(i.visibility ?? "Organisation") as InternalObservationVisibility;
+    return init;
+  });
 
   const excludedCount = useMemo(() => Object.values(excludedById).filter(Boolean).length, [excludedById]);
   const includedCount = useMemo(() => Math.max(0, inputs.length - excludedCount), [excludedCount, inputs.length]);
+
+  function canEditObservationVisibility(obs: InternalInput): boolean {
+    if (organisationMembershipIsAdmin(membershipRole)) return true;
+    const authorId = obs.createdByUserId?.trim() ?? "";
+    return Boolean(authorId && authorId === currentUserId);
+  }
+
+  useEffect(() => {
+    setVisibilityById(() => {
+      const next: Record<string, InternalObservationVisibility> = {};
+      for (const i of inputs) {
+        next[i.id] = normalizeObservationVisibility(i.visibility ?? "Organisation") as InternalObservationVisibility;
+      }
+      return next;
+    });
+  }, [inputs]);
+
+  async function setObservationVisibility(id: string, next: InternalObservationVisibility) {
+    setBusyId(id);
+    try {
+      const res = await fetch(`/api/issues/${issueId}/internal-inputs/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ visibility: next }),
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || `Request failed (${res.status})`);
+      }
+      const json = (await res.json()) as { visibility?: string | null };
+      const canon = normalizeObservationVisibility(json.visibility) as InternalObservationVisibility;
+      setVisibilityById((cur) => ({ ...cur, [id]: canon }));
+    } finally {
+      setBusyId(null);
+    }
+  }
 
   async function toggleExcluded(id: string, next: boolean) {
     setBusyId(id);
@@ -151,9 +208,20 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
                     const response = (input.response ?? "").trim();
                     const responsePreview = clampText(response, 240);
                     const linked = input.linkedSection ?? "—";
-                    const visibility = input.visibility ?? "—";
+                    const vis = visibilityById[input.id] ?? normalizeObservationVisibility(input.visibility ?? "Organisation");
+                    const visBadge =
+                      vis === "Restricted" ? (
+                        <Badge className="border border-[--metis-status-danger-border] bg-[color-mix(in_oklab,var(--metis-status-danger-bg)_48%,transparent)] text-[--metis-status-danger-fg]">
+                          Restricted
+                        </Badge>
+                      ) : (
+                        <Badge className="border border-[--metis-status-success-border] bg-[color-mix(in_oklab,var(--metis-status-success-bg)_42%,transparent)] text-[--metis-status-success-fg]">
+                          Visible to organisation
+                        </Badge>
+                      );
                     const timestamp = input.timestampLabel ?? "—";
                     const isExcluded = Boolean(excludedById[input.id]);
+                    const canVis = canEditObservationVisibility(input);
 
                     return (
                       <div
@@ -182,15 +250,28 @@ export function InternalInputWorkspace({ issueId, inputs }: { issueId: string; i
                                 <span className="text-[--metis-outline-strong]">•</span>
                                 <span className="text-[--metis-text-tertiary]">Section:</span>
                                 <span>{linked}</span>
-                                <span className="text-[--metis-outline-strong]">•</span>
-                                <span className="text-[--metis-text-tertiary]">Visibility:</span>
-                                <span>{visibility}</span>
                               </div>
 
                               <p className="mt-2 text-sm leading-6 text-[--metis-paper-muted]">{responsePreview || "—"}</p>
                             </div>
 
                             <div className="flex shrink-0 flex-wrap items-center gap-2">
+                              {visBadge}
+                              {canVis ? (
+                                <select
+                                  aria-label="Observation visibility"
+                                  className="h-9 rounded-full border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-3 text-[0.7rem] font-medium uppercase tracking-[0.12em] text-[--metis-text-secondary]"
+                                  disabled={busyId === input.id}
+                                  value={vis}
+                                  onChange={(e) => {
+                                    const v = e.target.value as InternalObservationVisibility;
+                                    void setObservationVisibility(input.id, v);
+                                  }}
+                                >
+                                  <option value="Organisation">Visible to organisation</option>
+                                  <option value="Restricted">Restricted</option>
+                                </select>
+                              ) : null}
                               <Badge
                                 className={
                                   isExcluded

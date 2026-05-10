@@ -6,6 +6,7 @@ import { MetisShell, SurfaceCard } from "@/components/MetisShell";
 import { Badge } from "@/components/ui/badge";
 import { prisma } from "@/lib/db/prisma";
 import { loadIssuePageContext } from "@/lib/organisations/loadIssuePageContext";
+import { prismaWhereInternalInputsVisibleToViewer } from "@/lib/internalInputs/internalObservationVisibility";
 
 import { SourceEntryForm } from "./sources/source-entry-form";
 import { GapCreateForm } from "./gaps/gap-create-form";
@@ -36,10 +37,14 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
   if (page.outcome === "not_found") notFound();
   const { issue } = page;
 
+  const workspaceViewer = { membershipRole: page.context.membership.role, userId: page.context.user.id };
   const [sources, gaps, inputs] = await Promise.all([
     prisma.source.findMany({ where: { issueId: issue.id }, orderBy: [{ createdAt: "desc" }] }),
     prisma.gap.findMany({ where: { issueId: issue.id }, orderBy: [{ createdAt: "desc" }] }),
-    prisma.internalInput.findMany({ where: { issueId: issue.id }, orderBy: [{ createdAt: "desc" }] }),
+    prisma.internalInput.findMany({
+      where: prismaWhereInternalInputsVisibleToViewer(issue.id, workspaceViewer),
+      orderBy: [{ createdAt: "desc" }],
+    }),
   ]);
 
   const captureNotesAiEnabled = process.env.NOTES_CAPTURE_AI_ENABLED?.trim() === "true";

@@ -4,6 +4,7 @@ import { NoOrganisationMembershipShell } from "@/components/organisation/NoOrgan
 import { MetisShell } from "@/components/MetisShell";
 import { prisma } from "@/lib/db/prisma";
 import { loadIssuePageContext } from "@/lib/organisations/loadIssuePageContext";
+import { prismaWhereInternalInputsVisibleToViewer } from "@/lib/internalInputs/internalObservationVisibility";
 import { GapSchema } from "@metis/shared/gap";
 
 import { GapLedger } from "./gap-ledger";
@@ -18,10 +19,11 @@ export default async function IssueGapsPage({ params }: { params: Promise<{ issu
   if (pageCtx.outcome === "not_found") notFound();
   const { issue } = pageCtx;
 
+  const gapsViewer = { membershipRole: pageCtx.context.membership.role, userId: pageCtx.context.user.id };
   const [gapsRaw, internalInputsRaw] = await Promise.all([
     prisma.gap.findMany({ where: { issueId: issue.id } }),
     prisma.internalInput.findMany({
-      where: { issueId: issue.id },
+      where: prismaWhereInternalInputsVisibleToViewer(issue.id, gapsViewer),
       orderBy: [{ createdAt: "desc" }],
       select: { id: true, observationNumber: true, role: true, name: true, createdAt: true },
     }),

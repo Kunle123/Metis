@@ -160,7 +160,8 @@ const inputExcluded: InternalInput = {
   confidence: "Likely",
   excludedFromBrief: true,
   linkedSection: null,
-  visibility: null,
+  visibility: "Organisation",
+  createdByUserId: null,
   timestampLabel: null,
   createdAt: baseDate,
 } as InternalInput;

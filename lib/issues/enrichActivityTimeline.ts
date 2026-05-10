@@ -2,6 +2,8 @@ import { prisma } from "@/lib/db/prisma";
 import { formatGapCode, formatObservationCode } from "@/lib/issueRecordCodes";
 
 import type { ActivityTimelineItem, SerializedActivityRow } from "@/lib/issues/activityTimelineDisplay";
+import type { ObservationViewer } from "@/lib/internalInputs/internalObservationVisibility";
+import { internalObservationReadableByViewer } from "@/lib/internalInputs/internalObservationVisibility";
 
 function briefRevisionLabel(mode: string, versionNumber: number): string {
   const m = mode === "executive" ? "Executive" : "Full";
@@ -15,6 +17,7 @@ function briefRevisionLabel(mode: string, versionNumber: number): string {
 export async function enrichActivityRowsForIssue(
   issueId: string,
   rows: SerializedActivityRow[],
+  opts?: { viewer?: ObservationViewer },
 ): Promise<ActivityTimelineItem[]> {
   const briefIds = new Set<string>();
   const messageIds = new Set<string>();
@@ -77,7 +80,7 @@ export async function enrichActivityRowsForIssue(
     internalInputIds.size
       ? prisma.internalInput.findMany({
           where: { issueId, id: { in: [...internalInputIds] } },
-          select: { id: true, observationNumber: true },
+          select: { id: true, observationNumber: true, visibility: true, createdByUserId: true },
         })
       : [],
     sourceIds.size
@@ -95,9 +98,18 @@ export async function enrichActivityRowsForIssue(
   const gapRecordCodeById = new Map(
     gapRows.map((g) => [g.id, formatGapCode(g.gapNumber)] as [string, string | null]),
   );
-  const observationRecordCodeById = new Map(
-    internalInputRows.map((i) => [i.id, formatObservationCode(i.observationNumber)] as [string, string | null]),
-  );
+  const viewer = opts?.viewer;
+  const observationRecordCodeById = new Map<string, string | null>();
+  for (const i of internalInputRows) {
+    let code: string | null = formatObservationCode(i.observationNumber);
+    if (
+      viewer &&
+      !internalObservationReadableByViewer(viewer, { visibility: i.visibility, createdByUserId: i.createdByUserId })
+    ) {
+      code = null;
+    }
+    observationRecordCodeById.set(i.id, code);
+  }
   const sourceRecordCodeById = new Map<string, string>();
   for (const s of sourceRows) {
     const c = (s.sourceCode ?? "").trim();

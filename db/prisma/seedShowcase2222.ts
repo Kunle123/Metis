@@ -10,6 +10,7 @@ import { MessageVariantArtifactSchema } from "@metis/shared/messageVariant";
 
 import type { BriefGenerationInput } from "../../lib/brief/generateBriefFromIssue";
 import { generateBriefFromIssue } from "../../lib/brief/generateBriefFromIssue";
+import { normalizeObservationVisibility } from "../../lib/internalInputs/internalObservationVisibility";
 import { upsertExecutiveExecutiveSummaryAlternateSucceeded } from "../../lib/brief/upsertExecutiveSummaryAlternate";
 import { generateInternalStaffUpdateArtifact } from "../../lib/messages/generateInternalStaffUpdate";
 
@@ -64,11 +65,16 @@ async function loadGenerationInput(prisma: PrismaClient, issueId: string): Promi
     prisma.internalInput.findMany({ where: { issueId }, orderBy: [{ observationNumber: "asc" }] }),
   ]);
   const issue = issueRow as Issue;
+  const showcaseInternalInputs = internalInputs.filter(
+    (row) => normalizeObservationVisibility(row.visibility) === "Organisation",
+  );
+
   return {
     issue,
     sources: sources as Source[],
     gaps: gaps as Gap[],
-    internalInputs: internalInputs as InternalInput[],
+    /** Deterministic stored briefs exclude restricted rows so read-only Viewers never see hidden text in seeded artifacts. */
+    internalInputs: showcaseInternalInputs as InternalInput[],
     messageAudienceGroupNames: [],
   };
 }

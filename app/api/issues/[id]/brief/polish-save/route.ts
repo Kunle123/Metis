@@ -10,6 +10,7 @@ import { upsertExecutiveExecutiveSummaryAlternateSucceeded } from "@/lib/brief/u
 import { evaluateExecutivePolishedBodyForSave } from "@/lib/ai/synthesizeBrief";
 import { requireActiveOrgIssue } from "@/lib/organisations/requireActiveOrgIssue";
 import { membershipAllowsOrgWrite } from "@/lib/organisations/orgCapabilities";
+import { prismaWhereInternalInputsVisibleToViewer } from "@/lib/internalInputs/internalObservationVisibility";
 
 const PolishSaveRequestSchema = z.object({
   mode: z.string(),
@@ -101,10 +102,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     );
   }
 
+  const genViewer = { membershipRole: gated.ctx.membership.role, userId: gated.ctx.user.id };
   const [sources, gaps, internalInputs] = await Promise.all([
     prisma.source.findMany({ where: { issueId }, orderBy: [{ createdAt: "desc" }] }),
     prisma.gap.findMany({ where: { issueId }, orderBy: [{ updatedAt: "desc" }] }),
-    prisma.internalInput.findMany({ where: { issueId }, orderBy: [{ createdAt: "desc" }] }),
+    prisma.internalInput.findMany({
+      where: prismaWhereInternalInputsVisibleToViewer(issueId, genViewer),
+      orderBy: [{ createdAt: "desc" }],
+    }),
   ]);
 
   const synthesisInput = buildBriefSynthesisInput({

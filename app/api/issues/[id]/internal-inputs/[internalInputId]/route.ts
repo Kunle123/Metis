@@ -1,11 +1,16 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 
-import { PatchInternalInputInputSchema } from "@metis/shared/internalInput";
+import { PatchInternalInputInputSchema, InternalObservationVisibilitySchema } from "@metis/shared/internalInput";
 import { prisma } from "@/lib/db/prisma";
 import { requireActiveOrgIssue } from "@/lib/organisations/requireActiveOrgIssue";
 import { membershipAllowsOrgWrite } from "@/lib/organisations/orgCapabilities";
 import { internalInputDbRowToWire } from "@/lib/internalInputs/internalInputWireFormat";
+import {
+  internalObservationReadableByViewer,
+  organisationMembershipIsAdmin,
+  prismaWhereInternalInputsVisibleToViewer,
+} from "@/lib/internalInputs/internalObservationVisibility";
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string; internalInputId: string }> }) {
   const { id: issueId, internalInputId } = await params;
@@ -13,8 +18,12 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   const gated = await requireActiveOrgIssue(request, issueId);
   if (gated instanceof NextResponse) return gated;
 
+  const viewer = { membershipRole: gated.ctx.membership.role, userId: gated.ctx.user.id };
   const input = await prisma.internalInput.findFirst({
-    where: { id: internalInputId, issueId },
+    where: {
+      id: internalInputId,
+      ...prismaWhereInternalInputsVisibleToViewer(issueId, viewer),
+    },
   });
 
   if (!input) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -47,17 +56,36 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   });
   if (!input) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
+  const viewer = { membershipRole: gated.ctx.membership.role, userId: gated.ctx.user.id };
+  if (!internalObservationReadableByViewer(viewer, input)) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  const visibilityChangeRequested = parsed.data.visibility !== undefined;
+  if (visibilityChangeRequested) {
+    const visParsed = InternalObservationVisibilitySchema.safeParse(parsed.data.visibility);
+    if (!visParsed.success) {
+      return NextResponse.json({ error: "Invalid observation visibility" }, { status: 400 });
+    }
+    const isAdmin = organisationMembershipIsAdmin(viewer.membershipRole);
+    const isAuthor = Boolean(input.createdByUserId && input.createdByUserId === viewer.userId);
+    if (!isAdmin && !isAuthor) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+  }
+
   const updated = await prisma.internalInput.update({
     where: { id: internalInputId },
     data: {
-      excludedFromBrief: parsed.data.excludedFromBrief ?? input.excludedFromBrief,
+      excludedFromBrief:
+        parsed.data.excludedFromBrief !== undefined ? parsed.data.excludedFromBrief : input.excludedFromBrief,
+      ...(visibilityChangeRequested ? { visibility: parsed.data.visibility } : {}),
     },
   });
 
   revalidatePath("/");
   revalidatePath(`/issues/${issueId}`);
   revalidatePath(`/issues/${issueId}/input`);
-  revalidatePath(`/issues/${issueId}/brief`);
 
   const wired = internalInputDbRowToWire(updated);
   if (!wired) {

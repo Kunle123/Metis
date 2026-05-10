@@ -6,6 +6,7 @@ import { NoOrganisationMembershipShell } from "@/components/organisation/NoOrgan
 import { MetisShell, SurfaceCard } from "@/components/MetisShell";
 import { prisma } from "@/lib/db/prisma";
 import { loadIssuePageContext } from "@/lib/organisations/loadIssuePageContext";
+import { prismaWhereInternalInputsVisibleToViewer } from "@/lib/internalInputs/internalObservationVisibility";
 import { isStoredMessageDraftStale } from "@/lib/messages/messageFreshness";
 import { MessageVariantArtifactSchema, MessageVariantTemplateIdSchema } from "@metis/shared/messageVariant";
 import {
@@ -138,10 +139,14 @@ export default async function IssueMessagesPage({
   // Saving a MessageVariant row remains an explicit action (history/activity).
   const stakeholderGroup = selectedStakeholderGroupId ? activeGroups.find((g) => g.id === selectedStakeholderGroupId) ?? null : null;
   const issueLens = null;
+  const genViewer = { membershipRole: pageCtx.context.membership.role, userId: pageCtx.context.user.id };
   const [sources, gaps, internalInputs] = await Promise.all([
     prisma.source.findMany({ where: { issueId: issue.id }, orderBy: [{ createdAt: "desc" }] }),
     prisma.gap.findMany({ where: { issueId: issue.id }, orderBy: [{ updatedAt: "desc" }] }),
-    prisma.internalInput.findMany({ where: { issueId: issue.id }, orderBy: [{ createdAt: "desc" }] }),
+    prisma.internalInput.findMany({
+      where: prismaWhereInternalInputsVisibleToViewer(issue.id, genViewer),
+      orderBy: [{ createdAt: "desc" }],
+    }),
   ]);
 
   let audience: ExternalAudienceInput;

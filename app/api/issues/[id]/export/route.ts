@@ -75,9 +75,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
   const artifact = BriefArtifactSchema.parse(briefVersion.artifact);
   const ot = resolvedOutputTypeForExport(parsedFormat.data, requestedOutputType);
+  const exportViewer = { membershipRole: gated.ctx.membership.role, userId: gated.ctx.user.id };
   const auditAppendix =
     parsedFormat.data === "full-issue-brief" && (ot === "markdown" || ot === "html")
-      ? await loadExportAuditAppendixPayload(issueId)
+      ? await loadExportAuditAppendixPayload(issueId, exportViewer)
       : null;
   const rendered = renderExportDeliverable({
     issue,
@@ -177,8 +178,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const postureState = CirculationStateSchema.parse(briefVersion.circulationState);
   const artifact = BriefArtifactSchema.parse(briefVersion.artifact);
   const ot = resolvedOutputTypeForExport(format, outputTypeBody);
+  const exportViewer = { membershipRole: gatedAuth.ctx.membership.role, userId: gatedAuth.ctx.user.id };
   const auditAppendix =
-    format === "full-issue-brief" && (ot === "markdown" || ot === "html") ? await loadExportAuditAppendixPayload(issueId) : null;
+    format === "full-issue-brief" && (ot === "markdown" || ot === "html")
+      ? await loadExportAuditAppendixPayload(issueId, exportViewer)
+      : null;
   const rendered = renderExportDeliverable({ issue, mode: parsedMode.data, format, artifact, outputType: ot, auditAppendix });
   const ext = exportFileExtensionForMime(rendered.mimeType);
   const filename = `metis-${issueId}-${format}-v${briefVersion.versionNumber}.${ext}`;

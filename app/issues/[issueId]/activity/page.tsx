@@ -39,7 +39,9 @@ export default async function IssueActivityPage({ params }: { params: Promise<{ 
     createdAt: a.createdAt.toISOString(),
   }));
 
-  const timelineItems = await enrichActivityRowsForIssue(issue.id, serialized);
+  const timelineItems = await enrichActivityRowsForIssue(issue.id, serialized, {
+    viewer: { membershipRole: page.context.membership.role, userId: page.context.user.id },
+  });
   const latest = timelineItems[0] ?? null;
 
   return (

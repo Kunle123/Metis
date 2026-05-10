@@ -5,12 +5,22 @@ import {
   DEMO_ORGANISATION_SLUG,
 } from "@/lib/organisations/demoOrganisation";
 import { assertAllowedNonProductionDataScript } from "@/scripts/guards/assertNonProductionDataScript";
+import { hashPassword } from "@/lib/auth/password";
 
 import { seedShowcase2222 } from "./seedShowcase2222";
 
 const prisma = new PrismaClient();
 
 const DEMO_ACTOR = "demo.operator@metis.local";
+
+/** Fixed demo accounts for validating restricted observation visibility (password: `demo`). */
+const OBS_VISIBILITY_DEMO_ADMIN_ID = "bbbbbbbb-aaa1-4aa1-8aa1-aaaaaaaaaaa1";
+const OBS_VISIBILITY_DEMO_USER_MEMBER_ID = "bbbbbbbb-bbb2-4bb2-8bb2-bbbbbbbbbbb2";
+const OBS_VISIBILITY_DEMO_VIEWER_ID = "bbbbbbbb-ccc3-4cc3-8cc3-ccccccccccc3";
+
+const OBS_VISIBILITY_MEMBERSHIP_ADMIN_ID = "bbbbbbbb-d001-4001-8001-dddddddddddd1";
+const OBS_VISIBILITY_MEMBERSHIP_USER_ID = "bbbbbbbb-d002-4002-8002-dddddddddddd2";
+const OBS_VISIBILITY_MEMBERSHIP_VIEWER_ID = "bbbbbbbb-d003-4003-8003-dddddddddddd3";
 
 /**
  * Demo-quality, non-incident corporate affairs / comms briefing scenarios.
@@ -168,6 +178,75 @@ async function main() {
       slug: DEMO_ORGANISATION_SLUG,
       status: "Active",
     },
+  });
+
+  const visibilityDemoPw = await hashPassword("demo");
+  await prisma.user.upsert({
+    where: { email: "visibility.demo.admin@metis.local" },
+    create: {
+      id: OBS_VISIBILITY_DEMO_ADMIN_ID,
+      email: "visibility.demo.admin@metis.local",
+      passwordHash: visibilityDemoPw,
+      role: "Admin",
+    },
+    update: { passwordHash: visibilityDemoPw, role: "Admin" },
+  });
+  await prisma.user.upsert({
+    where: { email: "visibility.demo.user@metis.local" },
+    create: {
+      id: OBS_VISIBILITY_DEMO_USER_MEMBER_ID,
+      email: "visibility.demo.user@metis.local",
+      passwordHash: visibilityDemoPw,
+      role: "Operator",
+    },
+    update: { passwordHash: visibilityDemoPw, role: "Operator" },
+  });
+  await prisma.user.upsert({
+    where: { email: "visibility.demo.viewer@metis.local" },
+    create: {
+      id: OBS_VISIBILITY_DEMO_VIEWER_ID,
+      email: "visibility.demo.viewer@metis.local",
+      passwordHash: visibilityDemoPw,
+      role: "Viewer",
+    },
+    update: { passwordHash: visibilityDemoPw, role: "Viewer" },
+  });
+
+  await prisma.membership.upsert({
+    where: {
+      userId_organisationId: { userId: OBS_VISIBILITY_DEMO_ADMIN_ID, organisationId: DEMO_ORGANISATION_ID },
+    },
+    create: {
+      id: OBS_VISIBILITY_MEMBERSHIP_ADMIN_ID,
+      userId: OBS_VISIBILITY_DEMO_ADMIN_ID,
+      organisationId: DEMO_ORGANISATION_ID,
+      role: "Admin",
+    },
+    update: { role: "Admin" },
+  });
+  await prisma.membership.upsert({
+    where: {
+      userId_organisationId: { userId: OBS_VISIBILITY_DEMO_USER_MEMBER_ID, organisationId: DEMO_ORGANISATION_ID },
+    },
+    create: {
+      id: OBS_VISIBILITY_MEMBERSHIP_USER_ID,
+      userId: OBS_VISIBILITY_DEMO_USER_MEMBER_ID,
+      organisationId: DEMO_ORGANISATION_ID,
+      role: "User",
+    },
+    update: { role: "User" },
+  });
+  await prisma.membership.upsert({
+    where: {
+      userId_organisationId: { userId: OBS_VISIBILITY_DEMO_VIEWER_ID, organisationId: DEMO_ORGANISATION_ID },
+    },
+    create: {
+      id: OBS_VISIBILITY_MEMBERSHIP_VIEWER_ID,
+      userId: OBS_VISIBILITY_DEMO_VIEWER_ID,
+      organisationId: DEMO_ORGANISATION_ID,
+      role: "Viewer",
+    },
+    update: { role: "Viewer" },
   });
 
   // Remove prior fixed-id demo issues so reseeding is deterministic and non-incident by default.
@@ -462,7 +541,7 @@ async function main() {
             confidence: "Likely",
             excludedFromBrief: false,
             linkedSection: "Consultation approach",
-            visibility: "Internal",
+            visibility: "Organisation",
             timestampLabel: "Notes from planning meeting (fictional)",
           },
           {
@@ -471,10 +550,10 @@ async function main() {
             name: "Samira Khan",
             response:
               "If we cite footfall, we must also address access barriers: travel time, disability access, and carers. Provide assisted participation routes and plain-language summaries.",
-            confidence: "High",
+            confidence: "Likely",
             excludedFromBrief: false,
             linkedSection: "Equality and accessibility",
-            visibility: "Internal",
+            visibility: "Organisation",
             timestampLabel: "Accessibility review note (fictional)",
           },
           {
@@ -486,7 +565,7 @@ async function main() {
             confidence: "Likely",
             excludedFromBrief: false,
             linkedSection: "Stakeholder lens",
-            visibility: "Internal",
+            visibility: "Organisation",
             timestampLabel: "Comms draft note (fictional)",
           },
         ];
@@ -502,7 +581,7 @@ async function main() {
             confidence: "Likely",
             excludedFromBrief: false,
             linkedSection: "Public narrative",
-            visibility: "Internal",
+            visibility: "Organisation",
             timestampLabel: "Programme update (fictional)",
           },
           {
@@ -511,10 +590,11 @@ async function main() {
             name: "Noah Singh",
             response:
               "Criticism is more about accessibility than intent. People want clearer meeting times, translations, and a way to ask questions live. A defensive tone will backfire; offer practical improvements.",
-            confidence: "High",
+            confidence: "Likely",
             excludedFromBrief: false,
             linkedSection: "Consultation integrity",
-            visibility: "Internal",
+            visibility: "Restricted",
+            createdByUserId: OBS_VISIBILITY_DEMO_USER_MEMBER_ID,
             timestampLabel: "Stakeholder feedback note (fictional)",
           },
           {
@@ -523,10 +603,10 @@ async function main() {
             name: "Mina Duarte",
             response:
               "Avoid implying outcomes are pre-determined. Be precise about constraints and about how feedback will be evaluated and documented. Keep a clean audit trail of changes to materials.",
-            confidence: "High",
+            confidence: "Likely",
             excludedFromBrief: false,
             linkedSection: "Governance",
-            visibility: "Internal",
+            visibility: "Organisation",
             timestampLabel: "Legal guidance (fictional)",
           },
         ];
@@ -541,7 +621,7 @@ async function main() {
           confidence: "Likely",
           excludedFromBrief: false,
           linkedSection: "Roundtable preparation",
-          visibility: "Internal",
+          visibility: "Organisation",
           timestampLabel: "Briefing note (fictional)",
         },
         {
@@ -550,10 +630,10 @@ async function main() {
           name: "Imran Wallace",
           response:
             "Civic officials care about consultation integrity and accessibility. Proof points should be framed as ‘what we’ve heard’ + ‘what we’ll do next’, with evidence references ready if challenged.",
-          confidence: "High",
+          confidence: "Likely",
           excludedFromBrief: false,
           linkedSection: "Stakeholder lens",
-          visibility: "Internal",
+          visibility: "Organisation",
           timestampLabel: "Public affairs prep (fictional)",
         },
         {
@@ -565,7 +645,7 @@ async function main() {
           confidence: "Likely",
           excludedFromBrief: false,
           linkedSection: "Message discipline",
-          visibility: "Internal",
+          visibility: "Organisation",
           timestampLabel: "Comms note (fictional)",
         },
       ];
@@ -656,6 +736,10 @@ async function main() {
     for (let oi = 0; oi < internalInputs.length; oi++) {
       const i = internalInputs[oi]!;
       const observationNumber = oi + 1;
+      const createdByUserId =
+        "createdByUserId" in i && typeof (i as { createdByUserId?: string }).createdByUserId === "string"
+          ? (i as { createdByUserId: string }).createdByUserId
+          : null;
       await prisma.internalInput.upsert({
         where: { id: i.id },
         create: {
@@ -669,6 +753,7 @@ async function main() {
           excludedFromBrief: i.excludedFromBrief,
           linkedSection: i.linkedSection,
           visibility: i.visibility,
+          createdByUserId,
           timestampLabel: i.timestampLabel,
         },
         update: {
@@ -680,6 +765,7 @@ async function main() {
           excludedFromBrief: i.excludedFromBrief,
           linkedSection: i.linkedSection,
           visibility: i.visibility,
+          createdByUserId,
           timestampLabel: i.timestampLabel,
         },
       });

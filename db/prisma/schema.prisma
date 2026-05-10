@@ -44,8 +44,9 @@ model User {
   role         String
   clerkUserId  String?      @unique
   createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-  memberships  Membership[]
+  updatedAt              DateTime     @updatedAt
+  memberships            Membership[]
+  authoredInternalInputs InternalInput[] @relation("InternalObservationAuthor")
 }
 
 model Issue {
@@ -369,13 +370,19 @@ model InternalInput {
   confidence        String
   excludedFromBrief Boolean  @default(false)
   linkedSection     String?
-  visibility        String?
+  /**
+   * Organisation — all org members. Restricted — admins + author (`createdByUserId`) only.
+   */
+  visibility        String   @default("Organisation")
+  createdByUserId   String?
   timestampLabel    String?
   createdAt         DateTime @default(now())
 
   issue        Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  createdBy    User? @relation("InternalObservationAuthor", fields: [createdByUserId], references: [id], onDelete: SetNull)
   resolvedGaps Gap[] @relation("GapResolvedByInternalInput")
 
   @@unique([issueId, observationNumber])
   @@index([issueId, createdAt])
+  @@index([createdByUserId])
 }

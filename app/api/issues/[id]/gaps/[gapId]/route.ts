@@ -8,6 +8,7 @@ import { IssueActivityKinds } from "@/lib/issues/activityKinds";
 import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
 import { requireActiveOrgIssue } from "@/lib/organisations/requireActiveOrgIssue";
 import { membershipAllowsOrgWrite } from "@/lib/organisations/orgCapabilities";
+import { internalObservationReadableByViewer } from "@/lib/internalInputs/internalObservationVisibility";
 
 function serializeGap(gap: {
   id: string;
@@ -104,10 +105,17 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   if (nextResolvedId) {
     const input = await prisma.internalInput.findFirst({
       where: { id: nextResolvedId, issueId },
-      select: { id: true },
+      select: { id: true, visibility: true, createdByUserId: true },
     });
     if (!input) {
       return NextResponse.json({ error: "resolvedByInternalInputId must reference an internal input on this issue" }, { status: 400 });
+    }
+    const viewer = { membershipRole: gated.ctx.membership.role, userId: gated.ctx.user.id };
+    if (!internalObservationReadableByViewer(viewer, input)) {
+      return NextResponse.json(
+        { error: "You cannot link this open question to an observation you are not permitted to access." },
+        { status: 403 },
+      );
     }
   }
 

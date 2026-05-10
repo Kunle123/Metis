@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db/prisma";
 import { loadIssuePageContext } from "@/lib/organisations/loadIssuePageContext";
 import { MetisShell } from "@/components/MetisShell";
 import { internalInputDbRowToWire } from "@/lib/internalInputs/internalInputWireFormat";
+import { prismaWhereInternalInputsVisibleToViewer } from "@/lib/internalInputs/internalObservationVisibility";
 
 import { InternalInputWorkspace } from "./internal-input-workspace";
 
@@ -18,8 +19,9 @@ export default async function IssueInternalInputPage({ params }: { params: Promi
   if (pageCtx.outcome === "not_found") notFound();
   const { issue } = pageCtx;
 
+  const viewer = { membershipRole: pageCtx.context.membership.role, userId: pageCtx.context.user.id };
   const inputsRaw = await prisma.internalInput.findMany({
-    where: { issueId: issue.id },
+    where: prismaWhereInternalInputsVisibleToViewer(issue.id, viewer),
     orderBy: [{ createdAt: "desc" }],
   });
 
@@ -41,7 +43,12 @@ export default async function IssueInternalInputPage({ params }: { params: Promi
         updatedAt: issue.updatedAt,
       }}
     >
-      <InternalInputWorkspace issueId={issue.id} inputs={inputs} />
+      <InternalInputWorkspace
+        issueId={issue.id}
+        inputs={inputs}
+        membershipRole={pageCtx.context.membership.role}
+        currentUserId={pageCtx.context.user.id}
+      />
     </MetisShell>
   );
 }

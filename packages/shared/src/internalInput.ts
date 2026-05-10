@@ -8,6 +8,9 @@ export const InternalInputConfidenceSchema = z.union([
 ]);
 export type InternalInputConfidence = z.infer<typeof InternalInputConfidenceSchema>;
 
+export const InternalObservationVisibilitySchema = z.union([z.literal("Organisation"), z.literal("Restricted")]);
+export type InternalObservationVisibility = z.infer<typeof InternalObservationVisibilitySchema>;
+
 export const InternalInputSchema = z.object({
   id: z.string(),
   issueId: z.string(),
@@ -18,7 +21,8 @@ export const InternalInputSchema = z.object({
   confidence: InternalInputConfidenceSchema,
   excludedFromBrief: z.boolean().optional().default(false),
   linkedSection: z.string().nullable(),
-  visibility: z.string().nullable(),
+  visibility: InternalObservationVisibilitySchema.optional().nullable(),
+  createdByUserId: z.string().nullable().optional(),
   timestampLabel: z.string().nullable(),
   createdAt: z.string(),
 });
@@ -32,14 +36,19 @@ export const CreateInternalInputInputSchema = z.object({
   confidence: InternalInputConfidenceSchema,
   excludedFromBrief: z.boolean().optional(),
   linkedSection: z.string().nullable().optional(),
-  visibility: z.string().nullable().optional(),
+  visibility: InternalObservationVisibilitySchema.optional(),
   timestampLabel: z.string().nullable().optional(),
 });
 
 export type CreateInternalInputInput = z.infer<typeof CreateInternalInputInputSchema>;
 
-export const PatchInternalInputInputSchema = z.object({
-  excludedFromBrief: z.boolean().optional(),
-});
+export const PatchInternalInputInputSchema = z
+  .object({
+    excludedFromBrief: z.boolean().optional(),
+    visibility: InternalObservationVisibilitySchema.optional(),
+  })
+  .refine((v) => v.excludedFromBrief !== undefined || v.visibility !== undefined, {
+    message: "At least one of excludedFromBrief or visibility is required",
+  });
 
 export type PatchInternalInputInput = z.infer<typeof PatchInternalInputInputSchema>;

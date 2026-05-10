@@ -46,8 +46,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
   const artifact = BriefArtifactSchema.parse(briefVersion.artifact);
 
+  const exportViewer = { membershipRole: gated.ctx.membership.role, userId: gated.ctx.user.id };
   const auditAppendix =
-    format === "full-issue-brief" ? await loadExportAuditAppendixPayload(issueId) : undefined;
+    format === "full-issue-brief" ? await loadExportAuditAppendixPayload(issueId, exportViewer) : undefined;
 
   let buffer: Buffer;
   try {

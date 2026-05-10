@@ -191,9 +191,10 @@ export default async function IssueExportPage({
   const artifact = BriefArtifactSchema.parse(briefVersion.artifact) as BriefArtifact;
   const renderAsMarkdownOrHtml: Exclude<ExportOutputType, "plain"> =
     urlExportOutput === "html" ? "html" : "markdown";
+  const exportViewer = { membershipRole: pageCtx.context.membership.role, userId: pageCtx.context.user.id };
   const auditAppendix =
     selectedFormat === "full-issue-brief" && urlExportOutput !== "docx"
-      ? await loadExportAuditAppendixPayload(issue.id)
+      ? await loadExportAuditAppendixPayload(issue.id, exportViewer)
       : null;
   const rendered =
     urlExportOutput === "docx"

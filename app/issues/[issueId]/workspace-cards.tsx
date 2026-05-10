@@ -108,7 +108,7 @@ function observationAttributionLine(
 ): string | null {
   if (!observationId?.trim()) return null;
   const i = inputs.find((x) => x.id === observationId);
-  if (!i) return `Observation ref · ${observationId.slice(0, 8)}`;
+  if (!i) return `Answered by · restricted observation`;
   const code = formatObservationCode(i.observationNumber);
   if (code) return `Answered by · ${code} · ${i.role} · ${i.name}`;
   return `Observation ref · ${observationId.slice(0, 8)} · ${i.role} · ${i.name}`;

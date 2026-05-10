@@ -14,6 +14,7 @@ import { cleanupMessageVariantsSections } from "@/lib/ai/cleanupMessageDraft";
 import { prisma } from "@/lib/db/prisma";
 import { requireActiveOrgIssue } from "@/lib/organisations/requireActiveOrgIssue";
 import { membershipAllowsOrgWrite } from "@/lib/organisations/orgCapabilities";
+import { prismaWhereInternalInputsVisibleToViewer } from "@/lib/internalInputs/internalObservationVisibility";
 import { IssueActivityKinds } from "@/lib/issues/activityKinds";
 import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
 import {
@@ -232,10 +233,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     mediaAudience = { kind: "setup" };
   }
 
+  const genViewer = { membershipRole: gated.ctx.membership.role, userId: gated.ctx.user.id };
   const [sources, gaps, internalInputs] = await Promise.all([
     prisma.source.findMany({ where: { issueId }, orderBy: [{ createdAt: "desc" }] }),
     prisma.gap.findMany({ where: { issueId }, orderBy: [{ updatedAt: "desc" }] }),
-    prisma.internalInput.findMany({ where: { issueId }, orderBy: [{ createdAt: "desc" }] }),
+    prisma.internalInput.findMany({
+      where: prismaWhereInternalInputsVisibleToViewer(issueId, genViewer),
+      orderBy: [{ createdAt: "desc" }],
+    }),
   ]);
 
   const latestForLens = await prisma.messageVariant.findFirst({

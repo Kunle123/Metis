@@ -9,6 +9,7 @@ import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
 import { requireActiveOrgIssue } from "@/lib/organisations/requireActiveOrgIssue";
 import { membershipAllowsOrgWrite } from "@/lib/organisations/orgCapabilities";
 import { synthesizeBriefAlternateWording, synthesizeBriefExecutiveSummary } from "@/lib/ai/synthesizeBrief";
+import { prismaWhereInternalInputsVisibleToViewer } from "@/lib/internalInputs/internalObservationVisibility";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id: issueId } = await params;
@@ -27,10 +28,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   const issue = gated.issue;
 
+  const genViewer = { membershipRole: gated.ctx.membership.role, userId: gated.ctx.user.id };
   const [sources, gaps, internalInputs, messageVariantsWithAudience] = await Promise.all([
     prisma.source.findMany({ where: { issueId }, orderBy: [{ createdAt: "desc" }] }),
     prisma.gap.findMany({ where: { issueId }, orderBy: [{ updatedAt: "desc" }] }),
-    prisma.internalInput.findMany({ where: { issueId }, orderBy: [{ createdAt: "desc" }] }),
+    prisma.internalInput.findMany({
+      where: prismaWhereInternalInputsVisibleToViewer(issueId, genViewer),
+      orderBy: [{ createdAt: "desc" }],
+    }),
     prisma.messageVariant.findMany({
       where: { issueId, stakeholderGroupId: { not: null } },
       select: {

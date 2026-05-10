@@ -1,5 +1,11 @@
-import { InternalInputSchema } from "@metis/shared/internalInput";
-import type { InternalInput } from "@metis/shared/internalInput";
+import {
+  InternalInputSchema,
+  InternalObservationVisibilitySchema,
+  type InternalInput,
+  type InternalObservationVisibility,
+} from "@metis/shared/internalInput";
+
+import { normalizeObservationVisibility } from "@/lib/internalInputs/internalObservationVisibility";
 
 const CONFIDENCE_VALUES = new Set(["Confirmed", "Likely", "Unclear", "Needs validation"] as const);
 
@@ -14,6 +20,7 @@ export type InternalInputDbRow = {
   excludedFromBrief: boolean;
   linkedSection: string | null;
   visibility: string | null;
+  createdByUserId: string | null;
   timestampLabel: string | null;
   createdAt: Date;
 };
@@ -30,6 +37,9 @@ export function normaliseInternalInputConfidence(value: unknown): "Confirmed" | 
  * Stable JSON shape for API + UI. Returns `null` if the row fails `InternalInputSchema` (skip in lists; treat as data error for singleton GET).
  */
 export function internalInputDbRowToWire(row: InternalInputDbRow): InternalInput | null {
+  const canonVisibility: InternalObservationVisibility = InternalObservationVisibilitySchema.parse(
+    normalizeObservationVisibility(row.visibility),
+  );
   const candidate = {
     id: row.id,
     issueId: row.issueId,
@@ -40,7 +50,8 @@ export function internalInputDbRowToWire(row: InternalInputDbRow): InternalInput
     confidence: normaliseInternalInputConfidence(row.confidence),
     excludedFromBrief: row.excludedFromBrief ?? false,
     linkedSection: row.linkedSection ?? null,
-    visibility: row.visibility ?? null,
+    visibility: canonVisibility,
+    createdByUserId: row.createdByUserId ?? null,
     timestampLabel: row.timestampLabel ?? null,
     createdAt: row.createdAt.toISOString(),
   };

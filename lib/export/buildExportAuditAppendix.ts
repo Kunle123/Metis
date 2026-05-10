@@ -1,5 +1,9 @@
 import { prisma } from "@/lib/db/prisma";
 import { formatGapCode, formatObservationCode } from "@/lib/issueRecordCodes";
+import {
+  type ObservationViewer,
+  prismaWhereInternalInputsVisibleToViewer,
+} from "@/lib/internalInputs/internalObservationVisibility";
 
 /** Minimal issue rows for export-time audit appendix (Markdown + HTML). */
 export type ExportAuditAppendixInput = {
@@ -45,7 +49,10 @@ function clampLine(s: string, max: number) {
   return `${t.slice(0, max - 1).trimEnd()}…`;
 }
 
-export async function loadExportAuditAppendixPayload(issueId: string): Promise<ExportAuditAppendixInput> {
+export async function loadExportAuditAppendixPayload(
+  issueId: string,
+  viewer: ObservationViewer,
+): Promise<ExportAuditAppendixInput> {
   const [sources, gaps, internalInputs] = await Promise.all([
     prisma.source.findMany({
       where: { issueId },
@@ -71,7 +78,7 @@ export async function loadExportAuditAppendixPayload(issueId: string): Promise<E
       },
     }),
     prisma.internalInput.findMany({
-      where: { issueId },
+      where: prismaWhereInternalInputsVisibleToViewer(issueId, viewer),
       orderBy: [{ createdAt: "desc" }],
       select: {
         id: true,
@@ -161,7 +168,7 @@ export function buildExportAuditAppendixMarkdown(data: ExportAuditAppendixInput)
       if ((g.status ?? "").trim() === "Resolved" && g.resolvedByInternalInputId) {
         const obs = obsById.get(g.resolvedByInternalInputId);
         if (obs) tail = ` — Answered by ${obs}`;
-        else tail = " — Answered by (observation ref unavailable)";
+        else tail = " — Answered by restricted observation";
       }
       lines.push(
         `- **${q}** — ${g.status} — ${g.severity} — Section: ${clampLine(section, 80)} — ${clampLine(g.prompt, 220)}${tail}`,
@@ -228,7 +235,7 @@ export function buildExportAuditAppendixHtml(data: ExportAuditAppendixInput): st
       if ((g.status ?? "").trim() === "Resolved" && g.resolvedByInternalInputId) {
         const obs = obsById.get(g.resolvedByInternalInputId);
         if (obs) tail = ` — Answered by ${obs}`;
-        else tail = " — Answered by (observation ref unavailable)";
+        else tail = " — Answered by restricted observation";
       }
       const line = `${q} — ${g.status} — ${g.severity} — Section: ${clampLine(section, 80)} — ${clampLine(g.prompt, 220)}${tail}`;
       parts.push(`<li>${escapeAppendixHtml(line)}</li>`);
@@ -299,7 +306,7 @@ export function buildExportAuditAppendixDocStructure(data: ExportAuditAppendixIn
       if ((g.status ?? "").trim() === "Resolved" && g.resolvedByInternalInputId) {
         const obs = obsById.get(g.resolvedByInternalInputId);
         if (obs) tail = ` — Answered by ${obs}`;
-        else tail = " — Answered by (observation ref unavailable)";
+        else tail = " — Answered by restricted observation";
       }
       nodes.push({
         type: "bullet",

@@ -1,13 +1,18 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 
-import { CreateInternalInputInputSchema, InternalInputConfidenceSchema } from "@metis/shared/internalInput";
+import {
+  CreateInternalInputInputSchema,
+  InternalInputConfidenceSchema,
+  InternalObservationVisibilitySchema,
+} from "@metis/shared/internalInput";
 import { prisma } from "@/lib/db/prisma";
 import { IssueActivityKinds } from "@/lib/issues/activityKinds";
 import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
 import { requireActiveOrgIssue } from "@/lib/organisations/requireActiveOrgIssue";
 import { membershipAllowsOrgWrite } from "@/lib/organisations/orgCapabilities";
 import { internalInputDbRowToWire } from "@/lib/internalInputs/internalInputWireFormat";
+import { prismaWhereInternalInputsVisibleToViewer } from "@/lib/internalInputs/internalObservationVisibility";
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id: issueId } = await params;
@@ -15,8 +20,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   const gated = await requireActiveOrgIssue(request, issueId);
   if (gated instanceof NextResponse) return gated;
 
+  const viewer = { membershipRole: gated.ctx.membership.role, userId: gated.ctx.user.id };
   const inputs = await prisma.internalInput.findMany({
-    where: { issueId },
+    where: prismaWhereInternalInputsVisibleToViewer(issueId, viewer),
     orderBy: [{ createdAt: "desc" }],
   });
 
@@ -53,6 +59,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: "Invalid confidence" }, { status: 400 });
   }
 
+  const visibilityParsed = InternalObservationVisibilitySchema.safeParse(parsed.data.visibility ?? "Organisation");
+  if (!visibilityParsed.success) {
+    return NextResponse.json({ error: "Invalid observation visibility" }, { status: 400 });
+  }
+
   const created = await prisma.$transaction(async (tx) => {
     const issueRow = await tx.issue.update({
       where: { id: issueId },
@@ -71,7 +82,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         confidence: confidenceParsed.data,
         excludedFromBrief: parsed.data.excludedFromBrief ?? false,
         linkedSection: parsed.data.linkedSection ?? null,
-        visibility: parsed.data.visibility ?? null,
+        visibility: visibilityParsed.data,
+        createdByUserId: gated.ctx.user.id,
         timestampLabel: parsed.data.timestampLabel ?? null,
       },
     });
