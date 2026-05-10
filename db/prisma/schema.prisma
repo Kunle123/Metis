@@ -49,6 +49,8 @@ model User {
   authoredInternalInputs    InternalInput[]     @relation("InternalObservationAuthor")
   messageVariantsApprovalUpdates MessageVariant[] @relation("MessageVariantApprovalActor")
   artifactExportsApprovalUpdates ArtifactExport[] @relation("ArtifactExportApprovalActor")
+  claimsCreated                  Claim[]            @relation("ClaimCreatedBy")
+  claimsUpdated                  Claim[]            @relation("ClaimUpdatedBy")
 }
 
 model Issue {
@@ -76,6 +78,10 @@ model Issue {
    * Last assigned observation ordinal within this issue (`OBS-{padded}` in UI); next create uses increment.
    */
   observationCodeSeq Int                @default(0)
+  /**
+   * Last assigned claim ordinal within this issue (`CLM-###` in UI); next create increments.
+   */
+  claimCodeSeq       Int                @default(0)
   lastActivityAt     DateTime           @default(now())
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
@@ -90,6 +96,7 @@ model Issue {
   issueStakeholders  IssueStakeholder[]
   messageVariants    MessageVariant[]
   commsPlanItems     CommsPlanItem[]
+  claims             Claim[]
   organisation       Organisation       @relation(fields: [organisationId], references: [id], onDelete: Restrict)
 
   @@index([organisationId])
@@ -339,7 +346,8 @@ model Source {
   timestampLabel String?
   createdAt      DateTime @default(now())
 
-  issue Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  issue        Issue        @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  claimSources ClaimSource[]
 
   @@unique([issueId, sourceCode])
   @@index([issueId, tier, createdAt])
@@ -365,6 +373,7 @@ model Gap {
 
   issue                   Issue          @relation(fields: [issueId], references: [id], onDelete: Cascade)
   resolvedByInternalInput InternalInput? @relation("GapResolvedByInternalInput", fields: [resolvedByInternalInputId], references: [id], onDelete: Restrict)
+  claimGaps               ClaimGap[]
 
   @@unique([issueId, gapNumber])
   @@index([issueId, status, createdAt])
@@ -392,11 +401,70 @@ model InternalInput {
   timestampLabel    String?
   createdAt         DateTime @default(now())
 
-  issue        Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
-  createdBy    User? @relation("InternalObservationAuthor", fields: [createdByUserId], references: [id], onDelete: SetNull)
-  resolvedGaps Gap[] @relation("GapResolvedByInternalInput")
+  issue         Issue              @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  createdBy     User?              @relation("InternalObservationAuthor", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  resolvedGaps  Gap[]              @relation("GapResolvedByInternalInput")
+  claimInternal ClaimInternalInput[]
 
   @@unique([issueId, observationNumber])
   @@index([issueId, createdAt])
   @@index([createdByUserId])
+}
+
+model Claim {
+  id                  String    @id @default(uuid())
+  issueId             String
+  /** Per-issue ordinal for `CLM-###` codes. */
+  claimNumber         Int
+  text                String
+  /** Confirmed | Assumption | NeedsValidation | Superseded */
+  status              String    @default("NeedsValidation")
+  notes               String?
+  createdByUserId     String?
+  updatedByUserId     String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  issue         Issue                   @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  createdBy     User?                   @relation("ClaimCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  updatedBy     User?                   @relation("ClaimUpdatedBy", fields: [updatedByUserId], references: [id], onDelete: SetNull)
+  sources       ClaimSource[]
+  internalLinks ClaimInternalInput[]
+  gaps          ClaimGap[]
+
+  @@unique([issueId, claimNumber])
+  @@index([issueId, updatedAt])
+  @@index([issueId, status])
+  @@index([createdByUserId])
+  @@index([updatedByUserId])
+}
+
+model ClaimSource {
+  claimId  String
+  sourceId String
+  claim    Claim  @relation(fields: [claimId], references: [id], onDelete: Cascade)
+  source   Source @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+
+  @@id([claimId, sourceId])
+  @@index([sourceId])
+}
+
+model ClaimInternalInput {
+  claimId           String
+  internalInputId   String
+  claim             Claim         @relation(fields: [claimId], references: [id], onDelete: Cascade)
+  internalInput     InternalInput @relation(fields: [internalInputId], references: [id], onDelete: Cascade)
+
+  @@id([claimId, internalInputId])
+  @@index([internalInputId])
+}
+
+model ClaimGap {
+  claimId String
+  gapId   String
+  claim   Claim @relation(fields: [claimId], references: [id], onDelete: Cascade)
+  gap     Gap   @relation(fields: [gapId], references: [id], onDelete: Cascade)
+
+  @@id([claimId, gapId])
+  @@index([gapId])
 }

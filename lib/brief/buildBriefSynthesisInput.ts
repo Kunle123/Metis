@@ -1,6 +1,7 @@
-import type { Gap, InternalInput, Issue, Source } from "@prisma/client";
+import type { Claim, Gap, InternalInput, Issue, Source } from "@prisma/client";
 
 import type { BriefSynthesisInput } from "@/lib/ai/synthesizeBrief";
+import { groupClaimsForSynthesis } from "@/lib/claims/claimsForGeneration";
 import { rankInternalInputsForIssue, rankOpenGapsForIssue, rankSourcesForIssue } from "@/lib/evidence/rankEvidence";
 
 /**
@@ -12,9 +13,10 @@ export function buildBriefSynthesisInput(params: {
   sources: Source[];
   gaps: Gap[];
   internalInputs: InternalInput[];
+  claims?: Claim[];
   deterministicExecutiveSummaryBody: string;
 }): BriefSynthesisInput {
-  const { issue, sources, gaps, internalInputs, deterministicExecutiveSummaryBody } = params;
+  const { issue, sources, gaps, internalInputs, deterministicExecutiveSummaryBody, claims } = params;
 
   const rankedSources = rankSourcesForIssue(sources);
   const rankedOpenGaps = rankOpenGapsForIssue(gaps, { onlyOpen: true });
@@ -54,6 +56,16 @@ export function buildBriefSynthesisInput(params: {
     ? `Audience note: ${audienceNote}`
     : "No specific audience note is recorded on the issue.";
 
+  const groupedClaims = groupClaimsForSynthesis(claims ?? []);
+  const claimsSlice: BriefSynthesisInput["claims"] | undefined =
+    groupedClaims.confirmed.length || groupedClaims.assumptions.length || groupedClaims.needsValidation.length
+      ? {
+          confirmed: groupedClaims.confirmed.map((r) => ({ code: r.code, text: r.text, notes: r.notes })),
+          assumptions: groupedClaims.assumptions.map((r) => ({ code: r.code, text: r.text, notes: r.notes })),
+          needsValidation: groupedClaims.needsValidation.map((r) => ({ code: r.code, text: r.text, notes: r.notes })),
+        }
+      : undefined;
+
   return {
     issue: {
       title: issue.title,
@@ -67,5 +79,6 @@ export function buildBriefSynthesisInput(params: {
     topSources,
     topObservations,
     deterministicExecutiveSummaryBody,
+    ...(claimsSlice ? { claims: claimsSlice } : {}),
   };
 }

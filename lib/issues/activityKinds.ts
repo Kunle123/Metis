@@ -19,5 +19,8 @@ export const IssueActivityKinds = {
   comms_plan_item_prepared: IssueActivityKindSchema.parse("comms_plan_item_prepared"),
   comms_plan_item_sent: IssueActivityKindSchema.parse("comms_plan_item_sent"),
   comms_plan_item_skipped: IssueActivityKindSchema.parse("comms_plan_item_skipped"),
+  claim_created: IssueActivityKindSchema.parse("claim_created"),
+  claim_updated: IssueActivityKindSchema.parse("claim_updated"),
+  claim_status_updated: IssueActivityKindSchema.parse("claim_status_updated"),
 } as const;
 

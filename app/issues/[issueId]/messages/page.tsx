@@ -147,13 +147,14 @@ export default async function IssueMessagesPage({
   const stakeholderGroup = selectedStakeholderGroupId ? activeGroups.find((g) => g.id === selectedStakeholderGroupId) ?? null : null;
   const issueLens = null;
   const genViewer = { membershipRole: pageCtx.context.membership.role, userId: pageCtx.context.user.id };
-  const [sources, gaps, internalInputs] = await Promise.all([
+  const [sources, gaps, internalInputs, claims] = await Promise.all([
     prisma.source.findMany({ where: { issueId: issue.id }, orderBy: [{ createdAt: "desc" }] }),
     prisma.gap.findMany({ where: { issueId: issue.id }, orderBy: [{ updatedAt: "desc" }] }),
     prisma.internalInput.findMany({
       where: prismaWhereInternalInputsVisibleToViewer(issue.id, genViewer),
       orderBy: [{ createdAt: "desc" }],
     }),
+    prisma.claim.findMany({ where: { issueId: issue.id }, orderBy: [{ claimNumber: "asc" }] }),
   ]);
 
   let audience: ExternalAudienceInput;
@@ -171,12 +172,12 @@ export default async function IssueMessagesPage({
 
   const deterministicPreview = (() => {
     if (templateId === "external_customer_resident_student") {
-      return generateExternalCustomerResidentStudentArtifact({ issue, sources, gaps, audience });
+      return generateExternalCustomerResidentStudentArtifact({ issue, sources, gaps, claims, audience });
     }
     if (templateId === "media_holding_line") {
-      return generateMediaHoldingLineArtifact({ issue, gaps, audience: mediaAudience });
+      return generateMediaHoldingLineArtifact({ issue, gaps, claims, audience: mediaAudience });
     }
-    return generateInternalStaffUpdateArtifact({ issue, sources, gaps, internalInputs, audience: internalAudience });
+    return generateInternalStaffUpdateArtifact({ issue, sources, gaps, internalInputs, claims, audience: internalAudience });
   })();
 
   return (

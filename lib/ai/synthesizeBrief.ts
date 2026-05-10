@@ -71,7 +71,9 @@ export function evaluateExecutivePolishedBodyForSave(
   const payload = JSON.stringify(input);
   const allowedNumbers = collectAllowedNumberTokens(payload);
   const hasOpenQuestions =
-    input.issue.openQuestionsIntake.length > 0 || input.topTrackerOpenQuestions.length > 0;
+    input.issue.openQuestionsIntake.length > 0 ||
+    input.topTrackerOpenQuestions.length > 0 ||
+    (input.claims?.needsValidation?.length ?? 0) > 0;
 
   if (
     !isBriefExecutiveSummaryRewriteSafe({
@@ -136,6 +138,12 @@ const USER_SCHEMA = `Return a single JSON object with exactly these keys:
 - rewrite: string
 - limitations: string`;
 
+export type BriefSynthesisClaimsSlice = {
+  confirmed: { code: string; text: string; notes?: string | null }[];
+  assumptions: { code: string; text: string; notes?: string | null }[];
+  needsValidation: { code: string; text: string; notes?: string | null }[];
+};
+
 export type BriefSynthesisInput = {
   issue: {
     title: string;
@@ -149,6 +157,8 @@ export type BriefSynthesisInput = {
   topSources: { sourceCode: string; tier: string; title: string; linkedSection?: string | null }[];
   topObservations: { role: string; name: string; confidence?: string | null; linkedSection?: string | null; response: string }[];
   deterministicExecutiveSummaryBody: string;
+  /** Non-superseded claims grouped for model constraints; omitted when empty. */
+  claims?: BriefSynthesisClaimsSlice;
 };
 
 export type BriefAlternateWordingSynthesisOutcome =
@@ -180,7 +190,22 @@ export async function executeBriefAlternateWordingSynthesis(params: {
   const payload = JSON.stringify(params.input);
   const allowedNumbers = collectAllowedNumberTokens(payload);
   const hasOpenQuestions =
-    params.input.issue.openQuestionsIntake.length > 0 || params.input.topTrackerOpenQuestions.length > 0;
+    params.input.issue.openQuestionsIntake.length > 0 ||
+    params.input.topTrackerOpenQuestions.length > 0 ||
+    (params.input.claims?.needsValidation?.length ?? 0) > 0;
+
+  const claimsConstraints = (() => {
+    const c = params.input.claims;
+    if (!c) return "";
+    const any = c.confirmed.length + c.assumptions.length + c.needsValidation.length > 0;
+    if (!any) return "";
+    return `
+Claims register (in input JSON under "claims"):
+- Superseded claims are omitted; do not resurrect them.
+- "confirmed": may phrase as factual for this workspace only when consistent with other fields.
+- "assumptions": use conditional / hedged language (working assumption, subject to verification).
+- "needsValidation": do not assert as settled fact; keep explicit uncertainty while any such lines exist.`;
+  })();
 
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
@@ -207,7 +232,7 @@ Constraints:
 - Do not resolve or answer open questions.
 - If open questions exist, include at least one explicit uncertainty marker (e.g. "open questions remain", "not yet confirmed", "subject to change").
 - If polishing might shift meaning, tighten confidence, remove caveats, or hide ambiguity compared with the deterministic paragraph, omit the rewrite (return an empty or unusable rewrite so the system keeps deterministic wording).
-- Keep it under ${MAX_REWRITE_CHARS} characters.
+- Keep it under ${MAX_REWRITE_CHARS} characters.${claimsConstraints}
 
 Input JSON:
 ${payload}`,

@@ -13,4 +13,5 @@ export * from "./stakeholder";
 export * from "./captureNotesExtract";
 export * from "./commsPlan";
 export * from "./approvalStatus";
+export * from "./claim";
 

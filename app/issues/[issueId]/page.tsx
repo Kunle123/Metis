@@ -38,13 +38,14 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
   const { issue } = page;
 
   const workspaceViewer = { membershipRole: page.context.membership.role, userId: page.context.user.id };
-  const [sources, gaps, inputs] = await Promise.all([
+  const [sources, gaps, inputs, claimsCount] = await Promise.all([
     prisma.source.findMany({ where: { issueId: issue.id }, orderBy: [{ createdAt: "desc" }] }),
     prisma.gap.findMany({ where: { issueId: issue.id }, orderBy: [{ createdAt: "desc" }] }),
     prisma.internalInput.findMany({
       where: prismaWhereInternalInputsVisibleToViewer(issue.id, workspaceViewer),
       orderBy: [{ createdAt: "desc" }],
     }),
+    prisma.claim.count({ where: { issueId: issue.id } }),
   ]);
 
   const captureNotesAiEnabled = process.env.NOTES_CAPTURE_AI_ENABLED?.trim() === "true";
@@ -91,9 +92,15 @@ export default async function IssueWorkspacePage({ params }: { params: Promise<{
                   >
                     Open questions · {issue.openGapsCount}
                   </Link>
+                  <Link
+                    href={`/issues/${issue.id}/claims`}
+                    className="inline-flex items-center rounded-full border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_52%,transparent)] px-3 py-1 text-[0.72rem] font-medium text-[--metis-text-secondary] transition hover:border-[--metis-outline-strong] hover:bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_68%,transparent)] hover:text-[--metis-paper] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/50"
+                  >
+                    Claims · {claimsCount}
+                  </Link>
                 </div>
                 <p className="max-w-[17rem] text-[0.68rem] leading-snug text-[--metis-paper-muted] md:text-right">
-                  Review evidence in Sources or close questions in Open questions.
+                  Review evidence in Sources, manage facts in Claims, or close gaps in Open questions.
                 </p>
               </div>
             </div>

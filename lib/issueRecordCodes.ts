@@ -2,6 +2,12 @@ function padOrdinal(n: number): string {
   return String(n).padStart(3, "0");
 }
 
+/** Human-readable issue-scoped claim label (`CLM-001`). */
+export function formatClaimCode(claimNumber: number | null | undefined): string | null {
+  if (claimNumber == null || claimNumber <= 0) return null;
+  return `CLM-${padOrdinal(claimNumber)}`;
+}
+
 /** Human-readable issue-scoped open-question label (`Q-001`). */
 export function formatGapCode(gapNumber: number | null | undefined): string | null {
   if (gapNumber == null || gapNumber <= 0) return null;

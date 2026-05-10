@@ -241,13 +241,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   }
 
   const genViewer = { membershipRole: gated.ctx.membership.role, userId: gated.ctx.user.id };
-  const [sources, gaps, internalInputs] = await Promise.all([
+  const [sources, gaps, internalInputs, claims] = await Promise.all([
     prisma.source.findMany({ where: { issueId }, orderBy: [{ createdAt: "desc" }] }),
     prisma.gap.findMany({ where: { issueId }, orderBy: [{ updatedAt: "desc" }] }),
     prisma.internalInput.findMany({
       where: prismaWhereInternalInputsVisibleToViewer(issueId, genViewer),
       orderBy: [{ createdAt: "desc" }],
     }),
+    prisma.claim.findMany({ where: { issueId }, orderBy: [{ claimNumber: "asc" }] }),
   ]);
 
   const latestForLens = await prisma.messageVariant.findFirst({
@@ -277,12 +278,12 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   const deterministic = ((): MessageVariantArtifact => {
     if (parsed.data.templateId === "external_customer_resident_student") {
-      return generateExternalCustomerResidentStudentArtifact({ issue, sources, gaps, audience });
+      return generateExternalCustomerResidentStudentArtifact({ issue, sources, gaps, claims, audience });
     }
     if (parsed.data.templateId === "media_holding_line") {
-      return generateMediaHoldingLineArtifact({ issue, gaps, audience: mediaAudience });
+      return generateMediaHoldingLineArtifact({ issue, gaps, claims, audience: mediaAudience });
     }
-    return generateInternalStaffUpdateArtifact({ issue, sources, gaps, internalInputs, audience: internalAudience });
+    return generateInternalStaffUpdateArtifact({ issue, sources, gaps, internalInputs, claims, audience: internalAudience });
   })();
 
   let mergedArtifact: MessageVariantArtifact = {

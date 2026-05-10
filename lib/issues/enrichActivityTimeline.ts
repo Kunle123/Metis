@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db/prisma";
-import { formatGapCode, formatObservationCode } from "@/lib/issueRecordCodes";
+import { formatClaimCode, formatGapCode, formatObservationCode } from "@/lib/issueRecordCodes";
 
 import type { ActivityTimelineItem, SerializedActivityRow } from "@/lib/issues/activityTimelineDisplay";
 import type { ObservationViewer } from "@/lib/internalInputs/internalObservationVisibility";
@@ -26,6 +26,7 @@ export async function enrichActivityRowsForIssue(
   const gapIds = new Set<string>();
   const internalInputIds = new Set<string>();
   const sourceIds = new Set<string>();
+  const claimIds = new Set<string>();
 
   for (const r of rows) {
     if (!r.refId?.trim()) continue;
@@ -36,9 +37,10 @@ export async function enrichActivityRowsForIssue(
     else if (r.refType === "Gap") gapIds.add(r.refId);
     else if (r.refType === "InternalInput") internalInputIds.add(r.refId);
     else if (r.refType === "Source") sourceIds.add(r.refId);
+    else if (r.refType === "Claim") claimIds.add(r.refId);
   }
 
-  const [briefRows, messageRows, exportRows, circulationRows, gapRows, internalInputRows, sourceRows] = await Promise.all([
+  const [briefRows, messageRows, exportRows, circulationRows, gapRows, internalInputRows, sourceRows, claimRows] = await Promise.all([
     briefIds.size
       ? prisma.briefVersion.findMany({
           where: { issueId, id: { in: [...briefIds] } },
@@ -90,6 +92,12 @@ export async function enrichActivityRowsForIssue(
           select: { id: true, sourceCode: true },
         })
       : [],
+    claimIds.size
+      ? prisma.claim.findMany({
+          where: { issueId, id: { in: [...claimIds] } },
+          select: { id: true, claimNumber: true },
+        })
+      : [],
   ]);
 
   const briefMap = new Map(briefRows.map((b) => [b.id, b]));
@@ -117,6 +125,12 @@ export async function enrichActivityRowsForIssue(
     if (c.length) sourceRecordCodeById.set(s.id, c);
   }
 
+  const claimRecordCodeById = new Map<string, string>();
+  for (const c of claimRows) {
+    const code = formatClaimCode(c.claimNumber);
+    if (code) claimRecordCodeById.set(c.id, code);
+  }
+
   return rows.map((row) => {
     let enrichedSummary: string | null = null;
     let refRecordCode: string | null = null;
@@ -127,6 +141,8 @@ export async function enrichActivityRowsForIssue(
       refRecordCode = observationRecordCodeById.get(row.refId) ?? null;
     } else if (row.refType === "Source" && row.refId) {
       refRecordCode = sourceRecordCodeById.get(row.refId) ?? null;
+    } else if (row.refType === "Claim" && row.refId) {
+      refRecordCode = claimRecordCodeById.get(row.refId) ?? null;
     }
 
     if (row.kind === "brief_version_created" && row.refType === "BriefVersion" && row.refId) {

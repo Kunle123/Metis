@@ -29,13 +29,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const issue = gated.issue;
 
   const genViewer = { membershipRole: gated.ctx.membership.role, userId: gated.ctx.user.id };
-  const [sources, gaps, internalInputs, messageVariantsWithAudience] = await Promise.all([
+  const [sources, gaps, internalInputs, claims, messageVariantsWithAudience] = await Promise.all([
     prisma.source.findMany({ where: { issueId }, orderBy: [{ createdAt: "desc" }] }),
     prisma.gap.findMany({ where: { issueId }, orderBy: [{ updatedAt: "desc" }] }),
     prisma.internalInput.findMany({
       where: prismaWhereInternalInputsVisibleToViewer(issueId, genViewer),
       orderBy: [{ createdAt: "desc" }],
     }),
+    prisma.claim.findMany({ where: { issueId }, orderBy: [{ claimNumber: "asc" }] }),
     prisma.messageVariant.findMany({
       where: { issueId, stakeholderGroupId: { not: null } },
       select: {
@@ -73,7 +74,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   const versionNumber = (latest?.versionNumber ?? 0) + 1;
   const artifactDeterministic = generateBriefFromIssue(
-    { issue, sources, gaps, internalInputs, messageAudienceGroupNames },
+    { issue, sources, gaps, internalInputs, claims, messageAudienceGroupNames },
     parsed.data.mode,
   );
 
@@ -97,6 +98,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         sources,
         gaps,
         internalInputs,
+        claims,
         deterministicExecutiveSummaryBody: exec.body,
       });
       const rewrite = await synthesizeBriefExecutiveSummary(synthesisInput);
@@ -151,6 +153,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       sources,
       gaps,
       internalInputs,
+      claims,
       deterministicExecutiveSummaryBody: execBlock.body,
     });
     const rewrite = await synthesizeBriefAlternateWording({

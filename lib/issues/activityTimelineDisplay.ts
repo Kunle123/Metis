@@ -36,6 +36,9 @@ export const ACTIVITY_KIND_LABELS: Record<string, string> = {
   comms_plan_item_prepared: "Comms plan · marked prepared",
   comms_plan_item_sent: "Comms plan · marked sent",
   comms_plan_item_skipped: "Comms plan · skipped",
+  claim_created: "Claim · added",
+  claim_updated: "Claim · updated",
+  claim_status_updated: "Claim · status",
 };
 
 export function formatActivityTimestamp(iso: string) {
@@ -69,6 +72,7 @@ export function activityTimelineDisplaySummary(row: ActivityTimelineItem): strin
 export function activityDisplayRefType(refType: string | null) {
   if (!refType) return "Ref";
   if (refType === "Gap") return "Open question";
+  if (refType === "Claim") return "Claim";
   return refType;
 }
 

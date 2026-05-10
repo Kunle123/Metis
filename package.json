@@ -17,6 +17,7 @@
     "test:message-freshness": "tsx lib/messages/messageFreshness.fixtures.runner.ts",
     "test:brief-synthesis": "tsx lib/ai/synthesizeBrief.fixtures.runner.ts",
     "test:brief-build-input": "tsx lib/brief/buildBriefSynthesisInput.fixtures.runner.ts",
+    "test:claims-register": "tsx lib/claims/claims.fixtures.runner.ts",
     "test:comms-plan-template": "tsx lib/comms/generateCommsPlanTemplate.fixtures.runner.ts",
     "test:export-html": "tsx lib/export/renderExportHtml.fixtures.runner.ts",
     "test:export-docx": "tsx lib/export/renderExportDocx.fixtures.runner.ts",

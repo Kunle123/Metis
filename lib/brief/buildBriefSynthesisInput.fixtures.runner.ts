@@ -3,7 +3,7 @@
  * Run: `npm run test:brief-build-input`
  */
 import assert from "node:assert/strict";
-import type { Gap, InternalInput, Issue, Source } from "@prisma/client";
+import type { Claim, Gap, InternalInput, Issue, Source } from "@prisma/client";
 
 import { buildBriefSynthesisInput } from "./buildBriefSynthesisInput";
 
@@ -33,5 +33,30 @@ assert.equal(out.deterministicExecutiveSummaryBody, "Deterministic exec paragrap
 assert.ok(Array.isArray(out.issue.openQuestionsIntake));
 assert.ok(out.issue.openQuestionsIntake.length >= 2);
 assert.ok(out.issue.audienceContextSummary.includes("Board"));
+assert.equal(out.claims, undefined);
+
+const demoClaim = {
+  id: "claim-1",
+  issueId: "i1",
+  claimNumber: 3,
+  text: "Pilot scope is provisional pending sign-off.",
+  status: "NeedsValidation",
+  notes: null,
+  createdByUserId: null,
+  updatedByUserId: null,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+} as Claim;
+
+const withClaims = buildBriefSynthesisInput({
+  issue: baseIssue,
+  sources: [] as Source[],
+  gaps: [] as Gap[],
+  internalInputs: [] as InternalInput[],
+  claims: [demoClaim],
+  deterministicExecutiveSummaryBody: "Deterministic exec paragraph.",
+});
+assert.ok(withClaims.claims);
+assert.equal(withClaims.claims?.needsValidation?.[0]?.code, "CLM-003");
 
 console.log("buildBriefSynthesisInput fixtures: ok");

@@ -779,6 +779,59 @@ async function main() {
       },
     });
 
+    if (createdIssue.id === "22222222-2222-2222-2222-222222222222") {
+      const seededClaims = [
+        {
+          id: "22222222-d111-4111-a111-111111111101",
+          claimNumber: 1,
+          status: "Confirmed",
+          text: "Published programme narrative states the redevelopment aims to modernise facilities and improve access.",
+          notes: "Demo seeded claim aligned to SRC-001.",
+        },
+        {
+          id: "22222222-d111-4111-a111-111111111102",
+          claimNumber: 2,
+          status: "Assumption",
+          text: "Consultation turnout may remain uneven unless assisted sessions widen participation.",
+          notes: "Working posture for planning mitigations.",
+        },
+        {
+          id: "22222222-d111-4111-a111-111111111103",
+          claimNumber: 3,
+          status: "NeedsValidation",
+          text: "Formal equality impact position is pending advisor review.",
+          notes: null,
+        },
+        {
+          id: "22222222-d111-4111-a111-111111111104",
+          claimNumber: 4,
+          status: "Superseded",
+          text: "(Superseded) Early draft suggested immediate scope expansion — superseded by board-agreed phased plan.",
+          notes: null,
+        },
+      ] as const;
+
+      for (const c of seededClaims) {
+        await prisma.claim.upsert({
+          where: { issueId_claimNumber: { issueId: createdIssue.id, claimNumber: c.claimNumber } },
+          create: {
+            id: c.id,
+            issueId: createdIssue.id,
+            claimNumber: c.claimNumber,
+            status: c.status,
+            text: c.text,
+            notes: c.notes,
+          },
+          update: { status: c.status, text: c.text, notes: c.notes },
+        });
+      }
+
+      await prisma.issue.update({
+        where: { id: createdIssue.id },
+        data: { claimCodeSeq: 4 },
+      });
+    }
+
     /** Extra persisted rows only for issue 22222222 — briefs/messages/export for showcase walkthroughs. */
     const showcase2222 =
       createdIssue.id === "22222222-2222-2222-2222-222222222222"

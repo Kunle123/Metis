@@ -1,6 +1,7 @@
-import type { Gap, Issue, IssueStakeholder, Source, StakeholderGroup } from "@prisma/client";
+import type { Claim, Gap, Issue, IssueStakeholder, Source, StakeholderGroup } from "@prisma/client";
 
 import type { MessageVariantArtifact } from "@metis/shared/messageVariant";
+import { augmentExternalConfirmedWithClaims, externalMessageClaimsCaveats } from "@/lib/claims/claimsForGeneration";
 import { rankOpenGapsForIssue } from "@/lib/evidence/rankEvidence";
 
 /** Setup-only audience (issue.audience); no StakeholderGroup. */
@@ -19,6 +20,7 @@ export type ExternalMessageGenerationInput = {
   issue: Issue;
   sources: Source[];
   gaps: Gap[];
+  claims?: Claim[];
   audience: ExternalAudienceInput;
 };
 
@@ -86,9 +88,9 @@ export function buildAudienceSnapshot(issue: Issue, audience: ExternalAudienceIn
 }
 
 export function generateExternalCustomerResidentStudentArtifact(input: ExternalMessageGenerationInput): MessageVariantArtifact {
-  const { issue, sources, gaps, audience } = input;
+  const { issue, sources, gaps, claims = [], audience } = input;
   const summary = cleanText(issue.summary);
-  const confirmed = cleanText(issue.confirmedFacts);
+  const confirmed = augmentExternalConfirmedWithClaims(cleanText(issue.confirmedFacts), claims);
   const open = rankOpenGapsForIssue(gaps, { onlyOpen: true });
   const topOpen = open.slice(0, 3);
 
@@ -168,15 +170,18 @@ export function generateExternalCustomerResidentStudentArtifact(input: ExternalM
   })();
 
   const whatWeCantConfirm = (() => {
+    const caveat = externalMessageClaimsCaveats(claims).trim();
     if (!topOpen.length) {
-      return "There are no open clarification items on the issue list that require a public caveat at this time. If the situation changes, we will update this message.";
+      const base =
+        "There are no open clarification items on the issue list that require a public caveat at this time. If the situation changes, we will update this message.";
+      return caveat ? `${base}\n\n${caveat}` : base;
     }
     const lines = topOpen.map(formatUncertaintyLine).filter(Boolean);
-    return (
+    const gapsBlock =
       "Some operational details are still being confirmed. Until we can state them accurately:\n\n" +
       lines.map((l) => `- ${l}`).join("\n") +
-      (open.length > topOpen.length ? `\n\nAdditional items remain under internal review.` : "")
-    );
+      (open.length > topOpen.length ? `\n\nAdditional items remain under internal review.` : "");
+    return caveat ? `${gapsBlock}\n\n${caveat}` : gapsBlock;
   })();
 
   const nextUpdate =

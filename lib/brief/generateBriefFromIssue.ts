@@ -1,4 +1,4 @@
-import type { Issue, Source, Gap, InternalInput } from "@prisma/client";
+import type { Claim, Gap, InternalInput, Issue, Source } from "@prisma/client";
 
 import type { BriefArtifact, BriefMode } from "@metis/shared/briefVersion";
 import {
@@ -7,6 +7,7 @@ import {
   rankOpenGapsForIssue,
   rankSourcesForIssue,
 } from "@/lib/evidence/rankEvidence";
+import { formatClaimsBriefBlock } from "@/lib/claims/claimsForGeneration";
 
 const CAP_EX_SOURCES = 8;
 const MAX_QUESTION_BULLETS = 12;
@@ -635,6 +636,10 @@ export type BriefGenerationInput = {
   gaps: Gap[];
   internalInputs: InternalInput[];
   /**
+   * Facts/assumption lines from Claims register (`CLM-*`); superseded excluded from briefing text.
+   */
+  claims?: Claim[];
+  /**
    * Distinct organisation audience group names inferred from Messages (`MessageVariant` rows with `stakeholderGroupId`).
    */
   messageAudienceGroupNames?: string[];
@@ -907,7 +912,8 @@ function sourcesNarrativeFull(sources: Source[], total: number) {
 }
 
 export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefMode): BriefArtifact {
-  const { issue, sources, gaps, internalInputs, messageAudienceGroupNames = [] } = input;
+  const { issue, sources, gaps, internalInputs, messageAudienceGroupNames = [], claims: claimsRows = [] } = input;
+  const claimsRegisterAppend = `\n\nClaims register\n${formatClaimsBriefBlock(claimsRows)}`;
   const orderedMessageAudienceNames = normalizeMessageAudienceGroupNames(messageAudienceGroupNames);
   const isExecutive = mode === "executive";
   const updatedAtLabel = nowLabel();
@@ -1235,13 +1241,16 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
   })();
 
   const confirmedFactsBlockExecutive = (() => {
+    let base: string;
     if (cleanText(confirmedFacts)) {
-      return confirmedBlock;
+      base = confirmedBlock;
+    } else if (internalInputs.length) {
+      base =
+        "No confirmed facts are recorded for this version.\n\nInternal notes below are helpful context, but they are not a substitute for confirmed facts. Treat them as provisional until separately validated.";
+    } else {
+      base = "No confirmed facts are recorded in intake yet.";
     }
-    if (internalInputs.length) {
-      return "No confirmed facts are recorded for this version.\n\nInternal notes below are helpful context, but they are not a substitute for confirmed facts. Treat them as provisional until separately validated.";
-    }
-    return "No confirmed facts are recorded in intake yet.";
+    return `${base}${claimsRegisterAppend}`;
   })();
 
   const audienceBlock = formatAudienceImplications(issue.audience, messageAudienceGroupNames);
@@ -1266,7 +1275,7 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
     : [
         { label: "Situation", body: situationBody },
         { label: "Current assessment", body: currentAssessment },
-        { label: "Confirmed facts", body: confirmedBlock },
+        { label: "Confirmed facts", body: `${confirmedBlock}${claimsRegisterAppend}` },
         { label: "Key unknowns / open questions", body: keyUnknownsCombined },
         { label: "Evidence base", body: evidenceBaseExecutive(rankedSources, rankedSources.length) },
         {
@@ -1325,7 +1334,7 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
       rankedOpenGaps.length > 0
         ? `Tracker note: ${rankedOpenGaps.length} open question(s) are recorded in the open-questions tracker.`
         : "Tracker note: no open questions are recorded in the tracker.";
-    return ["Confirmed facts", confirmed, "", openLine, "", note].join("\n");
+    return ["Confirmed facts", confirmed, "", openLine, "", note, claimsRegisterAppend.trim()].join("\n");
   })();
 
   const narrativeBody = (() => {

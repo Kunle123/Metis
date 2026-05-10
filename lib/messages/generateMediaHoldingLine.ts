@@ -1,6 +1,7 @@
-import type { Gap, Issue, IssueStakeholder, StakeholderGroup } from "@prisma/client";
+import type { Claim, Gap, Issue, IssueStakeholder, StakeholderGroup } from "@prisma/client";
 
 import type { MediaHoldingLineArtifact } from "@metis/shared/messageVariant";
+import { augmentExternalConfirmedWithClaims } from "@/lib/claims/claimsForGeneration";
 import { rankOpenGapsForIssue } from "@/lib/evidence/rankEvidence";
 
 /** Setup-only audience (issue.audience); no StakeholderGroup. */
@@ -18,6 +19,7 @@ export type AudienceInput = SetupAudienceInput | GroupAudienceInput;
 export type MediaHoldingLineGenerationInput = {
   issue: Issue;
   gaps: Gap[];
+  claims?: Claim[];
   audience: AudienceInput;
 };
 
@@ -67,10 +69,10 @@ function genericUnderReviewBullets(openCount: number) {
 }
 
 export function generateMediaHoldingLineArtifact(input: MediaHoldingLineGenerationInput): MediaHoldingLineArtifact {
-  const { issue, gaps, audience } = input;
+  const { issue, gaps, claims = [], audience } = input;
 
   const summary = cleanText(issue.summary);
-  const confirmed = cleanText(issue.confirmedFacts);
+  const confirmed = augmentExternalConfirmedWithClaims(cleanText(issue.confirmedFacts), claims);
 
   const open = rankOpenGapsForIssue(gaps, { onlyOpen: true });
 

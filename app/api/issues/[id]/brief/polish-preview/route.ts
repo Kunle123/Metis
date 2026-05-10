@@ -105,13 +105,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   }
 
   const genViewer = { membershipRole: gated.ctx.membership.role, userId: gated.ctx.user.id };
-  const [sources, gaps, internalInputs] = await Promise.all([
+  const [sources, gaps, internalInputs, claims] = await Promise.all([
     prisma.source.findMany({ where: { issueId }, orderBy: [{ createdAt: "desc" }] }),
     prisma.gap.findMany({ where: { issueId }, orderBy: [{ updatedAt: "desc" }] }),
     prisma.internalInput.findMany({
       where: prismaWhereInternalInputsVisibleToViewer(issueId, genViewer),
       orderBy: [{ createdAt: "desc" }],
     }),
+    prisma.claim.findMany({ where: { issueId }, orderBy: [{ claimNumber: "asc" }] }),
   ]);
 
   const synthesisInput = buildBriefSynthesisInput({
@@ -119,6 +120,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     sources,
     gaps,
     internalInputs,
+    claims,
     deterministicExecutiveSummaryBody: execBlock.body,
   });
 

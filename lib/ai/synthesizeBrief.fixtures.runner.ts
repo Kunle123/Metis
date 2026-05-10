@@ -73,4 +73,40 @@ assert.equal(
   true,
 );
 
+const claimsOnlyNeedsValidationInput: BriefSynthesisInput = {
+  issue: {
+    title: "T",
+    summary: "S",
+    context: "",
+    confirmedFacts: "",
+    openQuestionsIntake: [],
+    audienceContextSummary: "Note",
+  },
+  topTrackerOpenQuestions: [],
+  topSources: [],
+  topObservations: [],
+  deterministicExecutiveSummaryBody:
+    "The scope is provisional and subject to change while internal validation completes on the timetable.",
+  claims: {
+    confirmed: [],
+    assumptions: [],
+    needsValidation: [{ code: "CLM-004", text: "Still validating vendor scope.", notes: null }],
+  },
+};
+
+assert.equal(
+  evaluateExecutivePolishedBodyForSave(
+    claimsOnlyNeedsValidationInput,
+    "Vendor scope remains unconfirmed internally; timelines are provisional and subject to change.",
+  ).ok,
+  true,
+);
+assert.equal(
+  evaluateExecutivePolishedBodyForSave(
+    claimsOnlyNeedsValidationInput,
+    "Vendor scope is now locked and timelines are definitive.",
+  ).ok,
+  false,
+);
+
 console.log("synthesizeBrief fixtures: ok");

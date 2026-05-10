@@ -29,4 +29,14 @@ assert.equal(
   }),
 );
 
+assert.equal(
+  true,
+  isStoredMessageDraftStale({
+    hasStoredDraft: true,
+    generatedFromIssueUpdatedAt: gen,
+    issueUpdatedAt: issueStamp,
+    activitiesStrictlyAfterRevision: [{ kind: "claim_updated" as IssueActivityKind, createdAt: new Date("2026-01-01T10:30:00.000Z") }],
+  }),
+);
+
 console.log("ok messageFreshness.fixtures.runner");

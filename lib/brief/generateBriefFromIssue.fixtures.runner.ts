@@ -12,7 +12,7 @@ import {
   trimForExecutiveClause,
   type BriefGenerationInput,
 } from "./generateBriefFromIssue";
-import type { Gap, InternalInput, Issue, Source } from "@prisma/client";
+import type { Claim, Gap, InternalInput, Issue, Source } from "@prisma/client";
 
 import { DEMO_ORGANISATION_ID } from "@/lib/organisations/demoOrganisation";
 
@@ -45,6 +45,7 @@ const baseIssue: Issue = {
   sourcesCount: 1,
   gapCodeSeq: 0,
   observationCodeSeq: 0,
+  claimCodeSeq: 0,
   lastActivityAt: new Date(),
   createdAt: new Date(),
   updatedAt: new Date(),
@@ -370,5 +371,45 @@ const confirmedVs = fullDedup.full.sections.find((s) => s.id === "confirmed-vs-u
 const threshHits = [...confirmedVs.matchAll(/internal threshold for material change/gi)];
 assert.ok(threshHits.length <= 1, "Open questions (summary) should not repeat the same near-duplicate line");
 assert.match(confirmedVs, /Open questions \(summary\)/);
+
+function sampleClaim(p: Partial<Claim> & Pick<Claim, "claimNumber" | "text" | "status">): Claim {
+  const now = new Date();
+  return {
+    id: p.id ?? `claim-${p.claimNumber}`,
+    issueId: p.issueId ?? "issue-1",
+    claimNumber: p.claimNumber,
+    text: p.text,
+    status: p.status,
+    notes: p.notes ?? null,
+    createdByUserId: null,
+    updatedByUserId: null,
+    createdAt: p.createdAt ?? now,
+    updatedAt: p.updatedAt ?? now,
+  };
+}
+
+const withClaims: BriefGenerationInput = {
+  issue: baseIssue,
+  sources: [],
+  gaps: [],
+  internalInputs: [] as InternalInput[],
+  claims: [
+    sampleClaim({ claimNumber: 1, text: "Budget is fixed for this phase.", status: "Confirmed" }),
+    sampleClaim({ claimNumber: 2, text: "Uptake skews weekend.", status: "Assumption" }),
+    sampleClaim({ claimNumber: 3, text: "Equality sign-off pending.", status: "NeedsValidation" }),
+    sampleClaim({ claimNumber: 4, text: "Old scope line.", status: "Superseded" }),
+  ],
+};
+
+const execClaims = generateBriefFromIssue(withClaims, "executive");
+const execConfirmedWithClaims = execClaims.executive.blocks.find((b) => b.label === "Confirmed facts")?.body ?? "";
+assert.match(execConfirmedWithClaims, /Claims register/i);
+assert.match(execConfirmedWithClaims, /CLM-001/);
+assert.match(execConfirmedWithClaims, /CLM-003/);
+assert.ok(!execConfirmedWithClaims.includes("CLM-004"), "superseded claim should not appear in briefing context");
+
+const fullClaims = generateBriefFromIssue(withClaims, "full");
+const confirmedVsWithClaims = fullClaims.full.sections.find((s) => s.id === "confirmed-vs-unclear")?.body ?? "";
+assert.match(confirmedVsWithClaims, /Claims register/i);
 
 console.log("generateBriefFromIssue fixtures: OK");

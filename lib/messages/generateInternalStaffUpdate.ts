@@ -1,6 +1,7 @@
-import type { Gap, InternalInput, Issue, IssueStakeholder, Source, StakeholderGroup } from "@prisma/client";
+import type { Claim, Gap, InternalInput, Issue, IssueStakeholder, Source, StakeholderGroup } from "@prisma/client";
 
 import type { InternalStaffUpdateArtifact } from "@metis/shared/messageVariant";
+import { formatClaimsBriefBlock } from "@/lib/claims/claimsForGeneration";
 import { rankInternalInputsForIssue, rankOpenGapsForIssue, rankSourcesForIssue } from "@/lib/evidence/rankEvidence";
 
 /** Setup-only audience (issue.audience); no StakeholderGroup. */
@@ -20,6 +21,7 @@ export type InternalStaffMessageGenerationInput = {
   sources: Source[];
   gaps: Gap[];
   internalInputs: InternalInput[];
+  claims?: Claim[];
   audience: AudienceInput;
 };
 
@@ -92,7 +94,7 @@ function formatSourceLine(s: Source) {
 }
 
 export function generateInternalStaffUpdateArtifact(input: InternalStaffMessageGenerationInput): InternalStaffUpdateArtifact {
-  const { issue, sources, gaps, internalInputs, audience } = input;
+  const { issue, sources, gaps, internalInputs, claims = [], audience } = input;
 
   const summary = cleanText(issue.summary);
   const confirmed = cleanText(issue.confirmedFacts);
@@ -222,6 +224,11 @@ export function generateInternalStaffUpdateArtifact(input: InternalStaffMessageG
   const sections: InternalStaffUpdateArtifact["sections"] = [
     { id: "what-is-happening", title: "What is happening (staff summary)", body: whatIsHappening },
     { id: "confirmed-facts", title: "Confirmed facts", body: confirmedFacts },
+    {
+      id: "claims-register",
+      title: "Claims register (facts & assumptions)",
+      body: formatClaimsBriefBlock(claims),
+    },
     { id: "internal-notes", title: "Internal notes (not confirmed facts)", body: internalNotes },
     { id: "evidence", title: "Evidence & references (internal)", body: evidence },
     { id: "what-we-are-doing", title: "What we are doing", body: whatWeAreDoing },

@@ -3,7 +3,7 @@
  * Keeps deterministic fixed UUIDs; called from db/prisma/seed.ts after Source/Gap/Observation rows exist.
  */
 
-import type { Gap, InternalInput, Issue, PrismaClient, Source } from "@prisma/client";
+import type { Claim, Gap, InternalInput, Issue, PrismaClient, Source } from "@prisma/client";
 
 import { BriefArtifactSchema, type BriefArtifact } from "@metis/shared/briefVersion";
 import { MessageVariantArtifactSchema } from "@metis/shared/messageVariant";
@@ -58,11 +58,12 @@ function buildExecutiveBriefV2(base: BriefArtifact): BriefArtifact {
 }
 
 async function loadGenerationInput(prisma: PrismaClient, issueId: string): Promise<BriefGenerationInput> {
-  const [issueRow, sources, gaps, internalInputs] = await Promise.all([
+  const [issueRow, sources, gaps, internalInputs, claims] = await Promise.all([
     prisma.issue.findUniqueOrThrow({ where: { id: issueId } }),
     prisma.source.findMany({ where: { issueId }, orderBy: [{ createdAt: "asc" }] }),
     prisma.gap.findMany({ where: { issueId }, orderBy: [{ gapNumber: "asc" }] }),
     prisma.internalInput.findMany({ where: { issueId }, orderBy: [{ observationNumber: "asc" }] }),
+    prisma.claim.findMany({ where: { issueId }, orderBy: [{ claimNumber: "asc" }] }),
   ]);
   const issue = issueRow as Issue;
   const showcaseInternalInputs = internalInputs.filter(
@@ -75,6 +76,7 @@ async function loadGenerationInput(prisma: PrismaClient, issueId: string): Promi
     gaps: gaps as Gap[],
     /** Deterministic stored briefs exclude restricted rows so read-only Viewers never see hidden text in seeded artifacts. */
     internalInputs: showcaseInternalInputs as InternalInput[],
+    claims: claims as Claim[],
     messageAudienceGroupNames: [],
   };
 }

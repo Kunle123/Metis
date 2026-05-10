@@ -60,6 +60,8 @@ function activityRefHref(issueId: string, row: ActivityTimelineItem): string | n
       return `/issues/${issueId}/sources`;
     case "Gap":
       return `/issues/${issueId}/gaps`;
+    case "Claim":
+      return `/issues/${issueId}/claims`;
     case "InternalInput":
       return `/issues/${issueId}#input`;
     case "CommsPlanItem":

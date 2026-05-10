@@ -170,6 +170,7 @@ const issueOutputToolsNav = [
 const issueRecordToolsNav = [
   { id: "sources" as const, path: "/sources" as const, shortLabel: "Sources" },
   { id: "gaps" as const, path: "/gaps" as const, shortLabel: "Open questions" },
+  { id: "claims" as const, path: "/claims" as const, shortLabel: "Claims" },
   { id: "input" as const, path: "/input" as const, shortLabel: "Observations" },
 ] as const;
 
