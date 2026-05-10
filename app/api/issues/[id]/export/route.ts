@@ -9,8 +9,12 @@ import {
   type ExportFormat,
   type ExportOutputType,
 } from "@metis/shared/export";
-import { ArtifactExportResponseSchema, CreateArtifactExportInputSchema } from "@metis/shared/circulation";
+import {
+  CirculationEventTypeSchema,
+  CreateArtifactExportInputSchema,
+} from "@metis/shared/circulation";
 import { prisma } from "@/lib/db/prisma";
+import { artifactExportToApiResponse } from "@/lib/export/artifactExportWire";
 import { loadExportAuditAppendixPayload } from "@/lib/export/buildExportAuditAppendix";
 import { renderExportDeliverable } from "@/lib/export/renderExportPackage";
 import { IssueActivityKinds } from "@/lib/issues/activityKinds";
@@ -188,7 +192,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const filename = `metis-${issueId}-${format}-v${briefVersion.versionNumber}.${ext}`;
 
   const created = await prisma.$transaction(async (tx) => {
-    const exportRow = await tx.artifactExport.create({
+    let exportRow = await tx.artifactExport.create({
       data: {
         issueId,
         briefVersionId: briefVersion.id,
@@ -233,29 +237,22 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         refId: event.id,
         actorLabel: gatedAuth.ctx.user.email ?? null,
       });
+
+      if (CirculationEventTypeSchema.safeParse(logEvent.eventType).success && logEvent.eventType === "sent") {
+        exportRow = await tx.artifactExport.update({
+          where: { id: exportRow.id },
+          data: {
+            approvalStatus: "Sent",
+            approvalUpdatedAt: new Date(),
+            approvalUpdatedByUserId: gatedAuth.ctx.user.id,
+          },
+        });
+      }
     }
 
     return exportRow;
   });
 
-  const response = {
-    exportId: created.id,
-    issueId: created.issueId,
-    briefVersionId: created.briefVersionId,
-    mode: parsedMode.data,
-    format,
-    outputType: ot,
-    filename: created.filename,
-    mimeType:
-      created.mimeType === "text/plain"
-        ? ("text/plain" as const)
-        : created.mimeType === "text/html"
-          ? ("text/html" as const)
-          : ("text/markdown" as const),
-    content: created.content,
-    createdAt: created.createdAt.toISOString(),
-  };
-
-  return NextResponse.json(ArtifactExportResponseSchema.parse(response));
+  return NextResponse.json(artifactExportToApiResponse(created, ot));
 }
 

@@ -10,6 +10,7 @@ import {
   type MessageVariantTemplateId,
   type MessageVariantWordingPolish,
 } from "@metis/shared/messageVariant";
+import { coerceMessageApprovalStatus } from "@/lib/approvals/coerceMessageApprovalStatus";
 import { cleanupMessageVariantsSections } from "@/lib/ai/cleanupMessageDraft";
 import { prisma } from "@/lib/db/prisma";
 import { requireActiveOrgIssue } from "@/lib/organisations/requireActiveOrgIssue";
@@ -98,19 +99,25 @@ function serializeMessageVariant(row: {
   issueStakeholderId: string | null;
   audienceSnapshot: unknown;
   artifact: unknown;
+  approvalStatus: string;
+  approvalUpdatedAt: Date | null;
+  approvalUpdatedByUserId: string | null;
   createdAt: Date;
 }) {
   const artifact = MessageVariantArtifactSchema.parse(row.artifact);
   return {
     id: row.id,
     issueId: row.issueId,
-    templateId: row.templateId,
+    templateId: MessageVariantTemplateIdSchema.parse(row.templateId),
     versionNumber: row.versionNumber,
     generatedFromIssueUpdatedAt: row.generatedFromIssueUpdatedAt.toISOString(),
     stakeholderGroupId: row.stakeholderGroupId,
     issueStakeholderId: row.issueStakeholderId,
     audienceSnapshot: row.audienceSnapshot as Record<string, unknown>,
     artifact,
+    approvalStatus: coerceMessageApprovalStatus(row.approvalStatus),
+    approvalUpdatedAt: row.approvalUpdatedAt?.toISOString() ?? null,
+    approvalUpdatedByUserId: row.approvalUpdatedByUserId ?? null,
     createdAt: row.createdAt.toISOString(),
   };
 }

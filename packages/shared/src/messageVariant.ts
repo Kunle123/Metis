@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { MessageApprovalStatusSchema } from "./approvalStatus";
+
 export const MessageVariantTemplateIdSchema = z.enum([
   "external_customer_resident_student",
   "internal_staff_update",
@@ -94,6 +96,9 @@ export const MessageVariantRecordSchema = z.object({
   issueStakeholderId: z.string().nullable(),
   audienceSnapshot: z.record(z.string(), z.unknown()),
   artifact: MessageVariantArtifactSchema,
+  approvalStatus: MessageApprovalStatusSchema,
+  approvalUpdatedAt: z.string().nullable(),
+  approvalUpdatedByUserId: z.string().nullable(),
   createdAt: z.string(),
 });
 export type MessageVariantRecord = z.infer<typeof MessageVariantRecordSchema>;

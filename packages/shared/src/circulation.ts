@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { MessageApprovalStatusSchema } from "./approvalStatus";
 import { BriefModeSchema } from "./briefVersion";
 import { CirculationStateSchema } from "./compare";
 import { ExportFormatSchema, ExportOutputTypeSchema } from "./export";
@@ -55,6 +56,9 @@ export const ArtifactExportResponseSchema = z.object({
   filename: z.string(),
   mimeType: z.union([z.literal("text/markdown"), z.literal("text/plain"), z.literal("text/html")]),
   content: z.string(),
+  approvalStatus: MessageApprovalStatusSchema,
+  approvalUpdatedAt: z.string().nullable(),
+  approvalUpdatedByUserId: z.string().nullable(),
   createdAt: z.string(),
 });
 export type ArtifactExportResponse = z.infer<typeof ArtifactExportResponseSchema>;

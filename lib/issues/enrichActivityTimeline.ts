@@ -56,6 +56,7 @@ export async function enrichActivityRowsForIssue(
           where: { issueId, id: { in: [...exportIds] } },
           select: {
             id: true,
+            format: true,
             briefVersion: { select: { mode: true, versionNumber: true } },
           },
         })
@@ -134,6 +135,14 @@ export async function enrichActivityRowsForIssue(
     } else if (row.kind === "message_variant_created" && row.refType === "MessageVariant" && row.refId) {
       const m = messageMap.get(row.refId);
       if (m) enrichedSummary = `Message draft v${m.versionNumber} created (${m.templateId})`;
+    } else if (row.kind === "message_variant_approval_updated" && row.refType === "MessageVariant" && row.refId) {
+      const m = messageMap.get(row.refId);
+      if (m) enrichedSummary = `Message draft v${m.versionNumber} · ${row.summary}`;
+    } else if (row.kind === "export_approval_updated" && row.refType === "ArtifactExport" && row.refId) {
+      const ex = exportMap.get(row.refId);
+      const bv = ex?.briefVersion;
+      const pack = bv ? `${bv.mode === "executive" ? "Executive" : "Full"} brief v${bv.versionNumber} · ${ex?.format ?? "package"}` : "Export package";
+      enrichedSummary = `${pack} · ${row.summary}`;
     } else if (row.kind === "export_created" && row.refType === "ArtifactExport" && row.refId) {
       const ex = exportMap.get(row.refId);
       const bv = ex?.briefVersion;

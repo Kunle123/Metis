@@ -7,7 +7,9 @@ import { MetisShell, SurfaceCard } from "@/components/MetisShell";
 import { prisma } from "@/lib/db/prisma";
 import { loadIssuePageContext } from "@/lib/organisations/loadIssuePageContext";
 import { prismaWhereInternalInputsVisibleToViewer } from "@/lib/internalInputs/internalObservationVisibility";
+import { coerceMessageApprovalStatus } from "@/lib/approvals/coerceMessageApprovalStatus";
 import { isStoredMessageDraftStale } from "@/lib/messages/messageFreshness";
+import { membershipAllowsOrgWrite } from "@/lib/organisations/orgCapabilities";
 import { MessageVariantArtifactSchema, MessageVariantTemplateIdSchema } from "@metis/shared/messageVariant";
 import {
   buildAudienceSnapshot,
@@ -124,6 +126,8 @@ export default async function IssueMessagesPage({
       ? "General (no audience group)"
       : (activeGroups.find((g) => g.id === selectedStakeholderGroupId)?.name ?? "Audience group");
 
+  const canUpdateMessageApprovalStatus = membershipAllowsOrgWrite(pageCtx.context.membership.role);
+
   const initialLatest = latestRow
     ? {
         id: latestRow.id,
@@ -132,6 +136,9 @@ export default async function IssueMessagesPage({
         stakeholderGroupId: latestRow.stakeholderGroupId,
         issueStakeholderId: latestRow.issueStakeholderId,
         artifact: MessageVariantArtifactSchema.parse(latestRow.artifact),
+        approvalStatus: coerceMessageApprovalStatus(latestRow.approvalStatus),
+        approvalUpdatedAt: latestRow.approvalUpdatedAt?.toISOString() ?? null,
+        approvalUpdatedByUserId: latestRow.approvalUpdatedByUserId ?? null,
       }
     : null;
 
@@ -197,6 +204,7 @@ export default async function IssueMessagesPage({
           <MessagesPanel
             issueId={issue.id}
             issueTitle={issue.title}
+            canUpdateMessageApprovalStatus={canUpdateMessageApprovalStatus}
             savedDraftContentInSync={savedDraftContentInSync}
             selectedTemplateId={templateId}
             audienceGroupOptions={audienceGroupOptions}

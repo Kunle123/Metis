@@ -9,7 +9,10 @@ import { AiProvenance } from "@/components/ui/ai-provenance";
 import { Button } from "@/components/ui/button";
 import { ControlField, ControlSelect } from "@/components/ui/control";
 import { SegmentedControl } from "@/components/ui/segmented-control";
+import type { MessageApprovalStatus } from "@metis/shared/approvalStatus";
+import { MESSAGE_APPROVAL_STATUS_ORDER, MessageApprovalStatusSchema, approvalStatusDisplayLabel } from "@metis/shared/approvalStatus";
 import type { MessageVariantArtifact, MessageVariantTemplateId } from "@metis/shared/messageVariant";
+import { approvalStatusBadgeClassNames } from "@/lib/approvals/approvalStatusUi";
 import { renderMessageVariantMarkdown } from "@/lib/messages/generateExternalCustomerUpdate";
 import { renderInternalStaffUpdateMarkdown } from "@/lib/messages/generateInternalStaffUpdate";
 import { renderMediaHoldingLineMarkdown } from "@/lib/messages/generateMediaHoldingLine";
@@ -18,14 +21,19 @@ import { ReviewRailCard } from "@/components/review/ReviewRailCard";
 
 type AudienceGroupOption = { id: string; label: string };
 
-type LatestPayload = {
+type SavedDraftRow = {
   id: string;
   versionNumber: number;
   generatedFromIssueUpdatedAt: string;
   stakeholderGroupId: string | null;
   issueStakeholderId: string | null;
   artifact: MessageVariantArtifact;
-} | null;
+  approvalStatus: MessageApprovalStatus;
+  approvalUpdatedAt: string | null;
+  approvalUpdatedByUserId: string | null;
+};
+
+type LatestPayload = SavedDraftRow | null;
 
 function normalizeBodyText(text: string) {
   // Back-compat: older stored variants may contain literal "\n" sequences.
@@ -51,9 +59,12 @@ export function MessagesPanel({
   messagesAiCleanupEnabled,
   deterministicPreview,
   savedDraftContentInSync,
+  canUpdateMessageApprovalStatus,
 }: {
   issueId: string;
   issueTitle: string;
+  /** Admin/User may change coordination approval; Viewer sees read-only badge. */
+  canUpdateMessageApprovalStatus: boolean;
   /** Server-derived freshness (ignores benign activity like saving this draft); false when no saved draft row. */
   savedDraftContentInSync: boolean;
   selectedTemplateId: MessageVariantTemplateId;
@@ -77,6 +88,7 @@ export function MessagesPanel({
   const [aiToggleOn, setAiToggleOn] = useState(false);
   const [aiRow, setAiRow] = useState<LatestPayload>(null);
   const [aiNote, setAiNote] = useState<string | null>(null);
+  const [approvalBusy, setApprovalBusy] = useState(false);
 
   const selectValue = selectedStakeholderGroupId === null ? "" : selectedStakeholderGroupId;
 
@@ -88,6 +100,8 @@ export function MessagesPanel({
     initialLatest?.generatedFromIssueUpdatedAt,
     initialLatest?.stakeholderGroupId,
     initialLatest?.issueStakeholderId,
+    initialLatest?.approvalStatus,
+    initialLatest?.approvalUpdatedAt,
     selectedStakeholderGroupId,
     selectedTemplateId,
   ]);
@@ -131,9 +145,43 @@ export function MessagesPanel({
 
   const inSync = !latest ? false : savedDraftSynced;
 
-  function ingestSuccessfulVariantSave(row: NonNullable<LatestPayload>) {
+  function ingestSuccessfulVariantSave(row: SavedDraftRow) {
     setLatest(row);
     setSavedDraftSynced(true);
+  }
+
+  async function updateApprovalStatus(next: MessageApprovalStatus) {
+    if (!latest || approvalBusy || next === latest.approvalStatus) return;
+    setApprovalBusy(true);
+    try {
+      const res = await fetch(`/api/issues/${issueId}/message-variants/${latest.id}/approval`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ approvalStatus: next }),
+      });
+      const raw = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+      if (!res.ok) {
+        const msg = typeof raw.error === "string" ? raw.error : `Failed (${res.status})`;
+        throw new Error(msg);
+      }
+      const st = MessageApprovalStatusSchema.safeParse(raw.approvalStatus);
+      setLatest({
+        ...latest,
+        approvalStatus: st.success ? st.data : next,
+        approvalUpdatedAt: typeof raw.approvalUpdatedAt === "string" ? raw.approvalUpdatedAt : latest.approvalUpdatedAt,
+        approvalUpdatedByUserId:
+          typeof raw.approvalUpdatedByUserId === "string" || raw.approvalUpdatedByUserId === null
+            ? (raw.approvalUpdatedByUserId as string | null)
+            : latest.approvalUpdatedByUserId,
+      });
+      router.refresh();
+    } catch (e) {
+      console.error(e);
+      alert(e instanceof Error ? e.message : "Could not update approval status");
+    } finally {
+      setApprovalBusy(false);
+    }
   }
 
   const savedDraftLabel = latest ? `Message draft v${latest.versionNumber}` : null;
@@ -181,14 +229,7 @@ export function MessagesPanel({
           typeof data === "object" && data && "error" in data ? String((data as { error: unknown }).error) : `Failed (${res.status})`;
         throw new Error(msg);
       }
-      const row = data as {
-        id: string;
-        versionNumber: number;
-        generatedFromIssueUpdatedAt: string;
-        stakeholderGroupId: string | null;
-        issueStakeholderId: string | null;
-        artifact: MessageVariantArtifact;
-      };
+      const row = data as SavedDraftRow;
       ingestSuccessfulVariantSave(row);
       router.refresh();
     } catch (e) {
@@ -234,15 +275,7 @@ export function MessagesPanel({
         return false;
       }
 
-      const row = data as {
-        id: string;
-        versionNumber: number;
-        generatedFromIssueUpdatedAt: string;
-        stakeholderGroupId: string | null;
-        issueStakeholderId: string | null;
-        artifact: MessageVariantArtifact;
-        aiCleanup?: { ok: boolean; error?: string; detail?: string };
-      };
+      const row = data as SavedDraftRow & { aiCleanup?: { ok: boolean; error?: string; detail?: string } };
 
       ingestSuccessfulVariantSave(row);
 
@@ -266,6 +299,9 @@ export function MessagesPanel({
         stakeholderGroupId: row.stakeholderGroupId,
         issueStakeholderId: row.issueStakeholderId,
         artifact: row.artifact,
+        approvalStatus: row.approvalStatus,
+        approvalUpdatedAt: row.approvalUpdatedAt,
+        approvalUpdatedByUserId: row.approvalUpdatedByUserId,
       });
       router.refresh();
       const hasCompare = Boolean(row.artifact.metadata.aiComparisonAvailable && row.artifact.metadata.deterministicSectionBodiesById);
@@ -426,6 +462,14 @@ export function MessagesPanel({
                     {inSync ? "Up to date" : "Needs refresh"}
                   </span>
                 ) : null}
+                {latest ? (
+                  <span
+                    className={approvalStatusBadgeClassNames(latest.approvalStatus)}
+                    title="Coordination approval status for this saved draft"
+                  >
+                    {approvalStatusDisplayLabel(latest.approvalStatus)}
+                  </span>
+                ) : null}
               </div>
 
               {latest ? (
@@ -458,6 +502,38 @@ export function MessagesPanel({
                   </>
                 )}
               </p>
+
+              {latest ? (
+                <div className="space-y-2 border-t border-[--metis-outline-subtle] pt-3">
+                  <p className="text-[0.72rem] leading-snug text-[--metis-paper-muted]">
+                    Approval status is a coordination label. It does not send the message.
+                    {(latest.approvalStatus === "Approved" || latest.approvalStatus === "ReadyToCirculate") && (
+                      <span className="text-[--metis-text-secondary]">
+                        {" "}
+                        Not legal or regulator sign-off unless your organisation assigns that meaning.
+                      </span>
+                    )}
+                  </p>
+                  {canUpdateMessageApprovalStatus ? (
+                    <div className="min-w-0 max-w-xs">
+                      <ControlField label="Set status">
+                        <ControlSelect
+                          aria-label="Message draft approval status"
+                          disabled={approvalBusy}
+                          value={latest.approvalStatus}
+                          onChange={(e) => void updateApprovalStatus(e.target.value as MessageApprovalStatus)}
+                        >
+                          {MESSAGE_APPROVAL_STATUS_ORDER.map((s) => (
+                            <option key={s} value={s}>
+                              {approvalStatusDisplayLabel(s)}
+                            </option>
+                          ))}
+                        </ControlSelect>
+                      </ControlField>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
 
             <div className="flex shrink-0 items-center gap-2">
@@ -561,7 +637,10 @@ export function MessagesPanel({
                 <>
                   <div className="flex items-center justify-between gap-3 border-t border-[--metis-outline-subtle] pt-3">
                     <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Saved draft</span>
-                    <span className="text-right text-[--metis-paper]">{savedDraftLabel}</span>
+                    <div className="flex min-w-0 flex-col items-end gap-1.5">
+                      <span className="text-right text-[--metis-paper]">{savedDraftLabel}</span>
+                      <span className={approvalStatusBadgeClassNames(latest.approvalStatus)}>{approvalStatusDisplayLabel(latest.approvalStatus)}</span>
+                    </div>
                   </div>
                   <p className="text-[0.72rem] leading-snug text-[--metis-paper-muted]">
                     Draft numbers are assigned per issue and template (not per audience group). Shaping above shows which template and audience you are

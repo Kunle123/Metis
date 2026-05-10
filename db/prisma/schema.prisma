@@ -44,9 +44,11 @@ model User {
   role         String
   clerkUserId  String?      @unique
   createdAt    DateTime     @default(now())
-  updatedAt              DateTime     @updatedAt
-  memberships            Membership[]
-  authoredInternalInputs InternalInput[] @relation("InternalObservationAuthor")
+  updatedAt    DateTime     @updatedAt
+  memberships               Membership[]
+  authoredInternalInputs    InternalInput[]     @relation("InternalObservationAuthor")
+  messageVariantsApprovalUpdates MessageVariant[] @relation("MessageVariantApprovalActor")
+  artifactExportsApprovalUpdates ArtifactExport[] @relation("ArtifactExportApprovalActor")
 }
 
 model Issue {
@@ -143,7 +145,7 @@ model IssueStakeholder {
 }
 
 model MessageVariant {
-  id                          String   @id @default(uuid())
+  id                          String    @id @default(uuid())
   issueId                     String
   templateId                  String
   versionNumber               Int
@@ -155,17 +157,23 @@ model MessageVariant {
   issueStakeholderId          String?
   audienceSnapshot            Json
   artifact                    Json
-  createdAt                   DateTime @default(now())
+  /** Coordination label only — does not circulate the message. */
+  approvalStatus              String    @default("Draft")
+  approvalUpdatedAt           DateTime?
+  approvalUpdatedByUserId     String?
+  createdAt                   DateTime  @default(now())
 
   issue                  Issue             @relation(fields: [issueId], references: [id], onDelete: Cascade)
   stakeholderGroup       StakeholderGroup? @relation(fields: [stakeholderGroupId], references: [id], onDelete: SetNull)
   issueStakeholder       IssueStakeholder? @relation(fields: [issueStakeholderId], references: [id], onDelete: SetNull)
+  approvalUpdatedBy      User?             @relation("MessageVariantApprovalActor", fields: [approvalUpdatedByUserId], references: [id], onDelete: SetNull)
   preparedCommsPlanItems CommsPlanItem[]   @relation("CommsPlanItemPreparedMessageVariant")
 
   @@unique([issueId, templateId, versionNumber])
   @@index([issueId, templateId, createdAt])
   @@index([issueId, templateId, stakeholderGroupId])
   @@index([issueStakeholderId])
+  @@index([approvalUpdatedByUserId])
 }
 
 model CommsPlanItem {
@@ -254,23 +262,29 @@ model BriefComparison {
 }
 
 model ArtifactExport {
-  id             String   @id @default(uuid())
-  issueId        String
-  briefVersionId String
-  mode           String
-  format         String
-  filename       String
-  mimeType       String
-  content        String
-  createdAt      DateTime @default(now())
+  id                      String    @id @default(uuid())
+  issueId                 String
+  briefVersionId          String
+  mode                    String
+  format                  String
+  filename                String
+  mimeType                String
+  content                 String
+  /** Coordination label for packaged output; optional auto-`Sent` when circulation logged as sent. */
+  approvalStatus          String    @default("Draft")
+  approvalUpdatedAt       DateTime?
+  approvalUpdatedByUserId String?
+  createdAt               DateTime  @default(now())
 
   issue                  Issue              @relation(fields: [issueId], references: [id], onDelete: Cascade)
   briefVersion           BriefVersion       @relation(fields: [briefVersionId], references: [id], onDelete: Cascade)
+  approvalUpdatedBy      User?             @relation("ArtifactExportApprovalActor", fields: [approvalUpdatedByUserId], references: [id], onDelete: SetNull)
   circulationEvents      CirculationEvent[]
   preparedCommsPlanItems CommsPlanItem[]    @relation("CommsPlanItemPreparedExport")
 
   @@index([issueId, createdAt])
   @@index([briefVersionId, createdAt])
+  @@index([approvalUpdatedByUserId])
 }
 
 model CirculationEvent {

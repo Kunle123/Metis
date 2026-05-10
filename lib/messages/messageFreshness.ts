@@ -8,7 +8,11 @@ import { BRIEF_FRESHNESS_BENIGN_ACTIVITY_KINDS } from "@/lib/brief/briefFreshnes
  * freshness plus the draft’s own activity row (`message_variant_created`).
  */
 export const MESSAGE_DRAFT_FRESHNESS_BENIGN_ACTIVITY_KINDS: ReadonlySet<IssueActivityKind> =
-  new Set<IssueActivityKind>([...BRIEF_FRESHNESS_BENIGN_ACTIVITY_KINDS, "message_variant_created"]);
+  new Set<IssueActivityKind>([
+    ...BRIEF_FRESHNESS_BENIGN_ACTIVITY_KINDS,
+    "message_variant_created",
+    "message_variant_approval_updated",
+  ]);
 
 /**
  * Staleness for a stored MessageVariant row when `Issue.updatedAt` advances for benign

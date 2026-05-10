@@ -8,6 +8,7 @@ import type { IssueActivityKind } from "@metis/shared/activity";
 export const BRIEF_FRESHNESS_BENIGN_ACTIVITY_KINDS: ReadonlySet<IssueActivityKind> = new Set([
   "brief_version_created",
   "export_created",
+  "export_approval_updated",
   "circulation_event_created",
   "comms_plan_item_created",
   "comms_plan_item_updated",

@@ -19,6 +19,9 @@ import { loadExportAuditAppendixPayload } from "@/lib/export/buildExportAuditApp
 import { resolveBriefVersionForExport } from "@/lib/export/resolveBriefVersionForExport";
 import { renderExportDeliverable } from "@/lib/export/renderExportPackage";
 import { ExportActionsClient } from "@/app/issues/[issueId]/export/export-actions.client";
+import { ExportRecentPackagesClient } from "@/app/issues/[issueId]/export/export-recent-packages.client";
+import { coerceMessageApprovalStatus } from "@/lib/approvals/coerceMessageApprovalStatus";
+import { membershipAllowsOrgWrite } from "@/lib/organisations/orgCapabilities";
 
 export const dynamic = "force-dynamic";
 
@@ -112,6 +115,44 @@ export default async function IssueExportPage({
           : "markdown";
 
   const resolved = await resolveBriefVersionForExport(issue.id, urlMode, selectedFormat);
+
+  const canUpdateExportApproval = membershipAllowsOrgWrite(pageCtx.context.membership.role);
+
+  const recentExportsRaw =
+    resolved != null
+      ? await prisma.artifactExport.findMany({
+          where: { issueId: issue.id },
+          orderBy: { createdAt: "desc" },
+          take: 15,
+          select: {
+            id: true,
+            filename: true,
+            format: true,
+            mode: true,
+            approvalStatus: true,
+            createdAt: true,
+          },
+        })
+      : [];
+
+  const recentExportRows =
+    resolved != null
+      ? recentExportsRaw.flatMap((row) => {
+          const pf = ExportFormatSchema.safeParse(row.format);
+          const pm = BriefModeSchema.safeParse(row.mode);
+          if (!pf.success || !pm.success) return [];
+          return [
+            {
+              id: row.id,
+              filename: row.filename,
+              format: pf.data,
+              mode: pm.data,
+              approvalStatus: coerceMessageApprovalStatus(row.approvalStatus),
+              createdAtIso: row.createdAt.toISOString(),
+            },
+          ];
+        })
+      : [];
 
   if (!resolved) {
     return (
@@ -436,6 +477,8 @@ export default async function IssueExportPage({
               eventTypes={{ prepared: preparedEvent, downloaded: downloadedEvent, copied: copiedEvent }}
               channels={{ file: fileChannel, copy: copyChannel, email: emailChannel }}
             />
+
+            <ExportRecentPackagesClient issueId={issue.id} canUpdateApproval={canUpdateExportApproval} initialRows={recentExportRows} />
 
             <div className="rounded-[1rem] border border-dashed border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_35%,transparent)] px-4 py-3">
               <p className="text-[0.58rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Related</p>
