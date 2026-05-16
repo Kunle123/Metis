@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 
 import type { BriefArtifact } from "@metis/shared/briefVersion";
 
-import { parseExecutiveBriefPresentation } from "./parseExecutiveBriefPresentation";
+import { parseExecutiveBriefPresentation, parseExecutiveLineItem } from "./parseExecutiveBriefPresentation";
 
 function run(name: string, fn: () => void) {
   try {
@@ -70,7 +70,14 @@ run("splits claims register groups", () => {
   });
   assert.equal(model.claimGroups.length, 3);
   assert.equal(model.claimGroups[1]?.id, "assumptions");
+  assert.equal(model.claimGroups[1]?.items[0]?.code, "CLM-2");
   assert.ok(model.doNotSayYet.some((l) => /CLM-3/.test(l)));
+});
+
+run("parses claim record codes", () => {
+  const item = parseExecutiveLineItem("CLM-001: Board has not signed off.");
+  assert.equal(item.code, "CLM-001");
+  assert.match(item.text, /signed off/i);
 });
 
 run("omits what changed when no highlights and no block", () => {

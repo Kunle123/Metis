@@ -2,44 +2,73 @@ import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
+export type ExecutiveBriefSectionVariant =
+  | "default"
+  | "emphasis"
+  | "caution"
+  | "open"
+  | "confirmed"
+  | "guard-safe"
+  | "guard-hold"
+  | "footer"
+  | "muted";
+
+const VARIANT_STYLES: Record<ExecutiveBriefSectionVariant, string> = {
+  default:
+    "border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-card)_92%,var(--metis-frame-soft))]",
+  emphasis:
+    "border-[color-mix(in_oklab,var(--metis-brass)_28%,var(--metis-outline-subtle))] bg-[color-mix(in_oklab,var(--metis-brass)_7%,var(--metis-surface-card))]",
+  caution:
+    "border-[color-mix(in_oklab,var(--metis-status-warning-fg)_20%,var(--metis-outline-subtle))] bg-[color-mix(in_oklab,var(--metis-status-warning-bg)_42%,var(--metis-surface-card))]",
+  open:
+    "border-[color-mix(in_oklab,var(--metis-info)_18%,var(--metis-outline-subtle))] bg-[color-mix(in_oklab,var(--metis-status-info-bg)_38%,var(--metis-surface-card))]",
+  confirmed:
+    "border-[color-mix(in_oklab,var(--metis-status-success-fg)_18%,var(--metis-outline-subtle))] bg-[color-mix(in_oklab,var(--metis-status-success-bg)_32%,var(--metis-surface-card))]",
+  "guard-safe":
+    "border-[color-mix(in_oklab,var(--metis-status-success-fg)_22%,var(--metis-outline-subtle))] bg-[color-mix(in_oklab,var(--metis-status-success-bg)_38%,var(--metis-surface-card))]",
+  "guard-hold":
+    "border-[color-mix(in_oklab,var(--metis-status-warning-fg)_24%,var(--metis-outline-subtle))] bg-[color-mix(in_oklab,var(--metis-status-warning-bg)_36%,var(--metis-surface-card))]",
+  footer:
+    "border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_48%,var(--metis-surface-card))]",
+  muted: "border-dashed border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-frame-soft)_40%,transparent)]",
+};
+
 export function ExecutiveBriefSection({
   eyebrow,
   title,
   description,
   children,
   className,
-  tone = "default",
+  variant = "default",
+  compact = false,
 }: {
   eyebrow?: string;
   title: string;
   description?: string;
   children: ReactNode;
   className?: string;
-  tone?: "default" | "emphasis" | "caution" | "guard";
+  /** @deprecated use variant */
+  tone?: never;
+  variant?: ExecutiveBriefSectionVariant;
+  compact?: boolean;
 }) {
-  const toneClass =
-    tone === "emphasis"
-      ? "border-[color-mix(in_oklab,var(--metis-brass)_32%,var(--metis-outline-subtle))] bg-[color-mix(in_oklab,var(--metis-brass)_6%,var(--metis-surface-card))]"
-      : tone === "caution"
-        ? "border-[color-mix(in_oklab,var(--metis-status-warning-fg)_22%,var(--metis-outline-subtle))] bg-[color-mix(in_oklab,var(--metis-status-warning-bg)_35%,var(--metis-surface-card))]"
-        : tone === "guard"
-          ? "border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_55%,var(--metis-surface-card))]"
-          : "border-[--metis-outline-subtle] bg-[--metis-surface-card]";
-
   return (
     <section
       className={cn(
-        "rounded-[1.05rem] border px-4 py-4 shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_16%,transparent)] sm:px-5 sm:py-5",
-        toneClass,
+        "min-w-0 break-words rounded-[0.85rem] border shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_14%,transparent)]",
+        VARIANT_STYLES[variant],
+        compact ? "px-3.5 py-3" : "px-4 py-3.5 sm:px-4 sm:py-4",
         className,
       )}
     >
-      <header className="mb-3 space-y-1">
+      <header className={cn("space-y-1", compact ? "mb-2.5" : "mb-3")}>
         {eyebrow ? (
-          <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-text-tertiary]">{eyebrow}</p>
+          <p className="text-[0.58rem] font-medium uppercase tracking-[0.18em] text-[--metis-text-tertiary]">{eyebrow}</p>
         ) : null}
-        <h3 className="font-[Cormorant_Garamond] text-xl leading-snug text-[--metis-text-primary] sm:text-[1.35rem]">{title}</h3>
-        {description ? <p className="max-w-3xl text-[0.8rem] leading-relaxed text-[--metis-text-tertiary]">{description}</p> : null}
+        <h3 className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-[--metis-text-primary]">{title}</h3>
+        {description ? (
+          <p className="max-w-prose text-[0.75rem] leading-relaxed text-[--metis-text-tertiary]">{description}</p>
+        ) : null}
       </header>
       {children}
     </section>

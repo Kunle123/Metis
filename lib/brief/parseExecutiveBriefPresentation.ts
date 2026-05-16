@@ -8,11 +8,16 @@ export type ExecutiveBriefDecision = {
   owner: string | null;
 };
 
+export type ExecutiveBriefLineItem = {
+  code: string | null;
+  text: string;
+};
+
 export type ExecutiveBriefClaimGroup = {
   id: "confirmed" | "assumptions" | "needsValidation";
   title: string;
   caveat?: string;
-  items: string[];
+  items: ExecutiveBriefLineItem[];
 };
 
 export type ExecutiveBriefPresentationModel = {
@@ -55,6 +60,15 @@ export type ExecutiveBriefPresentationModel = {
 
 function sanitizeDisplayText(input: string): string {
   return input.replace(UUID_RE, "…").replace(/\s+/g, " ").trim();
+}
+
+const CLAIM_CODE_RE = /^(CLM-\d+):\s*(.+)$/i;
+
+export function parseExecutiveLineItem(raw: string): ExecutiveBriefLineItem {
+  const cleaned = sanitizeDisplayText(raw);
+  const m = cleaned.match(CLAIM_CODE_RE);
+  if (m) return { code: m[1]!.toUpperCase(), text: sanitizeDisplayText(m[2]!) };
+  return { code: null, text: cleaned };
 }
 
 function blocksByLabel(artifact: BriefArtifact): Map<string, string> {
@@ -168,7 +182,7 @@ function parseMarkdownClaimSections(body: string): ExecutiveBriefClaimGroup[] {
     }
     if (/^[-*•]\s+/.test(line)) {
       const item = sanitizeDisplayText(line.replace(/^[-*•]\s+/, "").replace(/^…/, ""));
-      if (item && !item.startsWith("…")) current.items.push(item);
+      if (item && !item.startsWith("…")) current.items.push(parseExecutiveLineItem(item));
     }
   }
   if (current?.items.length) groups.push(current);
@@ -257,13 +271,17 @@ export function parseExecutiveBriefPresentation(input: ParseExecutiveBriefPresen
 
   const safeToSay = [
     ...confirmedBullets.filter((b) => !/^no confirmed facts/i.test(b)),
-    ...claimGroups.filter((g) => g.id === "confirmed").flatMap((g) => g.items),
+    ...claimGroups
+      .filter((g) => g.id === "confirmed")
+      .flatMap((g) => g.items.map((it) => (it.code ? `${it.code}: ${it.text}` : it.text))),
     ...guardrailSafe,
   ].filter(Boolean);
 
   const doNotSayYet = [
     ...unsafe,
-    ...claimGroups.filter((g) => g.id === "needsValidation").flatMap((g) => g.items),
+    ...claimGroups
+      .filter((g) => g.id === "needsValidation")
+      .flatMap((g) => g.items.map((it) => (it.code ? `${it.code}: ${it.text}` : it.text))),
   ].filter(Boolean);
 
   const openQuestions = splitBullets(map.get(BLOCK.openQuestions) ?? "");

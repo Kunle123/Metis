@@ -6,43 +6,93 @@ import { ExecutiveBriefSection } from "@/components/brief/ExecutiveBriefSection"
 import { Badge } from "@/components/ui/badge";
 import { CollapsibleSection } from "@/components/review/CollapsibleSection";
 import type { NormalizedAlternateWording } from "@/lib/brief/alternateWording";
-import type { ExecutiveBriefPresentationModel } from "@/lib/brief/parseExecutiveBriefPresentation";
+import type {
+  ExecutiveBriefLineItem,
+  ExecutiveBriefPresentationModel,
+} from "@/lib/brief/parseExecutiveBriefPresentation";
+import { parseExecutiveLineItem } from "@/lib/brief/parseExecutiveBriefPresentation";
 import { cn } from "@/lib/utils";
+
+const PROSE_RESET =
+  "[&_p]:m-0 [&_p]:text-[0.875rem] [&_p]:leading-[1.65] [&_p]:text-[--metis-text-secondary] [&_a]:text-[--metis-text-secondary] [&_a]:no-underline [&_a:hover]:text-[--metis-brass-soft] [&_strong]:font-medium [&_strong]:text-[--metis-text-primary]";
 
 function formatShortDate(d: Date) {
   return new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(d);
 }
 
-function BulletList({
-  items,
-  emptyLabel,
-  className,
-}: {
-  items: string[];
-  emptyLabel: string;
-  className?: string;
-}) {
+function splitExecutiveSummary(body: string) {
+  const trimmed = body.trim();
+  if (!trimmed) return { narrative: "", whyItMatters: null as string | null };
+  const parts = trimmed.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
+  const whyIdx = parts.findIndex((p) => /^why it matters:/i.test(p));
+  if (whyIdx >= 0) {
+    const why = parts[whyIdx]!.replace(/^why it matters:\s*/i, "").trim();
+    const narrative = [...parts.slice(0, whyIdx), ...parts.slice(whyIdx + 1)].join("\n\n");
+    return { narrative, whyItMatters: why || null };
+  }
+  return { narrative: trimmed, whyItMatters: null };
+}
+
+function MetaPill({ label, value, highlight }: { label: string; value: string; highlight?: "warning" | "neutral" }) {
+  return (
+    <div
+      className={cn(
+        "min-w-0 rounded-md border px-2.5 py-1.5",
+        highlight === "warning"
+          ? "border-[color-mix(in_oklab,var(--metis-status-warning-fg)_22%,transparent)] bg-[color-mix(in_oklab,var(--metis-status-warning-bg)_45%,transparent)]"
+          : "border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_55%,transparent)]",
+      )}
+    >
+      <p className="text-[0.52rem] font-medium uppercase tracking-[0.14em] text-[--metis-text-tertiary]">{label}</p>
+      <p className="mt-0.5 truncate text-[0.78rem] font-medium leading-snug text-[--metis-text-primary]">{value}</p>
+    </div>
+  );
+}
+
+function RecordCodeChip({ code }: { code: string }) {
+  return (
+    <span className="inline-flex shrink-0 items-center rounded border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_70%,transparent)] px-1.5 py-0.5 font-mono text-[0.62rem] font-medium tracking-wide text-[--metis-text-tertiary]">
+      {code}
+    </span>
+  );
+}
+
+function RecordLine({ item }: { item: ExecutiveBriefLineItem | string }) {
+  const parsed = typeof item === "string" ? parseExecutiveLineItem(item) : item;
+  return (
+    <li className="flex min-w-0 gap-2.5 py-1.5">
+      <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-[color-mix(in_oklab,var(--metis-brass)_55%,var(--metis-outline-strong))]" aria-hidden />
+      <div className="min-w-0 flex-1 space-y-1">
+        {parsed.code ? <RecordCodeChip code={parsed.code} /> : null}
+        <p className="text-[0.8125rem] leading-relaxed text-[--metis-text-secondary]">{parsed.text}</p>
+      </div>
+    </li>
+  );
+}
+
+function ScanList({ items, emptyLabel }: { items: string[]; emptyLabel: string }) {
   if (!items.length) {
-    return <p className="text-sm leading-relaxed text-[--metis-text-tertiary]">{emptyLabel}</p>;
+    return <p className="text-[0.8125rem] leading-relaxed text-[--metis-text-tertiary]">{emptyLabel}</p>;
   }
   return (
-    <ul className={cn("space-y-2.5 text-sm leading-relaxed text-[--metis-text-secondary]", className)}>
+    <ul className="divide-y divide-[color-mix(in_oklab,var(--metis-outline-subtle)_65%,transparent)]">
       {items.map((item) => (
-        <li key={item} className="grid grid-cols-[10px_minmax(0,1fr)] gap-2.5">
-          <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[--metis-outline-strong]" aria-hidden />
-          <span className="whitespace-pre-line">{item}</span>
-        </li>
+        <RecordLine key={item} item={item} />
       ))}
     </ul>
   );
 }
 
-function MetaChip({ label, value }: { label: string; value: string }) {
+function RecordLineItems({ items, emptyLabel }: { items: ExecutiveBriefLineItem[]; emptyLabel: string }) {
+  if (!items.length) {
+    return <p className="text-[0.8125rem] leading-relaxed text-[--metis-text-tertiary]">{emptyLabel}</p>;
+  }
   return (
-    <div className="min-w-0">
-      <p className="text-[0.58rem] font-medium uppercase tracking-[0.16em] text-[--metis-text-tertiary]">{label}</p>
-      <p className="mt-0.5 text-[0.8rem] font-medium leading-snug text-[--metis-text-primary]">{value}</p>
-    </div>
+    <ul className="divide-y divide-[color-mix(in_oklab,var(--metis-outline-subtle)_65%,transparent)]">
+      {items.map((item) => (
+        <RecordLine key={`${item.code ?? "x"}-${item.text}`} item={item} />
+      ))}
+    </ul>
   );
 }
 
@@ -72,248 +122,287 @@ export function ExecutiveBriefPresentation({
     return "Owner not assigned";
   };
 
-  const statusTone = /caveat/i.test(model.header.status)
-    ? "bg-[--metis-status-warning-bg] text-[--metis-status-warning-fg]"
-    : "bg-[color-mix(in_oklab,var(--metis-surface-elevated)_70%,transparent)] text-[--metis-text-secondary]";
+  const { whyItMatters } = splitExecutiveSummary(model.position.executiveSummary);
+
+  const confirmedClaims = model.claimGroups.filter((g) => g.id === "confirmed").flatMap((g) => g.items);
+  const assumptionItems = model.claimGroups.filter((g) => g.id === "assumptions").flatMap((g) => g.items);
+  const needsValidationItems = model.claimGroups.filter((g) => g.id === "needsValidation").flatMap((g) => g.items);
+  const cautionItems = [...assumptionItems, ...needsValidationItems];
+
+  const statusHighlight = /caveat/i.test(model.header.status) ? "warning" : undefined;
 
   return (
-    <div className="space-y-5">
-      <header className="rounded-[1.05rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-frame-soft)_55%,var(--metis-surface-card))] px-4 py-4 sm:px-5 sm:py-5">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0 space-y-2">
-            <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-text-tertiary]">Executive brief</p>
-            <h2 className="font-[Cormorant_Garamond] text-[1.65rem] leading-tight text-[--metis-text-primary] sm:text-[1.85rem]">
-              {model.header.title}
-            </h2>
-          </div>
-          <Badge className={cn("shrink-0 border-0", statusTone)}>{model.header.status}</Badge>
-        </div>
-
-        <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-3 lg:grid-cols-4">
-          <MetaChip label="Severity" value={model.header.severity} />
-          <MetaChip label="Urgency" value={model.header.urgency} />
-          <MetaChip label="Owner" value={model.header.owner} />
-          <MetaChip label="Brief version" value={briefVersionLabel} />
-          <MetaChip
-            label="Freshness"
-            value={briefInSync ? "Up to date" : "Needs refresh"}
-          />
-          <MetaChip label="Circulation" value={model.header.circulation} />
-          <MetaChip label="Open questions" value={model.header.openGapsLabel} />
-          {briefGeneratedAt ? (
-            <MetaChip label="Brief generated" value={formatShortDate(briefGeneratedAt)} />
-          ) : (
-            <MetaChip label="Issue updated" value={formatShortDate(issueUpdatedAt)} />
-          )}
-        </div>
-      </header>
-
-      <ExecutiveBriefSection
-        eyebrow="Executive position"
-        title="Current position"
-        description="Leadership judgement and working line — read this first."
-        tone="emphasis"
+    <div className="mx-auto w-full max-w-[52rem] min-w-0">
+      <article
+        className="overflow-hidden rounded-[1rem] border border-[--metis-outline-subtle] bg-[--metis-surface-card] shadow-[0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_22%,transparent),0_12px_40px_color-mix(in_oklab,var(--metis-frame)_35%,transparent)]"
       >
-        {model.position.lede ? (
-          <p className="mb-4 max-w-4xl font-[Cormorant_Garamond] text-[1.25rem] leading-snug text-[--metis-text-primary] sm:text-[1.4rem]">
-            {model.position.lede}
-          </p>
-        ) : null}
-        {model.position.executiveSummary.trim() ? (
-          <div className="max-w-4xl text-sm leading-7 text-[--metis-text-secondary]">
-            <BriefExecutiveSummaryCompare
-              deterministicBody={model.position.executiveSummary}
-              alternateWording={executiveExecAlternateWording}
-              briefAiSynthesisEnabled={briefAiSynthesisEnabled}
-              polishPreview={polishPreview}
-            />
-          </div>
-        ) : null}
-        {model.position.assessmentLines.length ? (
-          <ul className="mt-4 space-y-1 border-t border-[--metis-outline-subtle] pt-3 text-[0.78rem] leading-relaxed text-[--metis-text-tertiary]">
-            {model.position.assessmentLines.map((line) => (
-              <li key={line}>{line}</li>
-            ))}
-          </ul>
-        ) : null}
-      </ExecutiveBriefSection>
-
-      {model.decisions.length ? (
-        <ExecutiveBriefSection
-          eyebrow="Decisions"
-          title="Decisions required"
-          description="Named actions leadership should expect — not buried in narrative."
-        >
-          <div className="grid gap-3 sm:grid-cols-2">
-            {model.decisions.map((decision, index) => (
-              <article
-                key={`${index}-${decision.text.slice(0, 48)}`}
-                className="rounded-lg border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_40%,transparent)] px-3.5 py-3.5"
-              >
-                <p className="text-sm font-medium leading-relaxed text-[--metis-text-primary]">{decision.text}</p>
-                <p className="mt-2 text-[0.68rem] uppercase tracking-[0.14em] text-[--metis-text-tertiary]">
-                  Owner · {ownerForDecision(decision.owner)}
-                </p>
-              </article>
-            ))}
-          </div>
-        </ExecutiveBriefSection>
-      ) : null}
-
-      {model.whatChanged.length ? (
-        <ExecutiveBriefSection
-          eyebrow="Since last revision"
-          title="What changed"
-          description="Recorded briefing-input changes — not inferred narrative."
-        >
-          <BulletList items={model.whatChanged} emptyLabel="No recorded changes." />
-        </ExecutiveBriefSection>
-      ) : null}
-
-      <div className="grid gap-5 lg:grid-cols-2">
-        <ExecutiveBriefSection
-          eyebrow="Evidence posture"
-          title="Confirmed facts"
-          description="Client-confirmed or register-confirmed — safe to treat as settled for internal briefing."
-        >
-          <div className="mb-2 flex items-center gap-2 text-[--metis-status-success-fg]">
-            <CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden />
-            <span className="text-[0.68rem] font-medium uppercase tracking-[0.14em]">Confirmed</span>
-          </div>
-          <BulletList items={model.confirmedFacts} emptyLabel="No confirmed facts are recorded yet." />
-        </ExecutiveBriefSection>
-
-        <ExecutiveBriefSection
-          eyebrow="Unresolved"
-          title="Open questions"
-          description="Explicitly unresolved — do not read as settled."
-          tone="caution"
-        >
-          <div className="mb-2 flex items-center gap-2 text-[--metis-status-warning-fg]">
-            <CircleHelp className="h-4 w-4 shrink-0" aria-hidden />
-            <span className="text-[0.68rem] font-medium uppercase tracking-[0.14em]">Not yet answered</span>
-          </div>
-          <BulletList items={model.openQuestions} emptyLabel="No open questions are recorded yet." />
-        </ExecutiveBriefSection>
-      </div>
-
-      {model.claimGroups.length ? (
-        <div className="space-y-4">
-          {model.claimGroups.map((group) => (
-            <ExecutiveBriefSection
-              key={group.id}
-              eyebrow="Claims register"
-              title={group.title}
-              description={group.caveat}
-              tone={group.id === "confirmed" ? "default" : "caution"}
+        {/* Header panel */}
+        <header className="border-b border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-frame-soft)_72%,var(--metis-surface-card))] px-4 py-4 sm:px-5 sm:py-4">
+          <div className="flex flex-wrap items-start justify-between gap-3 gap-y-2">
+            <div className="min-w-0 space-y-1.5">
+              <p className="text-[0.58rem] font-medium uppercase tracking-[0.2em] text-[--metis-brass-soft]">Executive brief</p>
+              <h2 className="max-w-prose text-lg font-semibold leading-snug tracking-tight text-[--metis-text-primary] sm:text-xl">
+                {model.header.title}
+              </h2>
+              <p className="text-[0.8rem] leading-snug text-[--metis-text-secondary]">
+                {model.header.status}
+                <span className="text-[--metis-text-tertiary]"> · </span>
+                {model.header.briefingPosture}
+              </p>
+            </div>
+            <Badge
+              className={cn(
+                "shrink-0 border-0 text-[0.68rem] font-medium",
+                statusHighlight === "warning"
+                  ? "bg-[--metis-status-warning-bg] text-[--metis-status-warning-fg]"
+                  : "bg-[color-mix(in_oklab,var(--metis-surface-elevated)_75%,transparent)] text-[--metis-text-secondary]",
+              )}
             >
-              {group.id === "assumptions" ? (
-                <p className="mb-3 rounded-md border border-[color-mix(in_oklab,var(--metis-status-warning-fg)_25%,transparent)] bg-[color-mix(in_oklab,var(--metis-status-warning-bg)_40%,transparent)] px-3 py-2 text-[0.75rem] leading-relaxed text-[--metis-status-warning-fg]">
-                  Working assumptions — phrase conditionally; not verified fact.
+              {briefInSync ? "Up to date" : "Needs refresh"}
+            </Badge>
+          </div>
+
+          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+            <MetaPill label="Status" value={model.header.status} highlight={statusHighlight} />
+            <MetaPill label="Severity" value={model.header.severity} />
+            <MetaPill label="Urgency" value={model.header.urgency} />
+            <MetaPill label="Open questions" value={model.header.openGapsLabel} />
+            <MetaPill label="Owner" value={model.header.owner} />
+            <MetaPill label="Version" value={briefVersionLabel} />
+          </div>
+
+          <p className="mt-2 text-[0.68rem] text-[--metis-text-tertiary]">
+            {briefGeneratedAt ? `Generated ${formatShortDate(briefGeneratedAt)}` : `Issue updated ${formatShortDate(issueUpdatedAt)}`}
+            <span aria-hidden> · </span>
+            {model.header.circulation}
+          </p>
+        </header>
+
+        <div className="space-y-4 px-3 py-4 sm:space-y-5 sm:px-5 sm:py-5">
+          {/* Top grid: position + decisions */}
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+            <ExecutiveBriefSection
+              variant="emphasis"
+              eyebrow="Read first"
+              title="Current position"
+              description="Leadership judgement and working line."
+            >
+              {model.position.lede ? (
+                <p className="mb-3 max-w-prose border-l-2 border-[color-mix(in_oklab,var(--metis-brass)_45%,transparent)] pl-3 text-[0.9375rem] font-medium leading-relaxed text-[--metis-text-primary]">
+                  {model.position.lede}
                 </p>
               ) : null}
-              {group.id === "needsValidation" ? (
-                <p className="mb-3 rounded-md border border-[color-mix(in_oklab,var(--metis-status-danger-fg)_22%,transparent)] bg-[color-mix(in_oklab,var(--metis-status-danger-bg)_35%,transparent)] px-3 py-2 text-[0.75rem] leading-relaxed text-[--metis-status-danger-fg]">
-                  Needs validation — do not state as settled fact.
-                </p>
+
+              {model.position.executiveSummary.trim() ? (
+                <div className={cn("max-w-prose rounded-md bg-[color-mix(in_oklab,var(--metis-surface-elevated)_35%,transparent)] px-3 py-2.5", PROSE_RESET)}>
+                  <BriefExecutiveSummaryCompare
+                    deterministicBody={model.position.executiveSummary}
+                    alternateWording={executiveExecAlternateWording}
+                    briefAiSynthesisEnabled={briefAiSynthesisEnabled}
+                    polishPreview={polishPreview}
+                  />
+                </div>
+              ) : (
+                <p className="text-[0.8125rem] text-[--metis-text-tertiary]">No executive summary recorded.</p>
+              )}
+
+              {whyItMatters ? (
+                <div className="mt-3 rounded-md border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_40%,transparent)] px-3 py-2.5">
+                  <p className="text-[0.58rem] font-medium uppercase tracking-[0.14em] text-[--metis-text-tertiary]">Why it matters</p>
+                  <p className="mt-1 text-[0.8125rem] leading-relaxed text-[--metis-text-secondary]">{whyItMatters}</p>
+                </div>
               ) : null}
-              <BulletList items={group.items} emptyLabel="None in this group." />
             </ExecutiveBriefSection>
-          ))}
-        </div>
-      ) : null}
 
-      <ExecutiveBriefSection
-        eyebrow="Circulation guardrails"
-        title="Safe to say · Do not say yet"
-        description="Internal briefing lines — calm, evidence-tied, no dramatic language."
-        tone="guard"
-      >
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="rounded-lg border border-[color-mix(in_oklab,var(--metis-status-success-fg)_20%,var(--metis-outline-subtle))] bg-[color-mix(in_oklab,var(--metis-status-success-bg)_25%,transparent)] px-3.5 py-3.5">
-            <div className="mb-2 flex items-center gap-2 text-[--metis-status-success-fg]">
-              <ShieldCheck className="h-4 w-4 shrink-0" aria-hidden />
-              <h4 className="text-[0.68rem] font-medium uppercase tracking-[0.14em]">Safe to say</h4>
-            </div>
-            <BulletList
-              items={model.safeToSay}
-              emptyLabel="No safe lines are listed yet — rely on confirmed facts and sources before circulating."
-            />
+            <ExecutiveBriefSection
+              variant="default"
+              eyebrow="Action"
+              title="Decisions needed"
+              description="What leadership should decide or assign next."
+              className="lg:min-h-[12rem]"
+            >
+              {model.decisions.length ? (
+                <ol className="space-y-2.5">
+                  {model.decisions.map((decision, index) => (
+                    <li
+                      key={`${index}-${decision.text.slice(0, 40)}`}
+                      className="flex min-w-0 gap-3 rounded-md border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_40%,transparent)] px-3 py-2.5"
+                    >
+                      <span
+                        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[color-mix(in_oklab,var(--metis-brass)_35%,var(--metis-outline-subtle))] bg-[color-mix(in_oklab,var(--metis-brass)_10%,transparent)] text-[0.68rem] font-semibold tabular-nums text-[--metis-brass-soft]"
+                        aria-hidden
+                      >
+                        {index + 1}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[0.8125rem] font-medium leading-relaxed text-[--metis-text-primary]">{decision.text}</p>
+                        <p className="mt-1.5 text-[0.62rem] uppercase tracking-[0.12em] text-[--metis-text-tertiary]">
+                          Owner · {ownerForDecision(decision.owner)}
+                        </p>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <p className="text-[0.8125rem] leading-relaxed text-[--metis-text-tertiary]">No decisions listed in this revision.</p>
+              )}
+            </ExecutiveBriefSection>
           </div>
-          <div className="rounded-lg border border-[color-mix(in_oklab,var(--metis-status-danger-fg)_18%,var(--metis-outline-subtle))] bg-[color-mix(in_oklab,var(--metis-status-danger-bg)_22%,transparent)] px-3.5 py-3.5">
-            <div className="mb-2 flex items-center gap-2 text-[--metis-status-danger-fg]">
-              <ShieldAlert className="h-4 w-4 shrink-0" aria-hidden />
-              <h4 className="text-[0.68rem] font-medium uppercase tracking-[0.14em]">Do not say yet</h4>
-            </div>
-            <BulletList
-              items={model.doNotSayYet}
-              emptyLabel="No explicit hold lines — still apply standard evidence and validation discipline."
-            />
-          </div>
-        </div>
-      </ExecutiveBriefSection>
 
-      {model.audienceImplications ? (
-        <ExecutiveBriefSection eyebrow="Audience" title="Audience implications" tone="default">
-          <p className="max-w-4xl whitespace-pre-line text-sm leading-7 text-[--metis-text-secondary]">{model.audienceImplications}</p>
-        </ExecutiveBriefSection>
-      ) : null}
+          {model.whatChanged.length ? (
+            <ExecutiveBriefSection variant="muted" compact eyebrow="Since last revision" title="What changed">
+              <ScanList items={model.whatChanged} emptyLabel="No recorded changes." />
+            </ExecutiveBriefSection>
+          ) : null}
 
-      <footer className="rounded-[1.05rem] border border-dashed border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_35%,transparent)] px-4 py-4 sm:px-5">
-        <div className="flex flex-wrap items-start gap-2">
-          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-[--metis-info]" aria-hidden />
-          <div className="min-w-0 flex-1 space-y-2">
-            <p className="text-[0.62rem] font-medium uppercase tracking-[0.2em] text-[--metis-text-tertiary]">Evidence & provenance</p>
-            <p className="text-sm leading-relaxed text-[--metis-text-secondary]">
-              Brief generated from the issue record
-              {model.provenance.sourcesCount != null ? ` · ${model.provenance.sourcesCount} linked source(s)` : ""}
-              {model.provenance.openQuestionsCount != null ? ` · ${model.provenance.openQuestionsCount} open question(s) on record` : ""}
-              {model.provenance.observationsIncluded != null
-                ? ` · ${model.provenance.observationsIncluded} observation(s) included`
-                : ""}
-              {model.provenance.observationsExcluded != null
-                ? ` · ${model.provenance.observationsExcluded} observation(s) excluded from brief`
-                : ""}
-              .
-            </p>
-            {model.evidenceSummary ? (
-              <p className="max-w-4xl text-[0.78rem] leading-relaxed text-[--metis-text-tertiary]">{model.evidenceSummary}</p>
-            ) : null}
-            <div className="flex flex-wrap gap-3 pt-1 text-[0.78rem]">
-              <Link href={`/issues/${issueId}/sources`} className="font-medium text-[--metis-brass-soft] underline-offset-4 hover:underline">
-                Sources
-              </Link>
-              <Link href={`/issues/${issueId}/claims`} className="font-medium text-[--metis-brass-soft] underline-offset-4 hover:underline">
-                Claims
-              </Link>
-              <Link href={`/issues/${issueId}/gaps`} className="font-medium text-[--metis-brass-soft] underline-offset-4 hover:underline">
-                Open questions
-              </Link>
-              <Link href={`/issues/${issueId}/compare?mode=executive`} className="font-medium text-[--metis-brass-soft] underline-offset-4 hover:underline">
-                Brief delta
-              </Link>
+          {/* Situation grid */}
+          <div>
+            <p className="mb-2 text-[0.58rem] font-medium uppercase tracking-[0.18em] text-[--metis-text-tertiary]">Situation on the record</p>
+            <div className="grid gap-3 md:grid-cols-3">
+              <ExecutiveBriefSection variant="confirmed" compact title="Confirmed" description="Settled for internal briefing.">
+                <div className="mb-2 flex items-center gap-1.5 text-[--metis-status-success-fg]">
+                  <CheckCircle2 className="h-3.5 w-3.5" aria-hidden />
+                  <span className="text-[0.58rem] font-medium uppercase tracking-[0.12em]">Facts & register</span>
+                </div>
+                <ScanList items={model.confirmedFacts} emptyLabel="No confirmed facts on file yet." />
+                {confirmedClaims.length ? (
+                  <div className="mt-2 border-t border-[color-mix(in_oklab,var(--metis-outline-subtle)_70%,transparent)] pt-2">
+                    <RecordLineItems items={confirmedClaims} emptyLabel="" />
+                  </div>
+                ) : null}
+              </ExecutiveBriefSection>
+
+              <ExecutiveBriefSection
+                variant="caution"
+                compact
+                title="Assumptions / needs validation"
+                description="Not verified fact — phrase with care."
+              >
+                <RecordLineItems items={cautionItems} emptyLabel="No assumptions or validation items in the register." />
+              </ExecutiveBriefSection>
+
+              <ExecutiveBriefSection variant="open" compact title="Still open" description="Unresolved until answered.">
+                <div className="mb-2 flex items-center gap-1.5 text-[--metis-status-info-fg]">
+                  <CircleHelp className="h-3.5 w-3.5" aria-hidden />
+                  <span className="text-[0.58rem] font-medium uppercase tracking-[0.12em]">Open questions</span>
+                </div>
+                <ScanList items={model.openQuestions} emptyLabel="No open questions recorded." />
+              </ExecutiveBriefSection>
             </div>
           </div>
-        </div>
-      </footer>
 
-      <CollapsibleSection
-        defaultOpen={false}
-        summary={
-          <span className="text-[0.7rem] font-medium uppercase tracking-[0.18em] text-[--metis-text-tertiary]">View generated text</span>
-        }
-      >
-        <div className="space-y-5">
-          {model.rawBlocks.map((block) => (
-            <div key={block.label} className="border-t border-[--metis-outline-subtle] pt-4 first:border-t-0 first:pt-0">
-              <p className="text-sm font-semibold text-[--metis-text-primary]">{block.label}</p>
-              <pre className="mt-2 max-w-full overflow-x-auto whitespace-pre-wrap font-sans text-sm leading-7 text-[--metis-text-secondary]">
-                {block.body}
-              </pre>
+          {/* Guardrails band */}
+          <div className="rounded-[0.85rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-frame-soft)_50%,var(--metis-surface-card))] p-3 sm:p-4">
+            <p className="mb-3 text-[0.58rem] font-medium uppercase tracking-[0.18em] text-[--metis-text-tertiary]">Circulation guardrails</p>
+            <div className="grid gap-3 md:grid-cols-2">
+              <ExecutiveBriefSection variant="guard-safe" compact title="Safe to say">
+                <div className="mb-2 flex items-center gap-1.5 text-[--metis-status-success-fg]">
+                  <ShieldCheck className="h-3.5 w-3.5" aria-hidden />
+                  <span className="text-[0.58rem] font-medium uppercase tracking-[0.12em]">Confirmed lines only</span>
+                </div>
+                <ScanList
+                  items={model.safeToSay}
+                  emptyLabel="Use confirmed facts and sources before circulating externally."
+                />
+              </ExecutiveBriefSection>
+
+              <ExecutiveBriefSection variant="guard-hold" compact title="Do not say yet">
+                <div className="mb-2 flex items-center gap-1.5 text-[--metis-status-warning-fg]">
+                  <ShieldAlert className="h-3.5 w-3.5" aria-hidden />
+                  <span className="text-[0.58rem] font-medium uppercase tracking-[0.12em]">Hold lines</span>
+                </div>
+                <ScanList
+                  items={model.doNotSayYet}
+                  emptyLabel="No explicit hold lines — apply standard validation discipline."
+                />
+              </ExecutiveBriefSection>
             </div>
-          ))}
+          </div>
+
+          {model.audienceImplications ? (
+            <ExecutiveBriefSection variant="muted" compact title="Audience implications">
+              <p className="max-w-prose whitespace-pre-line text-[0.8125rem] leading-relaxed text-[--metis-text-secondary]">
+                {model.audienceImplications}
+              </p>
+            </ExecutiveBriefSection>
+          ) : null}
+
+          {/* Provenance footer */}
+          <ExecutiveBriefSection variant="footer" compact title="Evidence & provenance">
+            <div className="flex gap-2">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-[--metis-info]" aria-hidden />
+              <div className="min-w-0 space-y-2">
+                <p className="text-[0.8125rem] leading-relaxed text-[--metis-text-secondary]">
+                  Generated from the issue record
+                  {model.provenance.sourcesCount != null ? ` · ${model.provenance.sourcesCount} linked source(s)` : ""}
+                  {model.provenance.openQuestionsCount != null
+                    ? ` · ${model.provenance.openQuestionsCount} open question(s)`
+                    : ""}
+                  {model.provenance.observationsIncluded != null
+                    ? ` · ${model.provenance.observationsIncluded} observation(s) in brief`
+                    : ""}
+                  {model.provenance.observationsExcluded != null
+                    ? ` · ${model.provenance.observationsExcluded} excluded`
+                    : ""}
+                  .
+                </p>
+                {model.evidenceSummary ? (
+                  <p className="max-w-prose text-[0.75rem] leading-relaxed text-[--metis-text-tertiary]">{model.evidenceSummary}</p>
+                ) : null}
+                <div className="flex flex-wrap gap-x-4 gap-y-1 pt-0.5">
+                  <Link
+                    href={`/issues/${issueId}/sources`}
+                    className="text-[0.75rem] font-medium text-[--metis-text-secondary] underline-offset-2 hover:text-[--metis-brass-soft] hover:underline"
+                  >
+                    Sources
+                  </Link>
+                  <Link
+                    href={`/issues/${issueId}/claims`}
+                    className="text-[0.75rem] font-medium text-[--metis-text-secondary] underline-offset-2 hover:text-[--metis-brass-soft] hover:underline"
+                  >
+                    Claims
+                  </Link>
+                  <Link
+                    href={`/issues/${issueId}/gaps`}
+                    className="text-[0.75rem] font-medium text-[--metis-text-secondary] underline-offset-2 hover:text-[--metis-brass-soft] hover:underline"
+                  >
+                    Open questions
+                  </Link>
+                  <Link
+                    href={`/issues/${issueId}/compare?mode=executive`}
+                    className="text-[0.75rem] font-medium text-[--metis-text-secondary] underline-offset-2 hover:text-[--metis-brass-soft] hover:underline"
+                  >
+                    Brief delta
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </ExecutiveBriefSection>
+
+          <CollapsibleSection
+            defaultOpen={false}
+            className="border-dashed bg-transparent shadow-none"
+            summaryClassName="text-[--metis-text-tertiary]"
+            summary={
+              <span className="text-[0.65rem] font-medium uppercase tracking-[0.16em]">View generated text (audit)</span>
+            }
+          >
+            <div className="space-y-4">
+              {model.rawBlocks.map((block) => (
+                <div
+                  key={block.label}
+                  className="rounded-md border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-frame-soft)_30%,transparent)] px-3 py-2.5"
+                >
+                  <p className="text-[0.65rem] font-medium uppercase tracking-[0.1em] text-[--metis-text-tertiary]">{block.label}</p>
+                  <pre className="mt-2 max-w-full overflow-x-auto whitespace-pre-wrap font-sans text-[0.75rem] leading-relaxed text-[--metis-text-secondary]">
+                    {block.body}
+                  </pre>
+                </div>
+              ))}
+            </div>
+          </CollapsibleSection>
         </div>
-      </CollapsibleSection>
+      </article>
     </div>
   );
 }
