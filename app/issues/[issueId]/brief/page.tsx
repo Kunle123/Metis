@@ -21,7 +21,11 @@ import { GenerateBriefButton } from "@/app/brief/generate-brief-button";
 import { IntakeSuggestionsPanel } from "@/app/issues/[issueId]/brief/intake-suggestions-panel";
 import { BriefModeToggle } from "@/app/issues/[issueId]/brief/brief-mode-toggle";
 import { BriefExecutiveSummaryCompare } from "@/app/issues/[issueId]/brief/brief-executive-summary-compare";
+import { ExecutiveBriefPresentation } from "@/components/brief/ExecutiveBriefPresentation";
 import { getAlternateWordingForTarget } from "@/lib/brief/alternateWording";
+import { BRIEF_FRESHNESS_BENIGN_ACTIVITY_KINDS } from "@/lib/brief/briefFreshness";
+import { parseExecutiveBriefPresentation } from "@/lib/brief/parseExecutiveBriefPresentation";
+import { activityKindLabel } from "@/lib/issues/activityTimelineDisplay";
 
 export const dynamic = "force-dynamic";
 
@@ -104,7 +108,7 @@ export default async function IssueBriefPage({
               gt: new Date(Math.max(0, briefVersion.generatedFromIssueUpdatedAt.getTime() - 60_000)),
             },
           },
-          select: { kind: true, createdAt: true },
+          select: { kind: true, createdAt: true, summary: true },
           orderBy: { createdAt: "asc" },
         })
       : [];
@@ -202,6 +206,29 @@ export default async function IssueBriefPage({
           briefVersionId: briefVersion.id,
           hasExistingAlternate: executiveExecAlternateWording?.status === "succeeded",
         }
+      : null;
+
+  const executiveChangeHighlights =
+    mode === "executive" && briefVersion && briefStaleForCurrentMode
+      ? freshnessActivitiesRaw
+          .filter((a) => a.createdAt.getTime() > briefVersion.generatedFromIssueUpdatedAt.getTime())
+          .filter((a) => !BRIEF_FRESHNESS_BENIGN_ACTIVITY_KINDS.has(a.kind as IssueActivityKind))
+          .map((a) => {
+            const label = activityKindLabel(a.kind);
+            const summary = a.summary?.trim();
+            return summary && summary !== label ? `${label}: ${summary}` : label;
+          })
+          .slice(0, 6)
+      : [];
+
+  const executivePresentationModel =
+    mode === "executive" && artifact
+      ? parseExecutiveBriefPresentation({
+          artifact,
+          issueTitle: issue.title,
+          changeHighlights: executiveChangeHighlights,
+          sourcesCount: linkedSources.length,
+        })
       : null;
   const storedBriefRevisionLabel = briefVersion
     ? `${mode === "full" ? "Full" : "Executive"} brief v${briefVersion.versionNumber}`
@@ -346,8 +373,9 @@ export default async function IssueBriefPage({
             <section className={WORKFLOW_STEP} id="brief-step-4" aria-labelledby="brief-step-4-label">
               <div id="brief-step-4-label">{briefStepLabel("4", "Read brief")}</div>
               <p className="text-[0.72rem] leading-snug text-[--metis-text-tertiary]">
-                Stored brief text for the mode you selected. Optional alternate executive wording (when enabled) appears only inside the executive summary area as a
-                comparison.
+                {mode === "executive"
+                  ? "Executive brief uses a leadership presentation layout. Optional alternate wording (when enabled) appears in the current position section. Raw generated blocks sit under View generated text."
+                  : "Stored brief text for the mode you selected. Optional alternate executive wording (when enabled) appears only inside the executive summary area as a comparison."}
               </p>
 
               {artifact ? (
@@ -395,50 +423,21 @@ export default async function IssueBriefPage({
                       </div>
                     </div>
                   </div>
-                ) : (
+                ) : executivePresentationModel && briefVersion ? (
                   <div className="rounded-[1.15rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-frame-soft)_86%,transparent)] px-3 py-4 shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_18%,transparent)] sm:px-5 sm:py-5">
-                    <header className="mb-6 space-y-4 border-b border-[--metis-outline-subtle] pb-6">
-                      <h2 className="font-[Cormorant_Garamond] text-[1.85rem] leading-tight text-[--metis-text-primary]">{issue.title}</h2>
-                      <p className="max-w-4xl text-sm leading-7 text-[--metis-text-secondary]">{artifact.lede}</p>
-                      <div className="flex flex-wrap gap-x-8 gap-y-2 text-[0.7rem] uppercase tracking-[0.14em] text-[--metis-text-tertiary]">
-                        <span>
-                          Circulation ·{" "}
-                          <span className="normal-case tracking-normal text-[--metis-text-primary]">{artifact.metadata.circulation}</span>
-                        </span>
-                        <span>
-                          Last revision ·{" "}
-                          <span className="normal-case tracking-normal text-[--metis-text-primary]">{artifact.metadata.lastRevisionLabel}</span>
-                        </span>
-                        <span>
-                          Open questions ·{" "}
-                          <span className="normal-case tracking-normal text-[--metis-text-primary]">{artifact.metadata.openGapsLabel}</span>
-                        </span>
-                      </div>
-                    </header>
-                    <div className="rounded-[1rem] border border-[--metis-outline-subtle] bg-[--metis-surface-card] px-3 py-4 sm:px-5 sm:py-5">
-                      <div className="space-y-6">
-                        {artifact.executive.blocks.map((block, index) => (
-                          <DenseSection
-                            key={`${block.label}-${index}`}
-                            title={<span className="text-base font-semibold leading-6 text-[--metis-text-primary]">{block.label}</span>}
-                            className={index === 0 ? "border-t-0 pt-0" : undefined}
-                          >
-                            {block.label.trim() === "Executive summary" ? (
-                              <BriefExecutiveSummaryCompare
-                                deterministicBody={block.body}
-                                alternateWording={executiveExecAlternateWording}
-                                briefAiSynthesisEnabled={briefAiSynthesisEnabled}
-                                polishPreview={executivePolishPreviewContext}
-                              />
-                            ) : (
-                              <p className="max-w-4xl whitespace-pre-line leading-7 text-[--metis-text-secondary]">{block.body}</p>
-                            )}
-                          </DenseSection>
-                        ))}
-                      </div>
-                    </div>
+                    <ExecutiveBriefPresentation
+                      model={executivePresentationModel}
+                      issueId={issue.id}
+                      briefVersionLabel={storedBriefRevisionLabel ?? "Executive brief"}
+                      briefInSync={briefInSync}
+                      briefGeneratedAt={briefVersion.createdAt}
+                      issueUpdatedAt={issue.updatedAt}
+                      executiveExecAlternateWording={executiveExecAlternateWording}
+                      briefAiSynthesisEnabled={briefAiSynthesisEnabled}
+                      polishPreview={executivePolishPreviewContext}
+                    />
                   </div>
-                )
+                ) : null
               ) : (
                 <div className="space-y-4 border-t border-[--metis-outline-subtle] pt-4">
                   <header className="space-y-2">
