@@ -26,6 +26,7 @@ import { getAlternateWordingForTarget } from "@/lib/brief/alternateWording";
 import { BRIEF_FRESHNESS_BENIGN_ACTIVITY_KINDS } from "@/lib/brief/briefFreshness";
 import { parseExecutiveBriefPresentation } from "@/lib/brief/parseExecutiveBriefPresentation";
 import { activityKindLabel } from "@/lib/issues/activityTimelineDisplay";
+import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -267,7 +268,14 @@ export default async function IssueBriefPage({
         updatedAt: issue.updatedAt,
       }}
     >
-      <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+      <div
+        className={cn(
+          "grid min-w-0 gap-6",
+          mode === "executive" && executivePresentationModel
+            ? "xl:grid-cols-1"
+            : "xl:grid-cols-[minmax(0,1fr)_320px]",
+        )}
+      >
         <SurfaceCard className="min-w-0 overflow-hidden">
           <div className="border-b border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_45%,transparent)] px-5 py-3 sm:px-6">
             <ReviewToolbar
@@ -424,8 +432,7 @@ export default async function IssueBriefPage({
                     </div>
                   </div>
                 ) : executivePresentationModel && briefVersion ? (
-                  <div className="rounded-[1.15rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-frame-soft)_86%,transparent)] px-3 py-4 shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_18%,transparent)] sm:px-5 sm:py-5">
-                    <ExecutiveBriefPresentation
+                  <ExecutiveBriefPresentation
                       model={executivePresentationModel}
                       issueId={issue.id}
                       briefVersionLabel={storedBriefRevisionLabel ?? "Executive brief"}
@@ -436,7 +443,6 @@ export default async function IssueBriefPage({
                       briefAiSynthesisEnabled={briefAiSynthesisEnabled}
                       polishPreview={executivePolishPreviewContext}
                     />
-                  </div>
                 ) : null
               ) : (
                 <div className="space-y-4 border-t border-[--metis-outline-subtle] pt-4">

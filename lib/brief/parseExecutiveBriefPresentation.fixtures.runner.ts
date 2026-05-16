@@ -80,6 +80,26 @@ run("parses claim record codes", () => {
   assert.match(item.text, /signed off/i);
 });
 
+run("dedupes safe-to-say against confirmed and assumption claim codes", () => {
+  const model = parseExecutiveBriefPresentation({
+    issueTitle: "Dedupe",
+    artifact: artifact([
+      { label: "Confirmed facts", body: "- Fact A" },
+      {
+        label: "Claims and assumptions",
+        body: "### Confirmed claims\n- CLM-1: On the record\n\n### Assumptions — phrase conditionally\n- CLM-2: Working only",
+      },
+      {
+        label: "What not to say yet / uncertainty guardrails",
+        body: "CLM-1: Do not repeat as new.\n\nSafe hedged line without code.",
+      },
+    ]),
+  });
+  assert.ok(model.safeToSay.some((l) => /hedged line/i.test(l)));
+  assert.ok(!model.safeToSay.some((l) => /CLM-1/i.test(l)));
+  assert.ok(!model.safeToSay.some((l) => /CLM-2/i.test(l)));
+});
+
 run("omits what changed when no highlights and no block", () => {
   const model = parseExecutiveBriefPresentation({
     issueTitle: "Stable",

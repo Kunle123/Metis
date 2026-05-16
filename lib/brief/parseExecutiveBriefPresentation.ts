@@ -71,6 +71,27 @@ export function parseExecutiveLineItem(raw: string): ExecutiveBriefLineItem {
   return { code: null, text: cleaned };
 }
 
+function lineItemKey(item: ExecutiveBriefLineItem): string {
+  return item.code ? item.code.toUpperCase() : item.text.toLowerCase();
+}
+
+function dedupeLineItems(items: ExecutiveBriefLineItem[]): ExecutiveBriefLineItem[] {
+  const seen = new Set<string>();
+  const out: ExecutiveBriefLineItem[] = [];
+  for (const it of items) {
+    const k = lineItemKey(it);
+    if (seen.has(k)) continue;
+    seen.add(k);
+    out.push(it);
+  }
+  return out;
+}
+
+export function slicePresentationItems<T>(items: T[], max = 5): { shown: T[]; remainder: number } {
+  if (items.length <= max) return { shown: items, remainder: 0 };
+  return { shown: items.slice(0, max), remainder: items.length - max };
+}
+
 function blocksByLabel(artifact: BriefArtifact): Map<string, string> {
   const m = new Map<string, string>();
   for (const b of artifact.executive.blocks) {
@@ -269,19 +290,32 @@ export function parseExecutiveBriefPresentation(input: ParseExecutiveBriefPresen
   const guardrailsBody = map.get(BLOCK.guardrails) ?? "";
   const { safe: guardrailSafe, unsafe } = classifyGuardrails(guardrailsBody);
 
-  const safeToSay = [
+  const confirmedClaimItems = dedupeLineItems(claimGroups.filter((g) => g.id === "confirmed").flatMap((g) => g.items));
+  const assumptionItems = dedupeLineItems(claimGroups.filter((g) => g.id === "assumptions").flatMap((g) => g.items));
+  const needsValidationItems = dedupeLineItems(
+    claimGroups.filter((g) => g.id === "needsValidation").flatMap((g) => g.items),
+  );
+  const nonConfirmedClaimKeys = new Set([
+    ...assumptionItems.map(lineItemKey),
+    ...needsValidationItems.map(lineItemKey),
+  ]);
+  const confirmedClaimKeys = new Set(confirmedClaimItems.map(lineItemKey));
+
+  const safeToSayRaw = [
     ...confirmedBullets.filter((b) => !/^no confirmed facts/i.test(b)),
-    ...claimGroups
-      .filter((g) => g.id === "confirmed")
-      .flatMap((g) => g.items.map((it) => (it.code ? `${it.code}: ${it.text}` : it.text))),
     ...guardrailSafe,
   ].filter(Boolean);
 
+  const safeToSay = safeToSayRaw.filter((line) => {
+    const parsed = parseExecutiveLineItem(line);
+    if (parsed.code && nonConfirmedClaimKeys.has(lineItemKey(parsed))) return false;
+    if (parsed.code && confirmedClaimKeys.has(lineItemKey(parsed))) return false;
+    return true;
+  });
+
   const doNotSayYet = [
     ...unsafe,
-    ...claimGroups
-      .filter((g) => g.id === "needsValidation")
-      .flatMap((g) => g.items.map((it) => (it.code ? `${it.code}: ${it.text}` : it.text))),
+    ...needsValidationItems.map((it) => (it.code ? `${it.code}: ${it.text}` : it.text)),
   ].filter(Boolean);
 
   const openQuestions = splitBullets(map.get(BLOCK.openQuestions) ?? "");
