@@ -238,6 +238,7 @@ export default async function IssueMessagesPage({
             messagesAiCleanupEnabled={messagesAiCleanupEnabled}
             deterministicPreview={deterministicPreview}
             claimAlignmentReview={claimAlignmentReview}
+            claimsOnRecordCount={claims.length}
           />
           <div className="mt-8 border-t border-[--metis-outline-subtle] pt-6">
             <Link href={`/issues/${issue.id}/export`} className="text-sm text-[--metis-brass-soft] underline-offset-4 hover:underline">

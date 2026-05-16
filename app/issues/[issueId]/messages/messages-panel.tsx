@@ -16,6 +16,9 @@ import { approvalStatusBadgeClassNames } from "@/lib/approvals/approvalStatusUi"
 import { renderMessageVariantMarkdown } from "@/lib/messages/generateExternalCustomerUpdate";
 import { renderInternalStaffUpdateMarkdown } from "@/lib/messages/generateInternalStaffUpdate";
 import { renderMediaHoldingLineMarkdown } from "@/lib/messages/generateMediaHoldingLine";
+import { MessageDraftCard } from "@/components/messages/MessageDraftCard";
+import { MessageReviewRail } from "@/components/messages/MessageReviewRail";
+import { formatMessageGeneratedAt } from "@/components/messages/messageDraftPresentation";
 import { CollapsibleSection } from "@/components/review/CollapsibleSection";
 import { ReviewRailCard } from "@/components/review/ReviewRailCard";
 import type { ClaimAlignmentFinding } from "@/lib/conflicts/claimAlignment";
@@ -53,17 +56,6 @@ function normalizeForDiff(text: string) {
 const MESSAGES_AI_USER_FAILURE_NOTE =
   "AI-enhanced wording could not be generated. Original draft is still available.";
 
-function claimFindingToneClass(sev: ClaimAlignmentFinding["severity"]) {
-  switch (sev) {
-    case "critical":
-      return "border-[--metis-status-danger-border] bg-[color-mix(in_oklab,var(--metis-status-danger-bg)_42%,transparent)] text-[--metis-status-danger-fg]";
-    case "warning":
-      return "border-[--metis-status-warning-border] bg-[color-mix(in_oklab,var(--metis-status-warning-bg)_42%,transparent)] text-[--metis-status-warning-fg]";
-    default:
-      return "border-[--metis-info-border] bg-[color-mix(in_oklab,var(--metis-info-bg)_48%,transparent)] text-[--metis-text-secondary]";
-  }
-}
-
 export function MessagesPanel({
   issueId,
   issueTitle,
@@ -77,6 +69,7 @@ export function MessagesPanel({
   savedDraftContentInSync,
   canUpdateMessageApprovalStatus,
   claimAlignmentReview,
+  claimsOnRecordCount,
 }: {
   issueId: string;
   issueTitle: string;
@@ -96,6 +89,8 @@ export function MessagesPanel({
   deterministicPreview: MessageVariantArtifact;
   /** Passive heuristic review for the persisted message draft — never blocks actions. */
   claimAlignmentReview: ClaimAlignmentReview;
+  /** Active claims on the issue (for provenance footer). */
+  claimsOnRecordCount: number;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -394,6 +389,44 @@ export function MessagesPanel({
       ? "No audience group selected. Choose an audience group from Settings → Audience groups."
       : "Using the selected audience group defaults from Settings → Audience groups.";
 
+  const claimFindings =
+    claimAlignmentReview.mode === "saved_draft" ? claimAlignmentReview.findings : [];
+
+  const provenanceLine = (() => {
+    const parts: string[] = [];
+    const generatedLabel = formatMessageGeneratedAt(latest?.generatedFromIssueUpdatedAt);
+    if (generatedLabel) {
+      parts.push(`Generated from the issue record · saved snapshot ${generatedLabel}`);
+    } else {
+      parts.push("Generated from the current issue record and selected audience context.");
+    }
+    if (claimsOnRecordCount > 0) {
+      parts.push(`${claimsOnRecordCount} claim${claimsOnRecordCount === 1 ? "" : "s"} on register`);
+    }
+    parts.push(deterministicPreview.metadata.openGapsLabel);
+    return parts.join(" · ");
+  })();
+
+  const draftStatusNote = latest ? (
+    <>
+      {inSync ? (
+        <>
+          Saved <span className="text-[--metis-text-primary]">{savedDraftLabel}</span> reflects the current issue snapshot for this template and audience.
+        </>
+      ) : (
+        <>
+          <span className="text-[--metis-status-warning-fg]">Needs refresh</span> — issue changed after this draft was saved. Use{" "}
+          <span className="text-[--metis-text-primary]">Refresh saved draft</span> to regenerate from the record.
+        </>
+      )}
+      {viewingAiPolishedWording ? (
+        <span className="mt-1 block">AI-enhanced wording is an alternate view — not a separate approved version.</span>
+      ) : null}
+    </>
+  ) : (
+    <>Preview only — not reviewed for claim alignment until you save a numbered draft.</>
+  );
+
   return (
     <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
       <div className="min-w-0 space-y-4">
@@ -462,80 +495,61 @@ export function MessagesPanel({
           </div>
         </div>
 
-        {/* Draft state */}
-        <div className="rounded-[1.25rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-frame-soft)_75%,var(--metis-surface-toolbar))] px-4 py-4 sm:px-5 shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_18%,transparent)]">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div className="min-w-0 space-y-2">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-md border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_70%,transparent)] px-2 py-0.5 text-[0.62rem] font-medium uppercase tracking-[0.16em] text-[--metis-text-primary]">
-                  {latest ? savedDraftLabel : "Preview only"}
-                </span>
-                {latest ? (
-                  <span
-                    className={`rounded-md border px-2 py-0.5 text-[0.62rem] font-medium uppercase tracking-[0.16em] ${
-                      inSync
-                        ? "border-[--metis-status-neutral-border] bg-[--metis-status-neutral-bg] text-[--metis-status-neutral-fg]"
-                        : "border-[--metis-status-warning-border] bg-[--metis-status-warning-bg] text-[--metis-status-warning-fg]"
-                    }`}
+        <MessageDraftCard
+          templateId={selectedTemplateId}
+          audienceLabel={selectedAudienceGroupLabel}
+          hasSavedDraft={Boolean(latest)}
+          savedDraftLabel={savedDraftLabel}
+          inSync={inSync}
+          approvalStatus={latest?.approvalStatus ?? null}
+          claimFindingCount={claimFindings.length}
+          headline={visibleArtifact.metadata.publicHeadline}
+          provenanceLine={provenanceLine}
+          statusNote={draftStatusNote}
+          controls={
+            <div className="space-y-3">
+              <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    type="button"
+                    variant={!latest || !inSync ? "default" : "outline"}
+                    size="sm"
+                    disabled={loading}
+                    onClick={() => void saveDeterministicVariant()}
                   >
-                    {inSync ? "Up to date" : "Needs refresh"}
-                  </span>
-                ) : null}
-                {latest ? (
-                  <span
-                    className={approvalStatusBadgeClassNames(latest.approvalStatus)}
-                    title="Coordination approval status for this saved draft"
-                  >
-                    {approvalStatusDisplayLabel(latest.approvalStatus)}
-                  </span>
-                ) : null}
-              </div>
-
-              {latest ? (
-                <p className="text-[0.78rem] leading-snug text-[--metis-text-secondary]">
-                  {inSync ? (
-                    <>
-                      Saved <span className="text-[--metis-text-primary]">{savedDraftLabel}</span> reflects the numbered draft for this template. Freshness compares
-                      the issue record to when that draft was generated.
-                    </>
-                  ) : (
-                    <>
-                      <span className="text-[--metis-text-primary]">Needs refresh:</span> this draft was saved before the issue changed.{" "}
-                      <span className="font-medium text-[--metis-text-primary]">Refresh saved draft</span> replaces the saved draft with new text regenerated from the
-                      current issue — it does not store free-typed edits from the preview (you regenerate from the snapshot).
-                    </>
-                  )}
+                    {loading ? "Saving…" : !latest ? "Save draft" : inSync ? "Save new version" : "Refresh saved draft"}
+                  </Button>
+                  <Button type="button" variant="outline" size="sm" disabled={!markdown} onClick={() => void copyMd()}>
+                    <Copy className="mr-2 h-3.5 w-3.5" />
+                    {copyState === "copied" ? "Copied" : copyState === "error" ? "Copy failed" : "Copy"}
+                  </Button>
+                  {canShowAi && aiToggleOn && aiRow ? (
+                    <Button type="button" variant="outline" size="sm" disabled={loading} onClick={() => void ensureAiEnhanced()}>
+                      Refresh AI wording
+                    </Button>
+                  ) : null}
+                  <AiProvenance mode={aiToggleOn ? "ai" : "original"} />
+                </div>
+                <p className="min-w-0 text-[0.72rem] leading-snug text-[--metis-text-tertiary]">
+                  {!latest ? "Copying preview does not create a saved version." : !inSync ? "Refresh regenerates from the latest issue snapshot." : "Save new version when wording should be re-derived."}
+                  {copyFeedback ? (
+                    <span className="ml-2 text-[--metis-text-secondary]" role="status">
+                      {copyFeedback}
+                    </span>
+                  ) : null}
                 </p>
-              ) : (
-                <p className="text-[0.78rem] leading-snug text-[--metis-text-secondary]">Preview is computed from the current issue. Save draft to store a numbered version.</p>
-              )}
-
-              <p className="text-[0.72rem] leading-snug text-[--metis-paper-muted]">
-                {viewingAiPolishedWording ? (
-                  <>
-                    <span className="text-[--metis-paper]">AI-enhanced</span> is alternate wording for this same message shape — not a separate version or higher-truth text.
-                  </>
-                ) : (
-                  <>
-                    <span className="text-[--metis-paper]">Original</span> and <span className="text-[--metis-paper]">AI-enhanced</span> are wording views of the same message.
-                  </>
-                )}
-              </p>
-
+              </div>
               {latest ? (
-                <div className="space-y-2 border-t border-[--metis-outline-subtle] pt-3">
-                  <p className="text-[0.72rem] leading-snug text-[--metis-paper-muted]">
-                    Approval status is a coordination label. It does not send the message.
+                <div className="flex flex-col gap-2 border-t border-[--metis-outline-subtle] pt-3 sm:flex-row sm:items-end sm:justify-between">
+                  <p className="max-w-md text-[0.72rem] leading-snug text-[--metis-text-tertiary]">
+                    Coordination approval — does not send the message.
                     {(latest.approvalStatus === "Approved" || latest.approvalStatus === "ReadyToCirculate") && (
-                      <span className="text-[--metis-text-secondary]">
-                        {" "}
-                        Not legal or regulator sign-off unless your organisation assigns that meaning.
-                      </span>
+                      <span> Not legal sign-off unless your organisation defines it that way.</span>
                     )}
                   </p>
                   {canUpdateMessageApprovalStatus ? (
-                    <div className="min-w-0 max-w-xs">
-                      <ControlField label="Set status">
+                    <div className="min-w-0 w-full max-w-xs">
+                      <ControlField label="Approval workflow">
                         <ControlSelect
                           aria-label="Message draft approval status"
                           disabled={approvalBusy}
@@ -550,223 +564,41 @@ export function MessagesPanel({
                         </ControlSelect>
                       </ControlField>
                     </div>
-                  ) : null}
+                  ) : (
+                    <span className={approvalStatusBadgeClassNames(latest.approvalStatus)}>{approvalStatusDisplayLabel(latest.approvalStatus)}</span>
+                  )}
                 </div>
               ) : null}
             </div>
-
-            <div className="flex shrink-0 items-center gap-2">
-              <AiProvenance mode={aiToggleOn ? "ai" : "original"} />
-            </div>
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="rounded-[1.25rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_40%,transparent)] px-4 py-4 sm:px-5 shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_22%,transparent)]">
-          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-            <div className="flex flex-wrap items-center gap-2">
-              <Button
-                type="button"
-                variant={!latest || !inSync ? "default" : "outline"}
-                disabled={loading}
-                onClick={() => void saveDeterministicVariant()}
-              >
-                {loading ? "Saving…" : !latest ? "Save draft" : inSync ? "Save new version" : "Refresh saved draft"}
-              </Button>
-
-              <Button type="button" variant="outline" disabled={!markdown} onClick={() => void copyMd()}>
-                <Copy className="mr-2 h-4 w-4" />
-                {copyState === "copied" ? "Copied" : copyState === "error" ? "Copy failed" : "Copy"}
-              </Button>
-
-              {canShowAi && aiToggleOn && aiRow ? (
-                <Button type="button" variant="outline" disabled={loading} onClick={() => void ensureAiEnhanced()}>
-                  Refresh AI wording
-                </Button>
-              ) : null}
-            </div>
-
-            <div className="min-w-0 text-[0.72rem] leading-snug text-[--metis-text-secondary]">
-              {!latest ? (
-                <span className="text-[--metis-text-primary]">Copying preview does not create a saved draft version.</span>
-              ) : (
-                <span>
-                  {!inSync
-                    ? "Refresh saved draft calls the server to regenerate from the latest issue snapshot and bumps the draft version."
-                    : "Save new version records another draft generated from the current issue snapshot (use when wording should be re-derived)."}
-                </span>
-              )}
-              {copyFeedback ? (
-                <span className="ml-2" role="status">
-                  {copyFeedback}
-                </span>
-              ) : null}
-            </div>
-          </div>
-        </div>
-
-        <div className="rounded-[1.25rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-card)_72%,transparent)] px-4 py-4 sm:px-5 shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_16%,transparent)]">
-          <p className="font-[Cormorant_Garamond] text-[1.55rem] leading-tight text-[--metis-paper] sm:text-[1.85rem]">
-            {deterministicPreview.metadata.publicHeadline}
-          </p>
-        </div>
-
-        <article className="rounded-[1.25rem] border border-[--metis-outline-subtle] bg-[--metis-surface-card] px-4 py-4 sm:px-5 shadow-[0_18px_54px_rgba(0,0,0,0.12),inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_18%,transparent)]">
-          <div className="space-y-5">
+          }
+        >
+          <div className="space-y-4">
             {visibleArtifact.sections.map((s) => (
-              <section key={s.id} className="border-t border-[--metis-outline-subtle] pt-4 first:border-t-0 first:pt-0">
-                <h3 className="text-sm font-semibold text-[--metis-paper]">{s.title}</h3>
-                <p className="mt-2 max-w-4xl whitespace-pre-line text-sm leading-7 text-[--metis-paper-muted]">
+              <section key={s.id} className="border-t border-[color-mix(in_oklab,var(--metis-outline-subtle)_70%,transparent)] pt-3.5 first:border-t-0 first:pt-0">
+                <p className="text-[0.58rem] font-medium uppercase tracking-[0.12em] text-[--metis-text-tertiary]">{s.title}</p>
+                <p className="mt-2 max-w-prose whitespace-pre-line text-[0.875rem] leading-[1.65] text-[--metis-text-secondary]">
                   {normalizeBodyText(s.body)}
                 </p>
               </section>
             ))}
           </div>
-        </article>
+        </MessageDraftCard>
       </div>
 
       <div className="min-w-0 space-y-4 xl:mt-[0.1rem]">
-        <ReviewRailCard
-          title="Draft status"
-          tone="info"
-          meta={
-            <div className="space-y-2">
-              <span className="inline-flex max-w-full rounded-md border border-[--metis-status-warning-border] bg-[--metis-status-warning-bg] px-2 py-0.5 text-[0.62rem] font-medium uppercase tracking-[0.14em] text-[--metis-status-warning-fg]">
-                Draft for review
-              </span>
-              <p className="text-sm leading-6 text-[--metis-text-secondary]">
-                Not approved for circulation. Check for sensitive, legal, personal, security, or unverified claims before using this draft in any channel.
-              </p>
-            </div>
-          }
-        >
-            <div className="space-y-3 text-sm leading-6 text-[--metis-paper-muted]">
-              {!latest ? (
-                <p className="text-sm leading-6 text-[--metis-paper-muted]">
-                  <span className="text-[--metis-paper]">Unsaved preview — no draft version yet.</span> Choose a template and audience, then save when the
-                  wording is ready — that creates a numbered message draft for this issue and template.
-                </p>
-              ) : null}
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Audience group</span>
-                <span className="text-right text-[--metis-paper]">{selectedAudienceGroupLabel}</span>
-              </div>
-              <div className="border-t border-[--metis-outline-subtle] pt-3 text-sm leading-6 text-[--metis-paper-muted]">{templateHelperText}</div>
-              {latest ? (
-                <>
-                  <div className="flex items-center justify-between gap-3 border-t border-[--metis-outline-subtle] pt-3">
-                    <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Saved draft</span>
-                    <div className="flex min-w-0 flex-col items-end gap-1.5">
-                      <span className="text-right text-[--metis-paper]">{savedDraftLabel}</span>
-                      <span className={approvalStatusBadgeClassNames(latest.approvalStatus)}>{approvalStatusDisplayLabel(latest.approvalStatus)}</span>
-                    </div>
-                  </div>
-                  <p className="text-[0.72rem] leading-snug text-[--metis-paper-muted]">
-                    Draft numbers are assigned per issue and template (not per audience group). Shaping above shows which template and audience you are
-                    previewing.
-                  </p>
-                  <div className="flex items-center justify-between gap-3 border-t border-[--metis-outline-subtle] pt-3">
-                    <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Freshness</span>
-                    <div className="flex flex-col items-end gap-1">
-                      <span
-                        className={
-                          inSync
-                            ? "text-right text-sm font-medium text-[--metis-status-neutral-fg]"
-                            : "text-right text-sm font-medium text-[--metis-status-warning-fg]"
-                        }
-                      >
-                        {inSync ? "Up to date" : "Needs refresh"}
-                      </span>
-                      {!inSync ? (
-                        <span className="max-w-[16rem] text-right text-[0.72rem] leading-snug text-[--metis-text-secondary]">
-                          Issue updated after this draft — use <span className="text-[--metis-text-primary]">Refresh saved draft</span> in the actions bar above.
-                        </span>
-                      ) : (
-                        <span className="max-w-[16rem] text-right text-[0.72rem] leading-snug text-[--metis-text-secondary]">
-                          Compares the saved draft&apos;s issue snapshot to today — separate from Original vs AI-enhanced wording above.
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-3 border-t border-[--metis-outline-subtle] pt-3">
-                    <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Open questions</span>
-                    <Link
-                      href={`/issues/${issueId}/gaps`}
-                      className="text-[--metis-paper] underline-offset-4 hover:underline"
-                      title="Answer, assign, or close open questions in the tracker."
-                    >
-                      {deterministicPreview.metadata.openGapsLabel}
-                    </Link>
-                  </div>
-                  <p className="border-t border-[--metis-outline-subtle] pt-3 text-[0.72rem] leading-snug text-[--metis-paper-muted]">
-                    Answer, assign, or close open questions before circulation.
-                  </p>
-                </>
-              ) : null}
-            </div>
-        </ReviewRailCard>
+        <MessageReviewRail
+          issueId={issueId}
+          hasSavedDraft={Boolean(latest)}
+          inSync={inSync}
+          approvalStatus={latest?.approvalStatus ?? null}
+          audienceLabel={selectedAudienceGroupLabel}
+          templateHelperText={templateHelperText}
+          openGapsLabel={deterministicPreview.metadata.openGapsLabel}
+          claimAlignmentMode={claimAlignmentReview.mode}
+          findings={claimFindings}
+        />
 
-        <ReviewRailCard
-          title="Claim alignment"
-          tone="neutral"
-          meta={
-            claimAlignmentReview.mode === "preview_only" ? (
-              <p className="text-sm leading-6 text-[--metis-paper-muted]">
-                Heuristic checker against Claims — save a numbered draft version to analyse what is stored server-side against the Claims register for this lens.
-              </p>
-            ) : (
-              <div className="space-y-2">
-                <p className="text-sm leading-6 text-[--metis-paper-muted]">
-                  Review risks applies to the <span className="text-[--metis-paper]">saved draft</span> wording only (preview changes before&nbsp;refresh are excluded).
-                  This is a heuristic check — verify before trusting it under pressure.
-                </p>
-                <p className="text-[0.72rem] leading-snug text-[--metis-text-tertiary]">
-                  Does not alter approval, staleness, or activity — passive review only.
-                </p>
-              </div>
-            )
-          }
-        >
-          <div className="space-y-3 text-sm leading-6 text-[--metis-paper-muted]">
-            {claimAlignmentReview.mode === "preview_only" ? (
-              <p>Copy, generate, or save drafts as usual. Claim alignment flags appear once Metis persists a numbered message draft row.</p>
-            ) : claimAlignmentReview.findings.length === 0 ? (
-              <p className="text-[--metis-status-neutral-fg]">
-                No claim alignment risks detected for this saved draft and the Claims already on file.
-              </p>
-            ) : (
-              <ul className="space-y-2.5">
-                {claimAlignmentReview.findings.map((f) => (
-                  <li
-                    key={f.id}
-                    className={`rounded-[0.95rem] border px-3 py-2 text-[0.78rem] leading-snug ${claimFindingToneClass(f.severity)}`}
-                  >
-                    <div className="flex flex-wrap items-baseline gap-2">
-                      <span className="font-semibold">{f.severity.charAt(0).toUpperCase() + f.severity.slice(1)}</span>
-                      <span className="rounded border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_62%,transparent)] px-2 py-0.5 text-[0.66rem] font-medium uppercase tracking-[0.04em]">
-                        {f.claimCode}
-                      </span>
-                    </div>
-                    <p className="mt-1.5 text-[--metis-paper]">{f.message}</p>
-                    <p className="mt-1 text-[--metis-text-secondary]">
-                      <span className="font-medium text-[--metis-text-tertiary]">Suggested:&nbsp;</span>
-                      {f.suggestedAction}
-                    </p>
-                  </li>
-                ))}
-              </ul>
-            )}
-            <p className="text-[0.72rem] leading-snug text-[--metis-text-tertiary]">
-              Reference the{" "}
-              <Link href={`/issues/${issueId}/claims`} className="text-[--metis-brass-soft] underline-offset-4 hover:underline">
-                Claims
-              </Link>{" "}
-              register to adjust statuses — findings never expose observation evidence details.
-            </p>
-          </div>
-        </ReviewRailCard>
-
-        <ReviewRailCard
+                <ReviewRailCard
           title="Next steps"
           tone="neutral"
           meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Optional — no required workflow. Use when you’re ready.</p>}
