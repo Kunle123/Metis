@@ -7,6 +7,7 @@ import {
 import { assertAllowedNonProductionDataScript } from "@/scripts/guards/assertNonProductionDataScript";
 import { hashPassword } from "@/lib/auth/password";
 
+import { seedFeasibilityServiceHours } from "./seedFeasibilityServiceHours";
 import { seedShowcase2222 } from "./seedShowcase2222";
 
 const prisma = new PrismaClient();
@@ -972,6 +973,8 @@ async function main() {
       });
     }
   }
+
+  await seedFeasibilityServiceHours(prisma);
 }
 
 main()
