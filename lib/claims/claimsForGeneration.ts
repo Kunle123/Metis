@@ -106,12 +106,102 @@ export function hasActiveClaimsForBriefing(claims: Claim[]): boolean {
   return claimsToGenerationRows(claims).length > 0;
 }
 
+export type ClaimsPositionCounts = {
+  confirmed: number;
+  assumptions: number;
+  needsValidation: number;
+  superseded: number;
+};
+
+export function countClaimsForExecutive(claims: Claim[]): ClaimsPositionCounts {
+  const counts: ClaimsPositionCounts = {
+    confirmed: 0,
+    assumptions: 0,
+    needsValidation: 0,
+    superseded: 0,
+  };
+  for (const row of claims) {
+    const status = coerceClaimStatus(row.status);
+    if (status === "Confirmed") counts.confirmed += 1;
+    else if (status === "Assumption") counts.assumptions += 1;
+    else if (status === "NeedsValidation") counts.needsValidation += 1;
+    else if (status === "Superseded") counts.superseded += 1;
+  }
+  return counts;
+}
+
+/** One-line executive tally before detailed CLM lines. */
+export function formatExecutiveClaimsPositionLine(claims: Claim[]): string {
+  const c = countClaimsForExecutive(claims);
+  const parts: string[] = [];
+  if (c.confirmed > 0) parts.push(`${c.confirmed} confirmed`);
+  if (c.assumptions > 0) parts.push(`${c.assumptions} assumption${c.assumptions === 1 ? "" : "s"}`);
+  if (c.needsValidation > 0) parts.push(`${c.needsValidation} need validation`);
+  if (c.superseded > 0) parts.push(`${c.superseded} superseded`);
+  if (!parts.length) return "";
+  return `Claims position: ${parts.join(" · ")}.`;
+}
+
+function claimTextBundle(c: Claim): string {
+  return `${c.text} ${c.notes ?? ""}`.replace(/\s+/g, " ").trim().toLowerCase();
+}
+
 /**
- * Body for the executive “Claims and assumptions” block — concise register only (no intake facts).
+ * Claim-derived “do not say yet” lines for executive guardrails (specific before generic).
+ */
+export function buildExecutiveClaimsDoNotSayBullets(claims: Claim[]): string[] {
+  const out: string[] = [];
+  const seen = new Set<string>();
+
+  const push = (line: string) => {
+    const key = line.toLowerCase();
+    if (!line || seen.has(key)) return;
+    seen.add(key);
+    out.push(line);
+  };
+
+  for (const c of claims) {
+    const status = coerceClaimStatus(c.status);
+    const t = claimTextBundle(c);
+
+    if (status === "Superseded") {
+      if (/\b(close|closing|earlier|early closure)\b/.test(t)) {
+        push("Do not say yet that the service is closing early or that early closure is happening next month.");
+      }
+      continue;
+    }
+
+    if (status !== "NeedsValidation") continue;
+
+    if (/\b(opening hours|exact hours|final hours|proposed hours|weekday hours|evening slot)\b/.test(t)) {
+      push("Do not say yet what the final opening hours will be.");
+    }
+    if (/\b(save|saving|savings|money|cost)\b/.test(t) && /\b(without|quality|service)\b/.test(t)) {
+      push("Do not say yet that the change will save money without reducing service quality.");
+    }
+    if (/\b(equality|adverse impact|older residents|working families)\b/.test(t)) {
+      push("Do not say yet that there is no adverse equality impact.");
+    }
+    if (/\b(service quality|quality reduction|reduce quality)\b/.test(t)) {
+      push("Do not say yet that service quality will not be reduced.");
+    }
+    if (/\b(equality impact assessment|equality assessment)\b/.test(t) && /\b(complete|before|opens)\b/.test(t)) {
+      push("Do not say yet when the equality impact assessment will be complete.");
+    }
+  }
+
+  return out;
+}
+
+/**
+ * Body for the executive “Claims and assumptions” block — position summary then capped register detail.
  */
 export function formatExecutiveClaimsAndAssumptionsBody(claims: Claim[]): string {
   if (!hasActiveClaimsForBriefing(claims)) return "";
-  return formatClaimsBriefBlock(claims, { maxPerGroup: 5 }).trimEnd();
+  const summary = formatExecutiveClaimsPositionLine(claims);
+  const detail = formatClaimsBriefBlock(claims, { maxPerGroup: 3 }).trimEnd();
+  if (!summary) return detail;
+  return `${summary}\n\n${detail}`;
 }
 
 export function formatClaimsGuardrailLine(): string {

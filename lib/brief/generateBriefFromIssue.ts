@@ -8,10 +8,13 @@ import {
   rankSourcesForIssue,
 } from "@/lib/evidence/rankEvidence";
 import {
+  buildExecutiveClaimsDoNotSayBullets,
+  countClaimsForExecutive,
   formatClaimsBriefBlock,
   formatExecutiveClaimsAndAssumptionsBody,
   hasActiveClaimsForBriefing,
 } from "@/lib/claims/claimsForGeneration";
+import { coerceClaimStatus } from "@/lib/claims/coerceClaimStatus";
 
 const CAP_EX_SOURCES = 8;
 const MAX_QUESTION_BULLETS = 12;
@@ -928,6 +931,93 @@ function evidenceExecutiveConfidenceSummary(rankedSources: Source[], totalLinked
   return `${body}\n\nThis summary is directional only; it does not establish facts beyond what intake and Sources themselves record.${tail}`;
 }
 
+/** Executive judgement on what the record can and cannot support for leadership circulation. */
+function buildExecutiveRecordSufficiencyBody(
+  issue: Issue,
+  claims: Claim[],
+  rankedOpenGaps: Gap[],
+): string {
+  const bundleLower = bundleIssueText(issue).toLowerCase();
+  const counts = countClaimsForExecutive(claims);
+  const consultation =
+    issueSignalsConsultation(bundleLower) ||
+    /\bopening hours|service hours|hours change|consultation\b/i.test(bundleLower);
+  const hasCriticalOpen = rankedOpenGaps.some(
+    (g) => String(g.status ?? "").trim() === "Open" && String(g.severity ?? "").trim() === "Critical",
+  );
+  const hasImportantOpen = rankedOpenGaps.some(
+    (g) => String(g.status ?? "").trim() === "Open" && String(g.severity ?? "").trim() === "Important",
+  );
+  const provisional = hasCriticalOpen || hasImportantOpen || counts.needsValidation > 0;
+
+  const supportParts: string[] = [];
+  if (consultation) {
+    supportParts.push("consultation process risk and message discipline");
+  } else if (counts.confirmed > 0) {
+    supportParts.push("a disciplined internal briefing anchored to confirmed claims on the register");
+  } else {
+    supportParts.push("a cautious internal briefing posture");
+  }
+  if (counts.confirmed > 0 && consultation) {
+    supportParts.push("the confirmed process facts already on the claims register");
+  }
+
+  const supportPhrase =
+    supportParts.length === 1
+      ? supportParts[0]!
+      : `${supportParts.slice(0, -1).join(", ")} and ${supportParts[supportParts.length - 1]}`;
+
+  const notSupported: string[] = [];
+  const pushNot = (line: string) => {
+    if (!notSupported.some((x) => x.toLowerCase() === line.toLowerCase())) notSupported.push(line);
+  };
+
+  if (consultation || /\bhours\b/i.test(bundleLower)) {
+    pushNot("a definitive external position on exact hours");
+  }
+  if (consultation || counts.needsValidation > 0) {
+    pushNot("confirmed savings");
+    pushNot("equality impact");
+    pushNot("service-quality impact");
+  } else if (counts.needsValidation > 0) {
+    pushNot("claims that remain under validation on the register");
+  }
+
+  if (counts.superseded > 0) {
+    const hasEarlyClosure = claims.some((c) => {
+      if (coerceClaimStatus(c.status) !== "Superseded") return false;
+      return /\b(close|closing|earlier|early)\b/i.test(claimTextForSufficiency(c));
+    });
+    if (hasEarlyClosure) pushNot("repeating inaccurate early-closure rumours as fact");
+  }
+
+  const lead =
+    notSupported.length > 0
+      ? `The current record supports an internal briefing on ${supportPhrase}. It does not yet support ${formatEnglishList(notSupported)}.`
+      : `The current record supports an internal briefing on ${supportPhrase}.`;
+
+  const caveats: string[] = [];
+  if (provisional) caveats.push("External position remains provisional.");
+  if (hasCriticalOpen) caveats.push("Treat outward lines as conditional until critical open questions are answered.");
+  if (counts.needsValidation > 0) {
+    caveats.push(
+      `${counts.needsValidation} claim(s) still need validation — do not present them as settled fact externally.`,
+    );
+  }
+
+  return caveats.length ? `${lead}\n\n${caveats.join(" ")}` : lead;
+}
+
+function claimTextForSufficiency(c: Claim): string {
+  return `${c.text} ${c.notes ?? ""}`;
+}
+
+function formatEnglishList(items: string[]): string {
+  if (items.length <= 1) return items[0] ?? "";
+  if (items.length === 2) return `${items[0]} or ${items[1]}`;
+  return `${items.slice(0, -1).join(", ")}, or ${items[items.length - 1]}`;
+}
+
 /** Not referenced by current brief artifact; if wired in, pass `rankSourcesForIssue` output and `total`. */
 function sourcesNarrativeFull(sources: Source[], total: number) {
   if (!total) return "No sources are linked yet. Evidence should be added before broad external lines are taken as settled.";
@@ -1078,6 +1168,33 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
     }
 
     if (
+      /\b(opening hours|proposed hours|hours option|precise opening|service hours option)\b/i.test(low) &&
+      /\b(proposed|consultation|option|external|line)\b/i.test(low)
+    ) {
+      return "Confirm the proposed opening-hours option before any external line is expanded.";
+    }
+
+    if (/\bequality impact assessment\b/i.test(low) && /\b(when|available|timing|complete)\b/i.test(low)) {
+      return "Set an owner and deadline for equality assessment timing.";
+    }
+
+    if (/\bsign[- ]?off\b/i.test(low) && /\b(consultation|wording|material)\b/i.test(low)) {
+      return "Confirm who signs off consultation wording before councillor or public use.";
+    }
+
+    if (/\bcouncillors?\b/i.test(low) && /\b(line|said|before|approved|formal|shared)\b/i.test(low)) {
+      return "Agree the councillor and media holding line while the formal proposal remains unapproved.";
+    }
+
+    if (/\b(media|press)\b/i.test(low) && /\b(service cut|fallback|asked whether)\b/i.test(low)) {
+      return "Agree the media fallback line if asked whether this is a service cut.";
+    }
+
+    if (/\b(owner|owns?)\b/i.test(low) && /\b(statement|media enquiry|media inquiry|external statement)\b/i.test(low)) {
+      return "Confirm who owns the final external statement and media enquiry route.";
+    }
+
+    if (
       /\b(public|community|resident|citizen|stakeholder|audience|narrative|messaging|comms\b|communication|communications|press|external line)\b/.test(low)
     ) {
       const tail = trimForExecutiveClause(stripTrailingPunctuation(rawOneLine), 118);
@@ -1105,13 +1222,15 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
       return `Set the decision owner and escalation route for${sectionHint}: ${tail}`;
     }
 
-    const scaffoldCycle = rotationIndex % 4;
-    const prompt = trimForExecutiveClause(stripTrailingPunctuation(rawOneLine), 128);
+    const prompt = trimForExecutiveClause(stripTrailingPunctuation(rawOneLine), 100);
     if (!prompt) return null;
-    if (scaffoldCycle === 0) return `Confirm the leadership position regarding${sectionHint}: ${prompt}`;
-    if (scaffoldCycle === 1) return `Agree delegated clearance for${sectionHint}: ${prompt}`;
-    if (scaffoldCycle === 2) return `Set accountable ownership and timelines for${sectionHint}: ${prompt}`;
-    return `Surface the unresolved decision needing executive sign-off regarding${sectionHint}: ${prompt}`;
+    if (/\b(owner|ownership|deadline|timeline|cadence|who decides)\b/i.test(low)) {
+      return `Set an owner and deadline for: ${prompt}`;
+    }
+    if (/\b(confirm|agree|approve|decide|clarify)\b/i.test(prompt)) {
+      return sentence(prompt.charAt(0).toUpperCase() + prompt.slice(1));
+    }
+    return `Confirm: ${prompt}`;
   }
 
   const recommendedActionsForLeadership: string[] = (() => {
@@ -1158,11 +1277,12 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
 
     if (orderedMessageAudienceNames.length) {
       out.push(sentence(`Stress-test external-facing lines for audience groups used in Messages (${orderedMessageAudienceNames.join(", ")}).`));
-    } else if (cleanText(issue.audience ?? "")) {
-      out.push(sentence(`Calibrate the line against the intake audience note (${cleanText(issue.audience ?? "")}).`));
+    } else if (cleanText(issue.audience ?? "") && out.length < 4) {
+      const audClip = clipAtWordBoundary(cleanText(issue.audience ?? ""), 96);
+      out.push(sentence(`Calibrate outward lines for the recorded audience: ${audClip}.`));
     }
 
-    if (cleanText(issue.ownerName ?? "")) {
+    if (cleanText(issue.ownerName ?? "") && out.length < 5) {
       out.push(`Accountable owner for the cadence packaged with this briefing: ${issue.ownerName}.`);
     } else {
       out.push("Record a named accountable owner for unresolved decisions surfaced here.");
@@ -1186,13 +1306,43 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
     "Avoid speculative or escalatory language; align any external line with the recorded audience notes and validation posture.",
   ].join("\n\n");
 
-  const guardrailsLeadership = [
+  const gapDoNotSayBullets = (() => {
+    const out: string[] = [];
+    const seen = new Set<string>();
+    const push = (line: string) => {
+      const k = line.toLowerCase();
+      if (!line || seen.has(k)) return;
+      seen.add(k);
+      out.push(line);
+    };
+    for (const g of rankedOpenGaps) {
+      const t = normalizeNeedText(`${g.prompt ?? ""} ${g.title ?? ""}`);
+      if (/\b(opening hours|proposed hours|exact hours|hours option)\b/i.test(t)) {
+        push("Do not say yet what the final opening hours will be.");
+      }
+      if (/\b(equality impact assessment|equality assessment)\b/i.test(t) && /\b(when|timing|available)\b/i.test(t)) {
+        push("Do not say yet when the equality impact assessment will be complete.");
+      }
+      if (/\b(media|press)\b/i.test(t) && /\b(service cut|cut)\b/i.test(t)) {
+        push("Do not say yet that this is a service cut without an agreed holding line.");
+      }
+    }
+    return out;
+  })();
+  const claimDoNotSayBullets = [...buildExecutiveClaimsDoNotSayBullets(claimsRows), ...gapDoNotSayBullets];
+  const uniqueDoNotSay = [...new Set(claimDoNotSayBullets.map((b) => b.trim()).filter(Boolean))];
+  const guardrailsLeadershipSpecific =
+    uniqueDoNotSay.length > 0
+      ? ["Do not say yet:", ...uniqueDoNotSay.map((b) => `- ${b}`)].join("\n")
+      : "";
+  const guardrailsLeadershipGeneric = [
     "Do not state causes, scope, or impact that are not supported by confirmed facts, linked sources, or attributable observations.",
     rankedOpenGaps.length
       ? `There are ${rankedOpenGaps.length} open question(s) on the list; treat them as open until attributable input or confirmed intake updates answer them.`
       : "If new material unknowns appear, record them as open questions before treating them as settled for leadership or external use.",
     "Avoid speculative or escalatory language; align any external line with audience notes and the issue’s validation posture.",
   ].join("\n\n");
+  const guardrailsLeadership = [guardrailsLeadershipSpecific, guardrailsLeadershipGeneric].filter(Boolean).join("\n\n");
 
   const situationBody = (() => {
     const bits: string[] = [];
@@ -1241,11 +1391,24 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
   const hasCriticalOpenGap = rankedOpenGaps.some(
     (g) => String(g.status ?? "").trim() === "Open" && String(g.severity ?? "").trim() === "Critical",
   );
+  const claimCounts = countClaimsForExecutive(claimsRows);
+  const executiveProvisional =
+    hasCriticalOpenGap ||
+    claimCounts.needsValidation > 0 ||
+    rankedOpenGaps.some(
+      (g) => String(g.status ?? "").trim() === "Open" && String(g.severity ?? "").trim() === "Important",
+    );
   const leadershipStatusLabel = (() => {
     const raw = String(issue.status ?? "").trim();
-    if (hasCriticalOpenGap && raw === "Ready to brief") return "Ready for internal briefing with caveats";
+    if ((hasCriticalOpenGap || claimCounts.needsValidation > 0) && raw === "Ready to brief") {
+      return "Ready for internal briefing with caveats";
+    }
     return raw || "—";
   })();
+
+  const recordSufficiencyBody = isExecutive
+    ? buildExecutiveRecordSufficiencyBody(issue, claimsRows, rankedOpenGaps)
+    : "";
 
   const currentAssessment = [
     `Status: ${issue.status}`,
@@ -1258,12 +1421,16 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
 
   const currentAssessmentLeadership = [
     `Status: ${leadershipStatusLabel}`,
+    executiveProvisional ? "Briefing confidence: Provisional" : "Briefing confidence: As recorded",
+    executiveProvisional ? "External position: Remains provisional" : null,
     `Severity: ${issue.severity}`,
     `Urgency: ${issue.priority}`,
     `Briefing posture: ${issue.operatorPosture}`,
     `Open questions: ${issue.openGapsCount} on the issue record · ${rankedOpenGaps.length} open in tracker`,
     cleanText(issue.ownerName ?? "") ? `Issue owner: ${issue.ownerName}` : "Issue owner: not recorded yet.",
-  ].join("\n");
+  ]
+    .filter(Boolean)
+    .join("\n");
 
   const keyUnknownsLeadership = (() => {
     if (!cleanText(openQuestions) && rankedOpenGaps.length === 0) {
@@ -1299,6 +1466,9 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
     ? [
         { label: "Executive summary", body: situationBodyLeadership },
         { label: "Current assessment", body: currentAssessmentLeadership },
+        ...(recordSufficiencyBody.trim()
+          ? [{ label: "Record sufficiency", body: recordSufficiencyBody }]
+          : []),
         { label: "Confirmed facts", body: confirmedFactsBlockExecutive },
         ...(executiveClaimsBlockBody.trim()
           ? [{ label: "Claims and assumptions", body: executiveClaimsBlockBody }]

@@ -206,7 +206,11 @@ export function ExecutiveBriefPresentation({
   const { shown: safeShown, remainder: safeRemainder } = slicePresentationItems(model.safeToSay, RECORD_SLICE_MAX);
   const { shown: holdShown, remainder: holdRemainder } = slicePresentationItems(model.doNotSayYet, RECORD_SLICE_MAX);
 
-  const statusCaveat = /caveat/i.test(model.header.status);
+  const statusCaveat = /caveat/i.test(model.header.status) || /provisional/i.test(model.header.status);
+
+  const recordSufficiencyParagraphs = model.position.recordSufficiency
+    ? model.position.recordSufficiency.split(/\n\n+/).map((p) => p.trim()).filter(Boolean)
+    : [];
 
   return (
     <div className="mx-auto w-full min-w-0 max-w-[72rem]">
@@ -266,6 +270,19 @@ export function ExecutiveBriefPresentation({
                 <p className="mb-4 max-w-[42rem] text-[0.9375rem] font-medium leading-[1.6] text-[--metis-text-primary]">
                   {model.position.lede}
                 </p>
+              ) : null}
+
+              {recordSufficiencyParagraphs.length ? (
+                <div className="mb-4 max-w-[42rem] border-t border-[color-mix(in_oklab,var(--metis-outline-subtle)_70%,transparent)] pt-4">
+                  <p className="text-[0.58rem] font-medium uppercase tracking-[0.14em] text-[--metis-brass-soft]">Record sufficiency</p>
+                  <div className="mt-2 space-y-2">
+                    {recordSufficiencyParagraphs.map((para) => (
+                      <p key={para.slice(0, 48)} className="text-[0.875rem] leading-[1.6] text-[--metis-text-primary]">
+                        {para}
+                      </p>
+                    ))}
+                  </div>
+                </div>
               ) : null}
 
               {executiveSummaryBody ? (
@@ -328,10 +345,40 @@ export function ExecutiveBriefPresentation({
           <ExecutiveBriefSection
             variant="neutral"
             accent="none"
+            eyebrow="Circulation"
+            title="Comms guardrails"
+            description="What may be said now versus what must stay off the record."
+          >
+            <div className="grid gap-4 md:grid-cols-2 md:gap-5">
+              <ExecutiveBriefSection variant="neutral" accent="brass" compact title="Safe to say">
+                <RecordList
+                  items={safeShown}
+                  emptyLabel="Use confirmed facts and sources before circulating externally."
+                  remainder={safeRemainder}
+                />
+              </ExecutiveBriefSection>
+              <ExecutiveBriefSection variant="neutral" accent="amber" compact title="Do not say yet">
+                <RecordList
+                  items={holdShown}
+                  emptyLabel="No explicit hold lines — apply standard validation discipline."
+                  remainder={holdRemainder}
+                />
+              </ExecutiveBriefSection>
+            </div>
+          </ExecutiveBriefSection>
+
+          <ExecutiveBriefSection
+            variant="neutral"
+            accent="none"
             eyebrow="Record basis"
             title="What the record says"
             description="Confirmed facts, conditional claims, and unresolved questions — not circulation guidance."
           >
+            {model.claimsPositionSummary ? (
+              <p className="mb-4 max-w-prose text-[0.8125rem] leading-relaxed text-[--metis-text-secondary]">
+                {model.claimsPositionSummary}
+              </p>
+            ) : null}
             <div className="grid gap-4 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,0.85fr)] lg:gap-5">
               <RecordPanel
                 title="Confirmed"
@@ -360,31 +407,6 @@ export function ExecutiveBriefPresentation({
                   emptyLabel="No open questions recorded."
                 />
               </div>
-            </div>
-          </ExecutiveBriefSection>
-
-          <ExecutiveBriefSection
-            variant="neutral"
-            accent="none"
-            eyebrow="Circulation"
-            title="Comms guardrails"
-            description="What may be said now versus what must stay off the record."
-          >
-            <div className="grid gap-4 md:grid-cols-2 md:gap-5">
-              <ExecutiveBriefSection variant="neutral" accent="brass" compact title="Safe to say">
-                <RecordList
-                  items={safeShown}
-                  emptyLabel="Use confirmed facts and sources before circulating externally."
-                  remainder={safeRemainder}
-                />
-              </ExecutiveBriefSection>
-              <ExecutiveBriefSection variant="neutral" accent="amber" compact title="Do not say yet">
-                <RecordList
-                  items={holdShown}
-                  emptyLabel="No explicit hold lines — apply standard validation discipline."
-                  remainder={holdRemainder}
-                />
-              </ExecutiveBriefSection>
             </div>
           </ExecutiveBriefSection>
 

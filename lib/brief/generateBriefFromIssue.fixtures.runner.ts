@@ -408,6 +408,7 @@ assert.ok(
   "Confirmed facts block must list intake facts only — claims live under Claims and assumptions",
 );
 const execClaimsBlock = execClaims.executive.blocks.find((b) => b.label === "Claims and assumptions")?.body ?? "";
+assert.match(execClaimsBlock, /Claims position: 1 confirmed · 1 assumption · 1 need validation · 1 superseded/);
 assert.match(execClaimsBlock, /### Confirmed claims/);
 assert.match(execClaimsBlock, /CLM-001/);
 assert.match(execClaimsBlock, /### Assumptions — phrase conditionally/);
@@ -508,5 +509,63 @@ assert.ok(
   execForeign.executive.blocks.find((b) => b.label === "Claims and assumptions")?.body.includes("Belongs to another issue"),
   "generateBriefFromIssue does not filter by claim.issueId — API/loaders must scope rows",
 );
+
+const consultationHoursIssue = {
+  ...baseIssue,
+  title: "Consultation on Proposed Changes to Service Opening Hours",
+  summary: "Consultation on opening hours; message discipline required.",
+  status: "Ready to brief",
+  context: "Avoid implying a decision is made before equality assessment is complete.",
+  openQuestions: "",
+  openGapsCount: 2,
+};
+const consultationGaps = [
+  gap({
+    id: "g-hours",
+    severity: "Critical",
+    prompt: "What precise opening-hours option is being proposed for consultation?",
+    title: "Proposed hours",
+    stakeholder: "Operations",
+  }),
+  gap({
+    id: "g-eq",
+    severity: "Important",
+    prompt: "When will the equality impact assessment be available?",
+    title: "Equality timing",
+    stakeholder: "Policy",
+  }),
+];
+const consultationClaims = [
+  sampleClaim({ claimNumber: 1, text: "Consultation options are under review.", status: "Confirmed" }),
+  sampleClaim({ claimNumber: 2, text: "No final decision has been made.", status: "Confirmed" }),
+  sampleClaim({ claimNumber: 3, text: "A late-evening slot may offset weekday access.", status: "Assumption" }),
+  sampleClaim({ claimNumber: 4, text: "The change will save money without reducing service quality.", status: "NeedsValidation" }),
+  sampleClaim({ claimNumber: 5, text: "Older residents will not be adversely affected.", status: "NeedsValidation" }),
+  sampleClaim({ claimNumber: 6, text: "The service will close earlier from next month.", status: "Superseded" }),
+];
+const execConsultHours = generateBriefFromIssue(
+  {
+    issue: consultationHoursIssue,
+    sources: [],
+    gaps: consultationGaps,
+    internalInputs: [] as InternalInput[],
+    claims: consultationClaims,
+  },
+  "executive",
+);
+const sufficiency = execConsultHours.executive.blocks.find((b) => b.label === "Record sufficiency")?.body ?? "";
+assert.match(sufficiency, /supports an internal briefing on consultation process risk/i);
+assert.match(sufficiency, /does not yet support.*exact hours/i);
+assert.match(sufficiency, /External position remains provisional/i);
+const assessment = execConsultHours.executive.blocks.find((b) => b.label === "Current assessment")?.body ?? "";
+assert.match(assessment, /Ready for internal briefing with caveats/i);
+assert.match(assessment, /Briefing confidence: Provisional/i);
+const recHours = execConsultHours.executive.blocks.find((b) => b.label === "Recommended decisions / next actions")?.body ?? "";
+assert.match(recHours, /proposed opening-hours option before any external line/i);
+assert.ok(!/leadership position regarding \(Planning\)/i.test(recHours));
+const guardExec = execConsultHours.executive.blocks.find((b) => b.label === "What not to say yet / uncertainty guardrails")?.body ?? "";
+assert.match(guardExec, /Do not say yet:/i);
+assert.match(guardExec, /final opening hours/i);
+assert.match(guardExec, /closing early/i);
 
 console.log("generateBriefFromIssue fixtures: OK");

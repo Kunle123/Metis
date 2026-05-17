@@ -100,6 +100,29 @@ run("dedupes safe-to-say against confirmed and assumption claim codes", () => {
   assert.ok(!model.safeToSay.some((l) => /CLM-2/i.test(l)));
 });
 
+run("parses record sufficiency and claims position summary", () => {
+  const model = parseExecutiveBriefPresentation({
+    issueTitle: "Hours consultation",
+    artifact: artifact([
+      {
+        label: "Record sufficiency",
+        body: "The current record supports an internal briefing on consultation process risk.\n\nExternal position remains provisional.",
+      },
+      {
+        label: "Claims and assumptions",
+        body: "Claims position: 3 confirmed · 1 assumption · 2 need validation · 1 superseded.\n\n### Confirmed claims\n- CLM-001: Line one",
+      },
+      {
+        label: "What not to say yet / uncertainty guardrails",
+        body: "Do not say yet:\n- Do not say yet what the final opening hours will be.\n\nDo not speculate.",
+      },
+    ]),
+  });
+  assert.ok(model.position.recordSufficiency?.includes("consultation process risk"));
+  assert.equal(model.claimsPositionSummary, "Claims position: 3 confirmed · 1 assumption · 2 need validation · 1 superseded.");
+  assert.ok(model.doNotSayYet.some((l) => /final opening hours/i.test(l)));
+});
+
 run("omits what changed when no highlights and no block", () => {
   const model = parseExecutiveBriefPresentation({
     issueTitle: "Stable",

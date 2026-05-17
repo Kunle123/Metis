@@ -8,6 +8,7 @@ import type { Claim } from "@prisma/client";
 import { coerceClaimStatus } from "./coerceClaimStatus";
 import { claimStatusDisplayLabel } from "./claimStatusUi";
 import {
+  buildExecutiveClaimsDoNotSayBullets,
   formatClaimsBriefBlock,
   formatExecutiveClaimsAndAssumptionsBody,
   groupClaimsForSynthesis,
@@ -68,5 +69,12 @@ assert.equal(hasActiveClaimsForBriefing([c({ claimNumber: 999, text: "Old", stat
 const execCompact = formatExecutiveClaimsAndAssumptionsBody(sampleClaims);
 assert.ok(execCompact.includes("CLM-001"));
 assert.ok(!execCompact.includes("Claims register"));
+assert.match(execCompact, /Claims position: 1 confirmed · 1 assumption · 1 need validation · 1 superseded/);
+
+const doNotSay = buildExecutiveClaimsDoNotSayBullets([
+  ...sampleClaims,
+  c({ claimNumber: 5, text: "The proposed opening hours are final.", status: "NeedsValidation" }),
+]);
+assert.ok(doNotSay.some((l) => /final opening hours/i.test(l)));
 
 console.log("claims.fixtures.runner: ok");

@@ -37,7 +37,9 @@ export type ExecutiveBriefPresentationModel = {
     lede: string;
     executiveSummary: string;
     assessmentLines: string[];
+    recordSufficiency: string | null;
   };
+  claimsPositionSummary: string | null;
   decisions: ExecutiveBriefDecision[];
   whatChanged: string[];
   confirmedFacts: string[];
@@ -214,6 +216,32 @@ function classifyGuardrails(body: string): { safe: string[]; unsafe: string[] } 
   const unsafe: string[] = [];
   const safe: string[] = [];
   const isUnsafeLine = (line: string) => /^do not\b/i.test(line) || /\bdo not\b/i.test(line) || /^avoid\b/i.test(line);
+
+  const lines = body.split("\n");
+  let inDoNotSaySection = false;
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (/^do not say yet:?\s*$/i.test(line)) {
+      inDoNotSaySection = true;
+      continue;
+    }
+    if (inDoNotSaySection) {
+      if (!line) {
+        inDoNotSaySection = false;
+        continue;
+      }
+      if (/^[-*•]\s+/.test(line)) {
+        unsafe.push(sanitizeDisplayText(line.replace(/^[-*•]\s+/, "")));
+        continue;
+      }
+      if (/^do not\b/i.test(line)) {
+        unsafe.push(sanitizeDisplayText(line));
+        continue;
+      }
+      inDoNotSaySection = false;
+    }
+  }
+
   for (const p of splitParagraphs(body)) {
     if (isUnsafeLine(p)) unsafe.push(p);
     else if (p.length) safe.push(p);
@@ -226,6 +254,22 @@ function classifyGuardrails(body: string): { safe: string[]; unsafe: string[] } 
     safe: [...new Set(safe)],
     unsafe: [...new Set(unsafe)],
   };
+}
+
+function parseClaimsPositionSummary(claimsBody: string): string | null {
+  const first = claimsBody.split("\n").map((l) => l.trim()).find(Boolean);
+  if (!first || !/^claims position:/i.test(first)) return null;
+  return sanitizeDisplayText(first);
+}
+
+function stripClaimsPositionFromBody(claimsBody: string): string {
+  const lines = claimsBody.split("\n");
+  if (lines[0]?.trim().match(/^claims position:/i)) {
+    let i = 1;
+    while (i < lines.length && !lines[i]!.trim()) i += 1;
+    return lines.slice(i).join("\n");
+  }
+  return claimsBody;
 }
 
 function parseObservationCounts(body: string): { included: number | null; excluded: number | null } {
@@ -253,6 +297,7 @@ function extractOpenQuestionCount(label: string): number | null {
 const BLOCK = {
   executiveSummary: "Executive summary",
   currentAssessment: "Current assessment",
+  recordSufficiency: "Record sufficiency",
   confirmedFacts: "Confirmed facts",
   claims: "Claims and assumptions",
   openQuestions: "Open questions and unresolved needs",
@@ -284,8 +329,14 @@ export function parseExecutiveBriefPresentation(input: ParseExecutiveBriefPresen
   const confirmedBullets = splitBullets(confirmedBody);
   const confirmedParagraphs = splitParagraphs(confirmedBody).filter((p) => !confirmedBullets.includes(p));
 
-  const claimsBody = map.get(BLOCK.claims) ?? "";
+  const claimsBodyRaw = map.get(BLOCK.claims) ?? "";
+  const claimsPositionSummary = claimsBodyRaw.trim() ? parseClaimsPositionSummary(claimsBodyRaw) : null;
+  const claimsBody = claimsBodyRaw.trim() ? stripClaimsPositionFromBody(claimsBodyRaw) : "";
   const claimGroups = claimsBody.trim() ? parseMarkdownClaimSections(claimsBody) : [];
+  const recordSufficiencyBody = map.get(BLOCK.recordSufficiency) ?? "";
+  const recordSufficiency = recordSufficiencyBody.trim()
+    ? splitParagraphs(recordSufficiencyBody).join("\n\n") || sanitizeDisplayText(recordSufficiencyBody)
+    : null;
 
   const guardrailsBody = map.get(BLOCK.guardrails) ?? "";
   const { safe: guardrailSafe, unsafe } = classifyGuardrails(guardrailsBody);
@@ -366,7 +417,9 @@ export function parseExecutiveBriefPresentation(input: ParseExecutiveBriefPresen
       lede: sanitizeDisplayText(artifact.lede),
       executiveSummary: map.get(BLOCK.executiveSummary) ?? "",
       assessmentLines,
+      recordSufficiency,
     },
+    claimsPositionSummary,
     decisions: decisions.map((d) => ({
       ...d,
       owner: d.owner ?? (assessment["issue owner"] && !/not recorded/i.test(assessment["issue owner"]) ? assessment["issue owner"] : null),
