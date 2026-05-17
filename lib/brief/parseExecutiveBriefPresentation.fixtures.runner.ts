@@ -114,7 +114,7 @@ run("parses record sufficiency and claims position summary", () => {
       },
       {
         label: "What not to say yet / uncertainty guardrails",
-        body: "Do not say yet:\n- Do not say yet what the final opening hours will be.\n\nDo not speculate.",
+        body: "Do not say yet:\n- What the final opening hours will be.\n\nDo not speculate.",
       },
     ]),
   });

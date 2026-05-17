@@ -18,8 +18,10 @@ import { coerceClaimStatus } from "@/lib/claims/coerceClaimStatus";
 import {
   dedupeSentences,
   filterExecutiveNarrativeText,
+  formatExecutiveDoNotSaySection,
   intakeConfirmedToSentences,
   isNearDuplicateSentence,
+  sanitizeExecutiveOwnerName,
 } from "@/lib/brief/executiveNarrativeSanitize";
 
 const CAP_EX_SOURCES = 8;
@@ -963,11 +965,8 @@ function buildExecutivePositionNarrative(params: {
 }): string {
   const paras: string[] = [];
 
-  const filteredContext = filterExecutiveNarrativeText(params.context);
-  if (filteredContext) {
-    for (const p of filteredContext.split(/\n\n/).slice(0, 2)) {
-      if (p.trim()) paras.push(p.trim());
-    }
+  for (const p of params.recordSufficiencyBody.split(/\n\n/).map((x) => x.trim()).filter(Boolean)) {
+    if (p && !paras.some((existing) => isNearDuplicateSentence(existing, p))) paras.push(p);
   }
 
   const confirmedExtra = dedupeSentences(
@@ -978,6 +977,13 @@ function buildExecutivePositionNarrative(params: {
   if (confirmedExtra.length) {
     const line = confirmedExtra.slice(0, 2).join(" ");
     if (line && !paras.some((p) => isNearDuplicateSentence(p, line))) paras.push(line);
+  }
+
+  const filteredContext = filterExecutiveNarrativeText(params.context);
+  if (filteredContext) {
+    for (const p of filteredContext.split(/\n\n/).slice(0, 1)) {
+      if (p.trim() && !paras.some((existing) => isNearDuplicateSentence(existing, p))) paras.push(p.trim());
+    }
   }
 
   const text = [params.titleLine, params.summary, params.context, String(params.issue.audience ?? "")]
@@ -1000,7 +1006,7 @@ function buildExecutivePositionNarrative(params: {
   })();
   paras.push(whyItMatters);
 
-  return paras.slice(0, 4).join("\n\n");
+  return paras.slice(0, 5).join("\n\n");
 }
 
 /** Executive judgement on what the record can and cannot support for leadership circulation. */
@@ -1363,8 +1369,9 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
       out.push(sentence(`Calibrate outward lines for the recorded audience: ${audClip}.`));
     }
 
-    if (cleanText(issue.ownerName ?? "") && out.length < 5) {
-      out.push(`Accountable owner for the cadence packaged with this briefing: ${issue.ownerName}.`);
+    const ownerDisplay = sanitizeExecutiveOwnerName(cleanText(issue.ownerName ?? ""));
+    if (ownerDisplay !== "Owner not assigned" && out.length < 5) {
+      out.push(`Accountable owner for the cadence packaged with this briefing: ${ownerDisplay}.`);
     } else {
       out.push("Record a named accountable owner for unresolved decisions surfaced here.");
     }
@@ -1399,13 +1406,13 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
     for (const g of rankedOpenGaps) {
       const t = normalizeNeedText(`${g.prompt ?? ""} ${g.title ?? ""}`);
       if (/\b(opening hours|proposed hours|exact hours|hours option)\b/i.test(t)) {
-        push("Do not say yet what the final opening hours will be.");
+        push("what the final opening hours will be");
       }
       if (/\b(equality impact assessment|equality assessment)\b/i.test(t) && /\b(when|timing|available)\b/i.test(t)) {
-        push("Do not say yet when the equality impact assessment will be complete.");
+        push("when the equality impact assessment will be complete");
       }
       if (/\b(media|press)\b/i.test(t) && /\b(service cut|cut)\b/i.test(t)) {
-        push("Do not say yet that this is a service cut without an agreed holding line.");
+        push("that this is a service cut without an agreed holding line");
       }
     }
     return out;
@@ -1413,9 +1420,7 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
   const claimDoNotSayBullets = [...buildExecutiveClaimsDoNotSayBullets(claimsRows), ...gapDoNotSayBullets];
   const uniqueDoNotSay = [...new Set(claimDoNotSayBullets.map((b) => b.trim()).filter(Boolean))];
   const guardrailsLeadershipSpecific =
-    uniqueDoNotSay.length > 0
-      ? ["Do not say yet:", ...uniqueDoNotSay.map((b) => `- ${b}`)].join("\n")
-      : "";
+    uniqueDoNotSay.length > 0 ? formatExecutiveDoNotSaySection(uniqueDoNotSay) : "";
   const guardrailsLeadershipGeneric = [
     "Do not state causes, scope, or impact that are not supported by confirmed facts, linked sources, or attributable observations.",
     rankedOpenGaps.length
@@ -1479,7 +1484,10 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
     `Urgency: ${issue.priority}`,
     `Briefing posture: ${issue.operatorPosture}`,
     `Open questions: ${issue.openGapsCount} on the issue record · ${rankedOpenGaps.length} open in tracker`,
-    cleanText(issue.ownerName ?? "") ? `Issue owner: ${issue.ownerName}` : "Issue owner: not recorded yet.",
+    (() => {
+      const owner = sanitizeExecutiveOwnerName(cleanText(issue.ownerName ?? ""));
+      return owner !== "Owner not assigned" ? `Issue owner: ${owner}` : "Issue owner: not recorded yet.";
+    })(),
   ]
     .filter(Boolean)
     .join("\n");

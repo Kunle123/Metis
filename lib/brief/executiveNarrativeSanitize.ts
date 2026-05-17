@@ -4,7 +4,10 @@
  */
 
 const INTERNAL_METADATA_LINE =
-  /(?:dev\/staging|feasibility\s+seed|feasibility\s+qa\s+record|not\s+production\s+content|not\s+a\s+public\s+demo\s+route|intended\s+to\s+test\s+whether\s+metis|live-style\s+comms\s+issue|feasibility\s+qa\s*\(|dev\s+seed)/i;
+  /(?:dev\/staging|feasibility\s+seed|feasibility\s+qa(?:\s+record|\s*\(|$)|not\s+production\s+content|not\s+a\s+public\s+demo\s+route|intended\s+to\s+test\s+whether\s+metis|live-style\s+comms\s+issue|dev\s+seed)/i;
+
+const INTERNAL_OWNER_LABEL =
+  /\b(feasibility\s+qa|dev\s+seed|qa\s*\(dev)\b/i;
 
 const PRODUCT_EXPLANATION_LINE =
   /(?:generated\s+from\s+the\s+current\s+issue\s+record|intended\s+to\s+test\s+whether)/i;
@@ -100,4 +103,37 @@ export function intakeConfirmedToSentences(confirmedFacts: string): string[] {
     .split(/\r?\n/)
     .map((l) => l.replace(/^[-*•]\s+/, "").trim())
     .filter(Boolean);
+}
+
+/** Leadership-facing owner label — never expose seed/QA fixture names. */
+export function sanitizeExecutiveOwnerName(name: string): string {
+  const t = name.trim();
+  if (!t || INTERNAL_OWNER_LABEL.test(t) || isExecutiveInternalMetadataLine(t)) {
+    return "Owner not assigned";
+  }
+  return t;
+}
+
+function capitalizeClause(clause: string): string {
+  const t = clause.trim().replace(/\.$/, "");
+  if (!t) return "";
+  return `${t.charAt(0).toUpperCase()}${t.slice(1)}`;
+}
+
+/** Bullet text under a “Do not say yet” heading — no repeated lead-in phrase. */
+export function formatExecutiveDoNotSayBullet(line: string): string {
+  let clause = line
+    .trim()
+    .replace(/^[-*•]\s+/, "")
+    .replace(/^do not say yet\s+/i, "")
+    .replace(/^do not\s+/i, "");
+  clause = capitalizeClause(clause);
+  if (!clause) return "";
+  return clause.endsWith(".") ? `- ${clause}` : `- ${clause}.`;
+}
+
+export function formatExecutiveDoNotSaySection(bullets: string[]): string {
+  const formatted = bullets.map(formatExecutiveDoNotSayBullet).filter(Boolean);
+  if (!formatted.length) return "";
+  return ["Do not say yet:", ...formatted].join("\n");
 }

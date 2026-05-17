@@ -463,7 +463,7 @@ export async function seedFeasibilityServiceHours(prisma: PrismaClient): Promise
       status: "Ready to brief",
       priority: "Normal",
       operatorPosture: "Active",
-      ownerName: "Feasibility QA (dev seed)",
+      ownerName: "Casey Morgan",
       audience:
         "Service users, staff, elected representatives, local community groups and local media. The organisation must avoid implying the decision is already made before consultation material and equality assessment are confirmed.",
       openGapsCount,

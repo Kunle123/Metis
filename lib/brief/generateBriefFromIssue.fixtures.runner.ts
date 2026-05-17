@@ -567,9 +567,11 @@ const guardExec = execConsultHours.executive.blocks.find((b) => b.label === "Wha
 assert.match(guardExec, /Do not say yet:/i);
 assert.match(guardExec, /final opening hours/i);
 assert.match(guardExec, /closing early/i);
+assert.ok(!/Do not say yet:\s*\n-\s*Do not say yet/i.test(guardExec), "guardrail bullets must not repeat the section lead-in");
 
 const feasibilitySeedIssue = {
   ...consultationHoursIssue,
+  ownerName: "Feasibility QA (dev seed)",
   summary:
     "Feasibility QA record: a live-style comms issue on proposed service opening-hours consultation. The record mixes operational updates — intended to test whether Metis can produce a valuable executive brief without over-claiming.",
   context: [
@@ -606,7 +608,8 @@ const feasibilityBody = [
   ...execFeasibility.executive.blocks.map((b) => b.body),
 ].join("\n");
 const forbiddenSeed = [
-  /Feasibility QA record/i,
+  /Feasibility QA/i,
+  /dev seed/i,
   /dev\/staging/i,
   /feasibility seed/i,
   /not production content/i,
@@ -618,8 +621,29 @@ const forbiddenSeed = [
 for (const re of forbiddenSeed) {
   assert.ok(!re.test(feasibilityBody), `executive brief must not contain seed/dev metadata: ${re}`);
 }
+assert.match(feasibilityBody, /Ready for internal briefing with caveats/i);
+assert.match(feasibilityBody, /External position: Remains provisional/i);
 assert.match(feasibilityBody, /external position remains provisional/i);
 assert.match(feasibilityBody, /supports an internal briefing on consultation process risk/i);
+const assessmentFeasibility =
+  execFeasibility.executive.blocks.find((b) => b.label === "Current assessment")?.body ?? "";
+assert.ok(!/Feasibility QA/i.test(assessmentFeasibility));
+assert.ok(!/dev seed/i.test(assessmentFeasibility));
+assert.match(assessmentFeasibility, /Issue owner: not recorded yet|Issue owner: Owner not assigned/i);
+const guardFeasibility =
+  execFeasibility.executive.blocks.find((b) => b.label === "What not to say yet / uncertainty guardrails")?.body ?? "";
+assert.ok(!/Do not say yet:\s*\n-\s*Do not say yet/i.test(guardFeasibility));
+assert.match(guardFeasibility, /save money without reducing service quality/i);
+assert.match(guardFeasibility, /equality impact assessment will be complete/i);
+assert.match(guardFeasibility, /closing early/i);
+const execSummaryFeasibility =
+  execFeasibility.executive.blocks.find((b) => b.label === "Executive summary")?.body ?? "";
+assert.match(
+  execSummaryFeasibility,
+  /^The current record supports an internal briefing/s,
+  "executive summary must lead with record sufficiency judgement",
+);
+assert.ok(!/^Message discipline:/m.test(execSummaryFeasibility.trim().split("\n")[0] ?? ""));
 const confirmedFeasibility =
   execFeasibility.executive.blocks.find((b) => b.label === "Confirmed facts")?.body ?? "";
 const staffingHits = confirmedFeasibility.match(/staffing pressure/gi) ?? [];
