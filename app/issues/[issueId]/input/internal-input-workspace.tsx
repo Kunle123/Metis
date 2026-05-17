@@ -8,7 +8,6 @@ import { ConfidencePill, ReadinessPill, SurfaceCard } from "@/components/MetisSh
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CollapsibleSection } from "@/components/review/CollapsibleSection";
-import { DenseSection } from "@/components/review/DenseSection";
 import { ReviewRailCard } from "@/components/review/ReviewRailCard";
 import { ReviewToolbar } from "@/components/review/ReviewToolbar";
 import { formatObservationCode } from "@/lib/issueRecordCodes";
@@ -31,6 +30,11 @@ function clampText(s: string, max = 220) {
   const t = s.trim();
   if (t.length <= max) return t;
   return `${t.slice(0, max).trimEnd()}…`;
+}
+
+function isMetaValuePresent(value: string | null | undefined): value is string {
+  const t = value?.trim();
+  return Boolean(t && t !== "—");
 }
 
 const OBS_RECORD_BADGE_CLASS =
@@ -207,7 +211,6 @@ export function InternalInputWorkspace({
                     const expanded = openId === input.id;
                     const response = (input.response ?? "").trim();
                     const responsePreview = clampText(response, 240);
-                    const linked = input.linkedSection ?? "—";
                     const vis = visibilityById[input.id] ?? normalizeObservationVisibility(input.visibility ?? "Organisation");
                     const visBadge =
                       vis === "Restricted" ? (
@@ -219,119 +222,132 @@ export function InternalInputWorkspace({
                           Visible to organisation
                         </Badge>
                       );
-                    const timestamp = input.timestampLabel ?? "—";
                     const isExcluded = Boolean(excludedById[input.id]);
                     const canVis = canEditObservationVisibility(input);
+                    const hasTimestamp = isMetaValuePresent(input.timestampLabel);
+                    const hasSection = isMetaValuePresent(input.linkedSection);
 
                     return (
-                      <div
+                      <article
                         key={input.id}
-                        className={["border-t border-[--metis-outline-subtle] px-4 py-3 first:border-t-0 sm:px-5", !expanded ? "hover:bg-[color-mix(in_oklab,var(--metis-surface-elevated)_22%,transparent)]" : ""].join(" ")}
+                        className={[
+                          "border-t border-[--metis-outline-subtle] px-4 py-4 first:border-t-0 sm:px-5",
+                          !expanded ? "hover:bg-[color-mix(in_oklab,var(--metis-surface-elevated)_18%,transparent)]" : "",
+                        ].join(" ")}
                       >
-                        <DenseSection
-                          title={
-                            <div className="flex flex-wrap items-center gap-2">
-                              <Badge className={OBS_RECORD_BADGE_CLASS}>
-                                {formatObservationCode(input.observationNumber) ?? `${input.id.slice(0, 8)}…`}
-                              </Badge>
-                              <span className="text-sm font-medium text-[--metis-paper]">
-                                {input.role} · {input.name}
+                        <header className="flex min-w-0 flex-wrap items-center gap-2">
+                          <Badge className={OBS_RECORD_BADGE_CLASS}>
+                            {formatObservationCode(input.observationNumber) ?? `${input.id.slice(0, 8)}…`}
+                          </Badge>
+                          <span className="min-w-0 flex-1 text-sm font-medium text-[--metis-paper]">
+                            {input.role} · {input.name}
+                          </span>
+                          {visBadge}
+                          <Badge
+                            className={
+                              isExcluded
+                                ? "border border-[--metis-status-danger-border] bg-[color-mix(in_oklab,var(--metis-status-danger-bg)_52%,transparent)] text-[--metis-status-danger-fg]"
+                                : "border border-[--metis-status-success-border] bg-[color-mix(in_oklab,var(--metis-status-success-bg)_52%,transparent)] text-[--metis-status-success-fg]"
+                            }
+                          >
+                            {isExcluded ? "Excluded from briefs" : "Included in briefs"}
+                          </Badge>
+                        </header>
+
+                        <div className="mt-3 flex min-w-0 flex-col gap-3 border-b border-[color-mix(in_oklab,var(--metis-outline-subtle)_70%,transparent)] pb-3">
+                          <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2 text-xs text-[--metis-text-tertiary]">
+                            <ConfidencePill level={input.confidence} />
+                            {hasTimestamp ? (
+                              <span className="text-[--metis-paper-muted]">
+                                <span className="font-medium uppercase tracking-[0.08em] text-[--metis-text-tertiary]">
+                                  Timestamp
+                                </span>{" "}
+                                {input.timestampLabel!.trim()}
                               </span>
-                            </div>
-                          }
-                          className="space-y-2 border-t-0 pt-0"
-                          titleClassName="text-[0.62rem]"
-                        >
-                          <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
-                            <div className="min-w-0 flex-1">
-                              <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-[--metis-paper-muted]">
-                                <span className="text-[--metis-text-tertiary]">Timestamp:</span>
-                                <span>{timestamp}</span>
-                                <span className="text-[--metis-outline-strong]">•</span>
-                                <span className="text-[--metis-text-tertiary]">Section:</span>
-                                <span>{linked}</span>
-                              </div>
-
-                              <p className="mt-2 text-sm leading-6 text-[--metis-paper-muted]">{responsePreview || "—"}</p>
-                            </div>
-
-                            <div className="flex shrink-0 flex-wrap items-center gap-2">
-                              {visBadge}
-                              {canVis ? (
-                                <select
-                                  aria-label="Observation visibility"
-                                  className="h-9 rounded-full border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-3 text-[0.7rem] font-medium uppercase tracking-[0.12em] text-[--metis-text-secondary]"
-                                  disabled={busyId === input.id}
-                                  value={vis}
-                                  onChange={(e) => {
-                                    const v = e.target.value as InternalObservationVisibility;
-                                    void setObservationVisibility(input.id, v);
-                                  }}
-                                >
-                                  <option value="Organisation">Visible to organisation</option>
-                                  <option value="Restricted">Restricted</option>
-                                </select>
-                              ) : null}
-                              <Badge
-                                className={
-                                  isExcluded
-                                    ? "border border-[--metis-status-danger-border] bg-[color-mix(in_oklab,var(--metis-status-danger-bg)_52%,transparent)] text-[--metis-status-danger-fg]"
-                                    : "border border-[--metis-status-success-border] bg-[color-mix(in_oklab,var(--metis-status-success-bg)_52%,transparent)] text-[--metis-status-success-fg]"
-                                }
-                              >
-                                {isExcluded ? "Excluded from briefs" : "Included in briefs"}
-                              </Badge>
-                              <ConfidencePill level={input.confidence} />
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                disabled={busyId === input.id}
-                                onClick={() => void toggleExcluded(input.id, !isExcluded)}
-                                title="Excluded notes are kept in the record but omitted from generated briefs."
-                              >
-                                {isExcluded ? "Include in briefs" : "Exclude from briefs"}
-                              </Button>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setOpenId((cur) => (cur === input.id ? null : input.id))}
-                                aria-expanded={expanded}
-                                className="h-auto min-h-0 gap-2 hover:no-underline"
-                              >
-                                {expanded ? "Hide response" : "Full response"}
-                                {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                              </Button>
-                            </div>
+                            ) : null}
+                            {hasSection ? (
+                              <span className="text-[--metis-paper-muted]">
+                                <span className="font-medium uppercase tracking-[0.08em] text-[--metis-text-tertiary]">
+                                  Section
+                                </span>{" "}
+                                {input.linkedSection!.trim()}
+                              </span>
+                            ) : null}
+                            {!hasTimestamp && !hasSection ? (
+                              <span className="text-[--metis-text-tertiary]">No timestamp or section linked</span>
+                            ) : null}
                           </div>
 
-                          {expanded ? (
-                            <div className="pt-1">
-                              <CollapsibleSection
-                                defaultOpen={true}
-                                className="border-[--metis-info-border] bg-[--metis-info-bg] px-4 py-3"
-                                summary={
-                                  <div className="flex items-center justify-between gap-3">
-                                    <div className="min-w-0">
-                                      <p className="text-xs font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">
-                                        Response
-                                      </p>
-                                      <p className="mt-1 text-xs text-[--metis-paper-muted]">Full text as captured.</p>
-                                    </div>
-                                    <div className="flex items-center gap-2 text-[--metis-text-tertiary]">
-                                      <span className="text-xs">Toggle</span>
-                                      <ChevronDown className="h-4 w-4" />
-                                    </div>
-                                  </div>
-                                }
+                          <div className="flex min-w-0 w-full flex-wrap items-center gap-2">
+                            {canVis ? (
+                              <select
+                                aria-label="Observation visibility"
+                                className="h-9 max-w-full rounded-full border border-[var(--metis-control-border)] bg-[var(--metis-control-bg)] px-3 text-[0.7rem] font-medium uppercase tracking-[0.12em] text-[--metis-text-secondary]"
+                                disabled={busyId === input.id}
+                                value={vis}
+                                onChange={(e) => {
+                                  const v = e.target.value as InternalObservationVisibility;
+                                  void setObservationVisibility(input.id, v);
+                                }}
                               >
-                                <p className="whitespace-pre-wrap text-sm leading-7 text-[--metis-paper]">{response || "—"}</p>
-                              </CollapsibleSection>
-                            </div>
-                          ) : null}
-                        </DenseSection>
-                      </div>
+                                <option value="Organisation">Visible to organisation</option>
+                                <option value="Restricted">Restricted</option>
+                              </select>
+                            ) : null}
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              disabled={busyId === input.id}
+                              onClick={() => void toggleExcluded(input.id, !isExcluded)}
+                              title="Excluded notes are kept in the record but omitted from generated briefs."
+                            >
+                              {isExcluded ? "Include in briefs" : "Exclude from briefs"}
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setOpenId((cur) => (cur === input.id ? null : input.id))}
+                              aria-expanded={expanded}
+                              className="h-auto min-h-0 gap-2 hover:no-underline"
+                            >
+                              {expanded ? "Hide response" : "Full response"}
+                              {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                            </Button>
+                          </div>
+                        </div>
+
+                        <div className="mt-3 min-w-0 w-full">
+                          <p className="w-full min-w-0 break-words text-sm leading-relaxed text-[--metis-paper-muted]">
+                            {responsePreview || "—"}
+                          </p>
+                        </div>
+
+                        {expanded ? (
+                          <div className="mt-3 min-w-0 w-full">
+                            <CollapsibleSection
+                              defaultOpen={true}
+                              className="border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_35%,transparent)] px-4 py-3"
+                              summary={
+                                <div className="flex min-w-0 items-center justify-between gap-3">
+                                  <div className="min-w-0">
+                                    <p className="text-xs font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">
+                                      Response
+                                    </p>
+                                    <p className="mt-1 text-xs text-[--metis-paper-muted]">Full text as captured.</p>
+                                  </div>
+                                  <ChevronDown className="h-4 w-4 shrink-0 text-[--metis-text-tertiary]" aria-hidden />
+                                </div>
+                              }
+                            >
+                              <p className="w-full min-w-0 whitespace-pre-wrap break-words text-sm leading-relaxed text-[--metis-paper]">
+                                {response || "—"}
+                              </p>
+                            </CollapsibleSection>
+                          </div>
+                        ) : null}
+                      </article>
                     );
                   })}
                 </div>
