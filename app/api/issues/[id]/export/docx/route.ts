@@ -5,6 +5,8 @@ import { ExportFormatSchema } from "@metis/shared/export";
 import { prisma } from "@/lib/db/prisma";
 import { requireActiveOrgIssue } from "@/lib/organisations/requireActiveOrgIssue";
 import { loadExportAuditAppendixPayload } from "@/lib/export/buildExportAuditAppendix";
+import { shouldUseBriefingPackRenderer } from "@/lib/export/briefingPack";
+import { loadBriefingPackContext } from "@/lib/export/loadBriefingPackContext";
 import { EXPORT_DOCX_MIME, isExportDocxSupported, renderExportPackageDocx } from "@/lib/export/renderExportDocx";
 
 /**
@@ -49,6 +51,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   const exportViewer = { membershipRole: gated.ctx.membership.role, userId: gated.ctx.user.id };
   const auditAppendix =
     format === "full-issue-brief" ? await loadExportAuditAppendixPayload(issueId, exportViewer) : undefined;
+  const sourceBriefLabel = `${parsedMode.data === "full" ? "Full" : "Executive"} brief v${briefVersion.versionNumber}`;
+  const briefingPack = shouldUseBriefingPackRenderer(format, parsedMode.data)
+    ? await loadBriefingPackContext(issue, { format, sourceBriefLabel })
+    : null;
 
   let buffer: Buffer;
   try {
@@ -58,6 +64,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       format,
       artifact,
       auditAppendix,
+      briefingPack,
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Render failed";

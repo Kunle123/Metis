@@ -122,7 +122,7 @@ function bodyFragmentsToHtml(rawBody: string): string {
     .join("\n");
 }
 
-function orderExecutiveBlocks(artifact: BriefArtifact) {
+export function getOrderedExecutiveBlocks(artifact: BriefArtifact) {
   return [...artifact.executive.blocks]
     .map((b, i) => ({
       label: executiveBriefExportBlockLabel(i, b.label),
@@ -130,6 +130,41 @@ function orderExecutiveBlocks(artifact: BriefArtifact) {
       order: EXECUTIVE_BLOCK_ORDER[executiveBriefExportBlockLabel(i, b.label)] ?? 500 + i,
     }))
     .sort((a, b) => a.order - b.order);
+}
+
+/** Normalized, sanitized executive block body (guardrail dedupe applied at export). */
+export function prepareExecutiveBlockBodyForExport(label: string, body: string): string {
+  let bodyText = normalizeExportTerminology(body);
+  if (blockVariant(label) === "guardrails") {
+    bodyText = dedupeGuardrailBody(bodyText);
+  }
+  return sanitizeExportText(bodyText);
+}
+
+export function briefingPackFormatLabel(format: ExportFormat): string {
+  return formatLabelForPackage(format);
+}
+
+export function briefingPackFormatGeneratedAt(d: Date): string {
+  return formatShortDate(d);
+}
+
+export function briefingPackRecordBasisLines(ctx: BriefingPackContext, artifact: BriefArtifact): string[] {
+  const lines = [
+    "This pack is a circulation snapshot. The complete source register, observation detail, and live claims register remain in the Metis workspace for this issue.",
+    `Sources linked: ${ctx.issue.sourcesCount ?? 0}`,
+    `Open questions on tracker: ${ctx.issue.openGapsCount ?? 0}`,
+  ];
+  if (ctx.claimsCount != null) lines.push(`Claims on register: ${ctx.claimsCount}`);
+  const claimsLine = parseClaimsSummaryFromArtifact(artifact);
+  if (claimsLine) lines.push(claimsLine);
+  const obsLine = observationsSummaryFromArtifact(artifact);
+  if (obsLine) lines.push(`Observations: ${obsLine}`);
+  return lines;
+}
+
+function orderExecutiveBlocks(artifact: BriefArtifact) {
+  return getOrderedExecutiveBlocks(artifact);
 }
 
 function renderExecutiveBlockHtml(label: string, body: string): string {

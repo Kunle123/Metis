@@ -13,6 +13,7 @@ import { join } from "node:path";
 import { BriefArtifactSchema } from "@metis/shared/briefVersion";
 
 import type { ExportAuditAppendixInput } from "./buildExportAuditAppendix";
+import type { BriefingPackContext } from "./briefingPack";
 import { isExportDocxSupported, renderExportPackageDocx } from "./renderExportDocx";
 
 const artifact = BriefArtifactSchema.parse({
@@ -41,8 +42,18 @@ const artifact = BriefArtifactSchema.parse({
   },
   executive: {
     blocks: [
-      { label: "Situation", body: "Brief exec situation body." },
-      { label: "Recommendation", body: "- Point one\n- Point two" },
+      { label: "Executive summary", body: "Consultation is under way on opening hours." },
+      { label: "Current assessment", body: "Status: Active\nBriefing confidence: Provisional" },
+      { label: "Record sufficiency", body: "Record is sufficient for internal briefing." },
+      {
+        label: "Recommended decisions / next actions",
+        body: "1) Confirm proposed hours.\n2) Agree media holding line.",
+      },
+      { label: "Confirmed facts", body: "- Consultation is under review.\n- No final decision yet." },
+      {
+        label: "What not to say yet / uncertainty guardrails",
+        body: "- Do not confirm final hours.\n- Do not confirm final hours.",
+      },
     ],
     immediateActions: ["Confirm timeline", "Align legal review"],
   },
@@ -194,6 +205,55 @@ async function main() {
   assert.ok(!fullText.includes("22222222-2222-2222-2222-222222222222"), "uuid not leaked in appendix");
   assert.ok(!fullText.includes("00000000-0000-0000-0000-000000000099"), "missing resolver uuid not leaked");
 
+  const briefingPackCtx: BriefingPackContext = {
+    issue: {
+      title: "Consultation on Proposed Changes to Service Opening Hours",
+      ownerName: "Comms lead",
+      status: "Active",
+      severity: "Medium",
+      priority: "P2",
+      updatedAt: new Date("2026-05-01T12:00:00Z"),
+      sourcesCount: 4,
+      openGapsCount: 2,
+    },
+    format: "executive-brief",
+    sourceBriefLabel: "Executive brief v3",
+    generatedAt: new Date("2026-05-16T09:00:00Z"),
+    claimsCount: 5,
+    messages: [
+      {
+        templateLabel: "External customer update",
+        audienceLabel: "Service users",
+        approvalStatus: "Draft — not approved",
+        primaryBody: "We are consulting on proposed changes to opening hours.",
+        supportingSections: [
+          { title: "Review caveats", body: "Do not confirm final hours until consultation closes." },
+        ],
+      },
+    ],
+  };
+
+  const execPackBuf = await renderExportPackageDocx({
+    issue: { title: briefingPackCtx.issue.title, id: issueWithId.id },
+    mode: "executive",
+    format: "executive-brief",
+    artifact,
+    briefingPack: briefingPackCtx,
+  });
+  assert.ok(execPackBuf.byteLength > 2500);
+  const execPackText = docxFlattenedRuns(docxDocumentXml(execPackBuf));
+  assert.ok(execPackText.includes("Executive briefing pack"), "pack cover label");
+  assert.ok(execPackText.includes("Executive summary"), "executive summary heading");
+  assert.ok(execPackText.includes("Recommended decisions"), "decisions section");
+  assert.ok(execPackText.includes("What not to say yet"), "guardrails section");
+  assert.ok(execPackText.includes("Message drafts"), "message drafts section");
+  assert.ok(execPackText.includes("Record basis"), "record basis section");
+  assert.ok(execPackText.includes("Prepared in Metis from"), "provenance footer");
+  assert.ok(execPackText.includes("External customer update"), "message template label");
+  assert.ok(!/feasibility qa/i.test(execPackText), "no dev QA strings");
+  assert.ok(!execPackText.includes("44444444-4444-4444-4444-444444444444"), "no raw issue UUID");
+  assert.equal(execPackText.includes(appendixMarker), false, "executive pack DOCX omits audit appendix");
+
   const execBuf = await renderExportPackageDocx({
     issue: issueWithId,
     mode: "executive",
@@ -213,7 +273,8 @@ async function main() {
   assert.equal(docxFlattenedRuns(docxDocumentXml(boardBuf)).includes(appendixMarker), false, "board DOCX omits audit appendix");
 
   writeFileSync(join(outDir, "prod-full-issue.docx"), fullBuf);
-  writeFileSync(join(outDir, "prod-executive.docx"), execBuf);
+  writeFileSync(join(outDir, "prod-executive-pack.docx"), execPackBuf);
+  writeFileSync(join(outDir, "prod-executive-legacy.docx"), execBuf);
   writeFileSync(join(outDir, "prod-board-note.docx"), boardBuf);
 
   console.log(`export DOCX production helper: ok — wrote 3 samples → ${outDir}`);

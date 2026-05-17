@@ -13,7 +13,9 @@ import {
   type ExportAuditAppendixDocNode,
   type ExportAuditAppendixInput,
 } from "./buildExportAuditAppendix";
-import { executiveBriefExportBlockLabel, normalizeExportTerminology } from "./renderExportPackage";
+import { shouldUseBriefingPackRenderer, type BriefingPackContext } from "./briefingPack";
+import { renderBriefingPackDocx } from "./renderBriefingPackDocx";
+import { executiveBriefExportBlockLabel, normalizeExportTerminology } from "./exportDocumentUtils";
 
 /** Brief packages that beta DOCX targets (matches UI / API guards). */
 export function isExportDocxSupported(format: ExportFormat): boolean {
@@ -99,11 +101,16 @@ export async function renderExportPackageDocx(opts: {
   artifact: BriefArtifact;
   /** Required for full-issue-brief DOCX (audit appendix). Loaded by the API route. */
   auditAppendix?: ExportAuditAppendixInput;
+  briefingPack?: BriefingPackContext | null;
 }): Promise<Buffer> {
-  const { issue, mode, format, artifact, auditAppendix } = opts;
+  const { issue, mode, format, artifact, auditAppendix, briefingPack } = opts;
 
   if (format === "email-ready") {
     throw new Error("DOCX export does not support email-ready format");
+  }
+
+  if (briefingPack && shouldUseBriefingPackRenderer(format, mode)) {
+    return renderBriefingPackDocx(briefingPack, artifact);
   }
 
   const titlePlain = normalizeExportTerminology(issue.title);
