@@ -123,6 +123,24 @@ run("parses record sufficiency and claims position summary", () => {
   assert.ok(model.doNotSayYet.some((l) => /final opening hours/i.test(l)));
 });
 
+run("drops record sufficiency paragraphs duplicated in executive summary", () => {
+  const model = parseExecutiveBriefPresentation({
+    issueTitle: "Hours consultation",
+    artifact: artifact([
+      {
+        label: "Executive summary",
+        body: "The current record supports an internal briefing on consultation process risk.\n\nConsultation options are under review.",
+      },
+      {
+        label: "Record sufficiency",
+        body: "The current record supports an internal briefing on consultation process risk.\n\nExternal position remains provisional.",
+      },
+    ]),
+  });
+  assert.ok(model.position.recordSufficiency?.includes("External position remains provisional"));
+  assert.ok(!model.position.recordSufficiency?.startsWith("The current record supports"));
+});
+
 run("filters seed metadata and hides lede duplicated by record sufficiency", () => {
   const baseArtifact = artifact([
     {

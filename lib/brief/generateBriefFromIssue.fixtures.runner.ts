@@ -108,7 +108,8 @@ const intakeOnly: BriefGenerationInput = {
 
 const execEmpty = generateBriefFromIssue(intakeOnly, "executive");
 const execSituation = execEmpty.executive.blocks.find((b) => b.label === "Executive summary")?.body ?? "";
-assert.match(execSituation, /Supplemental context|prior escalation/i);
+assert.match(execSituation, /supports an internal briefing/i);
+assert.match(execSituation, /Immediate leadership decisions/i);
 assert.ok(!/^Title\s*:/m.test(execSituation), "executive Situation body should not repeat a Title line");
 
 assert.equal(execEmpty.executive.immediateActions.length, 0, "immediate actions folded into recommendations / empty slice");
@@ -488,7 +489,8 @@ const includedPlusExcluded: BriefGenerationInput = {
 const execMixedObs = generateBriefFromIssue(includedPlusExcluded, "executive").executive.blocks.find(
   (b) => b.label === "Observations",
 )?.body ?? "";
-assert.match(execMixedObs, /Included note for the brief/);
+assert.match(execMixedObs, /Key themes:/i);
+assert.match(execMixedObs, /context, not confirmed fact/i);
 assert.match(execMixedObs, /1 observation is excluded from brief output\./);
 
 const fullClaims = generateBriefFromIssue(withClaims, "full");
@@ -553,10 +555,13 @@ const execConsultHours = generateBriefFromIssue(
   },
   "executive",
 );
+const execSummaryHours =
+  execConsultHours.executive.blocks.find((b) => b.label === "Executive summary")?.body ?? "";
+assert.match(execSummaryHours, /supports an internal briefing on consultation process risk/i);
+assert.match(execSummaryHours, /does not yet support.*exact hours/i);
 const sufficiency = execConsultHours.executive.blocks.find((b) => b.label === "Record sufficiency")?.body ?? "";
-assert.match(sufficiency, /supports an internal briefing on consultation process risk/i);
-assert.match(sufficiency, /does not yet support.*exact hours/i);
 assert.match(sufficiency, /External position remains provisional/i);
+assert.ok(!/supports an internal briefing on consultation process risk/i.test(sufficiency));
 const assessment = execConsultHours.executive.blocks.find((b) => b.label === "Current assessment")?.body ?? "";
 assert.match(assessment, /Ready for internal briefing with caveats/i);
 assert.match(assessment, /Briefing confidence: Provisional/i);
@@ -593,12 +598,46 @@ const feasibilityClaims = [
     status: "Confirmed",
   }),
 ];
+const feasibilityObservations: InternalInput[] = [
+  internalInputRow({
+    role: "Comms",
+    name: "Amara Lewis",
+    response:
+      "We need to avoid language that implies the decision is already made. Options are under review.",
+    linkedSection: "Message discipline",
+  }),
+  internalInputRow({
+    role: "Operations",
+    name: "Daniel Price",
+    response:
+      "Staffing pressure is driving the hours review. The equality assessment is not complete.",
+    linkedSection: "Operations",
+  }),
+  internalInputRow({
+    role: "Policy",
+    name: "Priya Raman",
+    response: "The equality impact assessment is not complete.",
+    linkedSection: "Equality",
+  }),
+  internalInputRow({
+    role: "Customer team",
+    name: "Ben Carter",
+    response: "People are asking for exact proposed hours but staff do not have a signed-off option.",
+    linkedSection: "Front desk",
+  }),
+  internalInputRow({
+    role: "Executive office",
+    name: "Marcus Hale",
+    response: "The chief executive wants a short line for councillors by tomorrow morning.",
+    linkedSection: "Leadership",
+  }),
+];
 const execFeasibility = generateBriefFromIssue(
   {
     issue: feasibilitySeedIssue,
     sources: [],
     gaps: consultationGaps,
-    internalInputs: [] as InternalInput[],
+    internalInputs: feasibilityObservations,
     claims: feasibilityClaims,
   },
   "executive",
@@ -654,5 +693,35 @@ assert.ok(
   !/staffing pressure and uneven usage patterns are part of the reason/i.test(claimsFeasibility),
   "confirmed claims duplicated in intake should not repeat in claims register detail",
 );
+
+const sufficiencyFeasibility =
+  execFeasibility.executive.blocks.find((b) => b.label === "Record sufficiency")?.body ?? "";
+const sufficiencyLead =
+  "The current record supports an internal briefing on consultation process risk and message discipline";
+assert.match(execSummaryFeasibility, /supports an internal briefing on consultation process risk/i);
+assert.ok(
+  !sufficiencyFeasibility.includes(sufficiencyLead),
+  "record sufficiency block must not repeat the executive summary lead paragraph verbatim",
+);
+if (sufficiencyFeasibility.trim()) {
+  assert.match(sufficiencyFeasibility, /External position remains provisional/i);
+}
+
+const equalityGuardrailHits =
+  guardFeasibility.match(/equality impact assessment will be complete/gi) ?? [];
+assert.equal(
+  equalityGuardrailHits.length,
+  1,
+  "Do not say yet must list the equality timing guardrail only once",
+);
+
+const obsFeasibility = execFeasibility.executive.blocks.find((b) => b.label === "Observations")?.body ?? "";
+assert.match(obsFeasibility, /Key themes:/i);
+assert.match(obsFeasibility, /context, not confirmed fact/i);
+assert.ok(!/^-\s/m.test(obsFeasibility), "executive observations should be thematic, not a bullet dump");
+assert.ok(obsFeasibility.split(/\n\n/).length <= 4, "executive observations should stay compact");
+
+const execSummaryParas = execSummaryFeasibility.split(/\n\n+/).filter(Boolean);
+assert.ok(execSummaryParas.length <= 3, "executive summary should be at most three paragraphs");
 
 console.log("generateBriefFromIssue fixtures: OK");

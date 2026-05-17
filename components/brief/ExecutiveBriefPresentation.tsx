@@ -11,7 +11,7 @@ import type {
   ExecutiveBriefLineItem,
   ExecutiveBriefPresentationModel,
 } from "@/lib/brief/parseExecutiveBriefPresentation";
-import { isNearDuplicateSentence } from "@/lib/brief/executiveNarrativeSanitize";
+import { filterParagraphsNotInBody, isNearDuplicateSentence } from "@/lib/brief/executiveNarrativeSanitize";
 import {
   parseExecutiveLineItem,
   slicePresentationItems,
@@ -213,12 +213,16 @@ export function ExecutiveBriefPresentation({
   const statusCaveat = /caveat/i.test(model.header.status) || /provisional/i.test(model.header.status);
 
   const recordSufficiencyParagraphs = model.position.recordSufficiency
-    ? model.position.recordSufficiency.split(/\n\n+/).map((p) => p.trim()).filter(Boolean)
+    ? filterParagraphsNotInBody(
+        model.position.recordSufficiency.split(/\n\n+/).map((p) => p.trim()).filter(Boolean),
+        executiveSummaryBody,
+      )
     : [];
 
   const showLede =
     model.position.lede.trim().length > 0 &&
-    !recordSufficiencyParagraphs.some((p) => isNearDuplicateSentence(model.position.lede, p));
+    !recordSufficiencyParagraphs.some((p) => isNearDuplicateSentence(model.position.lede, p)) &&
+    !isNearDuplicateSentence(model.position.lede, executiveSummaryBody);
 
   return (
     <div className="mx-auto w-full min-w-0 max-w-[72rem]">

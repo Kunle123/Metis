@@ -1,5 +1,10 @@
 import type { BriefArtifact } from "@metis/shared/briefVersion";
-import { filterExecutiveNarrativeText, isNearDuplicateSentence } from "@/lib/brief/executiveNarrativeSanitize";
+import {
+  dedupeExecutiveDoNotSayBullets,
+  filterExecutiveNarrativeText,
+  filterParagraphsNotInBody,
+  isNearDuplicateSentence,
+} from "@/lib/brief/executiveNarrativeSanitize";
 
 const UUID_RE =
   /\b[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\b/gi;
@@ -334,10 +339,18 @@ export function parseExecutiveBriefPresentation(input: ParseExecutiveBriefPresen
   const claimsPositionSummary = claimsBodyRaw.trim() ? parseClaimsPositionSummary(claimsBodyRaw) : null;
   const claimsBody = claimsBodyRaw.trim() ? stripClaimsPositionFromBody(claimsBodyRaw) : "";
   const claimGroups = claimsBody.trim() ? parseMarkdownClaimSections(claimsBody) : [];
+  const executiveSummary = filterExecutiveNarrativeText(map.get(BLOCK.executiveSummary) ?? "");
+
   const recordSufficiencyBody = map.get(BLOCK.recordSufficiency) ?? "";
-  const recordSufficiency = recordSufficiencyBody.trim()
-    ? splitParagraphs(recordSufficiencyBody).join("\n\n") || sanitizeDisplayText(recordSufficiencyBody)
-    : null;
+  const recordSufficiency = (() => {
+    if (!recordSufficiencyBody.trim()) return null;
+    const paragraphs = splitParagraphs(recordSufficiencyBody).filter(Boolean);
+    const filtered = executiveSummary.trim()
+      ? filterParagraphsNotInBody(paragraphs, executiveSummary)
+      : paragraphs;
+    if (!filtered.length) return null;
+    return filtered.join("\n\n");
+  })();
 
   const guardrailsBody = map.get(BLOCK.guardrails) ?? "";
   const { safe: guardrailSafe, unsafe } = classifyGuardrails(guardrailsBody);
@@ -365,10 +378,10 @@ export function parseExecutiveBriefPresentation(input: ParseExecutiveBriefPresen
     return true;
   });
 
-  const doNotSayYet = [
+  const doNotSayYet = dedupeExecutiveDoNotSayBullets([
     ...unsafe,
     ...needsValidationItems.map((it) => (it.code ? `${it.code}: ${it.text}` : it.text)),
-  ].filter(Boolean);
+  ]).filter(Boolean);
 
   const openQuestions = splitBullets(map.get(BLOCK.openQuestions) ?? "");
   const openParagraphs = splitParagraphs(map.get(BLOCK.openQuestions) ?? "").filter(
@@ -421,7 +434,7 @@ export function parseExecutiveBriefPresentation(input: ParseExecutiveBriefPresen
         if (recordSufficiency && isNearDuplicateSentence(raw, recordSufficiency)) return "";
         return raw;
       })(),
-      executiveSummary: filterExecutiveNarrativeText(map.get(BLOCK.executiveSummary) ?? ""),
+      executiveSummary,
       assessmentLines,
       recordSufficiency,
     },
@@ -435,7 +448,7 @@ export function parseExecutiveBriefPresentation(input: ParseExecutiveBriefPresen
     claimGroups,
     openQuestions: [...openQuestions, ...openParagraphs].filter(Boolean),
     safeToSay: [...new Set(safeToSay)].slice(0, 12),
-    doNotSayYet: [...new Set(doNotSayYet)].slice(0, 12),
+    doNotSayYet: doNotSayYet.slice(0, 12),
     evidenceSummary: evidenceBody.trim(),
     observationsSummary: observationsBody.trim(),
     audienceImplications: map.get(BLOCK.audience)?.trim() || null,

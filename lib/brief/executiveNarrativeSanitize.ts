@@ -133,7 +133,45 @@ export function formatExecutiveDoNotSayBullet(line: string): string {
 }
 
 export function formatExecutiveDoNotSaySection(bullets: string[]): string {
-  const formatted = bullets.map(formatExecutiveDoNotSayBullet).filter(Boolean);
+  const deduped = dedupeExecutiveDoNotSayBullets(bullets);
+  const formatted = deduped.map(formatExecutiveDoNotSayBullet).filter(Boolean);
   if (!formatted.length) return "";
   return ["Do not say yet:", ...formatted].join("\n");
+}
+
+/** Normalise guardrail clauses for dedupe (gap + claim sources may repeat the same line). */
+export function normalizeDoNotSayBulletKey(line: string): string {
+  let t = line
+    .trim()
+    .toLowerCase()
+    .replace(/\.$/, "")
+    .replace(/^do not say yet\s+/i, "")
+    .replace(/^do not\s+/i, "");
+  t = t.replace(/^(that|when|what)\s+/, "");
+  return t.replace(/\s+/g, " ").trim();
+}
+
+export function dedupeExecutiveDoNotSayBullets(bullets: string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const raw of bullets) {
+    const key = normalizeDoNotSayBulletKey(raw);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    out.push(raw.trim());
+  }
+  return out;
+}
+
+/** True when a full paragraph from Record sufficiency is already present in the executive summary. */
+export function isParagraphContainedInText(paragraph: string, body: string): boolean {
+  const p = paragraph.trim();
+  const b = body.trim();
+  if (!p || !b || p.length < 24) return false;
+  if (isNearDuplicateSentence(p, b)) return true;
+  return b.toLowerCase().includes(p.toLowerCase());
+}
+
+export function filterParagraphsNotInBody(paragraphs: string[], body: string): string[] {
+  return paragraphs.filter((p) => p.trim() && !isParagraphContainedInText(p, body));
 }

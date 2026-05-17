@@ -16,8 +16,10 @@ import {
 } from "@/lib/claims/claimsForGeneration";
 import { coerceClaimStatus } from "@/lib/claims/coerceClaimStatus";
 import {
+  dedupeExecutiveDoNotSayBullets,
   dedupeSentences,
   filterExecutiveNarrativeText,
+  filterParagraphsNotInBody,
   formatExecutiveDoNotSaySection,
   intakeConfirmedToSentences,
   isNearDuplicateSentence,
@@ -703,6 +705,65 @@ function formatGapsForFull(gaps: Gap[], cap: number) {
   return lines.join("\n");
 }
 
+const EXECUTIVE_OBS_THEME_CAP = 3;
+
+function observationThemePhrase(input: InternalInput): string | null {
+  const bundle = `${input.linkedSection ?? ""} ${input.role} ${input.response}`.toLowerCase();
+  if (/\b(front desk|customer team)\b/.test(bundle) || /\bexact proposed hours\b/.test(bundle)) {
+    return "exact hours are not signed off";
+  }
+  if (/\bequality\b/.test(bundle)) return "the equality assessment is incomplete";
+  if (/\b(operations|staffing)\b/.test(bundle) && /\bhours\b/.test(bundle)) {
+    return "operational drivers remain under review";
+  }
+  if (/\b(councillor|media|executive office|leadership)\b/.test(bundle)) {
+    return "councillor/media wording needs approval before use";
+  }
+  if (/\bcomms\b/.test(bundle) || /\bmessage discipline\b/.test(bundle)) {
+    return "message discipline must stay conditional";
+  }
+  return null;
+}
+
+function formatExecutiveObservationsLeadershipSummary(
+  rankedIncluded: InternalInput[],
+  excludedFromBriefCount: number,
+): string {
+  if (!rankedIncluded.length) {
+    if (excludedFromBriefCount === 0) return "No internal observations recorded yet.";
+    const n = excludedFromBriefCount;
+    return n === 1
+      ? "No internal observations are included in this brief. 1 observation exists but is excluded from brief output."
+      : `No internal observations are included in this brief. ${n} observations exist but are excluded from brief output.`;
+  }
+
+  const themes: string[] = [];
+  const seenThemes = new Set<string>();
+  for (const input of rankedIncluded) {
+    const phrase = observationThemePhrase(input);
+    if (!phrase || seenThemes.has(phrase)) continue;
+    seenThemes.add(phrase);
+    themes.push(phrase);
+  }
+
+  const parts = [
+    "Internal observations support the current posture but should be treated as context, not confirmed fact.",
+    themes.length ? `Key themes: ${themes.slice(0, 5).join("; ")}.` : null,
+  ].filter(Boolean);
+
+  const remainder = rankedIncluded.length - EXECUTIVE_OBS_THEME_CAP;
+  if (remainder > 0) {
+    parts.push(`+${remainder} more internal observation${remainder === 1 ? "" : "s"} in the full brief.`);
+  }
+
+  if (excludedFromBriefCount > 0) {
+    const ex = excludedFromBriefCount;
+    parts.push(ex === 1 ? "1 observation is excluded from brief output." : `${ex} observations are excluded from brief output.`);
+  }
+
+  return parts.join("\n\n");
+}
+
 function formatExecutiveObservationsBlock(
   rankedIncluded: InternalInput[],
   excludedFromBriefCount: number,
@@ -710,6 +771,9 @@ function formatExecutiveObservationsBlock(
   options?: { leadership?: boolean },
 ): string {
   const leadership = options?.leadership ?? false;
+  if (leadership) {
+    return formatExecutiveObservationsLeadershipSummary(rankedIncluded, excludedFromBriefCount);
+  }
   if (!rankedIncluded.length) {
     if (excludedFromBriefCount === 0) {
       return "No internal observations recorded yet.";
@@ -955,58 +1019,62 @@ function buildExecutiveLede(issue: Issue, summaryRaw: string, recordSufficiencyB
     : "Leadership briefing from the current issue record.";
 }
 
-function buildExecutivePositionNarrative(params: {
-  issue: Issue;
-  context: string;
+function compressLeadershipDecisionsSummary(lines: string[]): string | null {
+  if (!lines.length) return null;
+  const phrases = lines.slice(0, 3).map((line) => {
+    const s = line.replace(/\.$/, "").trim();
+    if (/^Confirm the proposed opening-hours option/i.test(s)) return "confirm the proposed hours option";
+    if (/^Agree the councillor and media holding line/i.test(s)) return "agree the councillor/media holding line";
+    if (/equality assessment timing/i.test(s)) return "set ownership for the equality assessment timeline";
+    if (/^Set an owner and deadline for equality/i.test(s)) return "set ownership for the equality assessment timeline";
+    if (/^Confirm who signs off consultation wording/i.test(s)) return "confirm consultation wording sign-off";
+    if (/^Agree the media fallback line/i.test(s)) return "agree the media holding line";
+    const lowered = s.charAt(0).toLowerCase() + s.slice(1);
+    return lowered.replace(/^confirm the leadership decision on:\s*/i, "confirm ");
+  });
+  const joined =
+    phrases.length === 1
+      ? phrases[0]!
+      : phrases.length === 2
+        ? `${phrases[0]} and ${phrases[1]}`
+        : `${phrases.slice(0, -1).join(", ")}, and ${phrases[phrases.length - 1]}`;
+  return `Immediate leadership decisions are to ${joined}.`;
+}
+
+/** Compressed executive summary — record sufficiency detail lives in the separate block. */
+function buildCompressedExecutiveSummary(params: {
   recordSufficiencyBody: string;
   confirmedFacts: string;
-  titleLine: string;
-  summary: string;
+  executiveProvisional: boolean;
+  recommendedActionLines: string[];
 }): string {
   const paras: string[] = [];
 
-  for (const p of params.recordSufficiencyBody.split(/\n\n/).map((x) => x.trim()).filter(Boolean)) {
-    if (p && !paras.some((existing) => isNearDuplicateSentence(existing, p))) paras.push(p);
+  const sufficiencyLead = params.recordSufficiencyBody.split(/\n\n/)[0]?.trim() ?? "";
+  if (sufficiencyLead) paras.push(sufficiencyLead);
+
+  const confirmedLines = dedupeSentences(intakeConfirmedToSentences(params.confirmedFacts));
+  const positionParts: string[] = [];
+  const consultationLine = confirmedLines.find((l) => /consultation|under review/i.test(l));
+  const noDecisionLine = confirmedLines.find((l) => /no final decision/i.test(l));
+  if (consultationLine) positionParts.push(consultationLine.replace(/\.$/, ""));
+  if (noDecisionLine && !positionParts.some((p) => isNearDuplicateSentence(p, noDecisionLine))) {
+    positionParts.push(noDecisionLine.replace(/\.$/, ""));
+  }
+  if (params.executiveProvisional) {
+    positionParts.push(
+      "External lines should remain conditional until the proposed-hours option, equality assessment timing and sign-off route are confirmed",
+    );
+  }
+  if (positionParts.length) {
+    const para = positionParts.map((p) => (p.endsWith(".") ? p : `${p}.`)).join(" ");
+    if (!paras.some((existing) => isNearDuplicateSentence(existing, para))) paras.push(para);
   }
 
-  const confirmedExtra = dedupeSentences(
-    intakeConfirmedToSentences(params.confirmedFacts).filter(
-      (s) => !isNearDuplicateSentence(s, params.recordSufficiencyBody),
-    ),
-  );
-  if (confirmedExtra.length) {
-    const line = confirmedExtra.slice(0, 2).join(" ");
-    if (line && !paras.some((p) => isNearDuplicateSentence(p, line))) paras.push(line);
-  }
+  const decisions = compressLeadershipDecisionsSummary(params.recommendedActionLines);
+  if (decisions && !paras.some((p) => isNearDuplicateSentence(p, decisions))) paras.push(decisions);
 
-  const filteredContext = filterExecutiveNarrativeText(params.context);
-  if (filteredContext) {
-    for (const p of filteredContext.split(/\n\n/).slice(0, 1)) {
-      if (p.trim() && !paras.some((existing) => isNearDuplicateSentence(existing, p))) paras.push(p.trim());
-    }
-  }
-
-  const text = [params.titleLine, params.summary, params.context, String(params.issue.audience ?? "")]
-    .join("\n")
-    .toLowerCase();
-  const whyItMatters = (() => {
-    if (text.includes("roundtable")) {
-      return "Why it matters: leadership-facing relationship management; avoid over-claiming and ensure follow-ups are owned.";
-    }
-    if (text.includes("consultation")) {
-      return "Why it matters: credibility and process integrity; keep language aligned to what is genuinely open versus fixed constraints.";
-    }
-    if (text.includes("criticism") || text.includes("critic")) {
-      return "Why it matters: stakeholder trust and reputational sensitivity; keep tone calm, evidence-led, and process-focused.";
-    }
-    if (String(params.issue.priority).toLowerCase().includes("high") || String(params.issue.severity).toLowerCase().includes("high")) {
-      return "Why it matters: leadership attention is likely required; keep claims tied to confirmed facts and sources.";
-    }
-    return "Why it matters: keep the leadership line disciplined, evidence-tied, and explicit about what remains open.";
-  })();
-  paras.push(whyItMatters);
-
-  return paras.slice(0, 5).join("\n\n");
+  return paras.slice(0, 3).join("\n\n");
 }
 
 /** Executive judgement on what the record can and cannot support for leadership circulation. */
@@ -1386,6 +1454,30 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
 
   const recommendedBodyForLeadership = recommendedActionsForLeadership.map((x, i) => `${i + 1}) ${x}`).join("\n");
 
+  const hasCriticalOpenGap = rankedOpenGaps.some(
+    (g) => String(g.status ?? "").trim() === "Open" && String(g.severity ?? "").trim() === "Critical",
+  );
+  const claimCounts = countClaimsForExecutive(claimsRows);
+  const executiveProvisional =
+    hasCriticalOpenGap ||
+    claimCounts.needsValidation > 0 ||
+    rankedOpenGaps.some(
+      (g) => String(g.status ?? "").trim() === "Open" && String(g.severity ?? "").trim() === "Important",
+    );
+
+  const situationBodyLeadership = buildCompressedExecutiveSummary({
+    recordSufficiencyBody,
+    confirmedFacts,
+    executiveProvisional,
+    recommendedActionLines: recommendedActionsForLeadership,
+  });
+
+  const recordSufficiencyBlockBody = (() => {
+    if (!isExecutive || !recordSufficiencyBody.trim()) return "";
+    const paragraphs = recordSufficiencyBody.split(/\n\n/).map((p) => p.trim()).filter(Boolean);
+    return filterParagraphsNotInBody(paragraphs, situationBodyLeadership).join("\n\n");
+  })();
+
   const guardrails = [
     "Do not state causes, scope, or impact that are not supported by confirmed facts, linked sources, or attributable observations.",
     rankedOpenGaps.length
@@ -1418,7 +1510,7 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
     return out;
   })();
   const claimDoNotSayBullets = [...buildExecutiveClaimsDoNotSayBullets(claimsRows), ...gapDoNotSayBullets];
-  const uniqueDoNotSay = [...new Set(claimDoNotSayBullets.map((b) => b.trim()).filter(Boolean))];
+  const uniqueDoNotSay = dedupeExecutiveDoNotSayBullets(claimDoNotSayBullets);
   const guardrailsLeadershipSpecific =
     uniqueDoNotSay.length > 0 ? formatExecutiveDoNotSaySection(uniqueDoNotSay) : "";
   const guardrailsLeadershipGeneric = [
@@ -1440,25 +1532,6 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
     return bits.join("\n\n");
   })();
 
-  const situationBodyLeadership = buildExecutivePositionNarrative({
-    issue,
-    context,
-    recordSufficiencyBody,
-    confirmedFacts,
-    titleLine,
-    summary,
-  });
-
-  const hasCriticalOpenGap = rankedOpenGaps.some(
-    (g) => String(g.status ?? "").trim() === "Open" && String(g.severity ?? "").trim() === "Critical",
-  );
-  const claimCounts = countClaimsForExecutive(claimsRows);
-  const executiveProvisional =
-    hasCriticalOpenGap ||
-    claimCounts.needsValidation > 0 ||
-    rankedOpenGaps.some(
-      (g) => String(g.status ?? "").trim() === "Open" && String(g.severity ?? "").trim() === "Important",
-    );
   const leadershipStatusLabel = (() => {
     const raw = String(issue.status ?? "").trim();
     if ((hasCriticalOpenGap || claimCounts.needsValidation > 0) && raw === "Ready to brief") {
@@ -1530,8 +1603,8 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
     ? [
         { label: "Executive summary", body: situationBodyLeadership },
         { label: "Current assessment", body: currentAssessmentLeadership },
-        ...(recordSufficiencyBody.trim()
-          ? [{ label: "Record sufficiency", body: recordSufficiencyBody }]
+        ...(recordSufficiencyBlockBody.trim()
+          ? [{ label: "Record sufficiency", body: recordSufficiencyBlockBody }]
           : []),
         { label: "Confirmed facts", body: confirmedFactsBlockExecutive },
         ...(executiveClaimsBlockBody.trim()

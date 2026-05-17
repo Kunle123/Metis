@@ -4,8 +4,10 @@
 import assert from "node:assert/strict";
 
 import {
+  dedupeExecutiveDoNotSayBullets,
   dedupeSentences,
   filterExecutiveNarrativeText,
+  filterParagraphsNotInBody,
   formatExecutiveDoNotSayBullet,
   formatExecutiveDoNotSaySection,
   isExecutiveInternalMetadataLine,
@@ -49,5 +51,21 @@ const section = formatExecutiveDoNotSaySection([
   "Do not say yet that the change will save money without reducing service quality.",
 ]);
 assert.ok(!/Do not say yet:\s*\n-\s*Do not say yet/i.test(section));
+
+const dedupedGuardrails = dedupeExecutiveDoNotSayBullets([
+  "Do not say yet when the equality impact assessment will be complete.",
+  "when the equality impact assessment will be complete",
+]);
+assert.equal(dedupedGuardrails.length, 1);
+
+const filteredSufficiency = filterParagraphsNotInBody(
+  [
+    "The current record supports an internal briefing on consultation process risk.",
+    "External position remains provisional.",
+  ],
+  "The current record supports an internal briefing on consultation process risk.\n\nConsultation options are under review.",
+);
+assert.equal(filteredSufficiency.length, 1);
+assert.match(filteredSufficiency[0]!, /External position remains provisional/i);
 
 console.log("executiveNarrativeSanitize.fixtures.runner: OK");
