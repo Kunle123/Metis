@@ -14,6 +14,26 @@ function cleanText(value: unknown): string {
   return value.trim();
 }
 
+function isStakeholderUnsafeLine(text: string): boolean {
+  const t = text.toLowerCase();
+  return (
+    /feasibility qa/.test(t) ||
+    /\bdev seed\b/.test(t) ||
+    /dev\/staging/.test(t) ||
+    /intended to test whether metis/.test(t) ||
+    /not production content/.test(t) ||
+    /live-style comms issue/.test(t)
+  );
+}
+
+/** Guardrail lines for mustAvoid metadata — grammatically correct “Do not state …”. */
+export function formatMustAvoidLine(line: string): string {
+  return line
+    .replace(/^Do not say yet when /i, "Do not state when ")
+    .replace(/^Do not say yet that /i, "Do not state that ")
+    .replace(/^Do not say yet /i, "Do not state ");
+}
+
 function bundleIssueText(issue: Pick<Issue, "title" | "summary" | "context">): string {
   return [cleanText(issue.title), cleanText(issue.summary), cleanText(issue.context ?? "")].filter(Boolean).join(" ");
 }
@@ -23,13 +43,53 @@ export function issueSignalsConsultationHours(issue: Issue): boolean {
   return /\bconsultation\b/.test(t) && /\b(opening hours|service hours|hours change)\b/.test(t);
 }
 
+function isCompoundIntakeAudienceNote(audienceLabel: string): boolean {
+  return /,/.test(audienceLabel) || /\band\b/i.test(audienceLabel);
+}
+
+function profileFromCompoundIntakeAudience(label: string): MessageAudienceProfile {
+  const patterns: { re: RegExp; profile: MessageAudienceProfile }[] = [
+    { re: /\bservice users?\b/, profile: "service_users" },
+    { re: /\bcouncillors?\b|\bcommunity representatives?\b|\belected representatives?\b/, profile: "councillors" },
+    { re: /\bresident\b|\bcustomer\b|\bpublic\b/, profile: "service_users" },
+    { re: /\bmedia\b|\bpress\b/, profile: "media" },
+  ];
+  let best: { index: number; profile: MessageAudienceProfile } | null = null;
+  for (const { re, profile } of patterns) {
+    const m = label.match(re);
+    if (m && m.index !== undefined && (!best || m.index < best.index)) {
+      best = { index: m.index, profile };
+    }
+  }
+  return best?.profile ?? "generic";
+}
+
 export function resolveMessageAudienceProfile(audienceLabel: string, templateId: string): MessageAudienceProfile {
   const label = audienceLabel.toLowerCase();
-  if (templateId === "media_holding_line" || /\bmedia\b|\bpress\b/.test(label)) return "media";
-  if (/\bstaff\b|\bfront desk\b|\bfront-desk\b/.test(label)) return "staff";
-  if (/\bcouncillors?\b|\bcommunity representatives?\b|\belected\b|\bmember\b/.test(label)) return "councillors";
-  if (/\bservice users?\b|\bresident\b|\bcustomer\b|\bpublic\b/.test(label)) return "service_users";
+
+  if (templateId === "internal_staff_update") {
+    if (/\bstaff\b|\bfront desk\b|\bfront-desk\b/.test(label)) return "staff";
+    return "generic";
+  }
+
+  if (templateId === "media_holding_line") return "media";
+
+  if (isCompoundIntakeAudienceNote(audienceLabel)) {
+    return profileFromCompoundIntakeAudience(label);
+  }
+
+  if (/\bmedia\b|\bpress\b/.test(label)) return "media";
+  if (/\bcouncillors?\b|\bcommunity representatives?\b|\belected representatives?\b/.test(label)) return "councillors";
+  if (/\bservice users?\b|\bresident\b|\bcustomer\b/.test(label)) return "service_users";
+  if (/\bpublic\b/.test(label)) return "service_users";
   return "generic";
+}
+
+/** External consultation copy variant when the issue is consultation-hours shaped. */
+export function consultationExternalProfile(
+  profile: MessageAudienceProfile,
+): "service_users" | "councillors" {
+  return profile === "councillors" ? "councillors" : "service_users";
 }
 
 export type MessageRecordGrounding = {
@@ -127,7 +187,7 @@ export function formatConfirmedForExternalCopy(confirmedLines: string[], intakeC
   const lines: string[] = [];
   const push = (raw: string) => {
     const t = raw.replace(/^-+\s*/, "").trim();
-    if (!t) return;
+    if (!t || isStakeholderUnsafeLine(t)) return;
     const sentence = t.endsWith(".") ? t : `${t}.`;
     if (isNearDuplicateConfirmedSentence(sentence, lines)) return;
     lines.push(sentence);
@@ -146,14 +206,7 @@ export function formatConfirmedForExternalCopy(confirmedLines: string[], intakeC
 export function formatDoNotSayBlock(doNotSay: string[], max = 6): string {
   const items = doNotSay.slice(0, max);
   if (!items.length) return "Apply standard validation discipline before external use.";
-  return items
-    .map((l) => {
-      const line = l
-        .replace(/^Do not say yet that /i, "Do not state that ")
-        .replace(/^Do not say yet /i, "Do not ");
-      return `- ${line}`;
-    })
-    .join("\n");
+  return items.map((l) => `- ${formatMustAvoidLine(l)}`).join("\n");
 }
 
 export function activeClaimsSummary(claims: Claim[]): string {

@@ -136,6 +136,14 @@ assert.equal(issueSignalsConsultationHours(consultationHoursIssue), true);
 assert.equal(resolveMessageAudienceProfile("Service users", "external_customer_resident_student"), "service_users");
 assert.equal(resolveMessageAudienceProfile("Councillors and community representatives", "external_customer_resident_student"), "councillors");
 assert.equal(resolveMessageAudienceProfile("Staff", "internal_staff_update"), "staff");
+assert.equal(
+  resolveMessageAudienceProfile(
+    "Service users, staff, elected representatives, local community groups and local media.",
+    "external_customer_resident_student",
+  ),
+  "service_users",
+  "compound intake audience must not classify external message as staff",
+);
 
 const FORBIDDEN_AS_FACT = [
   /save money without reducing service quality/i,
@@ -148,13 +156,33 @@ const FORBIDDEN_AS_FACT = [
   /\bdecision is final\b/i,
 ];
 
+const SCAFFOLDING_FORBIDDEN = [
+  /Feasibility QA/i,
+  /\bdev seed\b/i,
+  /dev\/staging/i,
+  /intended to test whether Metis/i,
+  /Generated from the current issue record/i,
+  /Use the contact channels your organisation has published/i,
+  /Our team is actively working on this matter/i,
+  /what we are doing/i,
+  /\bDo not when\b/i,
+];
+
+function assertNoScaffolding(label: string, primaryBody: string) {
+  for (const re of SCAFFOLDING_FORBIDDEN) {
+    assert.ok(!re.test(primaryBody), `${label}: primary draft must not contain scaffolding: ${re}`);
+  }
+}
+
 function assertConsultationMessageSafe(label: string, primaryBody: string, allBodies: string) {
   const combined = `${primaryBody}\n${allBodies}`;
+  assertNoScaffolding(label, primaryBody);
   for (const re of FORBIDDEN_AS_FACT) {
     assert.ok(!re.test(primaryBody), `${label}: primary draft must not assert forbidden fact: ${re}`);
   }
   assert.match(primaryBody, /no final decision has been made/i, `${label}: must preserve no-final-decision`);
-  assert.match(combined, /Do not/i, `${label}: should include do-not-say discipline in artifact`);
+  assert.match(combined, /Do not state/i, `${label}: should include do-not-say discipline in artifact`);
+  assert.ok(!/Do not when\b/i.test(combined), `${label}: do-not-say lines must be grammatical`);
   assert.ok(!/Do not the change will save/i.test(combined), `${label}: do-not-say lines must be grammatical`);
 }
 
@@ -164,6 +192,25 @@ const baseExternalInput = {
   gaps: consultationGaps,
   claims: consultationClaims,
 };
+
+const setupCompoundAudienceIssue = {
+  ...consultationHoursIssue,
+  audience: "Service users, staff, elected representatives, local community groups and local media.",
+  summary:
+    "Feasibility QA record: internal seed summary — must not appear in external consultation draft.",
+};
+
+const setupAudienceExternal = generateExternalCustomerResidentStudentArtifact({
+  ...baseExternalInput,
+  issue: setupCompoundAudienceIssue,
+  audience: { kind: "setup" },
+});
+const setupPrimary = setupAudienceExternal.sections.find((s) => s.id === "draft-message")?.body ?? "";
+assertNoScaffolding("setup/general external", setupPrimary);
+assert.match(setupPrimary, /no final decision has been made/i, "setup audience: consultation path for external");
+assert.match(setupPrimary, /reviewing options for service opening hours/i, "setup audience: service-user consultation wording");
+assert.ok(!/what we are doing/i.test(setupAudienceExternal.sections.map((s) => s.title).join(" ")), "setup audience: not generic external sections");
+assert.equal(setupAudienceExternal.sections.length, 2, "consultation external: draft + review caveats only");
 
 const serviceUsers = generateExternalCustomerResidentStudentArtifact({
   ...baseExternalInput,
@@ -181,7 +228,8 @@ const councillors = generateExternalCustomerResidentStudentArtifact({
 const councillorPrimary = councillors.sections.find((s) => s.id === "draft-message")?.body ?? "";
 assertConsultationMessageSafe("councillors", councillorPrimary, councillors.sections.map((s) => s.body).join("\n"));
 assert.match(councillorPrimary, /service cut/i, "councillors: include service-cut holding line prompt");
-assert.match(councillorPrimary, /equality impact assessment/i, "councillors: equality assessment caveat");
+assert.match(councillorPrimary, /cannot yet confirm the precise hours option/i, "councillors: explicit open points");
+assert.ok(!/Thank you for your interest/i.test(councillorPrimary), "councillors: no generic thank-you opener");
 
 const staff = generateInternalStaffUpdateArtifact({
   issue: consultationHoursIssue,
@@ -193,7 +241,8 @@ const staff = generateInternalStaffUpdateArtifact({
 });
 const staffPrimary = staff.sections.find((s) => s.id === "draft-message")?.body ?? "";
 assertConsultationMessageSafe("staff", staffPrimary, staff.sections.map((s) => s.body).join("\n"));
-assert.match(staffPrimary, /front desk|front-desk/i, "staff: front-desk guidance");
+assert.match(staffPrimary, /If asked about opening-hours changes/i, "staff: opening-hours holding guidance");
+assert.match(staffPrimary, /early closure is happening next month/i, "staff: early-closure guardrail in primary line");
 assert.ok(staff.sections.some((s) => s.id === "do-not-say"), "staff: do-not-say section");
 assert.ok(staff.sections.some((s) => s.id === "escalation"), "staff: escalation section");
 

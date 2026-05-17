@@ -7,6 +7,7 @@ import {
   buildMessageRecordGrounding,
   formatConfirmedForExternalCopy,
   formatDoNotSayBlock,
+  formatMustAvoidLine,
   issueSignalsConsultationHours,
 } from "./messageRecordGrounding";
 
@@ -140,7 +141,7 @@ export function generateMediaHoldingLineArtifact(input: MediaHoldingLineGenerati
   })();
 
   const mustAvoid: string[] = [
-    ...grounding.doNotSay.map((l) => l.replace(/^Do not say yet /i, "Do not ")),
+    ...grounding.doNotSay.map(formatMustAvoidLine),
     "Do not quote internal observations or source codes.",
     "Do not speculate beyond confirmed facts in this draft.",
     "Treat as draft for review — not approved for circulation.",

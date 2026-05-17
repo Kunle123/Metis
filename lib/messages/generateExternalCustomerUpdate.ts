@@ -6,8 +6,10 @@ import { rankOpenGapsForIssue } from "@/lib/evidence/rankEvidence";
 
 import {
   buildMessageRecordGrounding,
+  consultationExternalProfile,
   formatConfirmedForExternalCopy,
   formatDoNotSayBlock,
+  formatMustAvoidLine,
   resolveMessageAudienceProfile,
 } from "./messageRecordGrounding";
 
@@ -118,25 +120,22 @@ function buildConsultationExternalSections(
           "We are reviewing options for service opening hours. No final decision has been made.",
           "",
           confirmedForBody ||
-            "Consultation options are under review. We will share more when we can confirm details accurately.",
+            "The review is looking at how opening hours can best reflect demand, staffing pressures and access needs. Consultation feedback will help shape the final recommendation.",
           "",
-          "Your feedback during consultation will help shape any recommendation. We will provide updates through our official channels when there is confirmed information to share.",
+          "Some local posts have suggested that early closure is already happening. That is not accurate based on the current record.",
           "",
-          "Please rely on official updates rather than informal reports. Some social posts have suggested early closure — that is not accurate based on the current record.",
+          "We will share confirmed consultation details through official channels once the proposed options and timetable are approved.",
         ].join("\n")
       : [
-          "Thank you for your interest in proposed changes to service opening hours.",
+          "The organisation is reviewing options for service opening hours, but no final decision has been made.",
           "",
-          "Options are under formal consultation. No final decision has been made.",
+          "The current record supports saying that options are under review, that staffing pressure and usage patterns are part of the context, and that consultation feedback will inform the final recommendation.",
           "",
           isStandardConsultationConfirmedCopy(confirmedCopy) ? null : confirmedCopy,
           "",
-          "The organisation is following a consultation process. An equality impact assessment will inform what can be said about distributional effects — that assessment is not yet complete.",
+          "We cannot yet confirm the precise hours option, the consultation timetable, savings impact or equality impact. Those points remain subject to approval and assessment.",
           "",
-          "Holding line if asked whether this is a service cut:",
-          grounding.serviceCutHoldingLine,
-          "",
-          "We cannot confirm final hours, savings, or equality impacts until consultation and assessment work is complete. We will update councillors when there is an approved position to share.",
+          "If asked whether this is a service cut, the safest line is that the organisation is consulting on options and has not reached a final decision.",
         ]
           .filter(Boolean)
           .join("\n");
@@ -193,22 +192,25 @@ export function generateExternalCustomerResidentStudentArtifact(input: ExternalM
   const profile = resolveMessageAudienceProfile(audienceLabel, "external_customer_resident_student");
 
   const sections: MessageVariantSection[] = (() => {
-    if (grounding.consultationIssue && (profile === "service_users" || profile === "councillors")) {
-      return buildConsultationExternalSections(issue, profile, grounding, needsToKnowEffective);
+    if (grounding.consultationIssue) {
+      return buildConsultationExternalSections(
+        issue,
+        consultationExternalProfile(profile),
+        grounding,
+        needsToKnowEffective,
+      );
     }
 
-    const summary = cleanText(issue.summary);
     const confirmedCopy = formatConfirmedForExternalCopy(
       grounding.confirmedLines,
       cleanText(issue.confirmedFacts ?? ""),
     );
 
     const whatIsHappening = (() => {
-      if (confirmedCopy) {
-        return `${summary ? `${summary}\n\n` : ""}${confirmedCopy}`.trim();
-      }
-      if (summary) {
-        return `${summary}\n\nThis is an interim update. Confirmed facts are still being recorded; we will share more when we can do so accurately.`;
+      if (confirmedCopy) return confirmedCopy;
+      const title = cleanText(issue.title);
+      if (title) {
+        return `${title}. Confirmed details are still being recorded; we will share more when we can do so accurately.`;
       }
       return "We are preparing a factual update. Confirmed details are still being recorded; we will post more when we can do so accurately.";
     })();
@@ -268,7 +270,7 @@ export function generateExternalCustomerResidentStudentArtifact(input: ExternalM
   })();
 
   const mustAvoid: string[] = [
-    ...grounding.doNotSay.map((l) => l.replace(/^Do not say yet /i, "Do not ")),
+    ...grounding.doNotSay.map(formatMustAvoidLine),
     "Do not quote or paraphrase internal observations in external channels.",
     "Do not share internal source identifiers publicly.",
     "Do not speculate beyond confirmed facts and this draft.",

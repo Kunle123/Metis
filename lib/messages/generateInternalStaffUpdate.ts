@@ -7,6 +7,7 @@ import {
   activeClaimsSummary,
   buildMessageRecordGrounding,
   formatDoNotSayBlock,
+  formatMustAvoidLine,
   issueSignalsConsultationHours,
   resolveMessageAudienceProfile,
 } from "./messageRecordGrounding";
@@ -72,13 +73,13 @@ function buildConsultationStaffSections(
   const topOther = open.filter((g) => String(g.severity ?? "").trim() !== "Critical").slice(0, 2);
 
   const frontDesk = [
-    "Use this line at the front desk and on the phone unless your manager issues approved wording:",
+    "If asked about opening-hours changes, please use this line:",
     "",
-    "We are reviewing options for service opening hours. No final decision has been made. Consultation is under way and feedback will shape any recommendation.",
+    '"We are reviewing options for service opening hours, but no final decision has been made. Consultation details will be shared through official channels once the options and timetable are confirmed."',
     "",
-    "If asked for exact hours, savings, equality impact, or whether the service is closing early: explain that these points are not confirmed yet and you will come back once approved wording is available.",
+    "Please do not give specific hours, savings figures, equality impact assurances or say that early closure is happening next month. Those details have not been confirmed.",
     "",
-    grounding.serviceCutHoldingLine,
+    "If service users or councillors ask for more detail, refer them to the agreed consultation update once it is published.",
   ].join("\n");
 
   const escalation = [
@@ -232,7 +233,7 @@ export function generateInternalStaffUpdateArtifact(input: InternalStaffMessageG
   })();
 
   const mustAvoid: string[] = [
-    ...grounding.doNotSay.map((l) => l.replace(/^Do not say yet /i, "Do not ")),
+    ...grounding.doNotSay.map(formatMustAvoidLine),
     "Do not present internal notes as confirmed facts.",
     "Do not paste internal evidence references into external channels.",
     "Treat as draft for review.",
