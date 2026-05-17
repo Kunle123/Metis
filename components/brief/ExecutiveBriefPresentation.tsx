@@ -183,7 +183,8 @@ export function ExecutiveBriefPresentation({
     return "Owner not assigned";
   };
 
-  const { whyItMatters } = splitExecutiveSummary(model.position.executiveSummary);
+  const { narrative, whyItMatters } = splitExecutiveSummary(model.position.executiveSummary);
+  const executiveSummaryBody = narrative.trim() || model.position.executiveSummary.trim();
 
   const assumptionItems = dedupeLineItems(model.claimGroups.filter((g) => g.id === "assumptions").flatMap((g) => g.items));
   const needsValidationItems = dedupeLineItems(
@@ -267,13 +268,14 @@ export function ExecutiveBriefPresentation({
                 </p>
               ) : null}
 
-              {model.position.executiveSummary.trim() ? (
+              {executiveSummaryBody ? (
                 <div className={cn("max-w-[42rem] border-t border-[color-mix(in_oklab,var(--metis-outline-subtle)_70%,transparent)] pt-4", PROSE_RESET)}>
                   <BriefExecutiveSummaryCompare
-                    deterministicBody={model.position.executiveSummary}
+                    deterministicBody={executiveSummaryBody}
                     alternateWording={executiveExecAlternateWording}
                     briefAiSynthesisEnabled={briefAiSynthesisEnabled}
                     polishPreview={polishPreview}
+                    layout="executive"
                   />
                 </div>
               ) : (

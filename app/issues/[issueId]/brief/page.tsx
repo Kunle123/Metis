@@ -382,7 +382,7 @@ export default async function IssueBriefPage({
               <div id="brief-step-4-label">{briefStepLabel("4", "Read brief")}</div>
               <p className="text-[0.72rem] leading-snug text-[--metis-text-tertiary]">
                 {mode === "executive"
-                  ? "Executive brief uses a leadership presentation layout. Optional alternate wording (when enabled) appears in the current position section. Raw generated blocks sit under View generated text."
+                  ? "Executive brief uses a leadership presentation layout. Compare wording (when enabled) is a secondary control under Current position. Raw generated blocks sit under View generated text."
                   : "Stored brief text for the mode you selected. Optional alternate executive wording (when enabled) appears only inside the executive summary area as a comparison."}
               </p>
 
