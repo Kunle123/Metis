@@ -123,6 +123,34 @@ run("parses record sufficiency and claims position summary", () => {
   assert.ok(model.doNotSayYet.some((l) => /final opening hours/i.test(l)));
 });
 
+run("filters seed metadata and hides lede duplicated by record sufficiency", () => {
+  const baseArtifact = artifact([
+    {
+      label: "Record sufficiency",
+      body: "The current record supports an internal briefing on consultation process risk.\n\nExternal position remains provisional.",
+    },
+    {
+      label: "Executive summary",
+      body: "Feasibility QA record: should not appear.\n\nWhy it matters: process integrity.",
+    },
+    {
+      label: "Confirmed facts",
+      body: "- Consultation options are under review.\n- Feasibility QA record: must not show.",
+    },
+  ]);
+  const model = parseExecutiveBriefPresentation({
+    issueTitle: "Hours consultation",
+    artifact: {
+      ...baseArtifact,
+      lede: "The current record supports an internal briefing on consultation process risk.",
+    },
+  });
+  assert.equal(model.position.lede, "");
+  assert.ok(!model.confirmedFacts.some((f) => /feasibility qa/i.test(f)));
+  assert.match(model.position.executiveSummary, /why it matters/i);
+  assert.ok(!/feasibility qa record/i.test(model.position.executiveSummary));
+});
+
 run("omits what changed when no highlights and no block", () => {
   const model = parseExecutiveBriefPresentation({
     issueTitle: "Stable",

@@ -10,6 +10,8 @@
     "lint": "tsc -p tsconfig.json --noEmit",
     "test:compare-brief": "tsx lib/brief/compareBriefVersions.fixtures.runner.ts && tsx lib/brief/resolveCompareVersions.fixtures.runner.ts",
     "test:brief-generate": "tsx lib/brief/generateBriefFromIssue.fixtures.runner.ts",
+    "test:brief-narrative-sanitize": "tsx lib/brief/executiveNarrativeSanitize.fixtures.runner.ts",
+    "test:brief-presentation": "tsx lib/brief/parseExecutiveBriefPresentation.fixtures.runner.ts",
     "test:brief-freshness": "tsx lib/brief/briefFreshness.fixtures.runner.ts",
     "test:rank-evidence": "tsx lib/evidence/rankEvidence.fixtures.runner.ts",
     "test:capture-notes-extract": "tsx lib/ai/extractIssueNotes.fixtures.runner.ts",

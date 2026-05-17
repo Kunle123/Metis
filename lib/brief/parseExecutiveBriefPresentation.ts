@@ -1,4 +1,5 @@
 import type { BriefArtifact } from "@metis/shared/briefVersion";
+import { filterExecutiveNarrativeText, isNearDuplicateSentence } from "@/lib/brief/executiveNarrativeSanitize";
 
 const UUID_RE =
   /\b[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\b/gi;
@@ -325,7 +326,7 @@ export function parseExecutiveBriefPresentation(input: ParseExecutiveBriefPresen
   const status =
     statusRaw === "Ready for internal briefing with caveats" ? statusRaw : sanitizeDisplayText(statusRaw);
 
-  const confirmedBody = map.get(BLOCK.confirmedFacts) ?? "";
+  const confirmedBody = filterExecutiveNarrativeText(map.get(BLOCK.confirmedFacts) ?? "");
   const confirmedBullets = splitBullets(confirmedBody);
   const confirmedParagraphs = splitParagraphs(confirmedBody).filter((p) => !confirmedBullets.includes(p));
 
@@ -414,8 +415,13 @@ export function parseExecutiveBriefPresentation(input: ParseExecutiveBriefPresen
       openGapsLabel: artifact.metadata.openGapsLabel,
     },
     position: {
-      lede: sanitizeDisplayText(artifact.lede),
-      executiveSummary: map.get(BLOCK.executiveSummary) ?? "",
+      lede: (() => {
+        const raw = sanitizeDisplayText(artifact.lede);
+        if (!raw) return "";
+        if (recordSufficiency && isNearDuplicateSentence(raw, recordSufficiency)) return "";
+        return raw;
+      })(),
+      executiveSummary: filterExecutiveNarrativeText(map.get(BLOCK.executiveSummary) ?? ""),
       assessmentLines,
       recordSufficiency,
     },

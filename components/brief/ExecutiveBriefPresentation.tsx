@@ -11,6 +11,7 @@ import type {
   ExecutiveBriefLineItem,
   ExecutiveBriefPresentationModel,
 } from "@/lib/brief/parseExecutiveBriefPresentation";
+import { isNearDuplicateSentence } from "@/lib/brief/executiveNarrativeSanitize";
 import {
   parseExecutiveLineItem,
   slicePresentationItems,
@@ -197,7 +198,10 @@ export function ExecutiveBriefPresentation({
   ).filter((it) => !nonConfirmedKeys.has(lineKey(it)));
 
   const confirmedFactsAsItems = model.confirmedFacts.map((f) => parseExecutiveLineItem(f));
-  const confirmedCombined = dedupeLineItems([...confirmedFactsAsItems, ...confirmedClaims]);
+  const confirmedClaimsDeduped = confirmedClaims.filter(
+    (claim) => !confirmedFactsAsItems.some((fact) => isNearDuplicateSentence(fact.text, claim.text)),
+  );
+  const confirmedCombined = dedupeLineItems([...confirmedFactsAsItems, ...confirmedClaimsDeduped]);
 
   const cautionCombined = dedupeLineItems([...assumptionItems, ...needsValidationItems]);
 
@@ -211,6 +215,10 @@ export function ExecutiveBriefPresentation({
   const recordSufficiencyParagraphs = model.position.recordSufficiency
     ? model.position.recordSufficiency.split(/\n\n+/).map((p) => p.trim()).filter(Boolean)
     : [];
+
+  const showLede =
+    model.position.lede.trim().length > 0 &&
+    !recordSufficiencyParagraphs.some((p) => isNearDuplicateSentence(model.position.lede, p));
 
   return (
     <div className="mx-auto w-full min-w-0 max-w-[72rem]">
@@ -266,23 +274,18 @@ export function ExecutiveBriefPresentation({
         <div className="space-y-5 px-4 py-5 sm:space-y-6 sm:px-7 sm:py-6">
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:gap-6">
             <ExecutiveBriefSection variant="emphasis" accent="brass" eyebrow="Read first" title="Current position">
-              {model.position.lede ? (
+              {recordSufficiencyParagraphs.length ? (
+                <div className="mb-4 max-w-[42rem] space-y-2.5">
+                  {recordSufficiencyParagraphs.map((para) => (
+                    <p key={para.slice(0, 48)} className="text-[0.9375rem] leading-[1.6] text-[--metis-text-primary]">
+                      {para}
+                    </p>
+                  ))}
+                </div>
+              ) : showLede ? (
                 <p className="mb-4 max-w-[42rem] text-[0.9375rem] font-medium leading-[1.6] text-[--metis-text-primary]">
                   {model.position.lede}
                 </p>
-              ) : null}
-
-              {recordSufficiencyParagraphs.length ? (
-                <div className="mb-4 max-w-[42rem] border-t border-[color-mix(in_oklab,var(--metis-outline-subtle)_70%,transparent)] pt-4">
-                  <p className="text-[0.58rem] font-medium uppercase tracking-[0.14em] text-[--metis-brass-soft]">Record sufficiency</p>
-                  <div className="mt-2 space-y-2">
-                    {recordSufficiencyParagraphs.map((para) => (
-                      <p key={para.slice(0, 48)} className="text-[0.875rem] leading-[1.6] text-[--metis-text-primary]">
-                        {para}
-                      </p>
-                    ))}
-                  </div>
-                </div>
               ) : null}
 
               {executiveSummaryBody ? (

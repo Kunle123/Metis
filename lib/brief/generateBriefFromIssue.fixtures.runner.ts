@@ -568,4 +568,67 @@ assert.match(guardExec, /Do not say yet:/i);
 assert.match(guardExec, /final opening hours/i);
 assert.match(guardExec, /closing early/i);
 
+const feasibilitySeedIssue = {
+  ...consultationHoursIssue,
+  summary:
+    "Feasibility QA record: a live-style comms issue on proposed service opening-hours consultation. The record mixes operational updates — intended to test whether Metis can produce a valuable executive brief without over-claiming.",
+  context: [
+    "This is a dev/staging feasibility seed — not production content and not a public demo route.",
+    "Message discipline: avoid implying a decision is made before equality assessment is complete.",
+  ].join("\n\n"),
+  confirmedFacts: [
+    "Consultation options for service opening hours are under review.",
+    "No final decision has been made on the proposed opening-hours change.",
+    "Staffing pressure and uneven usage patterns are among the drivers for reviewing the hours model.",
+    "Public social claims about imminent early closure are inaccurate based on the current record.",
+  ].join("\n"),
+};
+const feasibilityClaims = [
+  ...consultationClaims,
+  sampleClaim({
+    claimNumber: 9,
+    text: "Staffing pressure and uneven usage patterns are part of the reason the opening-hours model is being reviewed.",
+    status: "Confirmed",
+  }),
+];
+const execFeasibility = generateBriefFromIssue(
+  {
+    issue: feasibilitySeedIssue,
+    sources: [],
+    gaps: consultationGaps,
+    internalInputs: [] as InternalInput[],
+    claims: feasibilityClaims,
+  },
+  "executive",
+);
+const feasibilityBody = [
+  execFeasibility.lede,
+  ...execFeasibility.executive.blocks.map((b) => b.body),
+].join("\n");
+const forbiddenSeed = [
+  /Feasibility QA record/i,
+  /dev\/staging/i,
+  /feasibility seed/i,
+  /not production content/i,
+  /not a public demo route/i,
+  /intended to test whether Metis/i,
+  /live-style comms issue/i,
+  /\b44444444-/i,
+];
+for (const re of forbiddenSeed) {
+  assert.ok(!re.test(feasibilityBody), `executive brief must not contain seed/dev metadata: ${re}`);
+}
+assert.match(feasibilityBody, /external position remains provisional/i);
+assert.match(feasibilityBody, /supports an internal briefing on consultation process risk/i);
+const confirmedFeasibility =
+  execFeasibility.executive.blocks.find((b) => b.label === "Confirmed facts")?.body ?? "";
+const staffingHits = confirmedFeasibility.match(/staffing pressure/gi) ?? [];
+assert.ok(staffingHits.length <= 1, "confirmed facts block must not repeat staffing pressure line");
+const claimsFeasibility =
+  execFeasibility.executive.blocks.find((b) => b.label === "Claims and assumptions")?.body ?? "";
+assert.ok(
+  !/staffing pressure and uneven usage patterns are part of the reason/i.test(claimsFeasibility),
+  "confirmed claims duplicated in intake should not repeat in claims register detail",
+);
+
 console.log("generateBriefFromIssue fixtures: OK");

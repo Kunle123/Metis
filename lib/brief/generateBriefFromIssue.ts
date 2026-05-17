@@ -15,6 +15,12 @@ import {
   hasActiveClaimsForBriefing,
 } from "@/lib/claims/claimsForGeneration";
 import { coerceClaimStatus } from "@/lib/claims/coerceClaimStatus";
+import {
+  dedupeSentences,
+  filterExecutiveNarrativeText,
+  intakeConfirmedToSentences,
+  isNearDuplicateSentence,
+} from "@/lib/brief/executiveNarrativeSanitize";
 
 const CAP_EX_SOURCES = 8;
 const MAX_QUESTION_BULLETS = 12;
@@ -931,6 +937,72 @@ function evidenceExecutiveConfidenceSummary(rankedSources: Source[], totalLinked
   return `${body}\n\nThis summary is directional only; it does not establish facts beyond what intake and Sources themselves record.${tail}`;
 }
 
+function buildExecutiveLede(issue: Issue, summaryRaw: string, recordSufficiencyBody: string): string {
+  const sufficiencyLead = recordSufficiencyBody.split(/\n\n/)[0]?.trim() ?? "";
+  if (sufficiencyLead) {
+    return sufficiencyLead.length > 280 ? clipAtWordBoundary(sufficiencyLead, 240) : sufficiencyLead;
+  }
+  const filteredSummary = filterExecutiveNarrativeText(summaryRaw);
+  if (filteredSummary) {
+    const firstPara = (filteredSummary.split(/\n\n/)[0] ?? filteredSummary).trim();
+    return firstPara.length > 220 ? clipAtWordBoundary(firstPara, 217) : firstPara;
+  }
+  const title = cleanText(issue.title);
+  return title
+    ? `${title}. Leadership briefing from the current issue record.`
+    : "Leadership briefing from the current issue record.";
+}
+
+function buildExecutivePositionNarrative(params: {
+  issue: Issue;
+  context: string;
+  recordSufficiencyBody: string;
+  confirmedFacts: string;
+  titleLine: string;
+  summary: string;
+}): string {
+  const paras: string[] = [];
+
+  const filteredContext = filterExecutiveNarrativeText(params.context);
+  if (filteredContext) {
+    for (const p of filteredContext.split(/\n\n/).slice(0, 2)) {
+      if (p.trim()) paras.push(p.trim());
+    }
+  }
+
+  const confirmedExtra = dedupeSentences(
+    intakeConfirmedToSentences(params.confirmedFacts).filter(
+      (s) => !isNearDuplicateSentence(s, params.recordSufficiencyBody),
+    ),
+  );
+  if (confirmedExtra.length) {
+    const line = confirmedExtra.slice(0, 2).join(" ");
+    if (line && !paras.some((p) => isNearDuplicateSentence(p, line))) paras.push(line);
+  }
+
+  const text = [params.titleLine, params.summary, params.context, String(params.issue.audience ?? "")]
+    .join("\n")
+    .toLowerCase();
+  const whyItMatters = (() => {
+    if (text.includes("roundtable")) {
+      return "Why it matters: leadership-facing relationship management; avoid over-claiming and ensure follow-ups are owned.";
+    }
+    if (text.includes("consultation")) {
+      return "Why it matters: credibility and process integrity; keep language aligned to what is genuinely open versus fixed constraints.";
+    }
+    if (text.includes("criticism") || text.includes("critic")) {
+      return "Why it matters: stakeholder trust and reputational sensitivity; keep tone calm, evidence-led, and process-focused.";
+    }
+    if (String(params.issue.priority).toLowerCase().includes("high") || String(params.issue.severity).toLowerCase().includes("high")) {
+      return "Why it matters: leadership attention is likely required; keep claims tied to confirmed facts and sources.";
+    }
+    return "Why it matters: keep the leadership line disciplined, evidence-tied, and explicit about what remains open.";
+  })();
+  paras.push(whyItMatters);
+
+  return paras.slice(0, 4).join("\n\n");
+}
+
 /** Executive judgement on what the record can and cannot support for leadership circulation. */
 function buildExecutiveRecordSufficiencyBody(
   issue: Issue,
@@ -1043,15 +1115,24 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
   const rankedInternalForBrief = rankInternalInputsForIssue(internalInputs, { excludeFromBrief: true });
   /** Intentionally raw / not re-ranked: `issue.openGapsCount` (artifact label), `confirmedFactsBlockExecutive` checks `internalInputs.length` (includes excluded), `sourcesNarrativeFull` (dead helper). */
 
-  const ledeBase = cleanText(issue.summary);
-  const lede =
-    ledeBase.length > 220 ? `${ledeBase.slice(0, 217).trimEnd()}…` : paragraphOrFallback(ledeBase, "No working line recorded yet.");
-
   const summary = cleanText(issue.summary);
   const titleLine = cleanText(issue.title);
   const confirmedFacts = cleanText(issue.confirmedFacts ?? "");
   const openQuestions = cleanText(issue.openQuestions ?? "");
   const context = sanitizeBriefUserText(cleanText(issue.context ?? ""));
+
+  const recordSufficiencyBody = isExecutive
+    ? buildExecutiveRecordSufficiencyBody(issue, claimsRows, rankedOpenGaps)
+    : "";
+
+  const lede = isExecutive
+    ? buildExecutiveLede(issue, summary, recordSufficiencyBody)
+    : (() => {
+        const ledeBase = summary;
+        return ledeBase.length > 220
+          ? `${ledeBase.slice(0, 217).trimEnd()}…`
+          : paragraphOrFallback(ledeBase, "No working line recorded yet.");
+      })();
 
   const confirmedBlock = paragraphOrFallback(
     bulletsFromMultiline(confirmedFacts),
@@ -1354,39 +1435,14 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
     return bits.join("\n\n");
   })();
 
-  const situationBodyLeadership = (() => {
-    const hasOq = rankedOpenGaps.length > 0 || splitOpenQuestionsToBullets(openQuestions).length > 0;
-    const whyItMatters = (() => {
-      const text = [titleLine, summary, context, String(issue.audience ?? "")].join("\n").toLowerCase();
-      if (text.includes("roundtable")) {
-        return "Why it matters: leadership-facing relationship management; avoid over-claiming and ensure follow-ups are owned.";
-      }
-      if (text.includes("consultation")) {
-        return "Why it matters: credibility and process integrity; keep language aligned to what is genuinely open vs fixed constraints.";
-      }
-      if (text.includes("criticism") || text.includes("critic")) {
-        return "Why it matters: stakeholder trust and reputational sensitivity; keep tone calm, evidence-led, and process-focused.";
-      }
-      if (String(issue.priority).toLowerCase().includes("high") || String(issue.severity).toLowerCase().includes("high")) {
-        return "Why it matters: leadership attention is likely required; keep claims tied to confirmed facts and sources.";
-      }
-      return "Why it matters: keep the leadership line disciplined, evidence-tied, and explicit about what remains open.";
-    })();
-
-    const leadershipNotes = (() => {
-      const notes: string[] = [];
-      if (hasOq) notes.push(`Open questions remain (${rankedOpenGaps.length} on the tracker). Treat details as provisional where not yet confirmed.`);
-      if (!rankedSources.length) notes.push("Evidence base is thin (no linked sources yet). Avoid specific claims until evidence is on file.");
-      if (cleanText(issue.ownerName ?? "")) notes.push(`Named owner: ${issue.ownerName}.`);
-      return notes.join(" ");
-    })();
-
-    const contextBlock = context.length
-      ? capLines(sanitizeBriefUserText(context), 8)
-      : "Supplemental context is not recorded on the issue. The working line is in the brief header above.";
-
-    return [contextBlock, whyItMatters, leadershipNotes].filter(Boolean).join("\n\n");
-  })();
+  const situationBodyLeadership = buildExecutivePositionNarrative({
+    issue,
+    context,
+    recordSufficiencyBody,
+    confirmedFacts,
+    titleLine,
+    summary,
+  });
 
   const hasCriticalOpenGap = rankedOpenGaps.some(
     (g) => String(g.status ?? "").trim() === "Open" && String(g.severity ?? "").trim() === "Critical",
@@ -1405,10 +1461,6 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
     }
     return raw || "—";
   })();
-
-  const recordSufficiencyBody = isExecutive
-    ? buildExecutiveRecordSufficiencyBody(issue, claimsRows, rankedOpenGaps)
-    : "";
 
   const currentAssessment = [
     `Status: ${issue.status}`,
@@ -1447,8 +1499,12 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
 
   const confirmedFactsBlockExecutive = (() => {
     let base: string;
-    if (cleanText(confirmedFacts)) {
-      base = confirmedBlock;
+    const filteredConfirmed = filterExecutiveNarrativeText(confirmedFacts);
+    if (cleanText(filteredConfirmed)) {
+      base = paragraphOrFallback(
+        bulletsFromMultiline(filteredConfirmed),
+        "No confirmed facts recorded yet.",
+      );
     } else if (internalInputs.length) {
       base =
         "No confirmed facts are recorded for this version.\n\nInternal notes below are helpful context, but they are not a substitute for confirmed facts. Treat them as provisional until separately validated.";
@@ -1458,7 +1514,7 @@ export function generateBriefFromIssue(input: BriefGenerationInput, mode: BriefM
     return base;
   })();
 
-  const executiveClaimsBlockBody = formatExecutiveClaimsAndAssumptionsBody(claimsRows);
+  const executiveClaimsBlockBody = formatExecutiveClaimsAndAssumptionsBody(claimsRows, confirmedFacts);
 
   const audienceBlock = formatAudienceImplications(issue.audience, messageAudienceGroupNames);
 

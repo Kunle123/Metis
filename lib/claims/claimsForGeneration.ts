@@ -3,6 +3,11 @@ import type { Claim } from "@prisma/client";
 import type { ClaimStatus } from "@metis/shared/claim";
 import { formatClaimCode } from "@/lib/issueRecordCodes";
 
+import {
+  intakeConfirmedToSentences,
+  isNearDuplicateSentence,
+} from "@/lib/brief/executiveNarrativeSanitize";
+
 import { coerceClaimStatus } from "./coerceClaimStatus";
 
 export type ClaimGenerationRow = {
@@ -193,13 +198,25 @@ export function buildExecutiveClaimsDoNotSayBullets(claims: Claim[]): string[] {
   return out;
 }
 
+function filterConfirmedClaimsNotInIntake(claims: Claim[], intakeConfirmed: string): Claim[] {
+  const intakeLines = intakeConfirmedToSentences(intakeConfirmed);
+  if (!intakeLines.length) return claims;
+  return claims.filter((c) => {
+    if (coerceClaimStatus(c.status) !== "Confirmed") return true;
+    const text = c.text.replace(/\s+/g, " ").trim();
+    return !intakeLines.some((line) => isNearDuplicateSentence(line, text));
+  });
+}
+
 /**
  * Body for the executive “Claims and assumptions” block — position summary then capped register detail.
+ * Confirmed claims that duplicate intake confirmed facts appear only in Confirmed facts, not again here.
  */
-export function formatExecutiveClaimsAndAssumptionsBody(claims: Claim[]): string {
+export function formatExecutiveClaimsAndAssumptionsBody(claims: Claim[], intakeConfirmed = ""): string {
   if (!hasActiveClaimsForBriefing(claims)) return "";
   const summary = formatExecutiveClaimsPositionLine(claims);
-  const detail = formatClaimsBriefBlock(claims, { maxPerGroup: 3 }).trimEnd();
+  const forDetail = filterConfirmedClaimsNotInIntake(claims, intakeConfirmed);
+  const detail = formatClaimsBriefBlock(forDetail, { maxPerGroup: 3 }).trimEnd();
   if (!summary) return detail;
   return `${summary}\n\n${detail}`;
 }

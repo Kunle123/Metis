@@ -330,7 +330,7 @@ export function BriefExecutiveSummaryCompare({
     return (
       <div className="space-y-0">
         {storedBody}
-        {briefAiSynthesisEnabled ? (
+        {briefAiSynthesisEnabled || canCompare || polishPreview ? (
           <details className="group mt-4 border-t border-dashed border-[color-mix(in_oklab,var(--metis-outline-subtle)_75%,transparent)] pt-3">
             <summary className="cursor-pointer list-none text-[0.78rem] font-medium text-[--metis-brass-soft] marker:content-none hover:text-[--metis-text-primary] [&::-webkit-details-marker]:hidden">
               Compare wording
