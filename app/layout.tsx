@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 import { ThemePreviewSwitch } from "@/components/dev/ThemePreviewSwitch";
@@ -16,11 +15,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   const tree = (
     <>
-      {process.env.NODE_ENV === "development" ? (
-        <Script id="metis-dev-theme-preview-init" strategy="beforeInteractive">
-          {devThemePreviewInitScript()}
-        </Script>
-      ) : null}
       {children}
       <ThemePreviewSwitch />
     </>
@@ -28,6 +22,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
+      <head>
+        {process.env.NODE_ENV === "development" ? (
+          <script
+            id="metis-dev-theme-preview-init"
+            dangerouslySetInnerHTML={{ __html: devThemePreviewInitScript() }}
+          />
+        ) : null}
+      </head>
       <body>{clerkEnabled ? <ClerkProvider>{tree}</ClerkProvider> : tree}</body>
     </html>
   );
