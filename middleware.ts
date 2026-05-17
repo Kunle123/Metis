@@ -31,6 +31,11 @@ function isAuthUiPublicPath(pathname: string) {
   return false;
 }
 
+function isPublicPagePath(pathname: string) {
+  if (pathname === "/demo" || pathname.startsWith("/demo/")) return true;
+  return false;
+}
+
 async function legacySessionUserId(request: NextRequest): Promise<string | null> {
   const token = getSessionTokenFromRequest(request);
   if (!token) return null;
@@ -57,6 +62,10 @@ async function metisClerkHybrid(clerkAuth: ClerkMiddlewareAuth, request: NextReq
   }
 
   if (isAuthUiPublicPath(pathname)) {
+    return NextResponse.next();
+  }
+
+  if (isPublicPagePath(pathname)) {
     return NextResponse.next();
   }
 
@@ -92,6 +101,10 @@ async function legacyOnlyMiddleware(request: NextRequest, _evt?: NextFetchEvent)
   }
 
   if (pathname === "/login") {
+    return NextResponse.next();
+  }
+
+  if (isPublicPagePath(pathname)) {
     return NextResponse.next();
   }
 
