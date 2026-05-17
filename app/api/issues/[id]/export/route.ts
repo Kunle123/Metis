@@ -16,6 +16,8 @@ import {
 import { prisma } from "@/lib/db/prisma";
 import { artifactExportToApiResponse } from "@/lib/export/artifactExportWire";
 import { loadExportAuditAppendixPayload } from "@/lib/export/buildExportAuditAppendix";
+import { loadBriefingPackContext } from "@/lib/export/loadBriefingPackContext";
+import { shouldUseBriefingPackRenderer } from "@/lib/export/briefingPack";
 import { renderExportDeliverable } from "@/lib/export/renderExportPackage";
 import { IssueActivityKinds } from "@/lib/issues/activityKinds";
 import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
@@ -84,6 +86,11 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     parsedFormat.data === "full-issue-brief" && (ot === "markdown" || ot === "html")
       ? await loadExportAuditAppendixPayload(issueId, exportViewer)
       : null;
+  const sourceBriefLabel = `${parsedMode.data === "full" ? "Full" : "Executive"} brief v${briefVersion.versionNumber}`;
+  const briefingPack =
+    ot !== "plain" && shouldUseBriefingPackRenderer(parsedFormat.data, parsedMode.data)
+      ? await loadBriefingPackContext(issue, { format: parsedFormat.data, sourceBriefLabel })
+      : null;
   const rendered = renderExportDeliverable({
     issue,
     mode: parsedMode.data,
@@ -91,6 +98,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     artifact,
     outputType: ot,
     auditAppendix,
+    briefingPack,
   });
 
   const now = new Date();
@@ -187,7 +195,20 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     format === "full-issue-brief" && (ot === "markdown" || ot === "html")
       ? await loadExportAuditAppendixPayload(issueId, exportViewer)
       : null;
-  const rendered = renderExportDeliverable({ issue, mode: parsedMode.data, format, artifact, outputType: ot, auditAppendix });
+  const sourceBriefLabel = `${parsedMode.data === "full" ? "Full" : "Executive"} brief v${briefVersion.versionNumber}`;
+  const briefingPack =
+    ot !== "plain" && shouldUseBriefingPackRenderer(format, parsedMode.data)
+      ? await loadBriefingPackContext(issue, { format, sourceBriefLabel })
+      : null;
+  const rendered = renderExportDeliverable({
+    issue,
+    mode: parsedMode.data,
+    format,
+    artifact,
+    outputType: ot,
+    auditAppendix,
+    briefingPack,
+  });
   const ext = exportFileExtensionForMime(rendered.mimeType);
   const filename = `metis-${issueId}-${format}-v${briefVersion.versionNumber}.${ext}`;
 

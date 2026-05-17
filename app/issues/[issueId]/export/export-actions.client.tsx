@@ -470,14 +470,31 @@ export function ExportActionsClient(props: Props) {
               {!props.previewIsDocxPlaceholder ? <>Export details remain in the summary panel →</> : null}
             </p>
           </div>
-          <div className="flex shrink-0 items-start">
+          <div className="flex shrink-0 gap-2">
+            {!props.previewIsDocxPlaceholder ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (props.previewMimeType === "text/html") {
+                    const frame = document.querySelector<HTMLIFrameElement>('iframe[title^="Review"]');
+                    frame?.contentWindow?.print();
+                  } else {
+                    window.print();
+                  }
+                }}
+              >
+                Print
+              </Button>
+            ) : null}
             <Button type="button" variant="outline" size="sm" onClick={() => setExpanded(true)}>
               Expand
             </Button>
           </div>
         </div>
 
-        <div className="mt-4 max-h-[52vh] overflow-auto rounded-[1rem] border border-[--metis-outline-subtle] bg-[--metis-surface-card] p-4 shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_22%,transparent)]">
+        <div className="mt-4 max-h-[52vh] overflow-auto rounded-[1rem] border border-[--metis-outline-subtle] bg-white p-0 shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_12%,transparent)]">
           <PreviewBody
             mime={props.previewMimeType}
             docxPlaceholder={props.previewIsDocxPlaceholder}

@@ -7,6 +7,7 @@ import assert from "node:assert/strict";
 import { BriefArtifactSchema } from "@metis/shared/briefVersion";
 
 import type { ExportAuditAppendixInput } from "./buildExportAuditAppendix";
+import type { BriefingPackContext } from "./briefingPack";
 import { escapeHtml, renderExportPackage, renderExportPackageHtml } from "./renderExportPackage";
 
 assert.equal(escapeHtml(`A & B <tag> "'`), "A &amp; B &lt;tag&gt; &quot;&#39;");
@@ -163,5 +164,87 @@ const emailOut = renderExportPackage({
   auditAppendix: sampleAppendix,
 }).content;
 assert.ok(!emailOut.includes("Audit appendix"));
+
+const briefingPackCtx: BriefingPackContext = {
+  issue: {
+    title: "Consultation on Proposed Changes to Service Opening Hours",
+    ownerName: "Comms lead",
+    status: "Active",
+    severity: "Medium",
+    priority: "P2",
+    updatedAt: new Date("2026-05-01T12:00:00Z"),
+    sourcesCount: 4,
+    openGapsCount: 2,
+  },
+  format: "executive-brief",
+  sourceBriefLabel: "Executive brief v3",
+  generatedAt: new Date("2026-05-16T09:00:00Z"),
+  claimsCount: 5,
+  messages: [
+    {
+      templateLabel: "External customer update",
+      audienceLabel: "Service users",
+      approvalStatus: "Draft — not approved",
+      primaryBody: "We are consulting on proposed changes to opening hours.",
+      supportingSections: [
+        { title: "Review caveats", body: "Do not confirm final hours until consultation closes." },
+      ],
+    },
+  ],
+};
+
+const executivePackArtifact = BriefArtifactSchema.parse({
+  lede: "Lede",
+  metadata: { audience: null, circulation: "Internal", lastRevisionLabel: "now", openGapsLabel: "2" },
+  full: { sections: [] },
+  executive: {
+    blocks: [
+      { label: "Executive summary", body: "Consultation is under way." },
+      { label: "Record sufficiency", body: "Record is sufficient for internal briefing." },
+      {
+        label: "What not to say yet / uncertainty guardrails",
+        body: "- Do not confirm final hours.\n- Do not confirm final hours.",
+      },
+      {
+        label: "Claims and assumptions",
+        body: "Claims position: 5 claims on register (2 need validation).",
+      },
+      { label: "Observations", body: "Three observations support the consultation narrative.\n\nDetail line two." },
+    ],
+    immediateActions: [],
+  },
+});
+
+const packHtml = renderExportPackageHtml({
+  issue: { title: briefingPackCtx.issue.title },
+  mode: "executive",
+  format: "executive-brief",
+  artifact: executivePackArtifact,
+  briefingPack: briefingPackCtx,
+}).content;
+
+assert.match(packHtml, /class="briefing-pack"/);
+assert.match(packHtml, /color-scheme: light/);
+assert.match(packHtml, /#ffffff/);
+assert.match(packHtml, /Message drafts/);
+assert.match(packHtml, /Record basis/);
+assert.match(packHtml, /Executive brief/);
+assert.match(packHtml, /External customer update/);
+assert.match(packHtml, /guardrail-block/);
+assert.ok(!packHtml.includes("feasibility qa"), "must strip dev/QA lines");
+assert.ok(!packHtml.includes("44444444-4444-4444-4444-444444444444"), "must not leak UUIDs");
+const guardrailBullets = (packHtml.match(/Do not confirm final hours/g) ?? []).length;
+assert.ok(guardrailBullets <= 2, "guardrail bullets should be deduped in HTML export");
+
+const packMd = renderExportPackage({
+  issue: { title: briefingPackCtx.issue.title },
+  mode: "executive",
+  format: "executive-brief",
+  artifact: executivePackArtifact,
+  briefingPack: briefingPackCtx,
+}).content;
+assert.match(packMd, /# Message drafts/);
+assert.match(packMd, /# Record basis/);
+assert.ok(!packMd.includes("Generated from the current issue record"));
 
 console.log("export HTML fixtures: ok");

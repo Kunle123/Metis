@@ -17,7 +17,9 @@ import { BriefModeSchema, BriefArtifactSchema, type BriefArtifact } from "@metis
 import { ExportFormatSchema, type ExportFormat, type ExportOutputType } from "@metis/shared/export";
 import { loadExportAuditAppendixPayload } from "@/lib/export/buildExportAuditAppendix";
 import { resolveBriefVersionForExport } from "@/lib/export/resolveBriefVersionForExport";
+import { loadBriefingPackContext } from "@/lib/export/loadBriefingPackContext";
 import { renderExportDeliverable } from "@/lib/export/renderExportPackage";
+import { shouldUseBriefingPackRenderer } from "@/lib/export/briefingPack";
 import { ExportActionsClient } from "@/app/issues/[issueId]/export/export-actions.client";
 import { ExportRecentPackagesClient } from "@/app/issues/[issueId]/export/export-recent-packages.client";
 import { coerceMessageApprovalStatus } from "@/lib/approvals/coerceMessageApprovalStatus";
@@ -237,6 +239,16 @@ export default async function IssueExportPage({
     selectedFormat === "full-issue-brief" && urlExportOutput !== "docx"
       ? await loadExportAuditAppendixPayload(issue.id, exportViewer)
       : null;
+
+  const sourceBriefRevisionLabel = `${sourceMode === "full" ? "Full" : "Executive"} brief v${briefVersion.versionNumber}`;
+  const briefingPack =
+    urlExportOutput !== "docx" && shouldUseBriefingPackRenderer(selectedFormat, sourceMode)
+      ? await loadBriefingPackContext(issue, {
+          format: selectedFormat,
+          sourceBriefLabel: sourceBriefRevisionLabel,
+        })
+      : null;
+
   const rendered =
     urlExportOutput === "docx"
       ? {
@@ -250,6 +262,7 @@ export default async function IssueExportPage({
           artifact,
           outputType: selectedFormat === "email-ready" ? "plain" : renderAsMarkdownOrHtml,
           auditAppendix,
+          briefingPack,
         });
 
   const downloadExtension =
@@ -283,7 +296,6 @@ export default async function IssueExportPage({
           ? "Plain text"
           : "Markdown";
 
-  const sourceBriefRevisionLabel = `${sourceMode === "full" ? "Full" : "Executive"} brief v${briefVersion.versionNumber}`;
   const generatedFromBriefLine = `Generated from ${sourceBriefRevisionLabel}.`;
   const packageFromBriefDescription =
     selectedFormat === "email-ready"

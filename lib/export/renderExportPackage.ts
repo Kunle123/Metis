@@ -5,6 +5,20 @@ import type { ExportFormat, ExportOutputType } from "@metis/shared/export";
 
 import type { ExportAuditAppendixInput } from "@/lib/export/buildExportAuditAppendix";
 import { buildExportAuditAppendixHtml, buildExportAuditAppendixMarkdown } from "@/lib/export/buildExportAuditAppendix";
+import {
+  type BriefingPackContext,
+  renderBriefingPackHtml,
+  renderBriefingPackMarkdown,
+  shouldUseBriefingPackRenderer,
+} from "@/lib/export/briefingPack";
+import { EXPORT_STANDALONE_HTML_STYLES } from "@/lib/export/exportDocumentStyles";
+import {
+  escapeHtml,
+  executiveBriefExportBlockLabel,
+  normalizeExportTerminology,
+} from "@/lib/export/exportDocumentUtils";
+
+export { escapeHtml, executiveBriefExportBlockLabel, normalizeExportTerminology };
 
 export type RenderedExportDeliverable =
   | { mimeType: "text/markdown" | "text/plain"; content: string }
@@ -12,9 +26,12 @@ export type RenderedExportDeliverable =
 
 /** Bridges logical `ExportFormat` with delivery `ExportOutputType` (HTML where supported; `email-ready` is always plain text). */
 export function renderExportDeliverable(
-  opts: Parameters<typeof renderExportPackage>[0] & { outputType?: ExportOutputType },
+  opts: Parameters<typeof renderExportPackage>[0] & {
+    outputType?: ExportOutputType;
+    briefingPack?: BriefingPackContext | null;
+  },
 ): RenderedExportDeliverable {
-  const { format, outputType } = opts;
+  const { format, outputType, briefingPack } = opts;
   if (format === "email-ready") {
     return renderExportPackage(opts);
   }
@@ -24,84 +41,8 @@ export function renderExportDeliverable(
   return renderExportPackage(opts);
 }
 
-const HTML_DOCUMENT_STYLES = `
-  :root {
-    color-scheme: light;
-    --metis-ink: #1a1a1f;
-    --metis-muted: #4d4d55;
-    --metis-border: #dfe0e4;
-    --metis-fill: #f7f7f9;
-    --metis-accent: #2f4f6f;
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    line-height: 1.55;
-    font-size: 14px;
-  }
-  @media print {
-    body { background: white; padding: 0; }
-    article { max-width: 100%; }
-    a { text-decoration: none; color: inherit; }
-  }
-  body {
-    margin: 0 auto;
-    max-width: 52rem;
-    padding: 2rem clamp(16px, 4vw, 2.5rem) 3rem;
-    background: white;
-    color: var(--metis-ink);
-  }
-  article > header {
-    padding-bottom: 1rem;
-    margin-bottom: 1.75rem;
-    border-bottom: 1px solid var(--metis-border);
-  }
-  h1 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    line-height: 1.25;
-    margin: 0 0 0.75rem;
-    color: var(--metis-accent);
-  }
-  h2 {
-    font-size: 1.1rem;
-    font-weight: 650;
-    margin: 1.75rem 0 0.65rem;
-    color: var(--metis-accent);
-    border-bottom: 1px solid var(--metis-border);
-    padding-bottom: 0.35rem;
-  }
-  section { margin-bottom: 1.35rem; }
-  p {
-    margin: 0 0 0.75rem;
-    color: var(--metis-ink);
-  }
-  ul {
-    margin: 0 0 0.75rem;
-    padding-left: 1.35rem;
-    color: var(--metis-muted);
-  }
-  li { margin-bottom: 0.35rem; }
-  .posture-line {
-    font-size: 0.92rem;
-    color: var(--metis-muted);
-    margin-top: 0.5rem;
-  }
-  footer.meta {
-    margin-top: 2.5rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--metis-border);
-    font-size: 0.8rem;
-    color: var(--metis-muted);
-  }
-`;
-
-/** Minimal HTML escapes for injecting brief text into a static document (no scripting). */
-export function escapeHtml(input: string) {
-  return String(input ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
+/** Shared light document styles for non-pack HTML exports (full brief, board note). */
+const HTML_DOCUMENT_STYLES = EXPORT_STANDALONE_HTML_STYLES;
 
 function paragraphsFromBody(bodyTrimmed: string): string[] {
   if (!bodyTrimmed) return [];
@@ -145,40 +86,13 @@ function section(title: string, body: string) {
   return `\n## ${title}\n\n${body.trim()}\n`;
 }
 
-/**
- * Executive-brief export reads `artifact.executive.blocks`. Full-mode artifacts label the first block
- * “Situation”; Executive-mode uses “Executive summary”. Normalize at export-only time so Markdown
- * matches expectation without persisting mutations.
- */
-export function executiveBriefExportBlockLabel(index: number, label: string): string {
-  if (index !== 0) return label;
-  return label.trim() === "Situation" ? "Executive summary" : label;
-}
-
-export function normalizeExportTerminology(input: string) {
-  const s = String(input ?? "");
-  if (!s) return s;
-  return (
-    s
-      // posture language
-      .replace(/\bOperator posture\b/g, "Briefing posture")
-      // old gap terminology variants
-      .replace(/\bClarification gaps\b/gi, (m) => (m[0] === "C" ? "Open questions" : "open questions"))
-      .replace(/\bopen gaps\b/gi, (m) => (m[0] === "O" ? "Open questions" : "open questions"))
-      .replace(/\bopen gap\(s\)\b/gi, "open question(s)")
-      .replace(/\bopen gap\b/gi, "open question")
-      .replace(/\bgaps\b/gi, (m) => (m[0] === "G" ? "Open questions" : "open questions"))
-      .replace(/\bgap\b/gi, (m) => (m[0] === "G" ? "Open question" : "open question"))
-      .replace(/\bUnassigned needs\b/gi, (m) => (m[0] === "U" ? "Additional open questions" : "additional open questions"))
-  );
-}
-
 export function renderExportPackage({
   issue,
   mode,
   format,
   artifact,
   auditAppendix,
+  briefingPack,
 }: {
   issue: Pick<Issue, "title">;
   mode: BriefMode;
@@ -186,8 +100,16 @@ export function renderExportPackage({
   artifact: BriefArtifact;
   /** Export-time issue ledger; only appended for `full-issue-brief` Markdown. */
   auditAppendix?: ExportAuditAppendixInput | null;
+  briefingPack?: BriefingPackContext | null;
 }) {
   const title = normalizeExportTerminology(issue.title);
+
+  if (briefingPack && shouldUseBriefingPackRenderer(format, mode)) {
+    return {
+      mimeType: "text/markdown" as const,
+      content: renderBriefingPackMarkdown(briefingPack, artifact),
+    };
+  }
 
   if (format === "executive-brief" || mode === "executive") {
     const blocks = artifact.executive.blocks
@@ -246,6 +168,7 @@ export function renderExportPackageHtml({
   format,
   artifact,
   auditAppendix,
+  briefingPack,
 }: {
   issue: Pick<Issue, "title">;
   mode: BriefMode;
@@ -253,8 +176,16 @@ export function renderExportPackageHtml({
   artifact: BriefArtifact;
   /** Export-time issue ledger; only appended for `full-issue-brief` HTML. */
   auditAppendix?: ExportAuditAppendixInput | null;
+  briefingPack?: BriefingPackContext | null;
 }) {
   const titlePlain = normalizeExportTerminology(issue.title);
+
+  if (briefingPack && shouldUseBriefingPackRenderer(format, mode)) {
+    return {
+      mimeType: "text/html" as const,
+      content: renderBriefingPackHtml(briefingPack, artifact),
+    };
+  }
 
   if (format === "executive-brief" || mode === "executive") {
     const sectionsInner = artifact.executive.blocks

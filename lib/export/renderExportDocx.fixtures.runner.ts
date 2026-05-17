@@ -188,7 +188,7 @@ async function main() {
   assert.ok(fullText.includes("Question ref unavailable"), "fallback gap label");
   assert.ok(fullText.includes("Observation ref unavailable"), "fallback observation label");
   assert.ok(fullText.includes("Answered by OBS-005"));
-  assert.ok(fullText.includes("Answered by (observation ref unavailable)"));
+  assert.ok(fullText.includes("Answered by restricted observation"));
   assert.ok(fullText.includes("SRC-OFF"), "non-numeric source code verbatim");
   assert.ok(fullText.includes("Source —"), "missing source code → Source");
   assert.ok(!fullText.includes("22222222-2222-2222-2222-222222222222"), "uuid not leaked in appendix");
