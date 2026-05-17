@@ -66,7 +66,7 @@ export function MessageDraftCard({
   const purpose = purposeLine ?? messagePurposeLine(templateId);
 
   return (
-    <article className="mx-auto min-w-0 max-w-[52rem] overflow-hidden rounded-[1rem] border border-[--metis-outline-subtle] bg-[--metis-surface-card] shadow-[0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_20%,transparent),0_12px_36px_color-mix(in_oklab,var(--metis-frame)_32%,transparent)]">
+    <article className="mx-auto min-w-0 w-full max-w-[56rem] overflow-hidden rounded-[1rem] border border-[--metis-outline-subtle] bg-[--metis-surface-card] shadow-[0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_20%,transparent),0_12px_36px_color-mix(in_oklab,var(--metis-frame)_32%,transparent)]">
       <header className="border-b border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-frame-soft)_68%,var(--metis-surface-card))] px-4 py-3.5 sm:px-5">
         <p className="text-[0.58rem] font-medium uppercase tracking-[0.18em] text-[--metis-brass-soft]">Message draft</p>
         <div className="mt-1.5 flex flex-wrap items-start justify-between gap-2">

@@ -1,8 +1,15 @@
 import type { Claim, Gap, InternalInput, Issue, IssueStakeholder, Source, StakeholderGroup } from "@prisma/client";
 
-import type { InternalStaffUpdateArtifact } from "@metis/shared/messageVariant";
-import { formatClaimsBriefBlock } from "@/lib/claims/claimsForGeneration";
+import type { InternalStaffUpdateArtifact, MessageVariantSection } from "@metis/shared/messageVariant";
 import { rankInternalInputsForIssue, rankOpenGapsForIssue, rankSourcesForIssue } from "@/lib/evidence/rankEvidence";
+
+import {
+  activeClaimsSummary,
+  buildMessageRecordGrounding,
+  formatDoNotSayBlock,
+  issueSignalsConsultationHours,
+  resolveMessageAudienceProfile,
+} from "./messageRecordGrounding";
 
 /** Setup-only audience (issue.audience); no StakeholderGroup. */
 export type SetupAudienceInput = { kind: "setup" };
@@ -37,15 +44,6 @@ function nowLabel() {
   return `${hh}:${mm} (generated)`;
 }
 
-function bulletsFromParagraph(text: string) {
-  const lines = text
-    .split(/\r?\n/)
-    .map((l) => l.trim())
-    .filter(Boolean);
-  if (!lines.length) return "- (No bullet lines parsed.)";
-  return lines.map((l) => `- ${l.replace(/^-+\s*/, "")}`).join("\n");
-}
-
 function issueLensHasContent(row: IssueStakeholder) {
   return Boolean(
     cleanText(row.needsToKnow) ||
@@ -56,50 +54,72 @@ function issueLensHasContent(row: IssueStakeholder) {
   );
 }
 
-function formatGapLine(g: Gap) {
-  const q = cleanText(g.prompt) || cleanText(g.title);
-  const topic = cleanText(g.linkedSection);
+function formatGapLineShort(g: Gap) {
+  const q = (cleanText(g.prompt) || cleanText(g.title)).replace(/\s+/g, " ").trim();
   const sev = cleanText(g.severity);
-  const base = q.replace(/\s+/g, " ").trim();
-  const head = [topic ? `(${topic})` : null, sev ? `[${sev}]` : null].filter(Boolean).join(" ");
-  return `${head ? `${head} ` : ""}${base || "Open validation item."}`.trim();
+  return sev ? `[${sev}] ${q}` : q;
 }
 
-function formatInternalInputLine(i: InternalInput) {
-  const who = [cleanText(i.role), cleanText(i.name)].filter(Boolean).join(" · ").trim();
-  const body = cleanText(i.response);
-  const confidence = cleanText(i.confidence);
-  const ts = cleanText(i.timestampLabel);
-  const linked = cleanText(i.linkedSection);
-  const meta = [confidence ? `Confidence: ${confidence}` : null, ts ? `Time: ${ts}` : null, linked ? `Linked: ${linked}` : null]
+function buildConsultationStaffSections(
+  issue: Issue,
+  grounding: ReturnType<typeof buildMessageRecordGrounding>,
+  gaps: Gap[],
+  needsToKnow: string,
+  channelEffective: string,
+): MessageVariantSection[] {
+  const open = rankOpenGapsForIssue(gaps, { onlyOpen: true });
+  const topCritical = open.filter((g) => String(g.severity ?? "").trim() === "Critical").slice(0, 2);
+  const topOther = open.filter((g) => String(g.severity ?? "").trim() !== "Critical").slice(0, 2);
+
+  const frontDesk = [
+    "Use this line at the front desk and on the phone unless your manager issues approved wording:",
+    "",
+    "We are reviewing options for service opening hours. No final decision has been made. Consultation is under way and feedback will shape any recommendation.",
+    "",
+    "If asked for exact hours, savings, equality impact, or whether the service is closing early: explain that these points are not confirmed yet and you will come back once approved wording is available.",
+    "",
+    grounding.serviceCutHoldingLine,
+  ].join("\n");
+
+  const escalation = [
+    "Approved consultation wording is not yet signed off for wider use.",
+    channelEffective
+      ? `Channel guidance on record: ${channelEffective}`
+      : "Escalate detailed or media enquiries to communications / your incident lead — do not improvise.",
+    needsToKnow ? `Staff audience note: ${needsToKnow}` : null,
+  ]
     .filter(Boolean)
-    .join(" · ");
-  const head = who ? `${who}: ` : "";
-  return `${head}${body || "(No observation text recorded.)"}${meta ? ` (${meta})` : ""}`.trim();
-}
+    .join("\n\n");
 
-function formatSourceLine(s: Source) {
-  const code = cleanText(s.sourceCode);
-  const title = cleanText(s.title);
-  const tier = cleanText(s.tier);
-  const url = cleanText(s.url);
-  const snippet = cleanText(s.snippet);
-  const bits: string[] = [];
-  const head = [code || null, title || null].filter(Boolean).join(" · ");
-  if (head) bits.push(head);
-  if (tier) bits.push(`Tier: ${tier}`);
-  if (url) bits.push(`URL: ${url}`);
-  if (snippet) bits.push(`Note: ${snippet}`);
-  return bits.join(" — ") || "(No source details recorded.)";
+  const stillOpen =
+    topCritical.length || topOther.length
+      ? [
+          "Still open on the record (internal):",
+          "",
+          ...topCritical.map((g) => `- ${formatGapLineShort(g)}`),
+          ...topOther.map((g) => `- ${formatGapLineShort(g)}`),
+          open.length > topCritical.length + topOther.length
+            ? `\n(${open.length - topCritical.length - topOther.length} more — see Open questions.)`
+            : "",
+        ].join("\n")
+      : "No open questions flagged on the tracker.";
+
+  return [
+    { id: "draft-message", title: "Front-desk line", body: frontDesk },
+    { id: "do-not-say", title: "Do not say", body: formatDoNotSayBlock(grounding.doNotSay, 8) },
+    { id: "escalation", title: "Escalation & sign-off", body: escalation },
+    { id: "still-validating", title: "Still open internally", body: stillOpen },
+    {
+      id: "record-basis",
+      title: "Record basis (internal)",
+      body: [grounding.equalityCaveat, grounding.circulationCaveat].join("\n\n"),
+    },
+  ];
 }
 
 export function generateInternalStaffUpdateArtifact(input: InternalStaffMessageGenerationInput): InternalStaffUpdateArtifact {
   const { issue, sources, gaps, internalInputs, claims = [], audience } = input;
-
-  const summary = cleanText(issue.summary);
-  const confirmed = cleanText(issue.confirmedFacts);
-  const posture = cleanText(issue.operatorPosture);
-  const status = cleanText(issue.status);
+  const grounding = buildMessageRecordGrounding(issue, claims, gaps);
 
   const isSetup = audience.kind === "setup";
   const group = audience.kind === "group" ? audience.group : null;
@@ -131,111 +151,104 @@ export function generateInternalStaffUpdateArtifact(input: InternalStaffMessageG
   const toneFromGroup = group ? cleanText(group.defaultToneGuidance) : "";
 
   const open = rankOpenGapsForIssue(gaps, { onlyOpen: true });
-  const topOpen = open.slice(0, 8);
+  const profile = resolveMessageAudienceProfile(audienceLabel, "internal_staff_update");
 
-  const rankedNonExcludedInputs = rankInternalInputsForIssue(internalInputs, { excludeFromBrief: true });
-  const topInputs = rankedNonExcludedInputs.slice(0, 12);
-
-  const whatIsHappening = (() => {
-    const base = summary || "Staff update prepared from the current issue record.";
-    const statusLine = status ? `Status: ${status}.` : "";
-    const postureLine = posture ? `Posture: ${posture}.` : "";
-    const focusLine = needsToKnowEffective ? `For this audience, focus on: ${needsToKnowEffective}` : "";
-    return [base, statusLine, postureLine, focusLine].filter(Boolean).join("\n\n").trim();
-  })();
-
-  const confirmedFacts = confirmed ? `Confirmed facts:\n${bulletsFromParagraph(confirmed)}` : "No confirmed facts recorded yet.";
-
-  const internalNotes = (() => {
-    if (!topInputs.length) {
-      return "No non-excluded internal observations have been recorded yet.";
-    }
-    const lines = topInputs.map(formatInternalInputLine).filter(Boolean);
-    const extra =
-      rankedNonExcludedInputs.length > topInputs.length
-        ? `\n\n(${rankedNonExcludedInputs.length - topInputs.length} more internal notes not shown.)`
-        : "";
-    return (
-      "Internal notes (not confirmed facts):\nThese notes may be incomplete, sensitive, or wrong. Do not treat as confirmed facts.\n\n" +
-      lines.map((l) => `- ${l}`).join("\n") +
-      extra
-    ).trim();
-  })();
-
-  const evidence = (() => {
-    if (!sources.length) return "No evidence references recorded yet.";
-    const sorted = rankSourcesForIssue(sources);
-    const top = sorted.slice(0, 12);
-    const lines = top.map(formatSourceLine).filter(Boolean);
-    const extra = sources.length > top.length ? `\n\n(${sources.length - top.length} more evidence items not shown.)` : "";
-    return ("Evidence & references (internal):\n\n" + lines.map((l) => `- ${l}`).join("\n") + extra).trim();
-  })();
-
-  const whatWeAreDoing = (() => {
-    const parts: string[] = [];
-    if (status || posture) {
-      parts.push(
-        `Operational stance: ${status ? status : "In progress"}${posture ? ` · ${posture}` : ""}.`.trim(),
+  const sections: MessageVariantSection[] = (() => {
+    if (grounding.consultationIssue && profile === "staff") {
+      const staffSections = buildConsultationStaffSections(
+        issue,
+        grounding,
+        gaps,
+        needsToKnowEffective,
+        channelEffective || channelFromDefaults,
       );
-    } else {
-      parts.push("Operational stance: In progress.");
+      const basisIdx = staffSections.findIndex((s) => s.id === "record-basis");
+      if (basisIdx >= 0) {
+        staffSections[basisIdx] = {
+          ...staffSections[basisIdx]!,
+          body: [
+            activeClaimsSummary(claims),
+            grounding.equalityCaveat,
+            grounding.circulationCaveat,
+          ].join("\n\n"),
+        };
+      }
+      return staffSections;
     }
-    return parts.join("\n\n");
-  })();
 
-  const whatStaffShouldSayDo = (() => {
-    if (channelEffective) {
-      return `Practical guidance (channel notes on record):\n${channelEffective}`.trim();
-    }
-    if (channelFromDefaults) {
-      return `Practical guidance (organisation audience group defaults):\n${channelFromDefaults}`.trim();
-    }
-    return "No channel guidance recorded yet. Use internal comms channels and follow incident lead instructions.";
-  })();
+    const summary = cleanText(issue.summary);
+    const confirmed = cleanText(issue.confirmedFacts);
+    const posture = cleanText(issue.operatorPosture);
+    const status = cleanText(issue.status);
 
-  const stillValidating = (() => {
-    if (!topOpen.length) return "No open validation items recorded yet.";
-    const lines = topOpen.map(formatGapLine).filter(Boolean);
-    return (
-      "Still validating:\n\n" +
-      lines.map((l) => `- ${l}`).join("\n") +
-      (open.length > topOpen.length ? `\n\n(${open.length - topOpen.length} more open items not shown.)` : "")
-    ).trim();
-  })();
+    const rankedNonExcludedInputs = rankInternalInputsForIssue(internalInputs, { excludeFromBrief: true });
+    const topInputs = rankedNonExcludedInputs.slice(0, 6);
 
-  const nextUpdate = "Update this internal note when confirmed facts change or when new evidence is logged. Use the external update template for any public-facing copy.";
+    const whatIsHappening = [summary || "Staff update from the current issue record.", status ? `Status: ${status}.` : "", posture ? `Posture: ${posture}.` : "", needsToKnowEffective ? `Focus: ${needsToKnowEffective}` : ""]
+      .filter(Boolean)
+      .join("\n\n");
+
+    const confirmedFacts = confirmed
+      ? `Confirmed facts:\n${confirmed.split(/\r?\n/).map((l) => `- ${l.replace(/^-+\s*/, "")}`).join("\n")}`
+      : "No confirmed facts recorded yet.";
+
+    const internalNotes =
+      topInputs.length > 0
+        ? "Internal notes (not confirmed facts):\n" +
+          topInputs
+            .map((i) => {
+              const who = [i.role, i.name].filter(Boolean).join(" · ");
+              return `- ${who ? `${who}: ` : ""}${cleanText(i.response) || "(empty)"}`;
+            })
+            .join("\n")
+        : "No non-excluded internal observations recorded.";
+
+    const evidence =
+      sources.length > 0
+        ? "Evidence on file:\n" +
+          rankSourcesForIssue(sources)
+            .slice(0, 6)
+            .map((s) => `- ${s.sourceCode} · ${s.title}`)
+            .join("\n")
+        : "No sources linked yet.";
+
+    const stillValidating =
+      open.length > 0
+        ? "Still validating:\n" + open.slice(0, 6).map((g) => `- ${formatGapLineShort(g)}`).join("\n")
+        : "No open validation items.";
+
+    return [
+      { id: "draft-message", title: "Staff summary", body: whatIsHappening },
+      { id: "confirmed-facts", title: "Confirmed facts", body: confirmedFacts },
+      { id: "internal-notes", title: "Internal notes (not confirmed)", body: internalNotes },
+      { id: "evidence", title: "Evidence (internal)", body: evidence },
+      {
+        id: "what-staff-should-say-do",
+        title: "What staff should say / do",
+        body: channelEffective || channelFromDefaults || "Follow incident lead instructions.",
+      },
+      { id: "still-validating", title: "Still validating", body: stillValidating },
+    ];
+  })();
 
   const mustAvoid: string[] = [
+    ...grounding.doNotSay.map((l) => l.replace(/^Do not say yet /i, "Do not ")),
     "Do not present internal notes as confirmed facts.",
-    "Do not paste internal evidence references into external channels; use the external update template instead.",
-    "Treat this as a draft for review; internal notes may be wrong or sensitive even when useful for investigation.",
+    "Do not paste internal evidence references into external channels.",
+    "Treat as draft for review.",
   ];
   if (issueLens) {
     const risk = cleanText(issueLens.issueRisk);
-    if (risk) mustAvoid.push(`Audience risk note (internal): ${risk}`);
+    if (risk) mustAvoid.push(`Audience risk (internal): ${risk}`);
   }
 
   const toneParts = [toneFromIssue, toneFromGroup].filter(Boolean);
   const toneNotes =
     toneParts.length > 0
       ? toneParts.join(" ")
-      : "Be practical and operational. Clearly separate confirmed facts from internal notes and open validation items.";
-
-  const sections: InternalStaffUpdateArtifact["sections"] = [
-    { id: "what-is-happening", title: "What is happening (staff summary)", body: whatIsHappening },
-    { id: "confirmed-facts", title: "Confirmed facts", body: confirmedFacts },
-    {
-      id: "claims-register",
-      title: "Claims register (facts & assumptions)",
-      body: formatClaimsBriefBlock(claims),
-    },
-    { id: "internal-notes", title: "Internal notes (not confirmed facts)", body: internalNotes },
-    { id: "evidence", title: "Evidence & references (internal)", body: evidence },
-    { id: "what-we-are-doing", title: "What we are doing", body: whatWeAreDoing },
-    { id: "what-staff-should-say-do", title: "What staff should say / do", body: whatStaffShouldSayDo },
-    { id: "still-validating", title: "Still validating", body: stillValidating },
-    { id: "next-update", title: "Next update", body: nextUpdate },
-  ];
+      : grounding.consultationIssue && profile === "staff"
+        ? "Practical and direct. Separate the front-desk line from open validation items."
+        : "Be practical. Separate confirmed facts from internal notes and open items.";
 
   return {
     templateId: "internal_staff_update",
@@ -253,7 +266,7 @@ export function generateInternalStaffUpdateArtifact(input: InternalStaffMessageG
     },
     sections,
     guardrails: {
-      mustAvoid,
+      mustAvoid: [...new Set(mustAvoid)],
       toneNotes,
     },
   };
@@ -278,4 +291,3 @@ export function renderInternalStaffUpdateMarkdown(title: string, artifact: Inter
   lines.push("");
   return lines.join("\n").trim() + "\n";
 }
-

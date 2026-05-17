@@ -1,8 +1,15 @@
 import type { Claim, Gap, Issue, IssueStakeholder, Source, StakeholderGroup } from "@prisma/client";
 
-import type { MessageVariantArtifact } from "@metis/shared/messageVariant";
-import { augmentExternalConfirmedWithClaims, externalMessageClaimsCaveats } from "@/lib/claims/claimsForGeneration";
+import type { MessageVariantArtifact, MessageVariantSection } from "@metis/shared/messageVariant";
+import { groupClaimsForSynthesis } from "@/lib/claims/claimsForGeneration";
 import { rankOpenGapsForIssue } from "@/lib/evidence/rankEvidence";
+
+import {
+  buildMessageRecordGrounding,
+  formatConfirmedForExternalCopy,
+  formatDoNotSayBlock,
+  resolveMessageAudienceProfile,
+} from "./messageRecordGrounding";
 
 /** Setup-only audience (issue.audience); no StakeholderGroup. */
 export type SetupAudienceInput = { kind: "setup" };
@@ -43,9 +50,9 @@ function formatUncertaintyLine(g: Gap) {
   const base = q.replace(/\s+/g, " ").trim();
   if (!base) return "";
   if (topic) {
-    return `We are still working to confirm details related to ${topic}: ${base.endsWith("?") ? base : `${base}?`}`;
+    return `We are still working to confirm details related to ${topic}: ${base.endsWith("?") ? base : `${base}.`}`;
   }
-  return base.endsWith("?") ? `We are still working to answer: ${base}` : `We are still working to answer: ${base}?`;
+  return base.endsWith("?") ? `We are still working to answer: ${base}` : `We are still working to answer: ${base}.`;
 }
 
 function issueLensHasContent(row: IssueStakeholder) {
@@ -87,10 +94,70 @@ export function buildAudienceSnapshot(issue: Issue, audience: ExternalAudienceIn
   };
 }
 
+function isStandardConsultationConfirmedCopy(copy: string): boolean {
+  const n = copy.replace(/\s+/g, " ").trim().toLowerCase();
+  if (!n) return true;
+  return /^consultation options for service opening hours are under review\.\s*no final decision has been made( on the proposed opening-hours change)?\.?$/.test(
+    n,
+  );
+}
+
+function buildConsultationExternalSections(
+  issue: Issue,
+  profile: "service_users" | "councillors",
+  grounding: ReturnType<typeof buildMessageRecordGrounding>,
+  needsToKnow: string,
+): MessageVariantSection[] {
+  const confirmedCopy = formatConfirmedForExternalCopy(grounding.confirmedLines, cleanText(issue.confirmedFacts ?? ""));
+
+  const confirmedForBody = isStandardConsultationConfirmedCopy(confirmedCopy) ? "" : confirmedCopy;
+
+  const draftMessage =
+    profile === "service_users"
+      ? [
+          "We are reviewing options for service opening hours. No final decision has been made.",
+          "",
+          confirmedForBody ||
+            "Consultation options are under review. We will share more when we can confirm details accurately.",
+          "",
+          "Your feedback during consultation will help shape any recommendation. We will provide updates through our official channels when there is confirmed information to share.",
+          "",
+          "Please rely on official updates rather than informal reports. Some social posts have suggested early closure — that is not accurate based on the current record.",
+        ].join("\n")
+      : [
+          "Thank you for your interest in proposed changes to service opening hours.",
+          "",
+          "Options are under formal consultation. No final decision has been made.",
+          "",
+          isStandardConsultationConfirmedCopy(confirmedCopy) ? null : confirmedCopy,
+          "",
+          "The organisation is following a consultation process. An equality impact assessment will inform what can be said about distributional effects — that assessment is not yet complete.",
+          "",
+          "Holding line if asked whether this is a service cut:",
+          grounding.serviceCutHoldingLine,
+          "",
+          "We cannot confirm final hours, savings, or equality impacts until consultation and assessment work is complete. We will update councillors when there is an approved position to share.",
+        ]
+          .filter(Boolean)
+          .join("\n");
+
+  const reviewLines = [
+    grounding.circulationCaveat,
+    grounding.equalityCaveat,
+    needsToKnow ? `Audience focus on record: ${needsToKnow}` : null,
+    "",
+    formatDoNotSayBlock(grounding.doNotSay),
+  ].filter(Boolean);
+
+  return [
+    { id: "draft-message", title: "Draft message", body: draftMessage.trim() },
+    { id: "review-caveats", title: "Review before circulation", body: reviewLines.join("\n") },
+  ];
+}
+
 export function generateExternalCustomerResidentStudentArtifact(input: ExternalMessageGenerationInput): MessageVariantArtifact {
   const { issue, sources, gaps, claims = [], audience } = input;
-  const summary = cleanText(issue.summary);
-  const confirmed = augmentExternalConfirmedWithClaims(cleanText(issue.confirmedFacts), claims);
+  const grounding = buildMessageRecordGrounding(issue, claims, gaps);
   const open = rankOpenGapsForIssue(gaps, { onlyOpen: true });
   const topOpen = open.slice(0, 3);
 
@@ -123,79 +190,100 @@ export function generateExternalCustomerResidentStudentArtifact(input: ExternalM
   const toneFromIssue = issueLens ? cleanText(issueLens.toneAdjustment) : "";
   const toneFromGroup = group ? cleanText(group.defaultToneGuidance) : "";
 
-  const whatIsHappening = (() => {
-    if (confirmed) {
-      return `${summary ? `${summary}\n\n` : ""}What we can confirm:\n${bulletsFromParagraph(confirmed)}`.trim();
-    }
-    if (summary) {
-      return `${summary}\n\nThis is an interim update. Formal confirmed facts are still being recorded; we will share more when we can do so accurately.`.trim();
-    }
-    return "We are preparing a factual update for those affected. Confirmed details are still being recorded in our internal issue record; we will post more when we can do so accurately.";
-  })();
+  const profile = resolveMessageAudienceProfile(audienceLabel, "external_customer_resident_student");
 
-  const whatWeAreDoing = (() => {
-    const posture = cleanText(issue.operatorPosture);
-    const status = cleanText(issue.status);
-    const parts: string[] = [];
-    if (status || posture) {
-      parts.push(
-        `Our team is actively working on this matter${status ? ` (current status: ${status})` : ""}${posture ? `. Posture: ${posture}.` : "."}`,
+  const sections: MessageVariantSection[] = (() => {
+    if (grounding.consultationIssue && (profile === "service_users" || profile === "councillors")) {
+      return buildConsultationExternalSections(issue, profile, grounding, needsToKnowEffective);
+    }
+
+    const summary = cleanText(issue.summary);
+    const confirmedCopy = formatConfirmedForExternalCopy(
+      grounding.confirmedLines,
+      cleanText(issue.confirmedFacts ?? ""),
+    );
+
+    const whatIsHappening = (() => {
+      if (confirmedCopy) {
+        return `${summary ? `${summary}\n\n` : ""}${confirmedCopy}`.trim();
+      }
+      if (summary) {
+        return `${summary}\n\nThis is an interim update. Confirmed facts are still being recorded; we will share more when we can do so accurately.`;
+      }
+      return "We are preparing a factual update. Confirmed details are still being recorded; we will post more when we can do so accurately.";
+    })();
+
+    const whatWeAreDoing = (() => {
+      const status = cleanText(issue.status);
+      const posture = cleanText(issue.operatorPosture);
+      const parts: string[] = [];
+      if (status || posture) {
+        parts.push(
+          `Our team is actively working on this matter${status ? ` (current status: ${status})` : ""}${posture ? `. Posture: ${posture}.` : ""}`,
+        );
+      } else {
+        parts.push("Our team is actively working on this matter and will share updates when we have confirmed information.");
+      }
+      if (sources.length > 0) {
+        parts.push("This update reflects only what is confirmed on the issue record — not internal reference material.");
+      }
+      if (needsToKnowEffective) parts.push(`For this audience: ${needsToKnowEffective}`);
+      return parts.join("\n\n");
+    })();
+
+    const whatYouCanDo = (() => {
+      if (channelEffective) {
+        return `${channelEffective}\n\nIf you need help, use the contact channels your organisation has published for this issue.`;
+      }
+      if (channelFromDefaults) {
+        return `${channelFromDefaults}\n\nIf you need help, use the contact channels your organisation has published for this issue.`;
+      }
+      return "Use the contact channels your organisation has published for this type of issue.";
+    })();
+
+    const whatWeCantConfirm = (() => {
+      if (!topOpen.length) {
+        return formatDoNotSayBlock(grounding.doNotSay, 8) || "No open clarification items require a public caveat at this time.";
+      }
+      const lines = topOpen.map(formatUncertaintyLine).filter(Boolean);
+      return (
+        "Some details are still being confirmed:\n\n" +
+        lines.map((l) => `- ${l}`).join("\n") +
+        (open.length > topOpen.length ? "\n\nAdditional items remain under internal review." : "") +
+        `\n\n${formatDoNotSayBlock(grounding.doNotSay, 5)}`
       );
-    } else {
-      parts.push("Our team is actively working on this matter and will share updates as soon as we have confirmed information.");
-    }
-    if (sources.length > 0) {
-      parts.push(
-        "Supporting materials are being coordinated internally; this public update reflects only what is confirmed above and does not include internal reference details.",
-      );
-    } else {
-      parts.push(
-        "We are still assembling the supporting information we can reference for external statements. Until that is in place, treat this update as provisional except where explicitly confirmed above.",
-      );
-    }
-    if (needsToKnowEffective) {
-      parts.push(`For this audience, our focus is: ${needsToKnowEffective}`);
-    }
-    return parts.join("\n\n");
-  })();
+    })();
 
-  const whatYouCanDo = (() => {
-    if (channelEffective) {
-      return `Practical guidance:\n${channelEffective}\n\nIf you need help, use the contact channels your organisation has published for this type of issue.`;
-    }
-    if (channelFromDefaults) {
-      return `Channel guidance (from organisation audience group defaults):\n${channelFromDefaults}\n\nIf you need help, use the contact channels your organisation has published for this type of issue.`;
-    }
-    return "No specific actions are recorded in the issue template yet. If you need help, use the contact channels your organisation has published for this type of issue.";
+    return [
+      { id: "draft-message", title: "Draft message", body: whatIsHappening },
+      { id: "what-we-are-doing", title: "What we are doing", body: whatWeAreDoing },
+      { id: "what-you-can-do", title: "What you can do", body: whatYouCanDo },
+      { id: "what-we-cant-confirm-yet", title: "What we cannot confirm yet", body: whatWeCantConfirm },
+      {
+        id: "next-update",
+        title: "Next update",
+        body: "We will post an update when we have new confirmed information. Please rely on official channels rather than informal summaries.",
+      },
+    ];
   })();
-
-  const whatWeCantConfirm = (() => {
-    const caveat = externalMessageClaimsCaveats(claims).trim();
-    if (!topOpen.length) {
-      const base =
-        "There are no open clarification items on the issue list that require a public caveat at this time. If the situation changes, we will update this message.";
-      return caveat ? `${base}\n\n${caveat}` : base;
-    }
-    const lines = topOpen.map(formatUncertaintyLine).filter(Boolean);
-    const gapsBlock =
-      "Some operational details are still being confirmed. Until we can state them accurately:\n\n" +
-      lines.map((l) => `- ${l}`).join("\n") +
-      (open.length > topOpen.length ? `\n\nAdditional items remain under internal review.` : "");
-    return caveat ? `${gapsBlock}\n\n${caveat}` : gapsBlock;
-  })();
-
-  const nextUpdate =
-    "We will post an update as soon as we have new confirmed information. Please rely on official channels rather than informal summaries.";
 
   const mustAvoid: string[] = [
+    ...grounding.doNotSay.map((l) => l.replace(/^Do not say yet /i, "Do not ")),
     "Do not quote or paraphrase internal observations in external channels.",
-    "Do not share internal source identifiers or evidence appendix details publicly.",
-    "Do not speculate beyond what is stated in confirmed facts and this update.",
-    "Treat this as a draft for review; it may contain sensitive or unverified claims from the issue record.",
+    "Do not share internal source identifiers publicly.",
+    "Do not speculate beyond confirmed facts and this draft.",
+    "Treat as draft for review — not approved for circulation.",
   ];
   if (issueLens) {
     const risk = cleanText(issueLens.issueRisk);
-    if (risk) mustAvoid.push(`Audience risk note (internal): ${risk}`);
+    if (risk) mustAvoid.push(`Audience risk (internal): ${risk}`);
+  }
+  const grouped = groupClaimsForSynthesis(claims);
+  if (grouped.assumptions.length) {
+    mustAvoid.push("Phrase assumptions conditionally — they are not verified fact.");
+  }
+  if (grouped.needsValidation.length) {
+    mustAvoid.push("Do not present needs-validation claims as settled fact.");
   }
 
   const toneParts: string[] = [];
@@ -204,15 +292,9 @@ export function generateExternalCustomerResidentStudentArtifact(input: ExternalM
   const toneNotes =
     toneParts.length > 0
       ? toneParts.join(" ")
-      : "Use a calm, factual tone. Avoid blame, internal jargon, and language that could read as a firm commitment where details are still open.";
-
-  const sections: MessageVariantArtifact["sections"] = [
-    { id: "what-is-happening", title: "What is happening", body: whatIsHappening },
-    { id: "what-we-are-doing", title: "What we are doing", body: whatWeAreDoing },
-    { id: "what-you-can-do", title: "What you can do", body: whatYouCanDo },
-    { id: "what-we-cant-confirm-yet", title: "What we cannot confirm yet", body: whatWeCantConfirm },
-    { id: "next-update", title: "Next update", body: nextUpdate },
-  ];
+      : grounding.consultationIssue
+        ? "Plain, calm language. Reassure on process integrity; avoid implying a decision is already made."
+        : "Calm, factual tone. Avoid blame, jargon, and commitments where details remain open.";
 
   return {
     templateId: "external_customer_resident_student",
@@ -229,19 +311,10 @@ export function generateExternalCustomerResidentStudentArtifact(input: ExternalM
     },
     sections,
     guardrails: {
-      mustAvoid,
+      mustAvoid: [...new Set(mustAvoid)],
       toneNotes,
     },
   };
-}
-
-function bulletsFromParagraph(text: string) {
-  const lines = text
-    .split(/\r?\n/)
-    .map((l) => l.trim())
-    .filter(Boolean);
-  if (!lines.length) return "- (No bullet lines parsed.)";
-  return lines.map((l) => `- ${l.replace(/^-+\s*/, "")}`).join("\n");
 }
 
 export function renderMessageVariantMarkdown(title: string, artifact: MessageVariantArtifact) {

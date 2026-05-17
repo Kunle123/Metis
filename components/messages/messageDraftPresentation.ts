@@ -1,5 +1,5 @@
 import type { MessageApprovalStatus } from "@metis/shared/approvalStatus";
-import type { MessageVariantTemplateId } from "@metis/shared/messageVariant";
+import type { MessageVariantArtifact, MessageVariantSection, MessageVariantTemplateId } from "@metis/shared/messageVariant";
 
 export function messageTemplateDisplayName(templateId: MessageVariantTemplateId): string {
   switch (templateId) {
@@ -15,11 +15,33 @@ export function messageTemplateDisplayName(templateId: MessageVariantTemplateId)
 export function messagePurposeLine(templateId: MessageVariantTemplateId): string {
   switch (templateId) {
     case "internal_staff_update":
-      return "Reassure staff, reduce speculation, and direct updates through official channels.";
+      return "Practical internal wording grounded in the issue record — front-desk line, do-not-say points, and escalation.";
     case "media_holding_line":
-      return "Holding line for external enquiries — subject to approval and claim checks.";
+      return "Short holding line for press enquiries — confirmed facts only, with explicit do-not-say discipline.";
     default:
-      return "Clear, measured update for customers, residents, or students — only what is on the issue record.";
+      return "Audience-specific external update from confirmed record lines — review caveats before circulation.";
+  }
+}
+
+const PRIMARY_SECTION_IDS = new Set(["draft-message", "holding-line", "what-is-happening"]);
+
+export function splitMessageSectionsForDisplay(sections: MessageVariantSection[]): {
+  primary: MessageVariantSection | null;
+  supporting: MessageVariantSection[];
+} {
+  const primary = sections.find((s) => PRIMARY_SECTION_IDS.has(s.id)) ?? sections[0] ?? null;
+  const supporting = sections.filter((s) => s !== primary);
+  return { primary, supporting };
+}
+
+export function primarySectionLabel(templateId: MessageVariantTemplateId): string {
+  switch (templateId) {
+    case "internal_staff_update":
+      return "Copy-ready line";
+    case "media_holding_line":
+      return "Holding line";
+    default:
+      return "Draft message";
   }
 }
 

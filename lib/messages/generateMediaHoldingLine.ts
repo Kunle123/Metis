@@ -1,8 +1,14 @@
 import type { Claim, Gap, Issue, IssueStakeholder, StakeholderGroup } from "@prisma/client";
 
-import type { MediaHoldingLineArtifact } from "@metis/shared/messageVariant";
-import { augmentExternalConfirmedWithClaims } from "@/lib/claims/claimsForGeneration";
+import type { MediaHoldingLineArtifact, MessageVariantSection } from "@metis/shared/messageVariant";
 import { rankOpenGapsForIssue } from "@/lib/evidence/rankEvidence";
+
+import {
+  buildMessageRecordGrounding,
+  formatConfirmedForExternalCopy,
+  formatDoNotSayBlock,
+  issueSignalsConsultationHours,
+} from "./messageRecordGrounding";
 
 /** Setup-only audience (issue.audience); no StakeholderGroup. */
 export type SetupAudienceInput = { kind: "setup" };
@@ -45,35 +51,9 @@ function issueLensHasContent(row: IssueStakeholder) {
   );
 }
 
-function bulletsFromParagraph(text: string) {
-  const lines = text
-    .split(/\r?\n/)
-    .map((l) => l.trim())
-    .filter(Boolean);
-  if (!lines.length) return "- (No bullet lines parsed.)";
-  return lines.map((l) => `- ${l.replace(/^-+\s*/, "")}`).join("\n");
-}
-
-function genericUnderReviewBullets(openCount: number) {
-  if (openCount <= 0) return [];
-  // Deterministic, generic only; never derived from gap prompt text.
-  const pool = [
-    "We are still establishing the full scope and timeline.",
-    "We are still validating which users and services were affected.",
-    "We are reviewing logs and internal telemetry to confirm the sequence of events.",
-    "We are still confirming whether any customer data was impacted.",
-    "We are assessing mitigations and any needed follow-up actions.",
-  ];
-  const n = Math.min(3, pool.length);
-  return pool.slice(0, n).map((x) => `- ${x}`);
-}
-
 export function generateMediaHoldingLineArtifact(input: MediaHoldingLineGenerationInput): MediaHoldingLineArtifact {
   const { issue, gaps, claims = [], audience } = input;
-
-  const summary = cleanText(issue.summary);
-  const confirmed = augmentExternalConfirmedWithClaims(cleanText(issue.confirmedFacts), claims);
-
+  const grounding = buildMessageRecordGrounding(issue, claims, gaps);
   const open = rankOpenGapsForIssue(gaps, { onlyOpen: true });
 
   const isSetup = audience.kind === "setup";
@@ -99,54 +79,75 @@ export function generateMediaHoldingLineArtifact(input: MediaHoldingLineGenerati
     return null;
   })();
 
-  const hasConfirmed = Boolean(confirmed);
+  const confirmedCopy = formatConfirmedForExternalCopy(
+    grounding.confirmedLines,
+    cleanText(issue.confirmedFacts ?? ""),
+  );
 
-  const holdingLine = (() => {
-    if (hasConfirmed) {
-      return (
-        "We are aware of an incident and are actively working to address it.\n\n" +
-        "We will provide updates through our official channels as we confirm more information."
-      ).trim();
+  const sections: MessageVariantSection[] = (() => {
+    if (grounding.consultationIssue || issueSignalsConsultationHours(issue)) {
+      const holdingLine = [
+        "We are reviewing options for service opening hours. No final decision has been made.",
+        "",
+        "We will share updates through official channels when there is confirmed information.",
+      ].join("\n");
+
+      const ifPressed = [
+        "If asked whether this is a service cut:",
+        grounding.serviceCutHoldingLine,
+        "",
+        "If asked for exact hours or equality impact:",
+        "These are under consultation and assessment — we cannot confirm outcomes yet.",
+      ].join("\n");
+
+      return [
+        { id: "draft-message", title: "Holding line", body: holdingLine },
+        {
+          id: "what-we-can-confirm",
+          title: "What we can confirm",
+          body: confirmedCopy || "Consultation is under way; no final decision has been made.",
+        },
+        { id: "if-pressed", title: "If pressed", body: ifPressed },
+        { id: "review-caveats", title: "Do not say", body: formatDoNotSayBlock(grounding.doNotSay, 6) },
+      ];
     }
-    // Cautious interim wording; may reference summary lightly but does not claim confirmation.
-    const lead = summary
-      ? `We are aware of a reported issue related to: ${summary.replace(/\\s+/g, " ").trim()}.`
-      : "We are aware of a reported issue and are investigating.";
-    return `${lead}\n\nWe will share more once we have confirmed information.`.trim();
+
+    const holdingLine = confirmedCopy
+      ? "We are aware of the matter and are providing updates as information is confirmed.\n\nWe will share more through official channels."
+      : "We are aware of the matter and are investigating. We will share confirmed information when available.";
+
+    return [
+      { id: "draft-message", title: "Holding line", body: holdingLine },
+      {
+        id: "what-we-can-confirm",
+        title: "What we can confirm",
+        body: confirmedCopy || "No confirmed facts are recorded yet.",
+      },
+      {
+        id: "under-review",
+        title: "What is under review",
+        body:
+          open.length > 0
+            ? "Operational details are still being confirmed internally."
+            : "No open review items are recorded on the issue list.",
+      },
+      {
+        id: "if-pressed",
+        title: "If pressed",
+        body: "We are actively reviewing the record and will update when details are confirmed. We are prioritising accurate information over speculation.",
+      },
+    ];
   })();
 
-  const confirmBlock = hasConfirmed
-    ? `What we can confirm:\n${bulletsFromParagraph(confirmed)}`
-    : "What we can confirm:\n- No confirmed facts are recorded yet.";
-
-  const underReviewLines = genericUnderReviewBullets(open.length);
-  const underReviewBlock = underReviewLines.length
-    ? `What is under review:\n${underReviewLines.join("\n")}`
-    : "What is under review:\n- There are no open review items recorded yet.";
-
-  const ifPressed =
-    "If pressed:\n- We are actively investigating and will share updates once details are confirmed.\n- We are prioritising service stability and accurate information over speculation.";
-
-  const linesToAvoid =
-    "Lines to avoid:\n- Speculating on cause, blame, or timelines.\n- Sharing unverified claims.\n- Referencing internal evidence, logs, or source codes.\n- Quoting internal notes or observations.";
-
   const mustAvoid: string[] = [
-    "Do not quote or paraphrase internal observations in external channels.",
-    "Do not share internal source identifiers or evidence appendix details publicly.",
-    "Do not speculate beyond what is stated in confirmed facts and this update.",
-    "Treat this as a draft for review; it may contain sensitive or unverified claims from the issue record.",
+    ...grounding.doNotSay.map((l) => l.replace(/^Do not say yet /i, "Do not ")),
+    "Do not quote internal observations or source codes.",
+    "Do not speculate beyond confirmed facts in this draft.",
+    "Treat as draft for review — not approved for circulation.",
   ];
 
   const toneNotes =
-    "Short, calm, and press-office style. Prefer confirmed facts. Use cautious interim language when facts are not confirmed. Avoid names, allegations, and technical specifics unless explicitly confirmed and approved.";
-
-  const sections: MediaHoldingLineArtifact["sections"] = [
-    { id: "holding-line", title: "Holding line (public)", body: holdingLine },
-    { id: "what-we-can-confirm", title: "What we can confirm (public)", body: confirmBlock },
-    { id: "under-review", title: "What is under review (public)", body: underReviewBlock },
-    { id: "if-pressed", title: "If pressed (guidance)", body: ifPressed },
-    { id: "lines-to-avoid", title: "Lines to avoid (do not say)", body: linesToAvoid },
-  ];
+    "Short, calm press-office style. Prefer confirmed facts. Use the service-cut holding line when challenged. Avoid hours, savings, and impact claims until confirmed.";
 
   return {
     templateId: "media_holding_line",
@@ -163,7 +164,7 @@ export function generateMediaHoldingLineArtifact(input: MediaHoldingLineGenerati
     },
     sections,
     guardrails: {
-      mustAvoid,
+      mustAvoid: [...new Set(mustAvoid)],
       toneNotes,
     },
   };
@@ -187,4 +188,3 @@ export function renderMediaHoldingLineMarkdown(title: string, artifact: MediaHol
   lines.push("");
   return lines.join("\n").trim() + "\n";
 }
-

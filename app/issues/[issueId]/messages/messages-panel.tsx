@@ -18,7 +18,11 @@ import { renderInternalStaffUpdateMarkdown } from "@/lib/messages/generateIntern
 import { renderMediaHoldingLineMarkdown } from "@/lib/messages/generateMediaHoldingLine";
 import { MessageDraftCard } from "@/components/messages/MessageDraftCard";
 import { MessageReviewRail } from "@/components/messages/MessageReviewRail";
-import { formatMessageGeneratedAt } from "@/components/messages/messageDraftPresentation";
+import {
+  formatMessageGeneratedAt,
+  primarySectionLabel,
+  splitMessageSectionsForDisplay,
+} from "@/components/messages/messageDraftPresentation";
 import { CollapsibleSection } from "@/components/review/CollapsibleSection";
 import { ReviewRailCard } from "@/components/review/ReviewRailCard";
 import type { ClaimAlignmentFinding } from "@/lib/conflicts/claimAlignment";
@@ -47,6 +51,49 @@ function normalizeBodyText(text: string) {
   // Back-compat: older stored variants may contain literal "\n" sequences.
   // Normalize so the review surface shows real line breaks.
   return text.replaceAll("\\n", "\n");
+}
+
+function MessageDraftBody({
+  templateId,
+  sections,
+  normalizeBodyText: normalize,
+}: {
+  templateId: MessageVariantTemplateId;
+  sections: MessageVariantArtifact["sections"];
+  normalizeBodyText: (text: string) => string;
+}) {
+  const { primary, supporting } = splitMessageSectionsForDisplay(sections);
+
+  return (
+    <div className="min-w-0 space-y-4">
+      {primary ? (
+        <section className="min-w-0">
+          <p className="text-[0.58rem] font-medium uppercase tracking-[0.12em] text-[--metis-brass-soft]">
+            {primarySectionLabel(templateId)}
+          </p>
+          <p className="mt-3 w-full min-w-0 whitespace-pre-line break-words text-[0.9375rem] leading-[1.7] text-[--metis-text-primary]">
+            {normalize(primary.body)}
+          </p>
+        </section>
+      ) : null}
+
+      {supporting.length ? (
+        <div className="space-y-3 border-t border-[color-mix(in_oklab,var(--metis-outline-subtle)_70%,transparent)] pt-4">
+          <p className="text-[0.58rem] font-medium uppercase tracking-[0.12em] text-[--metis-text-tertiary]">
+            Supporting detail & review
+          </p>
+          {supporting.map((s) => (
+            <section key={s.id} className="min-w-0 rounded-md border border-[color-mix(in_oklab,var(--metis-outline-subtle)_80%,transparent)] bg-[color-mix(in_oklab,var(--metis-paper)_30%,transparent)] px-3 py-3">
+              <p className="text-[0.62rem] font-medium uppercase tracking-[0.1em] text-[--metis-text-tertiary]">{s.title}</p>
+              <p className="mt-2 w-full min-w-0 whitespace-pre-line break-words text-[0.8125rem] leading-[1.6] text-[--metis-text-secondary]">
+                {normalize(s.body)}
+              </p>
+            </section>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
 }
 
 function normalizeForDiff(text: string) {
@@ -572,16 +619,11 @@ export function MessagesPanel({
             </div>
           }
         >
-          <div className="space-y-4">
-            {visibleArtifact.sections.map((s) => (
-              <section key={s.id} className="border-t border-[color-mix(in_oklab,var(--metis-outline-subtle)_70%,transparent)] pt-3.5 first:border-t-0 first:pt-0">
-                <p className="text-[0.58rem] font-medium uppercase tracking-[0.12em] text-[--metis-text-tertiary]">{s.title}</p>
-                <p className="mt-2 max-w-prose whitespace-pre-line text-[0.875rem] leading-[1.65] text-[--metis-text-secondary]">
-                  {normalizeBodyText(s.body)}
-                </p>
-              </section>
-            ))}
-          </div>
+          <MessageDraftBody
+            templateId={selectedTemplateId}
+            sections={visibleArtifact.sections}
+            normalizeBodyText={normalizeBodyText}
+          />
         </MessageDraftCard>
       </div>
 
