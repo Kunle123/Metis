@@ -11,7 +11,12 @@ import { DEMO_ORGANISATION_ID } from "@/lib/organisations/demoOrganisation";
 import { generateExternalCustomerResidentStudentArtifact } from "./generateExternalCustomerUpdate";
 import { generateInternalStaffUpdateArtifact } from "./generateInternalStaffUpdate";
 import { generateMediaHoldingLineArtifact } from "./generateMediaHoldingLine";
-import { issueSignalsConsultationHours, resolveMessageAudienceProfile } from "./messageRecordGrounding";
+import {
+  collectDedupedConfirmedFactLines,
+  recordHasCoreConsultationSafeFacts,
+  issueSignalsConsultationHours,
+  resolveMessageAudienceProfile,
+} from "./messageRecordGrounding";
 
 const consultationHoursIssue: Issue = {
   id: "44444444-4444-4444-4444-444444444444",
@@ -174,6 +179,24 @@ function assertNoScaffolding(label: string, primaryBody: string) {
   }
 }
 
+function assertCompressedConsultationPrimary(label: string, primaryBody: string) {
+  const staffingHits = primaryBody.match(/staffing pressure/gi) ?? [];
+  assert.ok(staffingHits.length <= 1, `${label}: staffing pressure at most once in primary (${staffingHits.length})`);
+  assert.ok(
+    !/among the drivers for reviewing the hours model\.\s*Public social claims/i.test(primaryBody.replace(/\n/g, " ")),
+    `${label}: must not dump raw confirmed-facts wall between drivers and social claims`,
+  );
+  assert.ok(
+    !/part of the reason the opening-hours model is being reviewed\.\s*Some local posts/i.test(
+      primaryBody.replace(/\n/g, " "),
+    ),
+    `${label}: must not append duplicate staffing claim before early-closure paragraph`,
+  );
+  const earlyCorrectionHits =
+    primaryBody.match(/early closure is already happening|imminent early closure are inaccurate/gi) ?? [];
+  assert.ok(earlyCorrectionHits.length <= 1, `${label}: early-closure correction at most once (${earlyCorrectionHits.length})`);
+}
+
 function assertConsultationMessageSafe(label: string, primaryBody: string, allBodies: string) {
   const combined = `${primaryBody}\n${allBodies}`;
   assertNoScaffolding(label, primaryBody);
@@ -193,42 +216,82 @@ const baseExternalInput = {
   claims: consultationClaims,
 };
 
-const setupCompoundAudienceIssue = {
+const richConsultationConfirmedFacts = [
+  "Consultation options for service opening hours are under review.",
+  "No final decision has been made on the proposed opening-hours change.",
+  "Staffing pressure and uneven usage patterns are among the drivers for reviewing the hours model.",
+  "Public social claims about imminent early closure are inaccurate based on the current record.",
+].join("\n");
+
+const richConsultationClaims = [
+  ...consultationClaims,
+  sampleClaim({
+    claimNumber: 9,
+    text: "Staffing pressure and uneven usage patterns are part of the reason the opening-hours model is being reviewed.",
+    status: "Confirmed",
+  }),
+];
+
+const richConsultationIssue = {
   ...consultationHoursIssue,
   audience: "Service users, staff, elected representatives, local community groups and local media.",
   summary:
     "Feasibility QA record: internal seed summary — must not appear in external consultation draft.",
+  confirmedFacts: richConsultationConfirmedFacts,
 };
 
+const richExternalInput = {
+  issue: richConsultationIssue,
+  sources: [],
+  gaps: consultationGaps,
+  claims: richConsultationClaims,
+};
+
+const richFactLines = collectDedupedConfirmedFactLines(
+  richConsultationClaims.filter((c) => c.status === "Confirmed").map((c) => c.text),
+  richConsultationConfirmedFacts,
+);
+assert.ok(recordHasCoreConsultationSafeFacts(richFactLines), "rich 4444-style record should signal core consultation facts");
+
 const setupAudienceExternal = generateExternalCustomerResidentStudentArtifact({
-  ...baseExternalInput,
-  issue: setupCompoundAudienceIssue,
+  ...richExternalInput,
   audience: { kind: "setup" },
 });
 const setupPrimary = setupAudienceExternal.sections.find((s) => s.id === "draft-message")?.body ?? "";
 assertNoScaffolding("setup/general external", setupPrimary);
-assert.match(setupPrimary, /no final decision has been made/i, "setup audience: consultation path for external");
-assert.match(setupPrimary, /reviewing options for service opening hours/i, "setup audience: service-user consultation wording");
+assertConsultationMessageSafe("setup/general external", setupPrimary, setupAudienceExternal.sections.map((s) => s.body).join("\n"));
+assertCompressedConsultationPrimary("setup/general external", setupPrimary);
+assert.match(setupPrimary, /The review is looking at how opening hours can best reflect demand/i);
+assert.match(setupPrimary, /Some local posts have suggested that early closure is already happening/i);
 assert.ok(!/what we are doing/i.test(setupAudienceExternal.sections.map((s) => s.title).join(" ")), "setup audience: not generic external sections");
 assert.equal(setupAudienceExternal.sections.length, 2, "consultation external: draft + review caveats only");
 
 const serviceUsers = generateExternalCustomerResidentStudentArtifact({
-  ...baseExternalInput,
+  ...richExternalInput,
   audience: { kind: "group", group: stakeholderGroup("Service users"), issueLens: null },
 });
 const servicePrimary = serviceUsers.sections.find((s) => s.id === "draft-message")?.body ?? "";
 assertConsultationMessageSafe("service users", servicePrimary, serviceUsers.sections.map((s) => s.body).join("\n"));
-assert.match(servicePrimary, /feedback/i, "service users: mention feedback shaping recommendations");
+assertCompressedConsultationPrimary("service users", servicePrimary);
+assert.match(servicePrimary, /Consultation feedback will help shape the final recommendation/i);
 assert.ok(!/NeedsValidation/i.test(servicePrimary), "service users: no internal claim status jargon");
 
 const councillors = generateExternalCustomerResidentStudentArtifact({
-  ...baseExternalInput,
+  ...richExternalInput,
   audience: { kind: "group", group: stakeholderGroup("Councillors and community representatives"), issueLens: null },
 });
 const councillorPrimary = councillors.sections.find((s) => s.id === "draft-message")?.body ?? "";
 assertConsultationMessageSafe("councillors", councillorPrimary, councillors.sections.map((s) => s.body).join("\n"));
+assertCompressedConsultationPrimary("councillors", councillorPrimary);
+assert.match(councillorPrimary, /The current record supports saying that options are under review/i);
 assert.match(councillorPrimary, /service cut/i, "councillors: include service-cut holding line prompt");
 assert.match(councillorPrimary, /cannot yet confirm the precise hours option/i, "councillors: explicit open points");
+assert.ok(
+  !/Consultation options for service opening hours are under review\. No final decision has been made on the proposed opening-hours change\./.test(
+    councillorPrimary,
+  ),
+  "councillors: must not include raw confirmed-facts dump",
+);
 assert.ok(!/Thank you for your interest/i.test(councillorPrimary), "councillors: no generic thank-you opener");
 
 const staff = generateInternalStaffUpdateArtifact({

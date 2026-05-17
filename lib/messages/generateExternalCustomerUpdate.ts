@@ -5,11 +5,15 @@ import { groupClaimsForSynthesis } from "@/lib/claims/claimsForGeneration";
 import { rankOpenGapsForIssue } from "@/lib/evidence/rankEvidence";
 
 import {
+  buildConsultationExternalMiddleParagraph,
   buildMessageRecordGrounding,
   consultationExternalProfile,
   formatConfirmedForExternalCopy,
   formatDoNotSayBlock,
   formatMustAvoidLine,
+  recordHasCoreConsultationSafeFacts,
+  collectDedupedConfirmedFactLines,
+  lineSignalsEarlyClosureCorrection,
   resolveMessageAudienceProfile,
 } from "./messageRecordGrounding";
 
@@ -96,49 +100,41 @@ export function buildAudienceSnapshot(issue: Issue, audience: ExternalAudienceIn
   };
 }
 
-function isStandardConsultationConfirmedCopy(copy: string): boolean {
-  const n = copy.replace(/\s+/g, " ").trim().toLowerCase();
-  if (!n) return true;
-  return /^consultation options for service opening hours are under review\.\s*no final decision has been made( on the proposed opening-hours change)?\.?$/.test(
-    n,
-  );
-}
-
 function buildConsultationExternalSections(
   issue: Issue,
   profile: "service_users" | "councillors",
   grounding: ReturnType<typeof buildMessageRecordGrounding>,
   needsToKnow: string,
 ): MessageVariantSection[] {
-  const confirmedCopy = formatConfirmedForExternalCopy(grounding.confirmedLines, cleanText(issue.confirmedFacts ?? ""));
-
-  const confirmedForBody = isStandardConsultationConfirmedCopy(confirmedCopy) ? "" : confirmedCopy;
+  const intakeConfirmed = cleanText(issue.confirmedFacts ?? "");
+  const confirmedFactLines = collectDedupedConfirmedFactLines(grounding.confirmedLines, intakeConfirmed);
+  const middle = buildConsultationExternalMiddleParagraph(profile, grounding.confirmedLines, intakeConfirmed);
+  const useCoreTemplate = recordHasCoreConsultationSafeFacts(confirmedFactLines);
 
   const draftMessage =
     profile === "service_users"
       ? [
           "We are reviewing options for service opening hours. No final decision has been made.",
           "",
-          confirmedForBody ||
-            "The review is looking at how opening hours can best reflect demand, staffing pressures and access needs. Consultation feedback will help shape the final recommendation.",
+          middle,
           "",
-          "Some local posts have suggested that early closure is already happening. That is not accurate based on the current record.",
+          useCoreTemplate || confirmedFactLines.some((l) => lineSignalsEarlyClosureCorrection(l))
+            ? "Some local posts have suggested that early closure is already happening. That is not accurate based on the current record."
+            : null,
           "",
           "We will share confirmed consultation details through official channels once the proposed options and timetable are approved.",
-        ].join("\n")
+        ]
+          .filter((p) => p !== null && String(p).trim())
+          .join("\n")
       : [
           "The organisation is reviewing options for service opening hours, but no final decision has been made.",
           "",
-          "The current record supports saying that options are under review, that staffing pressure and usage patterns are part of the context, and that consultation feedback will inform the final recommendation.",
-          "",
-          isStandardConsultationConfirmedCopy(confirmedCopy) ? null : confirmedCopy,
+          middle,
           "",
           "We cannot yet confirm the precise hours option, the consultation timetable, savings impact or equality impact. Those points remain subject to approval and assessment.",
           "",
           "If asked whether this is a service cut, the safest line is that the organisation is consulting on options and has not reached a final decision.",
-        ]
-          .filter(Boolean)
-          .join("\n");
+        ].join("\n");
 
   const reviewLines = [
     grounding.circulationCaveat,

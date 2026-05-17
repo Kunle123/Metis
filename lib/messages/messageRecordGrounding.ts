@@ -5,6 +5,7 @@ import {
   claimsToGenerationRows,
   groupClaimsForSynthesis,
 } from "@/lib/claims/claimsForGeneration";
+import { isNearDuplicateSentence } from "@/lib/brief/executiveNarrativeSanitize";
 import { rankOpenGapsForIssue } from "@/lib/evidence/rankEvidence";
 
 export type MessageAudienceProfile = "service_users" | "councillors" | "staff" | "media" | "generic";
@@ -170,25 +171,28 @@ export function buildMessageRecordGrounding(issue: Issue, claims: Claim[], gaps:
   };
 }
 
-function normalizeConfirmedSentence(text: string): string {
-  return text.trim().replace(/\.$/, "").toLowerCase();
+export const SERVICE_USER_CONSULTATION_MIDDLE_PARAGRAPH =
+  "The review is looking at how opening hours can best reflect demand, staffing pressures and access needs. Consultation feedback will help shape the final recommendation.";
+
+export const COUNCILLOR_CONSULTATION_CONTEXT_PARAGRAPH =
+  "The current record supports saying that options are under review, that staffing pressure and usage patterns are part of the context, and that consultation feedback will inform the final recommendation.";
+
+function toConfirmedSentence(raw: string): string {
+  const t = raw.replace(/^-+\s*/, "").trim();
+  if (!t) return "";
+  return t.endsWith(".") ? t : `${t}.`;
 }
 
 function isNearDuplicateConfirmedSentence(candidate: string, existing: string[]): boolean {
-  const n = normalizeConfirmedSentence(candidate);
-  return existing.some((line) => {
-    const e = normalizeConfirmedSentence(line);
-    return e === n || e.includes(n) || n.includes(e);
-  });
+  return existing.some((line) => isNearDuplicateSentence(candidate, line));
 }
 
-/** Plain sentences safe for external copy (confirmed claims only). */
-export function formatConfirmedForExternalCopy(confirmedLines: string[], intakeConfirmed: string): string {
+/** Intake + confirmed claims, deduped — intake first, then register lines not near-duplicates. */
+export function collectDedupedConfirmedFactLines(confirmedLines: string[], intakeConfirmed: string): string[] {
   const lines: string[] = [];
   const push = (raw: string) => {
-    const t = raw.replace(/^-+\s*/, "").trim();
-    if (!t || isStakeholderUnsafeLine(t)) return;
-    const sentence = t.endsWith(".") ? t : `${t}.`;
+    const sentence = toConfirmedSentence(raw);
+    if (!sentence || isStakeholderUnsafeLine(sentence)) return;
     if (isNearDuplicateConfirmedSentence(sentence, lines)) return;
     lines.push(sentence);
   };
@@ -200,7 +204,103 @@ export function formatConfirmedForExternalCopy(confirmedLines: string[], intakeC
   for (const t of confirmedLines) {
     push(t);
   }
-  return lines.join(" ");
+  return lines;
+}
+
+function lineSignalsOptionsUnderReview(line: string): boolean {
+  const t = line.toLowerCase();
+  return (
+    /\bconsultation options\b/.test(t) ||
+    (/\b(under review|options)\b/.test(t) && /\b(opening hours|service opening hours|hours change)\b/.test(t))
+  );
+}
+
+function lineSignalsNoFinalDecision(line: string): boolean {
+  return /no final decision/i.test(line);
+}
+
+function lineSignalsStaffingUsageContext(line: string): boolean {
+  const t = line.toLowerCase();
+  return (
+    /staffing pressure/.test(t) ||
+    /uneven usage/.test(t) ||
+    /usage patterns/.test(t) ||
+    /opening-hours model is being reviewed/.test(t)
+  );
+}
+
+export function lineSignalsEarlyClosureCorrection(line: string): boolean {
+  const t = line.toLowerCase();
+  return (
+    /early closure/.test(t) ||
+    /imminent early closure/.test(t) ||
+    (/inaccurate/.test(t) && /current record/.test(t))
+  );
+}
+
+/** True when the record carries the core consultation-safe fact themes (4444-style rich intake). */
+export function recordHasCoreConsultationSafeFacts(lines: string[]): boolean {
+  if (!lines.length) return false;
+  const joined = lines.join(" ");
+  return (
+    lineSignalsOptionsUnderReview(joined) &&
+    lineSignalsNoFinalDecision(joined) &&
+    lineSignalsStaffingUsageContext(joined) &&
+    lineSignalsEarlyClosureCorrection(joined)
+  );
+}
+
+function isRepresentedByConsultationTemplate(line: string): boolean {
+  return (
+    lineSignalsOptionsUnderReview(line) ||
+    lineSignalsNoFinalDecision(line) ||
+    lineSignalsStaffingUsageContext(line) ||
+    lineSignalsEarlyClosureCorrection(line)
+  );
+}
+
+/** Facts not already covered by the consultation template paragraphs or near-duplicates of them. */
+export function filterFactsNotRepresentedInConsultationTemplate(lines: string[]): string[] {
+  const out: string[] = [];
+  for (const raw of lines) {
+    const sentence = toConfirmedSentence(raw);
+    if (!sentence || isStakeholderUnsafeLine(sentence)) continue;
+    if (isRepresentedByConsultationTemplate(sentence)) continue;
+    if (isNearDuplicateConfirmedSentence(sentence, out)) continue;
+    out.push(sentence);
+  }
+  return out;
+}
+
+/**
+ * Middle paragraph for consultation-hours external drafts — template when core facts are present,
+ * otherwise deduped additional facts only, with template fallback.
+ */
+export function buildConsultationExternalMiddleParagraph(
+  profile: "service_users" | "councillors",
+  confirmedLines: string[],
+  intakeConfirmed: string,
+): string {
+  const allLines = collectDedupedConfirmedFactLines(confirmedLines, intakeConfirmed);
+  const template =
+    profile === "councillors"
+      ? COUNCILLOR_CONSULTATION_CONTEXT_PARAGRAPH
+      : SERVICE_USER_CONSULTATION_MIDDLE_PARAGRAPH;
+
+  if (recordHasCoreConsultationSafeFacts(allLines)) {
+    const additional = filterFactsNotRepresentedInConsultationTemplate(allLines);
+    if (!additional.length) return template;
+    return `${template}\n\n${additional.join(" ")}`;
+  }
+
+  const filtered = filterFactsNotRepresentedInConsultationTemplate(allLines);
+  if (filtered.length) return filtered.join(" ");
+  return template;
+}
+
+/** Plain sentences safe for external copy (confirmed claims only). */
+export function formatConfirmedForExternalCopy(confirmedLines: string[], intakeConfirmed: string): string {
+  return collectDedupedConfirmedFactLines(confirmedLines, intakeConfirmed).join(" ");
 }
 
 export function formatDoNotSayBlock(doNotSay: string[], max = 6): string {
