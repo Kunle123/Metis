@@ -11,6 +11,7 @@ import { ReviewRailCard } from "@/components/review/ReviewRailCard";
 import { ReviewToolbar } from "@/components/review/ReviewToolbar";
 import { NoOrganisationMembershipShell } from "@/components/organisation/NoOrganisationMembership";
 import { prisma } from "@/lib/db/prisma";
+import { ISSUE_RECORD_ACTIVE_PATH } from "@/lib/issues/issueNav";
 import { loadIssuePageContext } from "@/lib/organisations/loadIssuePageContext";
 import type { SourceTier } from "@metis/shared/source";
 import { SourceEntryForm } from "./source-entry-form";
@@ -98,7 +99,8 @@ export default async function IssueSourcesPage({ params }: { params: Promise<{ i
 
   return (
     <MetisShell
-      activePath="/sources"
+      activePath={ISSUE_RECORD_ACTIVE_PATH}
+      pageMeta="Record view"
       pageTitle="Sources"
       organisationMembershipRole={pageCtx.context.membership.role}
       issueRoutePrefix={`/issues/${issue.id}`}

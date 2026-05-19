@@ -116,22 +116,23 @@ export function CaptureNotesForm({
     >
       <div className="border-b border-[--metis-outline-subtle] px-4 py-4 sm:px-5 sm:py-5">
         <div className="min-w-0 space-y-1">
-          <p className="text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">Capture notes</p>
+          <p className="text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">Add input</p>
           <p className="text-sm leading-6 text-[--metis-paper-muted]">
-            Paste meeting, call, or email notes. Saving creates a saved internal observation for triage (excluded from briefs until you curate it).
+            Paste an email, note, update, call summary, or instruction. Metis will help structure it into the issue record — you do not
+            need to decide whether it is a source, observation, claim, or open question first.
           </p>
         </div>
 
         <p className="mt-3 text-xs leading-5 text-[--metis-paper-muted]">
-          Saved rows are stored as observations with attribution; they stay out of generated briefs unless you edit them later to include them.
+          Saving creates an observation on this issue for triage. Metis can route structured suggestions into sources, claims, and open
+          questions as you review.
           {captureNotesAiEnabled ? (
             <>
               {" "}
-              Optional structured suggestions can be generated from your notes (review required); nothing is created until you accept a suggestion or
-              save notes.
+              Optional AI suggestions appear below for review; nothing is added to the registers until you accept them or save notes.
             </>
           ) : (
-            <> Important points should be promoted manually into Sources or Open questions.</>
+            <> Promote important points into Sources, Claims, or Open questions when you are ready.</>
           )}
         </p>
       </div>
@@ -156,7 +157,7 @@ export function CaptureNotesForm({
           <Textarea
             value={notes}
             onChange={(ev) => onNotesChange(ev.target.value)}
-            placeholder="Paste notes from a meeting, call, email thread, or stakeholder conversation…"
+            placeholder="Paste an email, note, update, call summary, or instruction…"
             className="min-h-[132px] border-[--metis-outline-subtle] bg-[var(--metis-control-bg)] text-[--metis-paper]"
             disabled={isSaving}
           />

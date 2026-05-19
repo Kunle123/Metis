@@ -3,10 +3,12 @@ import { notFound, redirect } from "next/navigation";
 import { NoOrganisationMembershipShell } from "@/components/organisation/NoOrganisationMembership";
 import { prisma } from "@/lib/db/prisma";
 import { loadIssuePageContext } from "@/lib/organisations/loadIssuePageContext";
+import { membershipAllowsOrgWrite } from "@/lib/organisations/orgCapabilities";
 import { MetisShell } from "@/components/MetisShell";
 import { internalInputDbRowToWire } from "@/lib/internalInputs/internalInputWireFormat";
 import { prismaWhereInternalInputsVisibleToViewer } from "@/lib/internalInputs/internalObservationVisibility";
 
+import { CaptureNotesForm } from "./capture-notes-form";
 import { InternalInputWorkspace } from "./internal-input-workspace";
 
 export const dynamic = "force-dynamic";
@@ -29,10 +31,14 @@ export default async function IssueInternalInputPage({ params }: { params: Promi
     .map((i) => internalInputDbRowToWire(i))
     .filter((item): item is NonNullable<typeof item> => item !== null);
 
+  const canWrite = membershipAllowsOrgWrite(pageCtx.context.membership.role);
+  const captureNotesAiEnabled = process.env.NOTES_CAPTURE_AI_ENABLED?.trim() === "true";
+
   return (
     <MetisShell
       activePath="/input"
-      pageTitle="Internal observations"
+      pageTitle="Input"
+      pageMeta="Add & review material"
       organisationMembershipRole={pageCtx.context.membership.role}
       issueRoutePrefix={`/issues/${issue.id}`}
       activeIssue={{
@@ -43,12 +49,21 @@ export default async function IssueInternalInputPage({ params }: { params: Promi
         updatedAt: issue.updatedAt,
       }}
     >
-      <InternalInputWorkspace
-        issueId={issue.id}
-        inputs={inputs}
-        membershipRole={pageCtx.context.membership.role}
-        currentUserId={pageCtx.context.user.id}
-      />
+      <div className="space-y-6">
+        {canWrite ? (
+          <CaptureNotesForm issueId={issue.id} captureNotesAiEnabled={captureNotesAiEnabled} />
+        ) : (
+          <p className="rounded-[1.25rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_35%,transparent)] px-5 py-4 text-sm leading-6 text-[--metis-paper-muted]">
+            You have view-only access to this issue. You can review observations below but cannot add new input.
+          </p>
+        )}
+        <InternalInputWorkspace
+          issueId={issue.id}
+          inputs={inputs}
+          membershipRole={pageCtx.context.membership.role}
+          currentUserId={pageCtx.context.user.id}
+        />
+      </div>
     </MetisShell>
   );
 }

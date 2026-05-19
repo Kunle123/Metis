@@ -5,6 +5,7 @@ import { MetisShell } from "@/components/MetisShell";
 import { prisma } from "@/lib/db/prisma";
 import { serializeClaimForViewer } from "@/lib/claims/serializeClaimsForViewer";
 import { prismaWhereInternalInputsVisibleToViewer } from "@/lib/internalInputs/internalObservationVisibility";
+import { ISSUE_RECORD_ACTIVE_PATH } from "@/lib/issues/issueNav";
 import { loadIssuePageContext } from "@/lib/organisations/loadIssuePageContext";
 import { membershipAllowsOrgWrite } from "@/lib/organisations/orgCapabilities";
 
@@ -56,9 +57,9 @@ export default async function IssueClaimsPage({ params }: { params: Promise<{ is
 
   return (
     <MetisShell
-      activePath="/claims"
+      activePath={ISSUE_RECORD_ACTIVE_PATH}
       pageTitle="Claims"
-      pageMeta="Facts and assumptions"
+      pageMeta="Record view"
       organisationMembershipRole={pageCtx.context.membership.role}
       issueRoutePrefix={`/issues/${issue.id}`}
       activeIssue={{

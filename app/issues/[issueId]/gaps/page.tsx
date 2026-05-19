@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { NoOrganisationMembershipShell } from "@/components/organisation/NoOrganisationMembership";
 import { MetisShell } from "@/components/MetisShell";
 import { prisma } from "@/lib/db/prisma";
+import { ISSUE_RECORD_ACTIVE_PATH } from "@/lib/issues/issueNav";
 import { loadIssuePageContext } from "@/lib/organisations/loadIssuePageContext";
 import { prismaWhereInternalInputsVisibleToViewer } from "@/lib/internalInputs/internalObservationVisibility";
 import { GapSchema } from "@metis/shared/gap";
@@ -48,8 +49,9 @@ export default async function IssueGapsPage({ params }: { params: Promise<{ issu
 
   return (
     <MetisShell
-      activePath="/gaps"
+      activePath={ISSUE_RECORD_ACTIVE_PATH}
       pageTitle="Open questions"
+      pageMeta="Record view"
       organisationMembershipRole={pageCtx.context.membership.role}
       issueRoutePrefix={`/issues/${issue.id}`}
       activeIssue={{

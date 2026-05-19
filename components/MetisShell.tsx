@@ -7,6 +7,7 @@ import {
   Clock3,
   FileText,
   OctagonAlert,
+  Plus,
   RefreshCcw,
   ShieldAlert,
 } from "lucide-react";
@@ -17,6 +18,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { LogoutButton } from "@/components/LogoutButton";
 import { confidenceDisplayLabel } from "@/lib/ui/confidenceDisplayLabel";
+import {
+  issueAddInputHref,
+  issueInputNavItem,
+  issueOutputsNavItems,
+  issueRecordNavItem,
+  issueReviewNavItems,
+  issueSideNavItemIsActive,
+} from "@/lib/issues/issueNav";
+import { membershipAllowsOrgWrite } from "@/lib/organisations/orgCapabilities";
 
 type ConfidenceLevel = "Confirmed" | "Likely" | "Unclear" | "Needs validation";
 type ReadinessState =
@@ -143,7 +153,7 @@ function issueSeverityBadgeClass(severity: string | null | undefined) {
   return "border border-[--metis-status-neutral-border] bg-[color-mix(in_oklab,var(--metis-status-neutral-bg)_72%,transparent)] text-[--metis-status-neutral-fg]";
 }
 
-type GlobalNavGroup = "Work" | "Current issue" | "Review & output" | "Records" | "Settings";
+type GlobalNavGroup = "Work" | "Current issue" | "Outputs" | "Review" | "Settings";
 
 const workNav = [
   { id: "dashboard", group: "Work" as GlobalNavGroup, path: "/", shortLabel: "Dashboard" },
@@ -156,32 +166,14 @@ const settingsNav = [
 
 const primaryNav = [...workNav, ...settingsNav] as const;
 
-const issueWorkspacePrimaryNav = [{ id: "workspace" as const, path: "/workspace" as const, shortLabel: "Workspace" }] as const;
+const issueNavCurrentIssue = [issueRecordNavItem, issueInputNavItem] as const;
+const issueNavOutputs = [...issueOutputsNavItems] as const;
+const issueNavReview = [...issueReviewNavItems] as const;
 
-const issueOutputToolsNav = [
-  { id: "brief" as const, path: "/brief" as const, shortLabel: "Brief" },
-  { id: "messages" as const, path: "/messages" as const, shortLabel: "Messages" },
-  { id: "compare" as const, path: "/compare" as const, shortLabel: "Compare" },
-  { id: "export" as const, path: "/export" as const, shortLabel: "Export" },
-  { id: "comms-plan" as const, path: "/comms-plan" as const, shortLabel: "Comms plan" },
-  { id: "activity" as const, path: "/activity" as const, shortLabel: "Activity" },
-] as const;
-
-const issueRecordToolsNav = [
-  { id: "sources" as const, path: "/sources" as const, shortLabel: "Sources" },
-  { id: "gaps" as const, path: "/gaps" as const, shortLabel: "Open questions" },
-  { id: "claims" as const, path: "/claims" as const, shortLabel: "Claims" },
-  { id: "input" as const, path: "/input" as const, shortLabel: "Observations" },
-] as const;
-
-const issueToolsNav = [...issueOutputToolsNav, ...issueRecordToolsNav] as const;
-
-const navCurrentIssue = [issueWorkspacePrimaryNav[0]];
-const navReviewOutput = issueOutputToolsNav;
-const navRecords = issueRecordToolsNav;
-
-type IssueScopedNavItem = (typeof issueWorkspacePrimaryNav)[number] | (typeof issueToolsNav)[number];
-const issueToolIds = new Set<string>(issueToolsNav.map((i) => i.id));
+type IssueScopedNavItem =
+  | (typeof issueNavCurrentIssue)[number]
+  | (typeof issueNavOutputs)[number]
+  | (typeof issueNavReview)[number];
 
 function filterGlobalNavItems(_issueRoutePrefix: string | undefined) {
   // Keep global navigation stable; issue-context tools are rendered as an additional group.
@@ -257,9 +249,11 @@ export function MetisShell({
 
   function issueHrefForItem(item: IssueScopedNavItem) {
     if (!issueRoutePrefix) return item.path;
-    if (item.id === "workspace") return issueRoutePrefix;
+    if (item.id === issueRecordNavItem.id) return issueRoutePrefix;
     return `${issueRoutePrefix}${item.path}`;
   }
+
+  const canAddIssueInput = Boolean(issueRoutePrefix && membershipAllowsOrgWrite(organisationMembershipRole ?? ""));
 
   function navHrefForItem(item: { path: string }) {
     return item.path;
@@ -449,35 +443,35 @@ export function MetisShell({
               {renderNavGroup({
                 group: "Current issue",
                 metaPill: issueRoutePrefix ? "Active" : "Select issue",
-                items: navCurrentIssue.map((i) => ({
+                items: issueNavCurrentIssue.map((i) => ({
                   id: i.id,
                   href: issueHrefForItem(i),
                   label: i.shortLabel,
-                  isActive: Boolean(issueRoutePrefix) && i.path === activePath,
+                  isActive: Boolean(issueRoutePrefix) && issueSideNavItemIsActive(activePath, i),
                   disabled: !issueRoutePrefix,
                 })),
               })}
 
               {renderNavGroup({
-                group: "Review & output",
+                group: "Outputs",
                 metaPill: issueRoutePrefix ? null : "Select issue",
-                items: navReviewOutput.map((i) => ({
+                items: issueNavOutputs.map((i) => ({
                   id: i.id,
                   href: issueHrefForItem(i),
                   label: i.shortLabel,
-                  isActive: Boolean(issueRoutePrefix) && i.path === activePath,
+                  isActive: Boolean(issueRoutePrefix) && issueSideNavItemIsActive(activePath, i),
                   disabled: !issueRoutePrefix,
                 })),
               })}
 
               {renderNavGroup({
-                group: "Records",
+                group: "Review",
                 metaPill: issueRoutePrefix ? null : "Select issue",
-                items: navRecords.map((i) => ({
+                items: issueNavReview.map((i) => ({
                   id: i.id,
                   href: issueHrefForItem(i),
                   label: i.shortLabel,
-                  isActive: Boolean(issueRoutePrefix) && i.path === activePath,
+                  isActive: Boolean(issueRoutePrefix) && issueSideNavItemIsActive(activePath, i),
                   disabled: !issueRoutePrefix,
                 })),
               })}
@@ -559,6 +553,14 @@ export function MetisShell({
                     </div>
                   )}
                   <LogoutButton />
+                  {canAddIssueInput ? (
+                    <Button asChild variant="outline" className="rounded-full border-[--metis-brass]/35 px-4">
+                      <Link href={issueAddInputHref(issueRoutePrefix!)}>
+                        <Plus className="mr-2 h-4 w-4" aria-hidden />
+                        Add input
+                      </Link>
+                    </Button>
+                  ) : null}
                   {issueRoutePrefix ? (
                     <Button asChild className="rounded-full px-5">
                       <Link href={`${issueRoutePrefix}/export`}>
