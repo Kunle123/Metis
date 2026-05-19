@@ -4,6 +4,7 @@ import {
   filterExecutiveNarrativeText,
   filterParagraphsNotInBody,
   isNearDuplicateSentence,
+  normalizeSentenceForDedupe,
 } from "@/lib/brief/executiveNarrativeSanitize";
 
 const UUID_RE =
@@ -157,17 +158,16 @@ function parseAssessmentKeyValues(body: string) {
 }
 
 function parseDecisions(body: string): ExecutiveBriefDecision[] {
-  const lines = body.split("\n").map((l) => l.trim()).filter(Boolean);
   const decisions: ExecutiveBriefDecision[] = [];
-  for (const line of lines) {
-    const numbered = line.match(/^\d+\)\s+(.+)$/);
-    const text = sanitizeDisplayText(numbered ? numbered[1]! : line.replace(/^[-*•]\s+/, ""));
-    if (!text) continue;
-    const ownerMatch = text.match(/(?:owner|accountable owner)[:\s]+([^.]+)/i);
-    decisions.push({
-      text,
-      owner: ownerMatch ? sanitizeDisplayText(ownerMatch[1]!) : null,
-    });
+  for (const raw of body.split("\n")) {
+    const line = raw.trim();
+    if (!line) continue;
+    if (/^(accountable\s+)?owner\b/i.test(line)) continue;
+    const numbered = line.match(/^\d+[.)]\s+(.+)$/);
+    const bulleted = line.match(/^[-*•]\s+(.+)$/);
+    const text = sanitizeDisplayText(numbered?.[1] ?? bulleted?.[1] ?? "");
+    if (!text || /^owner[:\s—-]/i.test(text)) continue;
+    decisions.push({ text, owner: null });
   }
   return decisions.slice(0, 6);
 }
@@ -218,44 +218,52 @@ function parseMarkdownClaimSections(body: string): ExecutiveBriefClaimGroup[] {
   return groups;
 }
 
+function isGuardrailUnsafeLine(line: string): boolean {
+  const t = line.trim();
+  if (!t || /^do not say yet:?\s*$/i.test(t)) return false;
+  if (/^do not\b/i.test(t)) return true;
+  if (/\bdo not\b/i.test(t)) return true;
+  if (/^avoid\b/i.test(t)) return true;
+  if (/^never\b/i.test(t)) return true;
+  return false;
+}
+
 function classifyGuardrails(body: string): { safe: string[]; unsafe: string[] } {
   const unsafe: string[] = [];
-  const safe: string[] = [];
-  const isUnsafeLine = (line: string) => /^do not\b/i.test(line) || /\bdo not\b/i.test(line) || /^avoid\b/i.test(line);
+  let safeBody = body;
 
-  const lines = body.split("\n");
-  let inDoNotSaySection = false;
-  for (const raw of lines) {
-    const line = raw.trim();
-    if (/^do not say yet:?\s*$/i.test(line)) {
-      inDoNotSaySection = true;
-      continue;
-    }
-    if (inDoNotSaySection) {
-      if (!line) {
-        inDoNotSaySection = false;
-        continue;
-      }
-      if (/^[-*•]\s+/.test(line)) {
-        unsafe.push(sanitizeDisplayText(line.replace(/^[-*•]\s+/, "")));
-        continue;
-      }
-      if (/^do not\b/i.test(line)) {
+  const sectionMatch = body.match(/(^|\n)\s*do not say yet:\s*\n/i);
+  if (sectionMatch) {
+    const idx = body.toLowerCase().indexOf("do not say yet:");
+    if (idx >= 0) {
+      safeBody = body.slice(0, idx).trim();
+      const afterHeader = body.slice(idx).replace(/^do not say yet:\s*/i, "");
+      for (const raw of afterHeader.split("\n")) {
+        const line = raw.trim();
+        if (!line) break;
+        if (/^[-*•]\s+/.test(line)) {
+          unsafe.push(sanitizeDisplayText(line.replace(/^[-*•]\s+/, "")));
+          continue;
+        }
+        if (isGuardrailUnsafeLine(line)) {
+          unsafe.push(sanitizeDisplayText(line));
+          continue;
+        }
         unsafe.push(sanitizeDisplayText(line));
-        continue;
       }
-      inDoNotSaySection = false;
     }
   }
 
-  for (const p of splitParagraphs(body)) {
-    if (isUnsafeLine(p)) unsafe.push(p);
+  const safe: string[] = [];
+  for (const p of splitParagraphs(safeBody)) {
+    if (isGuardrailUnsafeLine(p)) unsafe.push(p);
     else if (p.length) safe.push(p);
   }
-  for (const b of splitBullets(body)) {
-    if (isUnsafeLine(b)) unsafe.push(b);
+  for (const b of splitBullets(safeBody)) {
+    if (isGuardrailUnsafeLine(b)) unsafe.push(b);
     else if (b.length) safe.push(b);
   }
+
   return {
     safe: [...new Set(safe)],
     unsafe: [...new Set(unsafe)],
@@ -366,12 +374,13 @@ export function parseExecutiveBriefPresentation(input: ParseExecutiveBriefPresen
   ]);
   const confirmedClaimKeys = new Set(confirmedClaimItems.map(lineItemKey));
 
-  const safeToSayRaw = [
-    ...confirmedBullets.filter((b) => !/^no confirmed facts/i.test(b)),
-    ...guardrailSafe,
-  ].filter(Boolean);
+  const confirmedTextKeys = new Set(
+    [...confirmedBullets, ...confirmedParagraphs].map((line) => normalizeSentenceForDedupe(line)).filter(Boolean),
+  );
 
-  const safeToSay = safeToSayRaw.filter((line) => {
+  const safeToSay = guardrailSafe.filter((line) => {
+    if (isGuardrailUnsafeLine(line)) return false;
+    if (confirmedTextKeys.has(normalizeSentenceForDedupe(line))) return false;
     const parsed = parseExecutiveLineItem(line);
     if (parsed.code && nonConfirmedClaimKeys.has(lineItemKey(parsed))) return false;
     if (parsed.code && confirmedClaimKeys.has(lineItemKey(parsed))) return false;
@@ -439,10 +448,7 @@ export function parseExecutiveBriefPresentation(input: ParseExecutiveBriefPresen
       recordSufficiency,
     },
     claimsPositionSummary,
-    decisions: decisions.map((d) => ({
-      ...d,
-      owner: d.owner ?? (assessment["issue owner"] && !/not recorded/i.test(assessment["issue owner"]) ? assessment["issue owner"] : null),
-    })),
+    decisions,
     whatChanged,
     confirmedFacts: [...confirmedBullets, ...confirmedParagraphs].filter(Boolean),
     claimGroups,

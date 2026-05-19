@@ -233,31 +233,93 @@ async function main() {
     ],
   };
 
+  const consultationPackArtifact = BriefArtifactSchema.parse({
+    lede: "Consultation on opening hours is under review.",
+    metadata: {
+      audience: null,
+      circulation: "Internal",
+      lastRevisionLabel: "2026-05-16",
+      openGapsLabel: "2 open in tracker",
+    },
+    full: artifact.full,
+    executive: {
+      blocks: [
+        {
+          label: "Executive summary",
+          body: "The current record supports an internal briefing on consultation process risk. Consultation options are under review.",
+        },
+        {
+          label: "Current assessment",
+          body: "Status: Ready for internal briefing with caveats\nBriefing confidence: Provisional\nExternal position: Provisional\nBriefing posture: Holding\nOpen questions: 2 on the issue record · 2 open in tracker\nIssue owner: Comms lead",
+        },
+        {
+          label: "Record sufficiency",
+          body: "External position remains provisional until equality assessment completes.",
+        },
+        {
+          label: "Recommended decisions / next actions",
+          body: "1) Confirm the proposed opening-hours option before any external line.\n2) Agree the cadence packaged with this briefing.",
+        },
+        {
+          label: "Confirmed facts",
+          body: "- Consultation options for service opening hours are under review.\n- No final decision has been made on the proposed opening-hours change.",
+        },
+        {
+          label: "Claims and assumptions",
+          body: "Claims position: 2 confirmed · 1 needs validation.\n\n### Confirmed claims\n- CLM-001: Consultation options are under review.\n\n### Needs validation\n- CLM-004: The change will save money without reducing service quality.",
+        },
+        {
+          label: "Open questions and unresolved needs",
+          body: "- What precise opening-hours option is being proposed for consultation?\n- When will the equality impact assessment be available?",
+        },
+        {
+          label: "What not to say yet / uncertainty guardrails",
+          body: "Do not say yet:\n- What the final opening hours will be.\n- That the service will close early from next month.\n\nDo not confirm final hours.",
+        },
+      ],
+      immediateActions: [],
+    },
+  });
+
   const execPackBuf = await renderExportPackageDocx({
     issue: { title: briefingPackCtx.issue.title, id: issueWithId.id },
     mode: "executive",
     format: "executive-brief",
-    artifact,
+    artifact: consultationPackArtifact,
     briefingPack: briefingPackCtx,
   });
-  assert.ok(execPackBuf.byteLength > 2500);
-  const execPackText = docxFlattenedRuns(docxDocumentXml(execPackBuf));
+  assert.ok(execPackBuf.byteLength > 2000);
+  const execPackXml = docxDocumentXml(execPackBuf);
+  const execPackText = docxFlattenedRuns(execPackXml);
   assert.ok(execPackText.includes("EXECUTIVE BRIEFING PACK"), "pack cover eyebrow");
   assert.ok(execPackText.includes("READ FIRST"), "read-first panel");
-  assert.ok(execPackText.includes("ACTION"), "decisions panel eyebrow");
-  assert.ok(execPackText.includes("DECISIONS NEEDED"), "decisions section title");
+  assert.ok(execPackText.includes("Decisions needed"), "decisions section title");
   assert.ok(execPackText.includes("COMMS GUARDRAILS") || execPackText.includes("Comms guardrails"), "guardrails section");
   assert.ok(execPackText.includes("Safe to say"), "guardrails safe column");
   assert.ok(execPackText.includes("Do not say yet"), "guardrails hold column");
-  assert.ok(execPackText.includes("Message drafts"), "message drafts section");
+  assert.ok(execPackText.includes("KEY MESSAGE LINES") || execPackText.includes("Key message lines"), "message section");
   assert.ok(execPackText.includes("RECORD BASIS") || execPackText.includes("Record basis"), "record basis section");
   assert.ok(execPackText.includes("Prepared in Metis from"), "provenance footer");
   assert.ok(execPackText.includes("External customer update"), "message template label");
-  assert.ok(execPackText.includes("Current assessment"), "assessment grid");
+  assert.ok(execPackText.includes("Current status"), "status grid");
   assert.ok(execPackText.includes("Generated"), "cover metadata");
   assert.ok(!/feasibility qa/i.test(execPackText), "no dev QA strings");
   assert.ok(!execPackText.includes("44444444-4444-4444-4444-444444444444"), "no raw issue UUID");
   assert.equal(execPackText.includes(appendixMarker), false, "executive pack DOCX omits audit appendix");
+  assert.ok(!/Owner — and deadline/i.test(execPackText), "no malformed owner fragments");
+  assert.ok(!/Owner — for the cadence/i.test(execPackText), "no malformed owner fragments");
+  assert.ok(!execPackText.includes("Claims and assumptions"), "no full claims register dump");
+  assert.ok(!execPackText.includes("Evidence base"), "no evidence dump in executive pack");
+  const consultReviewCount = execPackText.split("Consultation options are under review").length - 1;
+  assert.ok(consultReviewCount <= 2, "confirmed facts should not repeat as a large wall");
+  const safeIdx = execPackText.indexOf("Safe to say");
+  const holdIdx = execPackText.indexOf("Do not say yet");
+  assert.ok(safeIdx >= 0 && holdIdx > safeIdx, "guardrail columns ordered");
+  const safeRegion = execPackText.slice(safeIdx, holdIdx);
+  assert.ok(!/do not confirm final hours/i.test(safeRegion), "unsafe lines must not appear under Safe to say");
+  assert.ok(!/final opening hours/i.test(safeRegion), "do-not-say topics must not appear under Safe to say");
+  const pageBreaks = (execPackXml.match(/<w:br[^>]*w:type="page"/g) ?? []).length;
+  assert.ok(pageBreaks >= 1 && pageBreaks <= 2, "compact pack uses one page break between decision and circulation views");
 
   const execBuf = await renderExportPackageDocx({
     issue: issueWithId,

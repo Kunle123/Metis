@@ -53,8 +53,9 @@ run("parses decisions and strips UUIDs", () => {
   });
   assert.equal(model.decisions.length, 2);
   assert.ok(!model.position.lede.includes("22222222"));
-  assert.equal(model.safeToSay.length, 2);
   assert.ok(model.doNotSayYet.some((l) => /do not speculate/i.test(l)));
+  assert.ok(model.doNotSayYet.some((l) => /avoid escalatory/i.test(l)));
+  assert.ok(!model.safeToSay.some((l) => /\bdo not\b/i.test(l)), "unsafe lines must not appear in safeToSay");
   assert.deepEqual(model.whatChanged, ["Open question added"]);
 });
 
@@ -167,6 +168,22 @@ run("filters seed metadata and hides lede duplicated by record sufficiency", () 
   assert.ok(!model.confirmedFacts.some((f) => /feasibility qa/i.test(f)));
   assert.match(model.position.executiveSummary, /why it matters/i);
   assert.ok(!/feasibility qa record/i.test(model.position.executiveSummary));
+});
+
+run("decisions do not infer owner from decision prose fragments", () => {
+  const model = parseExecutiveBriefPresentation({
+    issueTitle: "Hours consultation",
+    artifact: artifact([
+      {
+        label: "Recommended decisions / next actions",
+        body: "1) Confirm proposed hours and deadline for equality assessment timing.\n2) Agree cadence for the briefing package.",
+      },
+      { label: "Current assessment", body: "Issue owner: Comms lead" },
+    ]),
+  });
+  assert.equal(model.decisions.length, 2);
+  assert.ok(model.decisions.every((d) => d.owner == null));
+  assert.ok(!model.decisions.some((d) => /Owner —/i.test(d.text)));
 });
 
 run("omits what changed when no highlights and no block", () => {
