@@ -14,6 +14,7 @@ import { BriefArtifactSchema } from "@metis/shared/briefVersion";
 
 import type { ExportAuditAppendixInput } from "./buildExportAuditAppendix";
 import type { BriefingPackContext } from "./briefingPack";
+import { COMPACT_EXEC_PACK_LAYOUT_MARKER } from "./compactExecutivePackDocx";
 import { isExportDocxSupported, renderExportPackageDocx } from "./renderExportDocx";
 
 const artifact = BriefArtifactSchema.parse({
@@ -292,7 +293,10 @@ async function main() {
   const execPackXml = docxDocumentXml(execPackBuf);
   const execPackText = docxFlattenedRuns(execPackXml);
   assert.ok(execPackText.includes("EXECUTIVE BRIEFING PACK"), "pack cover eyebrow");
-  assert.ok(execPackText.includes("READ FIRST"), "read-first panel");
+  assert.ok(execPackText.includes(COMPACT_EXEC_PACK_LAYOUT_MARKER), "compact layout marker proves briefing-pack renderer");
+  assert.ok(execPackText.includes("Read first"), "compact read-first strip");
+  assert.ok(!execPackText.includes("READ FIRST · CURRENT POSITION"), "old tall read-first eyebrow absent");
+  assert.ok(!execPackText.includes("ACTION ·"), "old decisions eyebrow absent");
   assert.ok(execPackText.includes("Decisions needed"), "decisions section title");
   assert.ok(execPackText.includes("COMMS GUARDRAILS") || execPackText.includes("Comms guardrails"), "guardrails section");
   assert.ok(execPackText.includes("Safe to say"), "guardrails safe column");
@@ -312,6 +316,11 @@ async function main() {
   assert.ok(!execPackText.includes("Evidence base"), "no evidence dump in executive pack");
   const consultReviewCount = execPackText.split("Consultation options are under review").length - 1;
   assert.ok(consultReviewCount <= 2, "confirmed facts should not repeat as a large wall");
+  assert.ok(execPackText.includes("–"), "compact dash rows instead of broken Word numbering");
+  const repeatedNumberedList =
+    (execPackXml.match(/<w:numPr>/g) ?? []).length > 0 &&
+    /1\.\s+Consultation options[\s\S]*1\.\s+No final decision/i.test(execPackText);
+  assert.ok(!repeatedNumberedList, "confirmed facts must not render as repeated 1. list items");
   const safeIdx = execPackText.indexOf("Safe to say");
   const holdIdx = execPackText.indexOf("Do not say yet");
   assert.ok(safeIdx >= 0 && holdIdx > safeIdx, "guardrail columns ordered");
@@ -328,7 +337,12 @@ async function main() {
     artifact,
   });
   assert.ok(execBuf.byteLength > 1500);
-  assert.equal(docxFlattenedRuns(docxDocumentXml(execBuf)).includes(appendixMarker), false, "executive DOCX omits audit appendix");
+  const legacyExecText = docxFlattenedRuns(docxDocumentXml(execBuf));
+  assert.equal(legacyExecText.includes(appendixMarker), false, "executive DOCX omits audit appendix");
+  assert.ok(
+    !legacyExecText.includes(COMPACT_EXEC_PACK_LAYOUT_MARKER),
+    "legacy executive DOCX path (no briefingPack) must not use compact pack renderer",
+  );
 
   const boardBuf = await renderExportPackageDocx({
     issue: issueWithId,

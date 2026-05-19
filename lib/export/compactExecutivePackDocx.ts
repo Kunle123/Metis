@@ -19,6 +19,9 @@ import { slicePresentationItems } from "@/lib/brief/parseExecutiveBriefPresentat
 import type { BriefingPackContext } from "./briefingPack";
 import { briefingPackRecordBasisLines, sanitizeExportText } from "./briefingPack";
 
+/** Embedded in DOCX output so fixtures/routes can verify the compact renderer ran. */
+export const COMPACT_EXEC_PACK_LAYOUT_MARKER = "Metis compact executive pack layout";
+
 export const EXEC_PACK_LIMITS = {
   confirmedFacts: 5,
   decisions: 5,
@@ -122,7 +125,7 @@ function buildReadFirstParagraphs(model: ExecutiveBriefPresentationModel): strin
   for (const p of merged) {
     if (out.some((e) => isNearDuplicateSentence(e, p))) continue;
     out.push(p);
-    if (out.length >= 3) break;
+    if (out.length >= 2) break;
   }
   return out;
 }
