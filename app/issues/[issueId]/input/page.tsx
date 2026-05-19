@@ -3,7 +3,10 @@ import { notFound, redirect } from "next/navigation";
 import { NoOrganisationMembershipShell } from "@/components/organisation/NoOrganisationMembership";
 import { prisma } from "@/lib/db/prisma";
 import { loadIssuePageContext } from "@/lib/organisations/loadIssuePageContext";
+import { activeIssueForMetisShell } from "@/lib/issues/activeIssueForShell";
+import { isIssueArchived, isIssueWritable } from "@/lib/issues/issueLifecycle";
 import { membershipAllowsOrgWrite } from "@/lib/organisations/orgCapabilities";
+import { IssueArchivedBanner } from "@/components/issues/IssueArchivedBanner";
 import { MetisShell } from "@/components/MetisShell";
 import { internalInputDbRowToWire } from "@/lib/internalInputs/internalInputWireFormat";
 import { prismaWhereInternalInputsVisibleToViewer } from "@/lib/internalInputs/internalObservationVisibility";
@@ -33,6 +36,8 @@ export default async function IssueInternalInputPage({ params }: { params: Promi
     .filter((item): item is NonNullable<typeof item> => item !== null);
 
   const canWrite = membershipAllowsOrgWrite(pageCtx.context.membership.role);
+  const archived = isIssueArchived(issue);
+  const canAddMaterial = canWrite && isIssueWritable(issue);
   const captureNotesAiEnabled = process.env.NOTES_CAPTURE_AI_ENABLED?.trim() === "true";
 
   return (
@@ -42,18 +47,13 @@ export default async function IssueInternalInputPage({ params }: { params: Promi
       pageMeta="Add material to this issue"
       organisationMembershipRole={pageCtx.context.membership.role}
       issueRoutePrefix={`/issues/${issue.id}`}
-      activeIssue={{
-        title: issue.title,
-        severity: issue.severity,
-        openGapsCount: issue.openGapsCount,
-        ownerName: issue.ownerName,
-        updatedAt: issue.updatedAt,
-      }}
+      activeIssue={activeIssueForMetisShell(issue)}
     >
       <div className="space-y-6">
+        {archived ? <IssueArchivedBanner /> : null}
         <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-start">
           <div className="min-w-0 space-y-6">
-            {canWrite ? (
+            {canAddMaterial ? (
               <AddToRecordWorkbench
                 issueId={issue.id}
                 issueRoutePrefix={`/issues/${issue.id}`}
@@ -61,7 +61,9 @@ export default async function IssueInternalInputPage({ params }: { params: Promi
               />
             ) : (
               <p className="rounded-[1.25rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_35%,transparent)] px-5 py-4 text-sm leading-6 text-[--metis-paper-muted]">
-                You have view-only access to this issue. You can review observations below but cannot add new material to the record.
+                {canWrite && archived
+                  ? "This issue is archived. Reopen it from the issue record before adding new material."
+                  : "You have view-only access to this issue. You can review observations below but cannot add new material to the record."}
               </p>
             )}
           </div>

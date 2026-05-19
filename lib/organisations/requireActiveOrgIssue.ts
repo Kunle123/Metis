@@ -10,7 +10,7 @@ export async function requireActiveOrgIssue(request: Request, issueId: string) {
   if (ctx instanceof NextResponse) return ctx;
 
   const issue = await prisma.issue.findFirst({
-    where: { id: issueId, organisationId: ctx.organisation.id },
+    where: { id: issueId, organisationId: ctx.organisation.id, deletedAt: null },
   });
 
   if (!issue) {

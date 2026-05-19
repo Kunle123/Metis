@@ -6,6 +6,7 @@ import { NoOrganisationMembershipShell } from "@/components/organisation/NoOrgan
 import { MetisShell, SurfaceCard } from "@/components/MetisShell";
 import { prisma } from "@/lib/db/prisma";
 import { loadIssuePageContext } from "@/lib/organisations/loadIssuePageContext";
+import { activeIssueForMetisShell } from "@/lib/issues/activeIssueForShell";
 import { prismaWhereInternalInputsVisibleToViewer } from "@/lib/internalInputs/internalObservationVisibility";
 import { coerceMessageApprovalStatus } from "@/lib/approvals/coerceMessageApprovalStatus";
 import { isStoredMessageDraftStale } from "@/lib/messages/messageFreshness";
@@ -209,13 +210,7 @@ export default async function IssueMessagesPage({
       pageTitle="Message variants"
       organisationMembershipRole={pageCtx.context.membership.role}
       issueRoutePrefix={`/issues/${issue.id}`}
-      activeIssue={{
-        title: issue.title,
-        severity: issue.severity,
-        openGapsCount: issue.openGapsCount,
-        ownerName: issue.ownerName,
-        updatedAt: issue.updatedAt,
-      }}
+      activeIssue={activeIssueForMetisShell(issue)}
     >
       <SurfaceCard className="min-w-0 overflow-hidden">
         <div className="border-b border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_45%,transparent)] px-6 py-4 sm:px-7 sm:py-4">

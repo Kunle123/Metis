@@ -3,6 +3,7 @@ import type { IssueActivityKind } from "@metis/shared/activity";
 
 import { isStoredBriefModeStale } from "@/lib/brief/briefFreshness";
 import { prisma } from "@/lib/db/prisma";
+import { type IssueLedger, prismaWhereIssuesForLedger } from "@/lib/issues/issueLifecycle";
 
 export type DashboardIssueVM = Issue & {
   sourcesCount: number;
@@ -65,11 +66,14 @@ function latestBriefDatesByIssue(
   return byIssue;
 }
 
-export async function getDashboardSnapshot(opts: { organisationId: string }): Promise<DashboardSnapshot> {
-  const { organisationId } = opts;
+export async function getDashboardSnapshot(opts: {
+  organisationId: string;
+  ledger?: IssueLedger;
+}): Promise<DashboardSnapshot> {
+  const { organisationId, ledger = "active" } = opts;
 
   const issuesRaw = await prisma.issue.findMany({
-    where: { organisationId },
+    where: prismaWhereIssuesForLedger(organisationId, ledger),
     orderBy: [{ lastActivityAt: "desc" }, { updatedAt: "desc" }],
     include: {
       _count: {

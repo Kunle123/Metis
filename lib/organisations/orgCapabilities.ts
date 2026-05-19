@@ -30,3 +30,8 @@ export function organisationMembershipAllowsCapability(
 export function membershipAllowsOrgWrite(membershipRole: string): boolean {
   return organisationMembershipAllowsCapability(membershipRole, "write");
 }
+
+/** Soft-delete issues created in error — Admin only (same as manage_users). */
+export function membershipAllowsIssueDelete(membershipRole: string): boolean {
+  return organisationMembershipAllowsCapability(membershipRole, "manage_users");
+}

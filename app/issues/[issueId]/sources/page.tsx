@@ -13,6 +13,7 @@ import { NoOrganisationMembershipShell } from "@/components/organisation/NoOrgan
 import { prisma } from "@/lib/db/prisma";
 import { ISSUE_RECORD_ACTIVE_PATH } from "@/lib/issues/issueNav";
 import { loadIssuePageContext } from "@/lib/organisations/loadIssuePageContext";
+import { activeIssueForMetisShell } from "@/lib/issues/activeIssueForShell";
 import type { SourceTier } from "@metis/shared/source";
 import { SourceEntryForm } from "./source-entry-form";
 import { CollapsibleFormPanel } from "@/app/issues/[issueId]/collapsible-form-panel";
@@ -104,13 +105,7 @@ export default async function IssueSourcesPage({ params }: { params: Promise<{ i
       pageTitle="Sources"
       organisationMembershipRole={pageCtx.context.membership.role}
       issueRoutePrefix={`/issues/${issue.id}`}
-      activeIssue={{
-        title: issue.title,
-        severity: issue.severity,
-        openGapsCount: issue.openGapsCount,
-        ownerName: issue.ownerName,
-        updatedAt: issue.updatedAt,
-      }}
+      activeIssue={activeIssueForMetisShell(issue)}
     >
       <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <SurfaceCard className="min-w-0 overflow-hidden">

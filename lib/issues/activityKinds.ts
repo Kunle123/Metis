@@ -22,5 +22,8 @@ export const IssueActivityKinds = {
   claim_created: IssueActivityKindSchema.parse("claim_created"),
   claim_updated: IssueActivityKindSchema.parse("claim_updated"),
   claim_status_updated: IssueActivityKindSchema.parse("claim_status_updated"),
+  issue_archived: IssueActivityKindSchema.parse("issue_archived"),
+  issue_reopened: IssueActivityKindSchema.parse("issue_reopened"),
+  issue_deleted: IssueActivityKindSchema.parse("issue_deleted"),
 } as const;
 

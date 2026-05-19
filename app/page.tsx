@@ -9,8 +9,10 @@ import { IssueSummaryRow } from "@/components/dashboard/IssueSummaryRow";
 import { MetisShell, SurfaceCard } from "@/components/MetisShell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { DashboardLedgerFilter } from "@/components/dashboard/DashboardLedgerFilter";
 import { buildOperationalSnapshotMetrics } from "@/lib/dashboard/buildOperationalSnapshotMetrics";
 import { getDashboardSnapshot } from "@/lib/dashboard/getDashboardSnapshot";
+import { parseIssueLedger } from "@/lib/issues/issueLifecycle";
 import { resolvePageOrganisationGate } from "@/lib/organisations/pageOrganisationGate";
 
 export const dynamic = "force-dynamic";
@@ -44,7 +46,14 @@ const dashboardQuickLinksBase = [
   { label: "Settings · Audience groups" as const, href: "/audience-groups" },
 ] as const;
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ ledger?: string }>;
+}) {
+  const { ledger: ledgerRaw } = await searchParams;
+  const ledger = parseIssueLedger(ledgerRaw);
+
   const gate = await resolvePageOrganisationGate();
   if (!gate.ok) {
     if (gate.httpStatus === 401) redirect("/login");
@@ -53,6 +62,7 @@ export default async function DashboardPage() {
 
   const snapshot = await getDashboardSnapshot({
     organisationId: gate.context.organisation.id,
+    ledger,
   });
   const { issues, aggregates, recentActivity, workspacePulse } = snapshot;
   const operationalSnapshotMetrics = buildOperationalSnapshotMetrics(snapshot);
@@ -145,7 +155,12 @@ export default async function DashboardPage() {
               ) : (
                 <>
                   <div className="flex flex-wrap items-center justify-between gap-3">
-                    <p className="text-sm text-[--metis-paper-muted]">Active issues ({issues.length})</p>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <p className="text-sm text-[--metis-paper-muted]">
+                        {ledger === "archived" ? "Archived issues" : "Active issues"} ({issues.length})
+                      </p>
+                      <DashboardLedgerFilter ledger={ledger} />
+                    </div>
                     <p className="text-xs text-[--metis-text-tertiary]">Sorted by recent activity. Attention chips highlight rows that may need work.</p>
                   </div>
                   {issues.map((issue) => (

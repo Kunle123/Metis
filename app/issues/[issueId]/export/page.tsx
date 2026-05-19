@@ -13,6 +13,7 @@ import { CirculationEventTypeSchema, CirculationChannelSchema } from "@metis/sha
 import { NoOrganisationMembershipShell } from "@/components/organisation/NoOrganisationMembership";
 import { prisma } from "@/lib/db/prisma";
 import { loadIssuePageContext } from "@/lib/organisations/loadIssuePageContext";
+import { activeIssueForMetisShell } from "@/lib/issues/activeIssueForShell";
 import { BriefModeSchema, BriefArtifactSchema, type BriefArtifact } from "@metis/shared/briefVersion";
 import { ExportFormatSchema, type ExportFormat, type ExportOutputType } from "@metis/shared/export";
 import { loadExportAuditAppendixPayload } from "@/lib/export/buildExportAuditAppendix";
@@ -163,12 +164,7 @@ export default async function IssueExportPage({
         pageTitle="Circulation Package"
         organisationMembershipRole={pageCtx.context.membership.role}
         issueRoutePrefix={`/issues/${issue.id}`}
-        activeIssue={{
-          title: issue.title,
-          severity: issue.severity,
-          openGapsCount: issue.openGapsCount,
-          updatedAt: issue.updatedAt,
-        }}
+        activeIssue={activeIssueForMetisShell(issue)}
       >
         <SurfaceCard className="overflow-hidden">
           <div className={`${EXPORT_CHROME_BAND} px-6 py-5 sm:px-7`}>
@@ -331,13 +327,7 @@ export default async function IssueExportPage({
       pageTitle="Circulation Package"
       organisationMembershipRole={pageCtx.context.membership.role}
       issueRoutePrefix={`/issues/${issue.id}`}
-      activeIssue={{
-        title: issue.title,
-        severity: issue.severity,
-        openGapsCount: issue.openGapsCount,
-        ownerName: issue.ownerName,
-        updatedAt: issue.updatedAt,
-      }}
+      activeIssue={activeIssueForMetisShell(issue)}
     >
       <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
         <SurfaceCard className="min-w-0 overflow-hidden">

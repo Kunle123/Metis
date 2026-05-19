@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { PatchInternalInputInputSchema, InternalObservationVisibilitySchema } from "@metis/shared/internalInput";
 import { prisma } from "@/lib/db/prisma";
 import { requireActiveOrgIssue } from "@/lib/organisations/requireActiveOrgIssue";
+import { requireWritableOrgIssue } from "@/lib/organisations/requireWritableOrgIssue";
 import { membershipAllowsOrgWrite } from "@/lib/organisations/orgCapabilities";
 import { internalInputDbRowToWire } from "@/lib/internalInputs/internalInputWireFormat";
 import {
@@ -39,7 +40,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string; internalInputId: string }> }) {
   const { id: issueId, internalInputId } = await params;
 
-  const gated = await requireActiveOrgIssue(request, issueId);
+  const gated = await requireWritableOrgIssue(request, issueId);
   if (gated instanceof NextResponse) return gated;
   if (!membershipAllowsOrgWrite(gated.ctx.membership.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });

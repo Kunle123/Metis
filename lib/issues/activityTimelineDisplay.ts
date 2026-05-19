@@ -39,6 +39,9 @@ export const ACTIVITY_KIND_LABELS: Record<string, string> = {
   claim_created: "Claim · added",
   claim_updated: "Claim · updated",
   claim_status_updated: "Claim · status",
+  issue_archived: "Issue · archived",
+  issue_reopened: "Issue · reopened",
+  issue_deleted: "Issue · deleted",
 };
 
 export function formatActivityTimestamp(iso: string) {

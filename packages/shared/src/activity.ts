@@ -28,6 +28,9 @@ export const IssueActivityKindSchema = z.union([
   z.literal("claim_created"),
   z.literal("claim_updated"),
   z.literal("claim_status_updated"),
+  z.literal("issue_archived"),
+  z.literal("issue_reopened"),
+  z.literal("issue_deleted"),
 ]);
 export type IssueActivityKind = z.infer<typeof IssueActivityKindSchema>;
 

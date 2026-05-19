@@ -23,7 +23,7 @@ export async function loadIssuePageContext(issueId: string): Promise<LoadedIssue
   const organisationId = resolved.context.organisation.id;
 
   const issue = await prisma.issue.findFirst({
-    where: { id: issueId, organisationId },
+    where: { id: issueId, organisationId, deletedAt: null },
   });
 
   if (!issue) return { outcome: "not_found" };

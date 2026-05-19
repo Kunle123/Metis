@@ -9,7 +9,10 @@ import { enrichActivityRowsForIssue } from "@/lib/issues/enrichActivityTimeline"
 import { gatherIssueAttentionSummary } from "@/lib/issues/gatherIssueAttentionSummary";
 import { ISSUE_RECORD_ACTIVE_PATH } from "@/lib/issues/issueNav";
 import { loadIssuePageContext } from "@/lib/organisations/loadIssuePageContext";
-import { membershipAllowsOrgWrite } from "@/lib/organisations/orgCapabilities";
+import { activeIssueForMetisShell } from "@/lib/issues/activeIssueForShell";
+import { isIssueArchived } from "@/lib/issues/issueLifecycle";
+import { membershipAllowsIssueDelete, membershipAllowsOrgWrite } from "@/lib/organisations/orgCapabilities";
+import { IssueArchivedBanner } from "@/components/issues/IssueArchivedBanner";
 import { prismaWhereInternalInputsVisibleToViewer } from "@/lib/internalInputs/internalObservationVisibility";
 
 export const dynamic = "force-dynamic";
@@ -23,6 +26,8 @@ export default async function IssueRecordPage({ params }: { params: Promise<{ is
   const { issue } = page;
   const issueRoutePrefix = `/issues/${issue.id}`;
   const canWrite = membershipAllowsOrgWrite(page.context.membership.role);
+  const archived = isIssueArchived(issue);
+  const canDeleteIssue = membershipAllowsIssueDelete(page.context.membership.role);
 
   const workspaceViewer = { membershipRole: page.context.membership.role, userId: page.context.user.id };
   const [sourcesCount, gaps, inputsCount, claimsCount, latestBrief, messageVariantCount, activitiesRaw] =
@@ -119,27 +124,27 @@ export default async function IssueRecordPage({ params }: { params: Promise<{ is
       pageMeta="Live record"
       organisationMembershipRole={page.context.membership.role}
       issueRoutePrefix={issueRoutePrefix}
-      activeIssue={{
-        title: issue.title,
-        severity: issue.severity,
-        openGapsCount: issue.openGapsCount,
-        ownerName: issue.ownerName,
-        updatedAt: issue.updatedAt,
-      }}
+      activeIssue={activeIssueForMetisShell(issue)}
     >
-      <IssueRecordHome
-        issueRoutePrefix={issueRoutePrefix}
-        title={issue.title}
-        status={issue.status}
-        severity={issue.severity}
-        issueType={issue.issueType}
-        ownerName={issue.ownerName}
-        canWrite={canWrite}
-        attentionItems={attentionItems}
-        stats={stats}
-        briefStatus={briefStatus}
-        recentActivity={recentActivity}
-      />
+      <div className="space-y-6">
+        {archived ? <IssueArchivedBanner /> : null}
+        <IssueRecordHome
+          issueId={issue.id}
+          issueRoutePrefix={issueRoutePrefix}
+          title={issue.title}
+          status={issue.status}
+          severity={issue.severity}
+          issueType={issue.issueType}
+          ownerName={issue.ownerName}
+          canWrite={canWrite}
+          isArchived={archived}
+          canDeleteIssue={canDeleteIssue}
+          attentionItems={attentionItems}
+          stats={stats}
+          briefStatus={briefStatus}
+          recentActivity={recentActivity}
+        />
+      </div>
     </MetisShell>
   );
 }

@@ -20,26 +20,36 @@ function toneAccentClass(tone: IssueAttentionItem["tone"]) {
   }
 }
 
-export function IssueAttentionSummaryCard({
+function IssueAttentionSummaryBody({
   attentionItems,
-  className,
+  variant,
 }: {
   attentionItems: IssueAttentionItem[];
-  /** Optional positioning wrapper for page layout rhythm. */
-  className?: string;
+  variant: "card" | "embedded";
 }) {
   const hasAttention = attentionItems.length > 0;
 
   return (
-    <SurfaceCard className={cn("min-w-0 overflow-hidden", className)}>
-      <div className="border-b border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_42%,transparent)] px-6 py-4 sm:px-7">
-        <h3 className="font-[Cormorant_Garamond] text-[1.45rem] leading-tight text-[--metis-paper]">
+    <>
+      <div
+        className={cn(
+          variant === "embedded"
+            ? "space-y-1"
+            : "border-b border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_42%,transparent)] px-6 py-4 sm:px-7",
+        )}
+      >
+        <h3
+          className={cn(
+            "font-[Cormorant_Garamond] leading-tight text-[--metis-paper]",
+            variant === "embedded" ? "text-[1.35rem]" : "text-[1.45rem]",
+          )}
+        >
           Needs attention
         </h3>
         <p className="mt-1 text-sm leading-6 text-[--metis-paper-muted]">Review these before briefing or circulating.</p>
       </div>
 
-      <div className="px-6 py-5 sm:px-7">
+      <div className={cn(variant === "embedded" ? "pt-4" : "px-6 py-5 sm:px-7")}>
         {!hasAttention ? (
           <div className="flex gap-4 rounded-xl border border-[--metis-status-success-border]/70 bg-[color-mix(in_oklab,var(--metis-status-success-bg)_28%,transparent)] px-4 py-4 sm:px-5">
             <CheckCircle2
@@ -69,7 +79,7 @@ export function IssueAttentionSummaryCard({
                   <div className="mt-3 flex flex-wrap">
                     <Link
                       href={item.href}
-                      className="text-sm font-medium text-[--metis-brass-soft] underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/45 rounded-sm break-words"
+                      className="rounded-sm text-sm font-medium text-[--metis-brass-soft] underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/45 break-words"
                     >
                       {item.linkLabel}
                     </Link>
@@ -80,6 +90,32 @@ export function IssueAttentionSummaryCard({
           </ul>
         )}
       </div>
+    </>
+  );
+}
+
+export function IssueAttentionSummaryCard({
+  attentionItems,
+  className,
+  variant = "card",
+}: {
+  attentionItems: IssueAttentionItem[];
+  className?: string;
+  variant?: "card" | "embedded";
+}) {
+  const body = <IssueAttentionSummaryBody attentionItems={attentionItems} variant={variant} />;
+
+  if (variant === "embedded") {
+    return (
+      <section className={cn("border-t border-[--metis-outline-subtle] pt-6", className)} aria-label="Needs attention">
+        {body}
+      </section>
+    );
+  }
+
+  return (
+    <SurfaceCard className={cn("min-w-0 overflow-hidden", className)}>
+      {body}
     </SurfaceCard>
   );
 }

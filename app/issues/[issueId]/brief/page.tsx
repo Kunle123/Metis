@@ -13,6 +13,7 @@ import { SourceReliabilityMeta } from "@/components/review/SourceReliabilityMeta
 import { ReviewToolbar } from "@/components/review/ReviewToolbar";
 import { prisma } from "@/lib/db/prisma";
 import { loadIssuePageContext } from "@/lib/organisations/loadIssuePageContext";
+import { activeIssueForMetisShell } from "@/lib/issues/activeIssueForShell";
 import type { IssueActivityKind } from "@metis/shared/activity";
 import { BriefModeSchema, type BriefMode, type BriefConfidence, type BriefArtifact } from "@metis/shared/briefVersion";
 
@@ -260,13 +261,7 @@ export default async function IssueBriefPage({
       pageTitle={title}
       organisationMembershipRole={pageCtx.context.membership.role}
       issueRoutePrefix={`/issues/${issue.id}`}
-      activeIssue={{
-        title: issue.title,
-        severity: issue.severity,
-        openGapsCount: issue.openGapsCount,
-        ownerName: issue.ownerName,
-        updatedAt: issue.updatedAt,
-      }}
+      activeIssue={activeIssueForMetisShell(issue)}
     >
       <div
         className={cn(

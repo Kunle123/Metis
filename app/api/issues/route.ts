@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db/prisma";
 import { IssueActivityKinds } from "@/lib/issues/activityKinds";
 import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
 import { requireActiveOrganisationContext } from "@/lib/organisations/activeOrganisationContext";
+import { prismaWhereIssuesForLedger } from "@/lib/issues/issueLifecycle";
 import { requireActiveOrganisationWriteContext } from "@/lib/organisations/requireOrganisationCapability";
 
 export async function GET(request: Request) {
@@ -12,7 +13,7 @@ export async function GET(request: Request) {
   if (ctx instanceof NextResponse) return ctx;
 
   const issues = await prisma.issue.findMany({
-    where: { organisationId: ctx.organisation.id },
+    where: prismaWhereIssuesForLedger(ctx.organisation.id, "active"),
     orderBy: { updatedAt: "desc" },
   });
 

@@ -228,6 +228,7 @@ export function MetisShell({
     openGapsCount?: number | null;
     ownerName?: string | null;
     updatedAt?: Date | null;
+    isArchived?: boolean;
   };
 }) {
   const shouldShowOperationalSnapshot = showOperationalSnapshot ?? activePath === "/";
@@ -253,7 +254,11 @@ export function MetisShell({
     return `${issueRoutePrefix}${item.path}`;
   }
 
-  const canAddIssueInput = Boolean(issueRoutePrefix && membershipAllowsOrgWrite(organisationMembershipRole ?? ""));
+  const canAddIssueInput = Boolean(
+    issueRoutePrefix &&
+      membershipAllowsOrgWrite(organisationMembershipRole ?? "") &&
+      !activeIssue?.isArchived,
+  );
 
   function navHrefForItem(item: { path: string }) {
     return item.path;

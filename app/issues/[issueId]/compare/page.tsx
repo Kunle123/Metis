@@ -7,6 +7,7 @@ import { MetisShell, ReadinessPill, SurfaceCard } from "@/components/MetisShell"
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/db/prisma";
 import { loadIssuePageContext } from "@/lib/organisations/loadIssuePageContext";
+import { activeIssueForMetisShell } from "@/lib/issues/activeIssueForShell";
 import { BriefModeSchema, BriefArtifactSchema, type BriefMode, type BriefArtifact } from "@metis/shared/briefVersion";
 import type { CompareGroupId, CompareSummary, CirculationState } from "@metis/shared/compare";
 import { compareBriefArtifacts } from "@/lib/brief/compareBriefVersions";
@@ -107,12 +108,7 @@ export default async function IssueComparePage({
         pageTitle="Brief Delta"
         organisationMembershipRole={pageCtx.context.membership.role}
         issueRoutePrefix={`/issues/${issue.id}`}
-        activeIssue={{
-          title: issue.title,
-          severity: issue.severity,
-          openGapsCount: issue.openGapsCount,
-          updatedAt: issue.updatedAt,
-        }}
+        activeIssue={activeIssueForMetisShell(issue)}
       >
         <SurfaceCard>
           <div className="px-6 py-6 text-[--metis-paper]">No brief versions yet.</div>
@@ -180,13 +176,7 @@ export default async function IssueComparePage({
       pageTitle="Brief Delta"
       organisationMembershipRole={pageCtx.context.membership.role}
       issueRoutePrefix={`/issues/${issue.id}`}
-      activeIssue={{
-        title: issue.title,
-        severity: issue.severity,
-        openGapsCount: issue.openGapsCount,
-        ownerName: issue.ownerName,
-        updatedAt: issue.updatedAt,
-      }}
+      activeIssue={activeIssueForMetisShell(issue)}
     >
       <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_330px]">
         <SurfaceCard className="min-w-0 overflow-hidden">

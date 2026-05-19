@@ -51,6 +51,8 @@ model User {
   artifactExportsApprovalUpdates ArtifactExport[] @relation("ArtifactExportApprovalActor")
   claimsCreated                  Claim[]            @relation("ClaimCreatedBy")
   claimsUpdated                  Claim[]            @relation("ClaimUpdatedBy")
+  issuesArchived                 Issue[]            @relation("IssueArchivedBy")
+  issuesDeleted                  Issue[]            @relation("IssueDeletedBy")
 }
 
 model Issue {
@@ -83,8 +85,14 @@ model Issue {
    */
   claimCodeSeq       Int                @default(0)
   lastActivityAt     DateTime           @default(now())
+  archivedAt         DateTime?
+  archivedById       String?
+  deletedAt          DateTime?
+  deletedById        String?
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
+  archivedBy         User?              @relation("IssueArchivedBy", fields: [archivedById], references: [id], onDelete: SetNull)
+  deletedBy          User?              @relation("IssueDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
   briefVersions      BriefVersion[]
   briefComparisons   BriefComparison[]
   artifactExports    ArtifactExport[]
@@ -100,6 +108,8 @@ model Issue {
   organisation       Organisation       @relation(fields: [organisationId], references: [id], onDelete: Restrict)
 
   @@index([organisationId])
+  @@index([organisationId, archivedAt])
+  @@index([organisationId, deletedAt])
   @@index([updatedAt])
   @@index([lastActivityAt])
 }

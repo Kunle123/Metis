@@ -7,6 +7,7 @@ import { serializeClaimForViewer } from "@/lib/claims/serializeClaimsForViewer";
 import { prismaWhereInternalInputsVisibleToViewer } from "@/lib/internalInputs/internalObservationVisibility";
 import { ISSUE_RECORD_ACTIVE_PATH } from "@/lib/issues/issueNav";
 import { loadIssuePageContext } from "@/lib/organisations/loadIssuePageContext";
+import { activeIssueForMetisShell } from "@/lib/issues/activeIssueForShell";
 import { membershipAllowsOrgWrite } from "@/lib/organisations/orgCapabilities";
 
 import { ClaimLedger } from "./claim-ledger";
@@ -62,13 +63,7 @@ export default async function IssueClaimsPage({ params }: { params: Promise<{ is
       pageMeta="Record view"
       organisationMembershipRole={pageCtx.context.membership.role}
       issueRoutePrefix={`/issues/${issue.id}`}
-      activeIssue={{
-        title: issue.title,
-        severity: issue.severity,
-        openGapsCount: issue.openGapsCount,
-        ownerName: issue.ownerName,
-        updatedAt: issue.updatedAt,
-      }}
+      activeIssue={activeIssueForMetisShell(issue)}
     >
       <ClaimLedger
         issueId={issue.id}

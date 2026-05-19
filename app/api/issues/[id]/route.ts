@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db/prisma";
 import { IssueActivityKinds } from "@/lib/issues/activityKinds";
 import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
 import { requireActiveOrganisationContext } from "@/lib/organisations/activeOrganisationContext";
+import { isIssueWritable } from "@/lib/issues/issueLifecycle";
 import { requireActiveOrganisationWriteContext } from "@/lib/organisations/requireOrganisationCapability";
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -14,7 +15,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
   const { id } = await params;
   const issue = await prisma.issue.findFirst({
-    where: { id, organisationId: ctx.organisation.id },
+    where: { id, organisationId: ctx.organisation.id, deletedAt: null },
   });
 
   if (!issue) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -53,9 +54,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
     const updated = await prisma.$transaction(async (tx) => {
       const existing = await tx.issue.findFirst({
-        where: { id, organisationId: ctx.organisation.id },
+        where: { id, organisationId: ctx.organisation.id, deletedAt: null },
       });
       if (!existing) throw new Error("Not found");
+      if (!isIssueWritable(existing)) {
+        throw new Error("archived");
+      }
 
       const next = await tx.issue.update({
         where: { id },
@@ -99,7 +103,13 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       updatedAt: updated.updatedAt.toISOString(),
       lastActivityAt: updated.lastActivityAt.toISOString(),
     });
-  } catch {
+  } catch (e) {
+    if (e instanceof Error && e.message === "archived") {
+      return NextResponse.json(
+        { error: "This issue is archived. Reopen it before changing record fields." },
+        { status: 403 },
+      );
+    }
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 }

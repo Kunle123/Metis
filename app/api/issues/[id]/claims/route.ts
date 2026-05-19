@@ -12,6 +12,7 @@ import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
 import { formatClaimCode } from "@/lib/issueRecordCodes";
 import { membershipAllowsOrgWrite } from "@/lib/organisations/orgCapabilities";
 import { requireActiveOrgIssue } from "@/lib/organisations/requireActiveOrgIssue";
+import { requireWritableOrgIssue } from "@/lib/organisations/requireWritableOrgIssue";
 
 const claimInclude = {
   sources: { include: { source: { select: { id: true, sourceCode: true } } } },
@@ -39,7 +40,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id: issueId } = await params;
-  const gated = await requireActiveOrgIssue(request, issueId);
+  const gated = await requireWritableOrgIssue(request, issueId);
   if (gated instanceof NextResponse) return gated;
   if (!membershipAllowsOrgWrite(gated.ctx.membership.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
