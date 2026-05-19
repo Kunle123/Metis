@@ -119,7 +119,9 @@ export function IssueSummaryRow({ issue }: { issue: DashboardIssueVM }) {
         </div>
         <div>
           <Link href={base} className="group/title block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60">
-            <h4 className="text-lg font-medium text-[--metis-paper] group-hover/title:text-white">{issue.title}</h4>
+            <h4 className="text-lg font-medium text-[--metis-paper] transition group-hover/title:text-[--metis-text-primary] group-focus-visible/title:text-[--metis-text-primary] group-active/title:text-[--metis-text-primary]">
+              {issue.title}
+            </h4>
             <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[--metis-paper-muted]">{issue.summary}</p>
             <span className="mt-2 inline-flex items-center gap-2 text-[0.8rem] text-[--metis-paper-muted] transition group-hover/title:text-[--metis-paper]">
               Continue in workspace

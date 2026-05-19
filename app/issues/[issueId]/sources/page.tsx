@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ArrowRight, ChevronDown, ChevronRight, ExternalLink, Link2, ShieldCheck } from "lucide-react";
 
+import { BackToIssueRecordLink } from "@/components/issues/BackToIssueRecordLink";
+import { RecordCodeHint } from "@/components/issues/RecordCodeHint";
 import { MetisShell, SurfaceCard } from "@/components/MetisShell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -114,10 +116,11 @@ export default async function IssueSourcesPage({ params }: { params: Promise<{ i
               className="border-0 bg-transparent px-0 py-0"
               left={
                 <div className="space-y-1">
+                  <BackToIssueRecordLink issueId={issue.id} className="mb-2" />
                   <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper]">Evidence library</h2>
                   <p className="text-sm leading-6 text-[--metis-paper-muted]">
                     Full list of sources for this issue. Add or review evidence here before treating brief claims as settled; day-to-day work can
-                    stay in the workspace until you need the full ledger.
+                    stay on the issue record until you need the full ledger.
                   </p>
                   <p className="text-[0.72rem] leading-snug text-[--metis-paper-muted]">
                     Questions that still block confirmation belong on{" "}
@@ -128,13 +131,7 @@ export default async function IssueSourcesPage({ params }: { params: Promise<{ i
                   </p>
                 </div>
               }
-            >
-              <div className="flex flex-wrap items-center gap-2 lg:justify-center">
-                <Button asChild variant="outline" className="justify-start">
-                  <Link href={`/issues/${issue.id}`}>Back to workspace</Link>
-                </Button>
-              </div>
-            </ReviewToolbar>
+            />
           </div>
 
           <div className="space-y-6 px-6 py-6 sm:px-7 sm:py-7">
@@ -172,7 +169,7 @@ export default async function IssueSourcesPage({ params }: { params: Promise<{ i
                 form={<SourceEntryForm issueId={issue.id} />}
                 secondaryAction={
                   <Button asChild variant="outline">
-                    <Link href={`/issues/${issue.id}`}>Workspace</Link>
+                    <Link href={`/issues/${issue.id}`}>Issue record</Link>
                   </Button>
                 }
               >
@@ -223,9 +220,15 @@ export default async function IssueSourcesPage({ params }: { params: Promise<{ i
                           title={
                             <div className="flex flex-wrap items-center gap-2">
                               <span className="text-[0.62rem] text-[--metis-text-tertiary]">Provenance</span>
-                              <Badge className="border-0 bg-[color-mix(in_oklab,var(--metis-surface-elevated)_70%,transparent)] text-[--metis-text-secondary]">
-                                {item.sourceCode}
-                              </Badge>
+                              <RecordCodeHint
+                                codeLabel={item.sourceCode}
+                                hint={note || snippet || title}
+                                className="inline-flex"
+                              >
+                                <Badge className="border-0 bg-[color-mix(in_oklab,var(--metis-surface-elevated)_70%,transparent)] text-[--metis-text-secondary]">
+                                  {item.sourceCode}
+                                </Badge>
+                              </RecordCodeHint>
                               <Badge className={tierBadgeClass[tier]}>{tier}</Badge>
                               <Badge className="border-0 bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_55%,transparent)] text-[--metis-text-secondary]">
                                 {timestampLabel}

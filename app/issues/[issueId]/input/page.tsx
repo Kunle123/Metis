@@ -6,6 +6,7 @@ import { loadIssuePageContext } from "@/lib/organisations/loadIssuePageContext";
 import { activeIssueForMetisShell } from "@/lib/issues/activeIssueForShell";
 import { isIssueArchived, isIssueWritable } from "@/lib/issues/issueLifecycle";
 import { membershipAllowsOrgWrite } from "@/lib/organisations/orgCapabilities";
+import { BackToIssueRecordLink } from "@/components/issues/BackToIssueRecordLink";
 import { IssueArchivedBanner } from "@/components/issues/IssueArchivedBanner";
 import { MetisShell } from "@/components/MetisShell";
 import { internalInputDbRowToWire } from "@/lib/internalInputs/internalInputWireFormat";
@@ -50,6 +51,7 @@ export default async function IssueInternalInputPage({ params }: { params: Promi
       activeIssue={activeIssueForMetisShell(issue)}
     >
       <div className="space-y-6">
+        <BackToIssueRecordLink issueId={issue.id} />
         {archived ? <IssueArchivedBanner /> : null}
         <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-start">
           <div className="min-w-0 space-y-6">

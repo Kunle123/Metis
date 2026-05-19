@@ -14,6 +14,8 @@ import {
   X,
 } from "lucide-react";
 
+import { BackToIssueRecordLink } from "@/components/issues/BackToIssueRecordLink";
+import { RecordCodeHint } from "@/components/issues/RecordCodeHint";
 import { SurfaceCard } from "@/components/MetisShell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -335,9 +337,10 @@ export function GapLedger({
             className="border-0 bg-transparent px-0 py-0"
             left={
               <div className="space-y-1">
+                <BackToIssueRecordLink issueId={issueId} className="mb-2" />
                 <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper]">Open questions</h2>
                 <p className="text-sm leading-6 text-[--metis-paper-muted]">
-                  Full list of open and resolved questions. Use the workspace for day-to-day review; this page is for deeper ledger work.
+                  Full list of open and resolved questions. Use the issue record for day-to-day review; this page is for deeper ledger work.
                 </p>
                 <p className="text-[0.72rem] leading-snug text-[--metis-paper-muted]">
                   For each open row: edit the drafted question as needed, then mark it answered once the answer exists as a saved observation. Reopen if the facts
@@ -345,13 +348,7 @@ export function GapLedger({
                 </p>
               </div>
             }
-          >
-            <div className="flex flex-wrap items-center gap-2 lg:justify-center">
-              <Button asChild variant="outline" className="justify-start">
-                <Link href={`/issues/${issueId}`}>Back to workspace</Link>
-              </Button>
-            </div>
-          </ReviewToolbar>
+          />
         </div>
 
         <div className="space-y-5 px-6 py-6 sm:px-7 sm:py-7">
@@ -431,7 +428,13 @@ export function GapLedger({
                         >
                           <div className="min-w-0 flex-1">
                             <div className="flex flex-wrap items-center gap-2">
-                              <span className={cn(LEDGER_ROW_CHIP, GAP_RECORD_CHIP_CLASS)}>{gapRecordBadgeLabel(gap)}</span>
+                              <RecordCodeHint
+                                codeLabel={gapRecordBadgeLabel(gap)}
+                                hint={(gap.prompt ?? gap.title ?? "").trim() || null}
+                                className={cn(LEDGER_ROW_CHIP, GAP_RECORD_CHIP_CLASS)}
+                              >
+                                {gapRecordBadgeLabel(gap)}
+                              </RecordCodeHint>
                               <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-text-tertiary]">Severity</span>
                               <span className={cn(LEDGER_ROW_CHIP, severityChipClass[gap.severity] ?? severityChipClass.Watch)}>
                                 {gap.severity}
@@ -623,7 +626,13 @@ export function GapLedger({
                         >
                           <div className="min-w-0 flex-1">
                             <div className="flex flex-wrap items-center gap-2">
-                              <span className={cn(LEDGER_ROW_CHIP, GAP_RECORD_CHIP_CLASS)}>{gapRecordBadgeLabel(gap)}</span>
+                              <RecordCodeHint
+                                codeLabel={gapRecordBadgeLabel(gap)}
+                                hint={(gap.prompt ?? gap.title ?? "").trim() || null}
+                                className={cn(LEDGER_ROW_CHIP, GAP_RECORD_CHIP_CLASS)}
+                              >
+                                {gapRecordBadgeLabel(gap)}
+                              </RecordCodeHint>
                               <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-text-tertiary]">Severity</span>
                               <span className={cn(LEDGER_ROW_CHIP, severityChipClass[gap.severity] ?? severityChipClass.Watch)}>{gap.severity}</span>
                               <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-text-tertiary]">Status</span>

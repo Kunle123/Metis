@@ -39,12 +39,12 @@ export default async function IssueClaimsPage({ params }: { params: Promise<{ is
     prisma.claim.findMany({ where: { issueId: issue.id }, include: claimInclude, orderBy: [{ claimNumber: "asc" }] }),
     prisma.source.findMany({
       where: { issueId: issue.id },
-      select: { id: true, sourceCode: true },
+      select: { id: true, sourceCode: true, title: true, note: true, snippet: true },
       orderBy: [{ createdAt: "desc" }],
     }),
     prisma.gap.findMany({
       where: { issueId: issue.id },
-      select: { id: true, gapNumber: true },
+      select: { id: true, gapNumber: true, prompt: true, title: true },
       orderBy: [{ gapNumber: "asc" }],
     }),
     prisma.internalInput.findMany({
@@ -69,8 +69,16 @@ export default async function IssueClaimsPage({ params }: { params: Promise<{ is
         issueId={issue.id}
         canWrite={canWrite}
         claims={claims}
-        sources={sourcesMini.map((s) => ({ id: s.id, sourceCode: s.sourceCode }))}
-        gaps={gapsMini.map((g) => ({ id: g.id, gapNumber: g.gapNumber ?? null }))}
+        sources={sourcesMini.map((s) => ({
+          id: s.id,
+          sourceCode: s.sourceCode,
+          hint: (s.note ?? s.snippet ?? s.title ?? "").trim() || (s.title ?? "").trim() || null,
+        }))}
+        gaps={gapsMini.map((g) => ({
+          id: g.id,
+          gapNumber: g.gapNumber ?? null,
+          hint: (g.prompt ?? g.title ?? "").trim() || null,
+        }))}
         observations={observationsMini.map((o) => ({
           id: o.id,
           observationNumber: o.observationNumber,

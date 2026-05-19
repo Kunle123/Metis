@@ -1,10 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { ClaimStatusSchema } from "@metis/shared/claim";
+import { BackToIssueRecordLink } from "@/components/issues/BackToIssueRecordLink";
+import { RecordCodeHint } from "@/components/issues/RecordCodeHint";
 import { SurfaceCard } from "@/components/MetisShell";
 import { Button } from "@/components/ui/button";
 import { claimStatusBadgeClassNames, claimStatusDisplayLabel } from "@/lib/claims/claimStatusUi";
@@ -13,8 +15,8 @@ import type { SerializedClaim } from "@/lib/claims/serializeClaimsForViewer";
 
 import { CollapsibleFormPanel } from "../collapsible-form-panel";
 
-type SourceOpt = { id: string; sourceCode: string };
-type GapOpt = { id: string; gapNumber: number | null };
+type SourceOpt = { id: string; sourceCode: string; hint?: string | null };
+type GapOpt = { id: string; gapNumber: number | null; hint?: string | null };
 type ObsOpt = { id: string; observationNumber: number; role: string; name: string };
 
 function formatIsoShortLondon(iso: string) {
@@ -56,8 +58,6 @@ export function ClaimLedger(props: {
   const [editSources, setEditSources] = useState<string[]>([]);
   const [editGaps, setEditGaps] = useState<string[]>([]);
   const [editObs, setEditObs] = useState<string[]>([]);
-
-  const sourcesById = useMemo(() => new Map(sources.map((s) => [s.id, s.sourceCode])), [sources]);
 
   function toggleId(ids: string[], id: string, setter: (v: string[]) => void) {
     if (ids.includes(id)) setter(ids.filter((x) => x !== id));
@@ -180,7 +180,9 @@ export function ClaimLedger(props: {
                     onChange={() => toggleId(opts.sourceIds, s.id, opts.setSourceIds)}
                     className="accent-[--metis-brass]"
                   />
-                  {sourcesById.get(s.id) ?? s.sourceCode}
+                  <RecordCodeHint codeLabel={s.sourceCode} hint={s.hint}>
+                    {s.sourceCode}
+                  </RecordCodeHint>
                 </label>
               ))}
             </div>
@@ -190,17 +192,22 @@ export function ClaimLedger(props: {
           <div className="space-y-1">
             <p className="text-[0.72rem] text-[--metis-paper-muted]">Open questions</p>
             <div className="flex flex-wrap gap-2">
-              {gaps.map((g) => (
-                <label key={g.id} className="flex cursor-pointer items-center gap-1.5 rounded-md border border-[--metis-outline-subtle] px-2 py-1 text-[0.72rem] text-[--metis-paper]">
-                  <input
-                    type="checkbox"
-                    checked={opts.gapIds.includes(g.id)}
-                    onChange={() => toggleId(opts.gapIds, g.id, opts.setGapIds)}
-                    className="accent-[--metis-brass]"
-                  />
-                  {formatGapCode(g.gapNumber) ?? `Q-${g.id.slice(0, 6)}`}
-                </label>
-              ))}
+              {gaps.map((g) => {
+                const gapCode = formatGapCode(g.gapNumber) ?? `Q-${g.id.slice(0, 6)}`;
+                return (
+                  <label key={g.id} className="flex cursor-pointer items-center gap-1.5 rounded-md border border-[--metis-outline-subtle] px-2 py-1 text-[0.72rem] text-[--metis-paper]">
+                    <input
+                      type="checkbox"
+                      checked={opts.gapIds.includes(g.id)}
+                      onChange={() => toggleId(opts.gapIds, g.id, opts.setGapIds)}
+                      className="accent-[--metis-brass]"
+                    />
+                    <RecordCodeHint codeLabel={gapCode} hint={g.hint}>
+                      {gapCode}
+                    </RecordCodeHint>
+                  </label>
+                );
+              })}
             </div>
           </div>
         ) : null}
@@ -246,6 +253,7 @@ export function ClaimLedger(props: {
   return (
     <SurfaceCard className="overflow-hidden">
       <div className="border-b border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_45%,transparent)] px-6 py-4 sm:px-7">
+        <BackToIssueRecordLink issueId={issueId} className="mb-3" />
         <h2 className="font-[Cormorant_Garamond] text-[1.85rem] leading-none text-[--metis-paper]">Claims</h2>
         <p className="mt-2 max-w-[46rem] text-sm leading-relaxed text-[--metis-paper-muted]">
           Claims are statements the organisation may rely on. Use statuses to separate confirmed facts from assumptions and items needing validation.
@@ -345,7 +353,9 @@ export function ClaimLedger(props: {
                   >
                     <form onSubmit={submitEdit} className="space-y-4">
                       <div className="flex flex-wrap items-start justify-between gap-3">
-                        <span className={CLAIM_CODE_CHIP}>{row.claimCode}</span>
+                        <RecordCodeHint codeLabel={row.claimCode} hint={row.text} className={CLAIM_CODE_CHIP}>
+                          {row.claimCode}
+                        </RecordCodeHint>
                         <button
                           type="button"
                           onClick={() => setEditId(null)}
@@ -410,7 +420,9 @@ export function ClaimLedger(props: {
                   >
                     <div className="flex flex-wrap items-start justify-between gap-4">
                       <div className="flex min-w-0 flex-wrap items-center gap-2">
-                        <span className={CLAIM_CODE_CHIP}>{row.claimCode}</span>
+                        <RecordCodeHint codeLabel={row.claimCode} hint={row.text} className={CLAIM_CODE_CHIP}>
+                          {row.claimCode}
+                        </RecordCodeHint>
                         <span className={claimStatusBadgeClassNames(row.status)}>{claimStatusDisplayLabel(row.status)}</span>
                       </div>
                       <div className="flex flex-wrap items-center gap-3">

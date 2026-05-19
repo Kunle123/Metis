@@ -16,6 +16,7 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { RecordCodeHint } from "@/components/issues/RecordCodeHint";
 import { Button } from "@/components/ui/button";
 import { formatGapCode, formatObservationCode } from "@/lib/issueRecordCodes";
 
@@ -750,14 +751,16 @@ export function WorkspaceSourceCards({
                 <>
                   <div className="flex min-w-0 flex-wrap items-start gap-x-2 gap-y-1">
                     {sourceCodeDisplay ? (
-                      <Pill
-                        className={cn(
-                          RECORD_CODE_PILL_CLASS,
-                          "shrink-0 font-mono text-[0.7rem] font-normal tabular-nums tracking-[0.04em]",
-                        )}
-                      >
-                        {sourceCodeDisplay}
-                      </Pill>
+                      <RecordCodeHint codeLabel={sourceCodeDisplay} hint={fullNote || title}>
+                        <Pill
+                          className={cn(
+                            RECORD_CODE_PILL_CLASS,
+                            "shrink-0 font-mono text-[0.7rem] font-normal tabular-nums tracking-[0.04em]",
+                          )}
+                        >
+                          {sourceCodeDisplay}
+                        </Pill>
+                      </RecordCodeHint>
                     ) : null}
                     <p className="min-w-0 flex-1 text-sm font-medium leading-snug text-[--metis-paper]">{title}</p>
                   </div>
@@ -855,9 +858,14 @@ export function WorkspaceObservationCards({ issueId, observations }: { issueId: 
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
               <div className="flex min-w-0 flex-wrap items-center gap-2">
-                <Pill className={RECORD_CODE_PILL_CLASS}>
-                  {formatObservationCode(o.observationNumber) ?? `${o.id.slice(0, 8)}…`}
-                </Pill>
+                <RecordCodeHint
+                  codeLabel={formatObservationCode(o.observationNumber) ?? `Observation`}
+                  hint={o.response}
+                >
+                  <Pill className={RECORD_CODE_PILL_CLASS}>
+                    {formatObservationCode(o.observationNumber) ?? `${o.id.slice(0, 8)}…`}
+                  </Pill>
+                </RecordCodeHint>
                 <p className="text-sm font-medium text-[--metis-paper]">
                   {o.role} · {o.name}
                 </p>
