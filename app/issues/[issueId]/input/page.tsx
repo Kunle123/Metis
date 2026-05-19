@@ -8,7 +8,7 @@ import { MetisShell } from "@/components/MetisShell";
 import { internalInputDbRowToWire } from "@/lib/internalInputs/internalInputWireFormat";
 import { prismaWhereInternalInputsVisibleToViewer } from "@/lib/internalInputs/internalObservationVisibility";
 
-import { CaptureNotesForm } from "./capture-notes-form";
+import { AddToRecordWorkbench } from "./add-to-record-workbench";
 import { InternalInputWorkspace } from "./internal-input-workspace";
 
 export const dynamic = "force-dynamic";
@@ -51,7 +51,11 @@ export default async function IssueInternalInputPage({ params }: { params: Promi
     >
       <div className="space-y-6">
         {canWrite ? (
-          <CaptureNotesForm issueId={issue.id} captureNotesAiEnabled={captureNotesAiEnabled} />
+          <AddToRecordWorkbench
+            issueId={issue.id}
+            issueRoutePrefix={`/issues/${issue.id}`}
+            captureNotesAiEnabled={captureNotesAiEnabled}
+          />
         ) : (
           <p className="rounded-[1.25rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_35%,transparent)] px-5 py-4 text-sm leading-6 text-[--metis-paper-muted]">
             You have view-only access to this issue. You can review observations below but cannot add new input.

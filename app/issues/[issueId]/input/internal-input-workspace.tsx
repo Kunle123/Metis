@@ -17,8 +17,6 @@ import {
   normalizeObservationVisibility,
 } from "@/lib/internalInputs/internalObservationVisibility";
 
-import { InternalInputCreateForm } from "./input-create-form";
-import { CollapsibleFormPanel } from "../collapsible-form-panel";
 
 const operatorRules = [
   { icon: Link2, text: "Section link required" },
@@ -191,7 +189,7 @@ export function InternalInputWorkspace({
               </div>
             </section>
 
-            <section className="space-y-4">
+            <section id="observations-list" className="scroll-mt-28 space-y-4">
               <div className="flex items-center justify-between gap-3">
                 <h3 className="font-[Cormorant_Garamond] text-[1.75rem] leading-none text-[--metis-paper]">Saved observations ({inputs.length})</h3>
                 <div className="flex flex-wrap items-center gap-2">
@@ -204,7 +202,7 @@ export function InternalInputWorkspace({
                 </div>
               </div>
               {inputs.length === 0 ? (
-                <p className="text-sm leading-6 text-[--metis-paper-muted]">No observations yet. Add one below or from the issue workspace.</p>
+                <p className="text-sm leading-6 text-[--metis-paper-muted]">No observations yet. Use Add to issue record above.</p>
               ) : (
                 <div className="rounded-[1.25rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-card)_72%,transparent)] shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_10%,transparent)]">
                   {inputs.map((input) => {
@@ -354,22 +352,13 @@ export function InternalInputWorkspace({
               )}
             </section>
 
-            <div className="border-t border-[--metis-outline-subtle] pt-8">
-              <CollapsibleFormPanel
-                title="Add observation"
-                description="Creates a saved internal observation record. Use these to resolve open questions and curate brief outputs."
-                addLabel="Add observation"
-                form={<InternalInputCreateForm issueId={issueId} />}
-                secondaryAction={
-                  <Button asChild variant="outline" size="sm">
-                    <Link href={`/issues/${issueId}`}>Workspace</Link>
-                  </Button>
-                }
-              >
-                <div />
-              </CollapsibleFormPanel>
-              <p className="mt-3 text-xs leading-6 text-[--metis-text-tertiary]">
-                Tip: notes capture and AI suggestions may be excluded from briefs by default until you curate them.
+            <div className="border-t border-[--metis-outline-subtle] pt-6">
+              <p className="text-xs leading-6 text-[--metis-text-tertiary]">
+                To add material, use{" "}
+                <Link href={`/issues/${issueId}/input#add-to-record`} className="text-[--metis-brass-soft] underline-offset-4 hover:underline">
+                  Add to issue record
+                </Link>{" "}
+                above. Notes capture and AI suggestions may be excluded from briefs until you curate them.
               </p>
             </div>
           </div>

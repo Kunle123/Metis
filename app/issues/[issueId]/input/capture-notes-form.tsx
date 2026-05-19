@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
 import { CaptureNotesExtractPanel } from "./capture-notes-extract-panel";
+import { InputIntakeSuccess } from "./input-intake-success";
 
 type MeUser = { id: string; email: string; role: string };
 
@@ -23,11 +24,16 @@ function attributionNameFromEmail(email: string | null | undefined): string {
 
 export function CaptureNotesForm({
   issueId,
+  issueRoutePrefix,
   captureNotesAiEnabled = false,
+  embedded = false,
 }: {
   issueId: string;
+  issueRoutePrefix?: string;
   /** From server env `NOTES_CAPTURE_AI_ENABLED`; never expose secrets. */
   captureNotesAiEnabled?: boolean;
+  /** When true, omits outer marketing header (used inside Add to record workbench). */
+  embedded?: boolean;
 }) {
   const router = useRouter();
   const [notes, setNotes] = useState("");
@@ -109,13 +115,21 @@ export function CaptureNotesForm({
     if (error) setError(null);
   }
 
+  const shellClass = embedded
+    ? undefined
+    : "scroll-mt-28 overflow-hidden rounded-[1.25rem] border border-[--metis-info-border] bg-[color-mix(in_oklab,var(--metis-info-bg)_72%,transparent)] shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_22%,transparent)]";
+
   return (
-    <div
-      id="capture-notes"
-      className="scroll-mt-28 overflow-hidden rounded-[1.25rem] border border-[--metis-info-border] bg-[color-mix(in_oklab,var(--metis-info-bg)_72%,transparent)] shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_22%,transparent)]"
-    >
-      <div className="border-b border-[--metis-outline-subtle] px-4 py-4 sm:px-5 sm:py-5">
-        <div className="min-w-0 space-y-1">
+    <div id={embedded ? undefined : "capture-notes"} className={shellClass}>
+      {embedded ? (
+        <div className="border-b border-[--metis-outline-subtle] px-4 py-3 sm:px-5">
+          <p className="text-sm leading-6 text-[--metis-paper-muted]">
+            Paste an email, note, update, call summary, or instruction. Metis will help structure it into the issue record.
+          </p>
+        </div>
+      ) : (
+        <div className="border-b border-[--metis-outline-subtle] px-4 py-4 sm:px-5 sm:py-5">
+          <div className="min-w-0 space-y-1">
           <p className="text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">Add input</p>
           <p className="text-sm leading-6 text-[--metis-paper-muted]">
             Paste an email, note, update, call summary, or instruction. Metis will help structure it into the issue record — you do not
@@ -135,7 +149,8 @@ export function CaptureNotesForm({
             <> Promote important points into Sources, Claims, or Open questions when you are ready.</>
           )}
         </p>
-      </div>
+        </div>
+      )}
 
       <div className="space-y-3 px-4 py-4 sm:px-5 sm:py-5">
         <label className="block space-y-2">
@@ -178,9 +193,17 @@ export function CaptureNotesForm({
           </p>
         ) : null}
         {success ? (
-          <p className="text-sm text-[--metis-status-success-fg]" role="status">
-            Notes saved as an observation (not in brief outputs until you adjust it).
-          </p>
+          issueRoutePrefix ? (
+            <InputIntakeSuccess
+              message="Notes saved as an observation on this issue (excluded from briefs until you curate it)."
+              href={`${issueRoutePrefix}/input#observations-list`}
+              linkLabel="View observations"
+            />
+          ) : (
+            <p className="text-sm text-[--metis-status-success-fg]" role="status">
+              Notes saved as an observation (not in brief outputs until you adjust it).
+            </p>
+          )
         ) : null}
       </footer>
     </div>
