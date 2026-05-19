@@ -103,7 +103,7 @@ export function CaptureNotesForm({
       setSuccess(true);
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not save notes.");
+      setError(e instanceof Error ? e.message : "Could not save and structure.");
     } finally {
       setIsSaving(false);
     }
@@ -124,30 +124,36 @@ export function CaptureNotesForm({
       {embedded ? (
         <div className="border-b border-[--metis-outline-subtle] px-4 py-3 sm:px-5">
           <p className="text-sm leading-6 text-[--metis-paper-muted]">
-            Paste an email, note, update, call summary, or instruction. Metis will help structure it into the issue record.
+            Paste an email, note, update, call summary, or instruction. Metis will add it to this issue record and help you structure it
+            into sources, claims, and open questions.
+          </p>
+          <p className="mt-2 text-xs leading-5 text-[--metis-paper-muted]">
+            Submitting saves the material on the record for triage — not just a private note.
+            {captureNotesAiEnabled
+              ? " Optional AI suggestions can appear below before or after you save; registers update only when you accept them."
+              : " Promote points into the registers when you are ready."}
           </p>
         </div>
       ) : (
         <div className="border-b border-[--metis-outline-subtle] px-4 py-4 sm:px-5 sm:py-5">
           <div className="min-w-0 space-y-1">
-          <p className="text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">Add input</p>
+          <p className="text-xs uppercase tracking-[0.18em] text-[--metis-ink-soft]">Update record</p>
           <p className="text-sm leading-6 text-[--metis-paper-muted]">
-            Paste an email, note, update, call summary, or instruction. Metis will help structure it into the issue record — you do not
-            need to decide whether it is a source, observation, claim, or open question first.
+            Add new material to this issue. Paste an email, note, update, call summary or instruction, or add a structured source, claim,
+            open question or internal note — you do not need to decide the register first.
           </p>
         </div>
 
         <p className="mt-3 text-xs leading-5 text-[--metis-paper-muted]">
-          Saving creates an observation on this issue for triage. Metis can route structured suggestions into sources, claims, and open
-          questions as you review.
+          Submitting adds the material to this issue record for triage and structuring — not just a private note. You can promote points
+          into sources, claims, and open questions as you review.
           {captureNotesAiEnabled ? (
             <>
               {" "}
-              Optional AI suggestions appear below for review; nothing is added to the registers until you accept them or save notes.
+              Optional AI suggestions appear below for review; nothing is added to the registers until you accept them or save and
+              structure.
             </>
-          ) : (
-            <> Promote important points into Sources, Claims, or Open questions when you are ready.</>
-          )}
+          ) : null}
         </p>
         </div>
       )}
@@ -168,7 +174,7 @@ export function CaptureNotesForm({
           />
         </label>
         <label className="block space-y-2">
-          <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Notes</span>
+          <span className="text-[0.56rem] font-medium uppercase tracking-[0.16em] text-[--metis-ink-soft]">Paste here</span>
           <Textarea
             value={notes}
             onChange={(ev) => onNotesChange(ev.target.value)}
@@ -184,7 +190,7 @@ export function CaptureNotesForm({
       <footer className="space-y-3 border-t border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_42%,transparent)] px-4 py-4 sm:px-5">
         <div className="flex justify-end">
           <Button type="button" className="rounded-full px-5" disabled={!canSubmit} onClick={onSave}>
-            {isSaving ? "Saving…" : "Save notes"}
+            {isSaving ? "Saving…" : "Save and structure"}
           </Button>
         </div>
         {error ? (
@@ -195,13 +201,13 @@ export function CaptureNotesForm({
         {success ? (
           issueRoutePrefix ? (
             <InputIntakeSuccess
-              message="Notes saved as an observation on this issue (excluded from briefs until you curate it)."
+              message="Added to the issue record for structuring (observation; excluded from briefs until you curate it)."
               href={`${issueRoutePrefix}/input#observations-list`}
               linkLabel="View observations"
             />
           ) : (
             <p className="text-sm text-[--metis-status-success-fg]" role="status">
-              Notes saved as an observation (not in brief outputs until you adjust it).
+              Added to the issue record for structuring (not in brief outputs until you adjust it).
             </p>
           )
         ) : null}

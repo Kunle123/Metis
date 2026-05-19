@@ -87,10 +87,10 @@ export default async function IssueRecordPage({ params }: { params: Promise<{ is
       detail: "Evidence and artefacts",
     },
     {
-      label: "Input",
+      label: "Update record",
       value: String(inputsCount),
       href: `${issueRoutePrefix}/input`,
-      detail: "Observations and captured notes",
+      detail: "Observations and material added to the record",
     },
     {
       label: "Claims",

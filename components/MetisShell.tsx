@@ -264,20 +264,26 @@ export function MetisShell({
     label,
     isActive,
     disabled,
+    density = "default",
   }: {
     href: string;
     label: string;
     isActive: boolean;
     disabled?: boolean;
+    density?: "default" | "compact";
   }) {
-    const base =
-      "group relative flex items-start gap-2.5 overflow-hidden rounded-[1.2rem] border px-4 py-2.5 transition duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60";
-    const active =
-      "border-[rgba(224,183,111,0.48)] bg-[linear-gradient(135deg,rgba(224,183,111,0.28),rgba(78,55,20,0.76))] ring-1 ring-[rgba(224,183,111,0.3)] shadow-[0_28px_72px_rgba(0,0,0,0.42),inset_0_1px_0_rgba(255,255,255,0.1)]";
-    const inactive =
-      "border-white/5 bg-[rgba(0,0,0,0.16)] hover:border-white/10 hover:bg-[rgba(255,255,255,0.04)]";
+    const compact = density === "compact";
+    const base = compact
+      ? "group relative flex min-h-8 items-center gap-2 overflow-hidden rounded-md border px-2.5 py-1.5 text-[0.8125rem] leading-tight transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60"
+      : "group relative flex min-h-9 items-center gap-2 overflow-hidden rounded-lg border px-3 py-2 text-[0.8125rem] leading-tight transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--metis-brass]/60";
+    const active = compact
+      ? "border-[rgba(224,183,111,0.42)] bg-[rgba(224,183,111,0.12)] font-medium text-[--metis-paper] shadow-[inset_2px_0_0_var(--metis-brass-soft)]"
+      : "border-[rgba(224,183,111,0.45)] bg-[linear-gradient(135deg,rgba(224,183,111,0.22),rgba(78,55,20,0.55))] font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]";
+    const inactive = compact
+      ? "border-transparent bg-transparent text-[--metis-paper-muted] hover:border-white/8 hover:bg-[rgba(255,255,255,0.04)] hover:text-[--metis-paper]"
+      : "border-white/5 bg-[rgba(0,0,0,0.14)] text-[--metis-paper-muted] hover:border-white/10 hover:bg-[rgba(255,255,255,0.04)] hover:text-[--metis-paper]";
     const disabledCls =
-      "border-white/4 bg-[rgba(0,0,0,0.10)] text-[--metis-paper-muted] opacity-45";
+      "border-white/4 bg-[rgba(0,0,0,0.08)] text-[--metis-paper-muted] opacity-45";
 
     const Wrap: any = disabled ? "div" : Link;
     const wrapProps = disabled ? { role: "link", "aria-disabled": "true" as const } : { href };
@@ -288,6 +294,7 @@ export function MetisShell({
       <Wrap
         {...wrapProps}
         data-metis-shell-nav-item-state={navState}
+        data-metis-shell-nav-density={density}
         className={cn(
           "metis-shell-nav-item",
           base,
@@ -295,44 +302,42 @@ export function MetisShell({
           disabled && "cursor-not-allowed",
         )}
       >
+        {!compact ? (
+          <span
+            className={cn(
+              "metis-shell-nav-rail-accent absolute inset-y-1.5 left-0.5 w-[3px] rounded-full bg-transparent transition duration-200",
+              isActive && !disabled && "bg-[--metis-brass-soft]",
+            )}
+          />
+        ) : null}
+        {!compact ? (
+          <span
+            className={cn(
+              "metis-shell-nav-bullet h-1.5 w-1.5 shrink-0 rounded-full border border-white/10 bg-white/10",
+              isActive && !disabled && "border-[--metis-brass-soft]/70 bg-[--metis-brass-soft]",
+              disabled && "opacity-40",
+            )}
+          />
+        ) : null}
         <span
           className={cn(
-            "metis-shell-nav-rail-accent absolute inset-y-2 left-1 w-[5px] rounded-full bg-transparent transition duration-300",
-            isActive && !disabled && "bg-[--metis-brass-soft] shadow-[0_0_24px_rgba(224,183,111,0.5)]",
+            "metis-shell-nav-label min-w-0 flex-1 truncate font-medium",
+            disabled && "text-[--metis-paper-muted]",
+            isActive && !disabled && !compact && "text-white",
+            isActive && !disabled && compact && "text-[--metis-paper]",
           )}
-        />
-        <span
-          className={cn(
-            "metis-shell-nav-bullet mt-0.5 h-2 w-2 shrink-0 rounded-full border border-white/10 bg-white/10 shadow-[0_0_0_3px_rgba(255,255,255,0.02)]",
-            isActive &&
-              !disabled &&
-              "border-[--metis-brass-soft]/70 bg-[--metis-brass-soft] shadow-[0_0_0_4px_rgba(224,183,111,0.16)]",
-            disabled && "border-white/6 bg-white/5 shadow-none opacity-40",
-          )}
-        />
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center justify-between gap-2">
-            <span
-              className={cn(
-                "metis-shell-nav-label text-sm font-medium text-[--metis-paper]",
-                disabled && "text-[--metis-paper-muted]",
-                isActive && !disabled && "text-white",
-              )}
-            >
-              {label}
-            </span>
-            <ChevronRight
-              className={cn(
-                "metis-shell-nav-chevron h-3.5 w-3.5 shrink-0 text-[--metis-ink-soft] transition duration-300",
-                disabled
-                  ? "opacity-15"
-                  : isActive
-                    ? "translate-x-0 text-[--metis-brass-soft]"
-                    : "group-hover:translate-x-0.5",
-              )}
-            />
-          </div>
-        </div>
+        >
+          {label}
+        </span>
+        {!compact && !disabled ? (
+          <ChevronRight
+            className={cn(
+              "metis-shell-nav-chevron h-3 w-3 shrink-0 text-[--metis-ink-soft] transition duration-200",
+              isActive ? "text-[--metis-brass-soft]" : "opacity-0 group-hover:opacity-70 group-focus-visible:opacity-70",
+            )}
+            aria-hidden
+          />
+        ) : null}
       </Wrap>
     );
   }
@@ -342,40 +347,115 @@ export function MetisShell({
     items,
     activeGroupLabel,
     metaPill,
+    layout = "card",
+    itemDensity = "default",
+    showTopDivider = false,
+    groupTone = "default",
   }: {
     group: GlobalNavGroup;
     items: Array<{ id: string; href: string; label: string; isActive: boolean; disabled?: boolean }>;
     activeGroupLabel?: string | null;
     metaPill?: string | null;
+    layout?: "card" | "flat";
+    itemDensity?: "default" | "compact";
+    showTopDivider?: boolean;
+    groupTone?: "default" | "settings";
   }) {
     if (items.length === 0) return null;
     const groupIsActive = items.some((i) => i.isActive);
+    const flat = layout === "flat";
+
+    const groupLabel = (
+      <p
+        className={cn(
+          "metis-shell-nav-group-label leading-none",
+          flat
+            ? "text-[0.54rem] font-semibold uppercase tracking-[0.22em] text-[--metis-text-tertiary]"
+            : "text-[0.56rem] font-medium uppercase tracking-[0.2em] text-[--metis-ink-soft]",
+          groupIsActive && flat && "text-[color-mix(in_oklab,var(--metis-brass-soft)_88%,var(--metis-text-tertiary))]",
+          groupIsActive && !flat && "text-[--metis-brass-soft]",
+        )}
+      >
+        {group}
+      </p>
+    );
+
+    const groupHeading = (
+      <div className={cn("metis-shell-nav-group-heading", flat ? "px-1 pb-1.5 pt-0.5" : "px-0.5 pb-2")}>
+        {metaPill === "Select issue" && flat ? (
+          <div className="flex items-center justify-between gap-2">
+            {groupLabel}
+            <span
+              data-metis-shell-nav-pill-tone="muted"
+              className="metis-shell-nav-pill shrink-0 rounded border px-1.5 py-px text-[0.5rem] uppercase tracking-[0.18em] text-[--metis-text-tertiary]"
+            >
+              Select issue
+            </span>
+          </div>
+        ) : (
+          groupLabel
+        )}
+      </div>
+    );
+
+    const itemList = (
+      <div className={cn(flat ? "space-y-0.5" : "space-y-1")}>
+        {items.map((item) => (
+          <div key={item.id}>
+            {renderNavItem({
+              href: item.href,
+              label: item.label,
+              isActive: item.isActive,
+              disabled: item.disabled,
+              density: itemDensity,
+            })}
+          </div>
+        ))}
+      </div>
+    );
+
+    const groupShellClass = cn(
+      showTopDivider &&
+        "mt-2.5 border-t border-[color-mix(in_oklab,var(--metis-outline-subtle)_72%,transparent)] pt-3",
+      groupTone === "settings" && "mt-3.5 pt-4",
+    );
+
+    if (flat) {
+      return (
+        <div
+          key={group}
+          data-metis-shell-nav-active={groupIsActive ? "true" : "false"}
+          data-metis-shell-nav-layout="flat"
+          data-metis-shell-nav-tone={groupTone}
+          className={cn("metis-shell-nav-group metis-shell-nav-group--flat", groupShellClass)}
+        >
+          {groupHeading}
+          {itemList}
+        </div>
+      );
+    }
 
     return (
       <div
         key={group}
         data-metis-shell-nav-active={groupIsActive ? "true" : "false"}
+        data-metis-shell-nav-layout="card"
+        data-metis-shell-nav-tone={groupTone}
         className={cn(
-          "metis-shell-nav-group space-y-2 rounded-[1.55rem] border px-3 py-3 transition duration-300",
+          "metis-shell-nav-group metis-shell-nav-group--card rounded-xl border px-2.5 pb-2 pt-2.5 transition duration-200",
+          groupShellClass,
           groupIsActive
-            ? "border-[rgba(224,183,111,0.24)] bg-[linear-gradient(180deg,rgba(224,183,111,0.09),rgba(224,183,111,0.018))] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
-            : "border-white/6 bg-[rgba(255,255,255,0.015)]",
+            ? "border-[rgba(224,183,111,0.22)] bg-[linear-gradient(180deg,rgba(224,183,111,0.07),rgba(224,183,111,0.015))]"
+            : "border-white/6 bg-[rgba(255,255,255,0.012)]",
         )}
       >
-        <div className="flex items-center justify-between gap-3 px-1">
-          <p
-            className={cn(
-              "text-[0.62rem] uppercase tracking-[0.28em] text-[--metis-ink-soft]",
-              groupIsActive && "text-[--metis-brass-soft]",
-            )}
-          >
-            {group}
-          </p>
+        <div className="flex items-start justify-between gap-2">
+          {groupHeading}
           {metaPill ? (
             <span
               data-metis-shell-nav-pill-tone={metaPill === "Select issue" ? "muted" : "brass"}
               className={cn(
-                "metis-shell-nav-pill rounded-full border px-2 py-0.5 text-[0.52rem] uppercase tracking-[0.26em]",
+                "metis-shell-nav-pill rounded border px-1.5 py-px text-[0.5rem] uppercase tracking-[0.18em]",
                 metaPill === "Select issue"
                   ? "border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_55%,transparent)] text-[--metis-text-tertiary]"
                   : "border-[--metis-brass]/20 bg-[--metis-brass]/10 text-[--metis-brass-soft]",
@@ -386,19 +466,13 @@ export function MetisShell({
           ) : activeGroupLabel && group === activeGroupLabel ? (
             <span
               data-metis-shell-nav-pill-tone="brass"
-              className="metis-shell-nav-pill rounded-full border border-[--metis-brass]/20 bg-[--metis-brass]/10 px-2 py-0.5 text-[0.52rem] uppercase tracking-[0.26em] text-[--metis-brass-soft]"
+              className="metis-shell-nav-pill rounded border border-[--metis-brass]/20 bg-[--metis-brass]/10 px-1.5 py-px text-[0.5rem] uppercase tracking-[0.18em] text-[--metis-brass-soft]"
             >
               Active
             </span>
           ) : null}
         </div>
-        <div className="space-y-2">
-          {items.map((item) => (
-            <div key={item.id}>
-              {renderNavItem({ href: item.href, label: item.label, isActive: item.isActive, disabled: item.disabled })}
-            </div>
-          ))}
-        </div>
+        {itemList}
       </div>
     );
   }
@@ -409,32 +483,33 @@ export function MetisShell({
       <div className="relative grid lg:grid-cols-[286px_minmax(0,1fr)]">
         <aside
           className={cn(
-            "metis-shell-aside hidden border-r border-white/6 bg-[linear-gradient(180deg,rgba(7,10,11,0.99),rgba(11,15,16,0.985))] px-6 py-8",
+            "metis-shell-aside hidden border-r border-white/6 bg-[linear-gradient(180deg,rgba(7,10,11,0.99),rgba(11,15,16,0.985))] px-5 py-5 lg:py-6",
             // Desktop: keep nav in shot; lock width; scroll inner content only.
             "lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-[286px] lg:min-w-[286px] lg:max-w-[286px] lg:shrink-0 lg:flex-col",
           )}
         >
-          <div className="flex min-h-0 flex-1 flex-col space-y-8 overflow-y-auto overscroll-contain">
-            <div className="metis-shell-aside-header space-y-4 border-b border-white/8 pb-7">
-              <div className="inline-flex items-center gap-3">
-                <div className="metis-shell-aside-brand-mark flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-white/5 shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
-                  <span className="metis-shell-aside-brand-letter font-[Cormorant_Garamond] text-2xl text-[--metis-paper]">M</span>
+          <div className={cn("flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain", issueRoutePrefix ? "space-y-4" : "space-y-6")}>
+            <div className={cn("metis-shell-aside-header border-b border-white/8", issueRoutePrefix ? "space-y-2 pb-4" : "space-y-4 pb-6")}>
+              <div className={cn("inline-flex items-center", issueRoutePrefix ? "gap-2.5" : "gap-3")}>
+                <div className={cn("metis-shell-aside-brand-mark flex items-center justify-center rounded-full border border-white/10 bg-white/5 shadow-[0_10px_30px_rgba(0,0,0,0.25)]", issueRoutePrefix ? "h-9 w-9" : "h-12 w-12")}>
+                  <span className={cn("metis-shell-aside-brand-letter font-[Cormorant_Garamond] text-[--metis-paper]", issueRoutePrefix ? "text-xl" : "text-2xl")}>M</span>
                 </div>
                 <div>
-                  <p className="metis-shell-aside-brand-eyebrow text-[0.68rem] uppercase tracking-[0.3em] text-[--metis-ink-soft]">
+                  <p className={cn("metis-shell-aside-brand-eyebrow uppercase text-[--metis-ink-soft]", issueRoutePrefix ? "text-[0.62rem] tracking-[0.24em]" : "text-[0.68rem] tracking-[0.3em]")}>
                     Metis
                   </p>
-                  <p className="metis-shell-aside-brand-title mt-1 font-[Cormorant_Garamond] text-3xl text-[--metis-paper]">
+                  <p className={cn("metis-shell-aside-brand-title mt-0.5 font-[Cormorant_Garamond] text-[--metis-paper]", issueRoutePrefix ? "text-2xl" : "text-3xl")}>
                     Briefing
                   </p>
                 </div>
               </div>
             </div>
 
-            <nav className="space-y-5">
+            <nav className="flex flex-col">
               {renderNavGroup({
                 group: "Work",
                 activeGroupLabel: activeGroup,
+                itemDensity: "compact",
                 items: workNav
                   .filter(globalNavItemVisible)
                   .map((i) => ({ id: i.id, href: navHrefForItem(i), label: i.shortLabel, isActive: i.path === activePath })),
@@ -442,7 +517,10 @@ export function MetisShell({
 
               {renderNavGroup({
                 group: "Current issue",
-                metaPill: issueRoutePrefix ? "Active" : "Select issue",
+                layout: "flat",
+                itemDensity: "compact",
+                showTopDivider: true,
+                metaPill: issueRoutePrefix ? undefined : "Select issue",
                 items: issueNavCurrentIssue.map((i) => ({
                   id: i.id,
                   href: issueHrefForItem(i),
@@ -454,7 +532,10 @@ export function MetisShell({
 
               {renderNavGroup({
                 group: "Outputs",
-                metaPill: issueRoutePrefix ? null : "Select issue",
+                layout: "flat",
+                itemDensity: "compact",
+                showTopDivider: true,
+                metaPill: issueRoutePrefix ? undefined : "Select issue",
                 items: issueNavOutputs.map((i) => ({
                   id: i.id,
                   href: issueHrefForItem(i),
@@ -466,7 +547,10 @@ export function MetisShell({
 
               {renderNavGroup({
                 group: "Review",
-                metaPill: issueRoutePrefix ? null : "Select issue",
+                layout: "flat",
+                itemDensity: "compact",
+                showTopDivider: true,
+                metaPill: issueRoutePrefix ? undefined : "Select issue",
                 items: issueNavReview.map((i) => ({
                   id: i.id,
                   href: issueHrefForItem(i),
@@ -478,7 +562,11 @@ export function MetisShell({
 
               {renderNavGroup({
                 group: "Settings",
+                layout: "flat",
                 activeGroupLabel: activeGroup,
+                itemDensity: "compact",
+                showTopDivider: true,
+                groupTone: "settings",
                 items: settingsNavItems
                   .filter(globalNavItemVisible)
                   .map((i) => ({ id: i.id, href: navHrefForItem(i), label: i.shortLabel, isActive: i.path === activePath })),
@@ -557,7 +645,7 @@ export function MetisShell({
                     <Button asChild variant="outline" className="rounded-full border-[--metis-brass]/35 px-4">
                       <Link href={issueAddInputHref(issueRoutePrefix!)}>
                         <Plus className="mr-2 h-4 w-4" aria-hidden />
-                        Add input
+                        Add update
                       </Link>
                     </Button>
                   ) : null}

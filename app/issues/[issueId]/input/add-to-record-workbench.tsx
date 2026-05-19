@@ -39,8 +39,8 @@ export function AddToRecordWorkbench({
       <div className="border-b border-[--metis-outline-subtle] px-4 py-4 sm:px-5 sm:py-5">
         <p className="text-[0.62rem] font-semibold uppercase tracking-[0.2em] text-[--metis-brass-soft]">Add to issue record</p>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-[--metis-paper-muted]">
-          Choose how you want to add material. Unstructured paste, or add directly to a register. Specialist pages remain for review and
-          linking.
+          Add new material to this issue. Paste an email, note, update, call summary or instruction, or add a structured source, claim,
+          open question or internal note.
         </p>
       </div>
 

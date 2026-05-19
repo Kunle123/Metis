@@ -29,7 +29,7 @@ export function InputGapIntakeForm({ issueId, issueRoutePrefix }: { issueId: str
     setIsSaving(true);
     try {
       const owner = stakeholder.trim() || "To be assigned";
-      const impact = context.trim() || "Registered from Input — refine impact on Open questions when ready.";
+      const impact = context.trim() || "Registered from Update record — refine impact on Open questions when ready.";
       const res = await fetch(`/api/issues/${issueId}/gaps`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

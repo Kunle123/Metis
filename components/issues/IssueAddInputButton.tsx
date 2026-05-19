@@ -20,7 +20,7 @@ export function IssueAddInputButton({
     <Button asChild variant={variant} size={size} className={cn("rounded-full", className)}>
       <Link href={issueAddInputHref(issueRoutePrefix)}>
         <Plus className="mr-2 h-4 w-4" aria-hidden />
-        Add input
+        Add update
       </Link>
     </Button>
   );

@@ -10,11 +10,11 @@ export const issueRecordNavItem = {
   shortLabel: "Issue record",
 } as const;
 
-/** Primary intake: free-text capture on the Input page. */
+/** Primary add-to-record surface (route `/input`). */
 export const issueInputNavItem = {
   id: "input",
   path: "/input",
-  shortLabel: "Input",
+  shortLabel: "Update record",
 } as const;
 
 /** Structured registers — linked from issue record home, not primary side nav. */
@@ -73,9 +73,9 @@ export const issueRecordViewItems = [
   {
     id: "input",
     path: "/input",
-    label: "Input",
-    detail: "Observations and captured notes",
-    statKey: "Input",
+    label: "Update record",
+    detail: "Observations and material added to the record",
+    statKey: "Update record",
   },
   {
     id: "activity",
@@ -112,7 +112,7 @@ export function issueSideNavItemIsActive(
   return item.path === activePath;
 }
 
-/** Free-text capture anchor on the Input page. */
+/** Add-to-record workbench anchor on the update-record page (`/input`). */
 export function issueAddInputHref(issueRoutePrefix: string) {
-  return `${issueRoutePrefix}${issueInputNavItem.path}#capture-notes`;
+  return `${issueRoutePrefix}${issueInputNavItem.path}#add-to-record`;
 }

@@ -220,7 +220,7 @@ export function CaptureNotesExtractPanel({
       <div className="rounded-lg border border-[--metis-info-border]/50 bg-[color-mix(in_oklab,var(--metis-info-bg)_48%,transparent)] px-3 py-2.5 text-xs leading-relaxed text-[--metis-paper-muted]">
         <strong className="font-medium text-[--metis-paper]">Unverified suggestions.</strong> The model proposes items from
         your notes; it does not validate facts or treat anything as confirmed evidence. Nothing is saved to the issue until you
-        accept a suggestion or use Save notes.
+        accept a suggestion or use Save and structure.
       </div>
 
       <div className="flex flex-wrap items-center gap-2">

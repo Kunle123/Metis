@@ -1,14 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, ChevronDown, ChevronRight, Link2, Lock, PencilLine, PlusCircle } from "lucide-react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { ConfidencePill, ReadinessPill, SurfaceCard } from "@/components/MetisShell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CollapsibleSection } from "@/components/review/CollapsibleSection";
-import { ReviewRailCard } from "@/components/review/ReviewRailCard";
 import { ReviewToolbar } from "@/components/review/ReviewToolbar";
 import { formatObservationCode } from "@/lib/issueRecordCodes";
 import type { InternalObservationVisibility, InternalInput } from "@metis/shared/internalInput";
@@ -17,12 +16,6 @@ import {
   normalizeObservationVisibility,
 } from "@/lib/internalInputs/internalObservationVisibility";
 
-
-const operatorRules = [
-  { icon: Link2, text: "Section link required" },
-  { icon: Lock, text: "Visibility set" },
-  { icon: PencilLine, text: "Attributable wording" },
-] as const;
 
 function clampText(s: string, max = 220) {
   const t = s.trim();
@@ -124,8 +117,7 @@ export function InternalInputWorkspace({
   }
 
   return (
-    <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
-        <SurfaceCard className="min-w-0 overflow-hidden">
+    <SurfaceCard className="min-w-0 overflow-hidden">
           <div className="border-b border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_45%,transparent)] px-6 py-5 sm:px-7">
             <ReviewToolbar
               className="border-0 bg-transparent px-0 py-0"
@@ -133,7 +125,8 @@ export function InternalInputWorkspace({
                 <div>
                   <h2 className="font-[Cormorant_Garamond] text-[2rem] leading-none text-[--metis-paper] sm:text-[2rem]">Internal observations</h2>
                   <p className="mt-1 text-sm leading-6 text-[--metis-paper-muted]">
-                    Full list of internal observations. Normal capture happens in the workspace; use this for full-list review and management.
+                    Full list of internal observations. Add material in the workbench above; use this section for full-list review and
+                    management.
                   </p>
                 </div>
               }
@@ -363,85 +356,5 @@ export function InternalInputWorkspace({
             </div>
           </div>
         </SurfaceCard>
-
-        <SurfaceCard className="metis-support-surface min-w-0 overflow-hidden">
-          <div className="space-y-4 px-5 py-5">
-            <ReviewRailCard title="Operator rules" tone="info" meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Output hygiene guidance for attributable notes.</p>}>
-              <div className="space-y-3 text-sm leading-6 text-[--metis-paper-muted]">
-                {operatorRules.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <div
-                      key={item.text}
-                      className="grid grid-cols-[14px_minmax(0,1fr)] gap-3 border-t border-[--metis-outline-subtle] pt-3 first:border-t-0 first:pt-0"
-                    >
-                      <Icon className="mt-2 h-4 w-4 text-[--metis-brass]" />
-                      <p>{item.text}</p>
-                    </div>
-                  );
-                })}
-              </div>
-            </ReviewRailCard>
-
-            <ReviewRailCard
-              title="Current effect"
-              tone="info"
-              meta={
-                <div className="space-y-2">
-                  <p className="text-sm leading-6 text-[--metis-paper-muted]">
-                    Observations are stored for attribution and can close clarification gaps when explicitly linked.
-                  </p>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-[0.7rem] font-medium uppercase tracking-[0.14em] text-[--metis-text-tertiary]">
-                      Status
-                    </span>
-                    <Badge
-                      className={[
-                        "rounded-lg border border-[--metis-status-info-border] bg-[color-mix(in_oklab,var(--metis-status-info-bg)_52%,transparent)]",
-                        "text-[--metis-status-info-fg] shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_18%,transparent)]",
-                        "px-2.5 py-1 text-[0.66rem] font-medium uppercase tracking-[0.18em] whitespace-nowrap",
-                      ].join(" ")}
-                      title="This issue has new or edited observations compared with the last saved revision."
-                    >
-                      Updated since last version
-                    </Badge>
-                  </div>
-                </div>
-              }
-            >
-              <div />
-            </ReviewRailCard>
-
-            <ReviewRailCard title="Next" tone="info" meta={<p className="text-sm leading-6 text-[--metis-paper-muted]">Jump to related registers and outputs.</p>}>
-              <div className="grid gap-3">
-                <Button asChild variant="outline" size="sm" className="w-full">
-                  <Link className="inline-flex items-center justify-center gap-2" href={`/issues/${issueId}`}>
-                    Workspace
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </Button>
-                <Button asChild variant="outline" size="sm" className="w-full">
-                  <Link className="inline-flex items-center justify-center gap-2" href={`/issues/${issueId}/sources`}>
-                    Sources
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </Button>
-                <Button asChild variant="outline" size="sm" className="w-full">
-                  <Link className="inline-flex items-center justify-center gap-2" href={`/issues/${issueId}/brief?mode=full`}>
-                    <PlusCircle className="h-4 w-4" />
-                    Open brief
-                  </Link>
-                </Button>
-                <Button asChild variant="outline" size="sm" className="w-full">
-                  <Link className="inline-flex items-center justify-center gap-2" href={`/issues/${issueId}/gaps`}>
-                    Review clarification gaps
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </Button>
-              </div>
-            </ReviewRailCard>
-          </div>
-        </SurfaceCard>
-      </div>
   );
 }

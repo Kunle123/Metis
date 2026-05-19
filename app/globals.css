@@ -605,12 +605,52 @@ html.light .metis-shell-body {
   background-image: none !important;
 }
 
-html.light .metis-shell-nav-group[data-metis-shell-nav-active="false"] {
+html.light .metis-shell-nav-group[data-metis-shell-nav-layout="flat"] {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+html.light .metis-shell-nav-group[data-metis-shell-nav-layout="flat"] .metis-shell-nav-group-label {
+  color: var(--metis-text-tertiary);
+}
+
+html.light .metis-shell-nav-group[data-metis-shell-nav-layout="flat"][data-metis-shell-nav-active="true"] .metis-shell-nav-group-label {
+  color: color-mix(in oklab, var(--metis-brass) 48%, var(--metis-text-tertiary));
+}
+
+html.light .metis-shell-nav-group[data-metis-shell-nav-layout="flat"][data-metis-shell-nav-tone="settings"] {
+  border-top-color: color-mix(in oklab, var(--metis-outline-strong) 48%, transparent) !important;
+}
+
+html.light .metis-shell-nav-group[data-metis-shell-nav-layout="card"] .metis-shell-nav-group-heading {
+  border-bottom: 1px solid color-mix(in oklab, var(--metis-outline-subtle) 85%, transparent);
+  margin-bottom: 0.25rem;
+  padding-bottom: 0.5rem;
+}
+
+html.light .metis-shell-nav-item[data-metis-shell-nav-density="compact"][data-metis-shell-nav-item-state="active"] {
+  border-color: color-mix(in oklab, var(--metis-brass) 58%, transparent) !important;
+  background: color-mix(in oklab, var(--metis-brass-soft) 38%, var(--metis-surface-card)) !important;
+  box-shadow: inset 2px 0 0 var(--metis-brass-soft) !important;
+}
+
+html.light .metis-shell-nav-item[data-metis-shell-nav-density="compact"][data-metis-shell-nav-item-state="inactive"] {
+  border-color: transparent !important;
+  background: transparent !important;
+}
+
+html.light .metis-shell-nav-item[data-metis-shell-nav-density="compact"][data-metis-shell-nav-item-state="inactive"]:hover {
+  border-color: color-mix(in oklab, var(--metis-outline-strong) 40%, transparent) !important;
+  background: color-mix(in oklab, var(--metis-surface-elevated) 65%, transparent) !important;
+}
+
+html.light .metis-shell-nav-group[data-metis-shell-nav-layout="card"][data-metis-shell-nav-active="false"] {
   border-color: color-mix(in oklab, var(--metis-outline-strong) 38%, transparent);
   background: color-mix(in oklab, var(--metis-surface-card) 58%, var(--metis-surface-rail));
 }
 
-html.light .metis-shell-nav-group[data-metis-shell-nav-active="true"] {
+html.light .metis-shell-nav-group[data-metis-shell-nav-layout="card"][data-metis-shell-nav-active="true"] {
   border-color: color-mix(in oklab, var(--metis-brass) 50%, transparent);
   background: color-mix(in oklab, var(--metis-brass-soft) 40%, var(--metis-surface-rail));
   box-shadow: inset 0 1px 0 color-mix(in oklab, var(--metis-brass-soft) 22%, transparent);

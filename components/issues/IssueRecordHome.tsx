@@ -93,7 +93,7 @@ export function IssueRecordHome({
               </div>
             ) : (
               <p className="max-w-[14rem] text-[0.72rem] leading-snug text-[--metis-text-tertiary] sm:text-right">
-                View-only access — you can review the record but cannot add input.
+                View-only access — you can review the record but cannot add updates.
               </p>
             )}
           </div>
@@ -107,9 +107,10 @@ export function IssueRecordHome({
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 space-y-1.5">
                 <p className="text-[0.62rem] font-semibold uppercase tracking-[0.2em] text-[--metis-brass-soft]">Add to this issue</p>
-                <p className="text-base font-medium text-[--metis-paper]">Add input</p>
+                <p className="text-base font-medium text-[--metis-paper]">Add update</p>
                 <p className="max-w-xl text-sm leading-6 text-[--metis-paper-muted]">
-                  Paste an email, note, update, call summary, or instruction. Metis will help structure it into the issue record.
+                  Add new material to this issue. Paste an email, note, update, call summary or instruction, or add a structured source,
+                  claim, open question or internal note.
                 </p>
               </div>
               <ArrowRight className="mt-1 h-5 w-5 shrink-0 text-[--metis-brass-soft] transition group-hover:translate-x-0.5" aria-hidden />
@@ -122,8 +123,8 @@ export function IssueRecordHome({
             <div className="space-y-1">
               <p className="text-[0.62rem] font-semibold uppercase tracking-[0.18em] text-[--metis-text-tertiary]">Structured record</p>
               <p className="max-w-2xl text-sm leading-6 text-[--metis-paper-muted]">
-                Sources, claims, open questions and input are facets of this issue record — not separate issues. Open a view to work
-                the register in full.
+                Sources, claims, open questions and recorded material are facets of this issue record — not separate issues. Open a view to
+                work the register in full.
               </p>
             </div>
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">

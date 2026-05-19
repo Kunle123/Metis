@@ -9,6 +9,7 @@ import { internalInputDbRowToWire } from "@/lib/internalInputs/internalInputWire
 import { prismaWhereInternalInputsVisibleToViewer } from "@/lib/internalInputs/internalObservationVisibility";
 
 import { AddToRecordWorkbench } from "./add-to-record-workbench";
+import { InputGuidanceRail } from "./input-guidance-rail";
 import { InternalInputWorkspace } from "./internal-input-workspace";
 
 export const dynamic = "force-dynamic";
@@ -37,8 +38,8 @@ export default async function IssueInternalInputPage({ params }: { params: Promi
   return (
     <MetisShell
       activePath="/input"
-      pageTitle="Input"
-      pageMeta="Add & review material"
+      pageTitle="Update record"
+      pageMeta="Add material to this issue"
       organisationMembershipRole={pageCtx.context.membership.role}
       issueRoutePrefix={`/issues/${issue.id}`}
       activeIssue={{
@@ -50,17 +51,22 @@ export default async function IssueInternalInputPage({ params }: { params: Promi
       }}
     >
       <div className="space-y-6">
-        {canWrite ? (
-          <AddToRecordWorkbench
-            issueId={issue.id}
-            issueRoutePrefix={`/issues/${issue.id}`}
-            captureNotesAiEnabled={captureNotesAiEnabled}
-          />
-        ) : (
-          <p className="rounded-[1.25rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_35%,transparent)] px-5 py-4 text-sm leading-6 text-[--metis-paper-muted]">
-            You have view-only access to this issue. You can review observations below but cannot add new input.
-          </p>
-        )}
+        <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-start">
+          <div className="min-w-0 space-y-6">
+            {canWrite ? (
+              <AddToRecordWorkbench
+                issueId={issue.id}
+                issueRoutePrefix={`/issues/${issue.id}`}
+                captureNotesAiEnabled={captureNotesAiEnabled}
+              />
+            ) : (
+              <p className="rounded-[1.25rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_35%,transparent)] px-5 py-4 text-sm leading-6 text-[--metis-paper-muted]">
+                You have view-only access to this issue. You can review observations below but cannot add new material to the record.
+              </p>
+            )}
+          </div>
+          <InputGuidanceRail issueId={issue.id} />
+        </div>
         <InternalInputWorkspace
           issueId={issue.id}
           inputs={inputs}
