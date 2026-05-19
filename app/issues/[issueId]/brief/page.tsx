@@ -400,8 +400,13 @@ export default async function IssueBriefPage({
                     title={issue.title}
                     briefVersionLabel={storedBriefRevisionLabel ?? "Stored brief"}
                     briefInSync={briefInSync}
-                    sections={artifact.full.sections}
-                    displayTitle={displayTitles}
+                    sections={artifact.full.sections.map((section) => ({
+                      id: section.id,
+                      displayTitle: displayTitles(section.id, section.title),
+                      body: section.body,
+                      confidence: section.confidence,
+                      updatedAtLabel: section.updatedAtLabel,
+                    }))}
                     execSummaryAlternateWording={fullExecAlternateWording}
                     briefAiSynthesisEnabled={briefAiSynthesisEnabled}
                     polishPreview={fullPolishPreviewContext}

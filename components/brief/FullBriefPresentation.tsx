@@ -19,7 +19,8 @@ import { cn } from "@/lib/utils";
 
 type FullBriefSection = {
   id: string;
-  title: string;
+  /** Pre-resolved on the server — do not pass title formatter functions into this client component. */
+  displayTitle: string;
   body: string;
   confidence: BriefConfidence;
   updatedAtLabel: string;
@@ -40,7 +41,6 @@ export function FullBriefPresentation({
   briefVersionLabel,
   briefInSync,
   sections,
-  displayTitle,
   execSummaryAlternateWording,
   briefAiSynthesisEnabled,
   polishPreview,
@@ -49,7 +49,6 @@ export function FullBriefPresentation({
   briefVersionLabel: string;
   briefInSync: boolean;
   sections: FullBriefSection[];
-  displayTitle: (id: string, fallback: string) => string;
   execSummaryAlternateWording: NormalizedAlternateWording;
   briefAiSynthesisEnabled: boolean;
   polishPreview?: { issueId: string; briefVersionId: string } | null;
@@ -129,7 +128,7 @@ export function FullBriefPresentation({
             <ExecutiveBriefSection
               key={section.id}
               eyebrow={String(index + 1).padStart(2, "0")}
-              title={displayTitle(section.id, section.title)}
+              title={section.displayTitle}
               description={`${readiness.label} · Updated ${section.updatedAtLabel}`}
               variant={index === 0 ? "emphasis" : "neutral"}
               accent={index === 0 ? "brass" : "none"}
