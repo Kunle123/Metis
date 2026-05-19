@@ -24,7 +24,10 @@ import {
   sanitizeExportText,
 } from "./briefingPack";
 import { buildCompactExecutivePackView, COMPACT_EXEC_PACK_LAYOUT_MARKER } from "./compactExecutivePackDocx";
-import { normalizeExportTerminology } from "./exportDocumentUtils";
+import {
+  decodeExportHtmlEntitiesForPlainText,
+  normalizeExportTerminology,
+} from "./exportDocumentUtils";
 
 const FONT = "Segoe UI";
 const INK = "141418";
@@ -40,9 +43,13 @@ const ACCENT = "2C3E50";
 const CELL_MARGIN = { top: 60, bottom: 60, left: 100, right: 100 };
 const PAGE_MARGIN = { top: 720, right: 720, bottom: 720, left: 720 };
 
+function docxPlainText(text: string): string {
+  return decodeExportHtmlEntitiesForPlainText(sanitizeExportText(text));
+}
+
 function run(text: string, opts?: { bold?: boolean; italics?: boolean; size?: number; color?: string }) {
   return new TextRun({
-    text: sanitizeExportText(text),
+    text: docxPlainText(text),
     font: FONT,
     size: opts?.size ?? 18,
     bold: opts?.bold,
@@ -105,7 +112,7 @@ function dashRow(text: string, size = 18) {
     indent: { left: 180, hanging: 120 },
     children: [
       new TextRun({ text: "– ", font: FONT, size, color: BRASS }),
-      new TextRun({ text: sanitizeExportText(text), font: FONT, size, color: INK }),
+      new TextRun({ text: docxPlainText(text), font: FONT, size, color: INK }),
     ],
   });
 }
@@ -117,7 +124,7 @@ function lineItem(item: ExecutiveBriefLineItem) {
       indent: { left: 180, hanging: 120 },
       children: [
         new TextRun({ text: `${item.code}: `, font: FONT, size: 16, bold: true, color: ACCENT }),
-        new TextRun({ text: sanitizeExportText(item.text), font: FONT, size: 16, color: INK }),
+        new TextRun({ text: docxPlainText(item.text), font: FONT, size: 16, color: INK }),
       ],
     });
   }
@@ -386,7 +393,7 @@ function buildGuardrailsTable(safeToSay: string[], doNotSayYet: string[]) {
 }
 
 function buildMessageCard(msg: BriefingPackContext["messages"][number]) {
-  const primary = sanitizeExportText(msg.primaryBody).replace(/\n+/g, " ").trim();
+  const primary = docxPlainText(msg.primaryBody).replace(/\n+/g, " ").trim();
   const paras: Paragraph[] = [
     new Paragraph({
       spacing: { after: 30 },

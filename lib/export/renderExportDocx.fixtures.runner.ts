@@ -15,6 +15,7 @@ import { BriefArtifactSchema } from "@metis/shared/briefVersion";
 import type { ExportAuditAppendixInput } from "./buildExportAuditAppendix";
 import type { BriefingPackContext } from "./briefingPack";
 import { COMPACT_EXEC_PACK_LAYOUT_MARKER } from "./compactExecutivePackDocx";
+import { decodeExportHtmlEntitiesForPlainText } from "./exportDocumentUtils";
 import { isExportDocxSupported, renderExportPackageDocx } from "./renderExportDocx";
 
 const artifact = BriefArtifactSchema.parse({
@@ -231,6 +232,14 @@ async function main() {
           { title: "Review caveats", body: "Do not confirm final hours until consultation closes." },
         ],
       },
+      {
+        templateLabel: "Internal staff update",
+        audienceLabel: "Staff",
+        approvalStatus: "Draft",
+        primaryBody:
+          'If asked, use this line: &quot;We are reviewing options for service opening hours.&quot; Do not give &amp; speculate.',
+        supportingSections: [],
+      },
     ],
   };
 
@@ -291,7 +300,7 @@ async function main() {
   });
   assert.ok(execPackBuf.byteLength > 2000);
   const execPackXml = docxDocumentXml(execPackBuf);
-  const execPackText = docxFlattenedRuns(execPackXml);
+  const execPackText = decodeExportHtmlEntitiesForPlainText(docxFlattenedRuns(execPackXml));
   assert.ok(execPackText.includes("EXECUTIVE BRIEFING PACK"), "pack cover eyebrow");
   assert.ok(execPackText.includes(COMPACT_EXEC_PACK_LAYOUT_MARKER), "compact layout marker proves briefing-pack renderer");
   assert.ok(execPackText.includes("Read first"), "compact read-first strip");
@@ -305,6 +314,18 @@ async function main() {
   assert.ok(execPackText.includes("RECORD BASIS") || execPackText.includes("Record basis"), "record basis section");
   assert.ok(execPackText.includes("Prepared in Metis from"), "provenance footer");
   assert.ok(execPackText.includes("External customer update"), "message template label");
+  assert.ok(execPackText.includes("Internal staff update"), "staff message card");
+  assert.ok(
+    execPackText.includes('"We are reviewing options for service opening hours."'),
+    "staff message decodes &quot; to quotes",
+  );
+  assert.ok(!execPackText.includes("&quot;"), "no raw &quot; in DOCX message bodies");
+  assert.ok(!/&(?:quot|amp|apos|#39);/i.test(execPackText), "no HTML entities left in DOCX text");
+  assert.equal(
+    decodeExportHtmlEntitiesForPlainText("&amp;quot;"),
+    "&quot;",
+    "single-pass decode does not expand chained entities into quotes",
+  );
   assert.ok(execPackText.includes("Current status"), "status grid");
   assert.ok(execPackText.includes("Generated"), "cover metadata");
   assert.ok(!/feasibility qa/i.test(execPackText), "no dev QA strings");

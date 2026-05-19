@@ -18,6 +18,23 @@ export function executiveBriefExportBlockLabel(index: number, label: string): st
   return label.trim() === "Situation" ? "Executive summary" : label;
 }
 
+/**
+ * Decode typography HTML entities for plain-text DOCX output.
+ * Whitelist only — does not decode `&lt;` / `&gt;` into markup.
+ * `&amp;` is decoded last so a single pass does not expand chained entities.
+ */
+export function decodeExportHtmlEntitiesForPlainText(input: string): string {
+  let s = String(input ?? "");
+  if (!s.includes("&")) return s;
+  s = s.replace(/&quot;/gi, '"');
+  s = s.replace(/&#(?:0*34|x0*22);/gi, '"');
+  s = s.replace(/&#39;/g, "'");
+  s = s.replace(/&apos;/gi, "'");
+  s = s.replace(/&nbsp;/gi, " ");
+  s = s.replace(/&amp;/g, "&");
+  return s;
+}
+
 export function normalizeExportTerminology(input: string) {
   const s = String(input ?? "");
   if (!s) return s;
