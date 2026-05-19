@@ -1,5 +1,12 @@
+"use client";
+
 import { LockKeyhole } from "lucide-react";
 
+import {
+  AiEnhancedBlock,
+  RecordGroundedBlock,
+  UnsupportedRecordBlock,
+} from "@/components/demo/DemoDerivationLayers";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { DemoMessageRecord } from "@/lib/demo/towerBriefingDemo";
@@ -71,16 +78,19 @@ export function DemoMessageCard({ message }: { message: DemoMessageRecord }) {
       </div>
 
       <div className="space-y-4 px-4 py-4 sm:px-5 sm:py-5">
-        <p className="max-w-prose border-l-2 border-[color-mix(in_oklab,var(--metis-brass)_40%,transparent)] pl-3 text-[0.9375rem] font-medium leading-snug text-[--metis-text-primary]">
-          Draft body
-        </p>
-        <div className="rounded-[0.85rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-elevated)_32%,var(--metis-surface-card))] px-4 py-4 shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_12%,transparent)]">
-          <p className="whitespace-pre-line text-[0.875rem] leading-[1.65] text-[--metis-text-secondary]">{message.body}</p>
-        </div>
+        <RecordGroundedBlock draft={message.recordGroundedDraft} />
+        {message.aiEnhancedDraft ? <AiEnhancedBlock draft={message.aiEnhancedDraft} /> : null}
+        <UnsupportedRecordBlock
+          allowedToSay={message.allowedToSay}
+          notSupportedYet={message.notSupportedYet}
+          guardrailsApplied={message.guardrailsApplied}
+        />
 
-        <div className="rounded-md border border-dashed border-[color-mix(in_oklab,var(--metis-outline-subtle)_75%,transparent)] px-3 py-3">
-          <p className="text-[0.58rem] font-medium uppercase tracking-[0.12em] text-[--metis-text-tertiary]">Review before use</p>
-          <ul className="mt-2 space-y-1.5">
+        <details className="rounded-md border border-dashed border-[color-mix(in_oklab,var(--metis-outline-subtle)_75%,transparent)]">
+          <summary className="cursor-pointer list-none px-3 py-2 text-[0.72rem] font-medium text-[--metis-text-tertiary] marker:content-none [&::-webkit-details-marker]:hidden">
+            Review before use (comms checklist)
+          </summary>
+          <ul className="space-y-1.5 border-t border-dashed border-[color-mix(in_oklab,var(--metis-outline-subtle)_70%,transparent)] px-3 py-2">
             {message.reviewBeforeUse.map((item) => (
               <li key={item} className="flex gap-2 text-[0.8125rem] leading-relaxed text-[--metis-text-secondary]">
                 <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-[--metis-text-tertiary]" aria-hidden />
@@ -88,15 +98,12 @@ export function DemoMessageCard({ message }: { message: DemoMessageRecord }) {
               </li>
             ))}
           </ul>
-        </div>
+        </details>
       </div>
 
       <footer className="border-t border-dashed border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_32%,transparent)] px-4 py-3 sm:px-5">
         <p className="text-[0.58rem] font-medium uppercase tracking-[0.14em] text-[--metis-text-tertiary]">Record basis</p>
         <p className="mt-1 max-w-prose text-[0.75rem] leading-relaxed text-[--metis-text-secondary]">{message.provenanceLine}</p>
-        {message.linkedRecordCodes.length ? (
-          <p className="mt-2 text-[0.68rem] text-[--metis-text-tertiary]">Linked: {message.linkedRecordCodes.join(" · ")}</p>
-        ) : null}
       </footer>
     </article>
   );

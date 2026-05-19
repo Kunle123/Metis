@@ -37,8 +37,8 @@ export function BriefModeToggle({ issueId, mode: serverMode }: { issueId: string
         allowLabelWrap
         value={displayMode}
         options={[
-          { id: "full", label: "Full brief" },
-          { id: "executive", label: "Executive brief" },
+          { id: "executive", label: "Executive" },
+          { id: "full", label: "Full" },
         ]}
         onChange={(next) => go(next)}
         className="w-full min-w-0 sm:w-auto sm:min-w-[min(22rem,calc(100vw-12rem))] lg:min-w-[24rem]"

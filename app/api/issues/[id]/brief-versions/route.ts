@@ -2,14 +2,15 @@ import { NextResponse } from "next/server";
 
 import { BriefArtifactSchema, CreateBriefVersionInputSchema } from "@metis/shared/briefVersion";
 import { prisma } from "@/lib/db/prisma";
-import { generateBriefFromIssue } from "@/lib/brief/generateBriefFromIssue";
-import { buildBriefSynthesisInput } from "@/lib/brief/buildBriefSynthesisInput";
+import { buildPairedBriefArtifact } from "@/lib/brief/buildPairedBriefArtifact";
+import { enrichBriefArtifactWithAi } from "@/lib/brief/enrichBriefArtifactWithAi";
 import { IssueActivityKinds } from "@/lib/issues/activityKinds";
 import { writeIssueActivity } from "@/lib/issues/writeIssueActivity";
 import { requireActiveOrgIssue } from "@/lib/organisations/requireActiveOrgIssue";
 import { membershipAllowsOrgWrite } from "@/lib/organisations/orgCapabilities";
-import { synthesizeBriefAlternateWording, synthesizeBriefExecutiveSummary } from "@/lib/ai/synthesizeBrief";
 import { prismaWhereInternalInputsVisibleToViewer } from "@/lib/internalInputs/internalObservationVisibility";
+
+const BRIEF_MODES = ["full", "executive"] as const;
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id: issueId } = await params;
@@ -59,166 +60,101 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     if (trimmed) messageAudienceGroupNames.push(trimmed);
   }
 
-  const latest = await prisma.briefVersion.findFirst({
-    where: { issueId, mode: parsed.data.mode },
-    orderBy: { createdAt: "desc" },
-  });
+  const [latestFull, latestExecutive] = await Promise.all(
+    BRIEF_MODES.map((mode) =>
+      prisma.briefVersion.findFirst({
+        where: { issueId, mode },
+        orderBy: { createdAt: "desc" },
+      }),
+    ),
+  );
 
-  if (latest && latest.generatedFromIssueUpdatedAt.getTime() === issue.updatedAt.getTime()) {
+  const requestedMode = parsed.data.mode;
+  const returnExisting =
+    latestFull &&
+    latestExecutive &&
+    latestFull.versionNumber === latestExecutive.versionNumber &&
+    latestFull.generatedFromIssueUpdatedAt.getTime() === issue.updatedAt.getTime() &&
+    latestExecutive.generatedFromIssueUpdatedAt.getTime() === issue.updatedAt.getTime();
+
+  if (returnExisting) {
+    const existing = requestedMode === "executive" ? latestExecutive : latestFull;
     return NextResponse.json({
-      ...latest,
-      generatedFromIssueUpdatedAt: latest.generatedFromIssueUpdatedAt.toISOString(),
-      createdAt: latest.createdAt.toISOString(),
+      ...existing,
+      generatedFromIssueUpdatedAt: existing.generatedFromIssueUpdatedAt.toISOString(),
+      createdAt: existing.createdAt.toISOString(),
     });
   }
 
-  const versionNumber = (latest?.versionNumber ?? 0) + 1;
-  const artifactDeterministic = generateBriefFromIssue(
-    { issue, sources, gaps, internalInputs, claims, messageAudienceGroupNames },
-    parsed.data.mode,
-  );
+  const versionNumber = Math.max(latestFull?.versionNumber ?? 0, latestExecutive?.versionNumber ?? 0) + 1;
+
+  const artifactDeterministic = buildPairedBriefArtifact({
+    issue,
+    sources,
+    gaps,
+    internalInputs,
+    claims,
+    messageAudienceGroupNames,
+  });
 
   const synthesisEnabled = process.env.BRIEF_AI_SYNTHESIS_ENABLED === "true";
 
   const artifact = await (async () => {
-    if (parsed.data.mode !== "full" && parsed.data.mode !== "executive") return artifactDeterministic;
-
     if (!synthesisEnabled) return artifactDeterministic;
 
-    const attemptedAtIso = new Date().toISOString();
-
-    const items = [];
-
-    if (parsed.data.mode === "full") {
-      const exec = artifactDeterministic.full.sections.find((s) => s.id === "executive-summary");
-      if (!exec?.body?.trim()) return artifactDeterministic;
-
-      const synthesisInput = buildBriefSynthesisInput({
-        issue,
-        sources,
-        gaps,
-        internalInputs,
-        claims,
-        deterministicExecutiveSummaryBody: exec.body,
-      });
-      const rewrite = await synthesizeBriefExecutiveSummary(synthesisInput);
-
-      const fullTarget = { mode: "full" as const, kind: "section" as const, id: "executive-summary" };
-      if (rewrite?.rewrite?.trim()) {
-        items.push({
-          target: fullTarget,
-          status: "succeeded" as const,
-          attemptedAtIso,
-          aiAlternateBody: rewrite.rewrite,
-          ...(rewrite.limitations?.trim() ? { limitations: rewrite.limitations.trim() } : {}),
-        });
-      } else {
-        items.push({
-          target: fullTarget,
-          status: "failed" as const,
-          attemptedAtIso,
-        });
-      }
-
-      const updated = {
-        ...artifactDeterministic,
-        alternateWording: { items },
-        full: {
-          ...artifactDeterministic.full,
-          // Legacy: keep existing Full-only field for back-compat while also writing unified metadata.
-          executiveSummarySynthesis: rewrite?.rewrite?.trim()
-            ? {
-                status: "succeeded" as const,
-                attemptedAtIso,
-                aiEnhancedBody: rewrite.rewrite,
-                ...(rewrite.limitations?.trim() ? { limitations: rewrite.limitations.trim() } : {}),
-              }
-            : {
-                status: "failed" as const,
-                attemptedAtIso,
-              },
-        },
-      };
-
-      const validated = BriefArtifactSchema.safeParse(updated);
-      if (!validated.success) return artifactDeterministic;
-      return validated.data;
-    }
-
-    const execBlock = artifactDeterministic.executive.blocks.find((b) => b.label.trim() === "Executive summary");
-    if (!execBlock?.body?.trim()) return artifactDeterministic;
-
-    const synthesisInput = buildBriefSynthesisInput({
+    const enriched = await enrichBriefArtifactWithAi(artifactDeterministic, {
       issue,
       sources,
       gaps,
       internalInputs,
       claims,
-      deterministicExecutiveSummaryBody: execBlock.body,
     });
-    const rewrite = await synthesizeBriefAlternateWording({
-      input: synthesisInput,
-      targetLabel: 'Executive brief “Executive summary” block',
-    });
-
-    const execTarget = { mode: "executive" as const, kind: "block" as const, id: "Executive summary" };
-    if (rewrite?.rewrite?.trim()) {
-      items.push({
-        target: execTarget,
-        status: "succeeded" as const,
-        attemptedAtIso,
-        aiAlternateBody: rewrite.rewrite,
-        ...(rewrite.limitations?.trim() ? { limitations: rewrite.limitations.trim() } : {}),
-      });
-    } else {
-      items.push({
-        target: execTarget,
-        status: "failed" as const,
-        attemptedAtIso,
-      });
-    }
-
-    const updated = {
-      ...artifactDeterministic,
-      alternateWording: { items },
-    };
-    const validated = BriefArtifactSchema.safeParse(updated);
-    if (!validated.success) return artifactDeterministic;
-    return validated.data;
+    const validated = BriefArtifactSchema.safeParse(enriched);
+    return validated.success ? validated.data : artifactDeterministic;
   })();
 
   const created = await prisma.$transaction(async (tx) => {
-    const briefVersion = await tx.briefVersion.create({
-      data: {
-        issueId,
-        mode: parsed.data.mode,
-        versionNumber,
-        generatedFromIssueUpdatedAt: issue.updatedAt,
-        artifact,
-      },
-    });
+    const rows = await Promise.all(
+      BRIEF_MODES.map((mode) =>
+        tx.briefVersion.create({
+          data: {
+            issueId,
+            mode,
+            versionNumber,
+            generatedFromIssueUpdatedAt: issue.updatedAt,
+            artifact,
+          },
+        }),
+      ),
+    );
 
-    const briefModeLabel = parsed.data.mode === "executive" ? "Executive" : "Full";
+    const primary = rows.find((r) => r.mode === requestedMode) ?? rows[0]!;
+
     await writeIssueActivity(tx, {
       issueId,
       kind: IssueActivityKinds.brief_version_created,
-      summary: `${briefModeLabel} brief v${briefVersion.versionNumber} created`,
+      summary: `Brief v${versionNumber} created (Executive + Full)`,
       refType: "BriefVersion",
-      refId: briefVersion.id,
+      refId: primary.id,
       actorLabel: gated.ctx.user.email ?? null,
     });
 
-    // `writeIssueActivity` updates `Issue.lastActivityAt`, which bumps `Issue.updatedAt` (@updatedAt).
-    // Align stored freshness with the issue row as it exists after that write so the new brief is not "Stale".
     const issueRow = await tx.issue.findUniqueOrThrow({
       where: { id: issueId },
       select: { updatedAt: true },
     });
 
-    return tx.briefVersion.update({
-      where: { id: briefVersion.id },
-      data: { generatedFromIssueUpdatedAt: issueRow.updatedAt },
-    });
+    const alignedAt = issueRow.updatedAt;
+    await Promise.all(
+      rows.map((row) =>
+        tx.briefVersion.update({
+          where: { id: row.id },
+          data: { generatedFromIssueUpdatedAt: alignedAt },
+        }),
+      ),
+    );
+
+    return rows.find((r) => r.mode === requestedMode) ?? rows[0]!;
   });
 
   return NextResponse.json({
@@ -227,4 +163,3 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     createdAt: created.createdAt.toISOString(),
   });
 }
-

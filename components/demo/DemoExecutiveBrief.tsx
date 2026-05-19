@@ -1,6 +1,14 @@
+"use client";
+
 import type { ReactNode } from "react";
 
 import { ExecutiveBriefSection } from "@/components/brief/ExecutiveBriefSection";
+import {
+  AiEnhancedBlock,
+  DemoCredibilityNote,
+  RecordBasisTable,
+  RecordGroundedBlock,
+} from "@/components/demo/DemoDerivationLayers";
 import { Badge } from "@/components/ui/badge";
 import type { DemoBriefRecord, DemoStage } from "@/lib/demo/towerBriefingDemo";
 import { cn } from "@/lib/utils";
@@ -54,14 +62,10 @@ function RecordList({ items }: { items: string[] }) {
 }
 
 export function DemoExecutiveBrief({ brief, stage }: { brief: DemoBriefRecord; stage: DemoStage }) {
-  const executiveSummary = sectionBody(brief, "Executive summary");
-  const decisions = sectionBody(brief, "decisions", "Recommended");
   const confirmed = sectionBody(brief, "Confirmed facts");
   const claims = sectionBody(brief, "Claims");
   const openQuestions = sectionBody(brief, "Open questions");
-  const guardrails = sectionBody(brief, "guardrail", "What not to say");
-  const safeToSay = stage.cockpit.safeToSay ? [stage.cockpit.safeToSay] : [];
-  const doNotSay = guardrails.length ? guardrails : [stage.cockpit.doNotSayYet];
+  const { recordGroundedGuardrails: guardrails } = brief;
 
   return (
     <article className="mx-auto w-full min-w-0 max-w-[72rem] overflow-hidden rounded-[0.85rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-card)_98%,var(--metis-paper))] shadow-[0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_15%,transparent)]">
@@ -90,24 +94,28 @@ export function DemoExecutiveBrief({ brief, stage }: { brief: DemoBriefRecord; s
       </header>
 
       <div className="space-y-5 px-4 py-5 sm:space-y-6 sm:px-7 sm:py-6">
+        <DemoCredibilityNote />
+        <p className="text-[0.75rem] leading-relaxed text-[--metis-text-tertiary]">
+          This demo separates the record-grounded draft from AI-enhanced wording. The AI layer changes expression, not facts.
+        </p>
+
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:gap-6">
           <ExecutiveBriefSection variant="emphasis" accent="brass" eyebrow="Read first" title="Current position">
-            <p className="mb-4 max-w-[42rem] text-[0.9375rem] font-medium leading-[1.6] text-[--metis-text-primary]">{brief.lede}</p>
-            {executiveSummary.length ? (
-              <div className="max-w-[42rem] space-y-2 border-t border-[color-mix(in_oklab,var(--metis-outline-subtle)_70%,transparent)] pt-4">
-                {executiveSummary.map((p) => (
-                  <p key={p} className="text-[0.875rem] leading-[1.7] text-[--metis-text-secondary]">
-                    {p}
-                  </p>
-                ))}
+            <RecordGroundedBlock draft={brief.recordGroundedPosition} />
+            {brief.aiEnhancedPosition ? (
+              <div className="mt-4">
+                <AiEnhancedBlock draft={brief.aiEnhancedPosition} />
               </div>
             ) : null}
           </ExecutiveBriefSection>
 
           <ExecutiveBriefSection variant="neutral" accent="none" eyebrow="Action" title="Decisions needed">
-            {decisions.length ? (
+            <p className="mb-2 text-[0.58rem] font-medium uppercase tracking-[0.1em] text-[--metis-text-tertiary]">
+              Record-grounded only
+            </p>
+            {brief.recordGroundedDecisions.bullets?.length ? (
               <ol className="space-y-3">
-                {decisions.map((line, index) => (
+                {brief.recordGroundedDecisions.bullets.map((line, index) => (
                   <li
                     key={line}
                     className="flex min-w-0 gap-3 border-b border-[color-mix(in_oklab,var(--metis-outline-subtle)_65%,transparent)] pb-3 last:border-0 last:pb-0"
@@ -125,6 +133,7 @@ export function DemoExecutiveBrief({ brief, stage }: { brief: DemoBriefRecord; s
             ) : (
               <p className="text-[0.8125rem] text-[--metis-text-tertiary]">No decisions listed for this stage.</p>
             )}
+            <RecordBasisTable basis={brief.recordGroundedDecisions.basis} />
           </ExecutiveBriefSection>
         </div>
 
@@ -133,7 +142,7 @@ export function DemoExecutiveBrief({ brief, stage }: { brief: DemoBriefRecord; s
           accent="none"
           eyebrow="Record basis"
           title="What the record says"
-          description="Confirmed facts, conditional claims, and unresolved questions at this point in time."
+          description="From staged inputs at this point in time — not AI-invented."
         >
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,0.85fr)] lg:gap-5">
             <ExecutiveBriefSection variant="neutral" accent="brass" compact title="Confirmed">
@@ -160,21 +169,23 @@ export function DemoExecutiveBrief({ brief, stage }: { brief: DemoBriefRecord; s
         </ExecutiveBriefSection>
 
         <ExecutiveBriefSection variant="neutral" accent="none" eyebrow="Circulation" title="Comms guardrails">
+          <p className="mb-3 text-[0.68rem] text-[--metis-text-tertiary]">Record-grounded guardrails for this stage.</p>
           <div className="grid gap-4 md:grid-cols-2 md:gap-5">
             <ExecutiveBriefSection variant="neutral" accent="brass" compact title="Safe to say">
-              <RecordList items={safeToSay} />
+              <RecordList items={guardrails.safeToSay} />
             </ExecutiveBriefSection>
             <ExecutiveBriefSection variant="neutral" accent="amber" compact title="Do not say yet">
-              <RecordList items={doNotSay} />
+              <RecordList items={guardrails.doNotSayYet} />
             </ExecutiveBriefSection>
           </div>
+          <RecordBasisTable basis={guardrails.basis} />
         </ExecutiveBriefSection>
 
         <footer className="border-t border-[color-mix(in_oklab,var(--metis-outline-subtle)_80%,transparent)] pt-4">
           <p className="text-[0.58rem] font-medium uppercase tracking-[0.14em] text-[--metis-text-tertiary]">Provenance</p>
           <p className="mt-1.5 text-[0.75rem] leading-relaxed text-[--metis-text-tertiary]">
-            Demo executive brief {brief.code} for stage {stage.index}. Linked records: {brief.linkedRecordCodes.join(", ")}.
-            Stored brief remains the source of truth in a live Metis workspace.
+            Demo brief {brief.code} · stage {stage.index}. Linked records: {brief.linkedRecordCodes.join(", ")}. Deterministic
+            drafts precede any AI-enhanced wording shown above.
           </p>
         </footer>
       </div>

@@ -98,9 +98,20 @@ export default async function IssueBriefPage({
   if (pageCtx.outcome === "not_found") notFound();
   const { issue } = pageCtx;
 
-  const briefVersion = await getLatestBriefVersion(issue.id, mode);
+  const [latestFullBrief, latestExecutiveBrief] = await Promise.all([
+    getLatestBriefVersion(issue.id, "full"),
+    getLatestBriefVersion(issue.id, "executive"),
+  ]);
+  const briefVersion = mode === "full" ? latestFullBrief : latestExecutiveBrief;
+  const pairedBriefVersion = mode === "full" ? latestExecutiveBrief : latestFullBrief;
   const artifact = (briefVersion?.artifact ?? null) as BriefArtifact | null;
   const hasBriefForMode = Boolean(artifact);
+  const briefVersionsAligned =
+    !latestFullBrief ||
+    !latestExecutiveBrief ||
+    (latestFullBrief.versionNumber === latestExecutiveBrief.versionNumber &&
+      latestFullBrief.generatedFromIssueUpdatedAt.getTime() ===
+        latestExecutiveBrief.generatedFromIssueUpdatedAt.getTime());
   const freshnessActivitiesRaw =
     briefVersion && briefVersion.generatedFromIssueUpdatedAt.getTime() < issue.updatedAt.getTime()
       ? await prisma.issueActivity.findMany({
@@ -138,14 +149,16 @@ export default async function IssueBriefPage({
     : false;
   const briefSyncHint = (() => {
     if (!hasBriefForMode) {
-      return "No stored brief for this mode.";
+      return "No stored brief yet.";
     }
     if (!briefVersion) return null;
-    const modePhrase = mode === "full" ? "Full brief" : "Executive brief";
-    if (!briefStaleForCurrentMode) {
-      return `This ${modePhrase.toLowerCase()} matches the issue record and linked briefing inputs — exports and circulation do not invalidate it by themselves.`;
+    if (!briefVersionsAligned) {
+      return "Executive and Full views are out of sync. Refresh the brief to align both from one snapshot.";
     }
-    return `Regenerate updates this ${modePhrase.toLowerCase()} only; Full and Executive are separate stored revisions after brief inputs changed.`;
+    if (!briefStaleForCurrentMode) {
+      return "This brief matches the issue record and linked briefing inputs — exports and circulation do not invalidate it by themselves.";
+    }
+    return "Record changed since this brief. Refresh to update both views.";
   })();
   const briefInSync = Boolean(artifact && briefVersion && !briefStaleForCurrentMode);
   const linkedSources = await prisma.source.findMany({
@@ -232,28 +245,18 @@ export default async function IssueBriefPage({
           sourcesCount: linkedSources.length,
         })
       : null;
-  const storedBriefRevisionLabel = briefVersion
-    ? `${mode === "full" ? "Full" : "Executive"} brief v${briefVersion.versionNumber}`
-    : null;
+  const sharedBriefVersionNumber = briefVersion?.versionNumber ?? pairedBriefVersion?.versionNumber;
+  const storedBriefRevisionLabel =
+    sharedBriefVersionNumber != null ? `Brief v${sharedBriefVersionNumber}` : null;
+  const briefViewLabel = mode === "full" ? "Full" : "Executive";
   const exportPrepareHref = `/issues/${issue.id}/export?mode=${mode}&format=${mode === "executive" ? "executive-brief" : "full-issue-brief"}`;
   const regenerateSectionHref = `/issues/${issue.id}/brief?mode=${mode}#brief-regenerate-action`;
-  const regenerateLinkLabel = mode === "full" ? "Regenerate Full brief" : "Regenerate Executive brief";
-  const regenerateModeHelper =
-    mode === "full"
-      ? "This updates the Full brief only. The Executive brief is a separate stored revision."
-      : "This updates the Executive brief only. The Full brief is a separate stored revision.";
+  const regenerateLinkLabel = hasBriefForMode ? "Refresh brief" : "Generate brief";
   const freshnessActionLinkClass =
     "rounded-sm text-[0.72rem] font-medium text-[--metis-brass-soft] underline-offset-4 outline-none transition-colors hover:underline focus-visible:ring-2 focus-visible:ring-[--metis-brass-soft] focus-visible:ring-offset-2 focus-visible:ring-offset-[--metis-surface-card]";
   /** Shown only under Generate (Step 3); Step 2 holds definitions only. */
   const generationSyncHint = hasBriefForMode && briefInSync ? null : briefSyncHint;
-  const generateButtonLabel =
-    mode === "full"
-      ? hasBriefForMode
-        ? "Regenerate Full brief"
-        : "Generate Full brief"
-      : hasBriefForMode
-        ? "Regenerate Executive brief"
-        : "Generate Executive brief";
+  const generateButtonLabel = hasBriefForMode ? "Refresh brief" : "Generate brief";
 
   return (
     <MetisShell
@@ -294,10 +297,13 @@ export default async function IssueBriefPage({
             <section className={WORKFLOW_STEP} aria-labelledby="brief-step-1">
               <div id="brief-step-1">{briefStepLabel("1", "Choose brief mode")}</div>
               <p className="text-[0.8rem] leading-relaxed text-[--metis-text-secondary]">
-                Switching mode loads a different <span className="text-[--metis-text-primary]">stored artifact</span> for this issue (full vs executive). It does not
-                generate a new revision by itself.
+                Switch between <span className="text-[--metis-text-primary]">Executive</span> and{" "}
+                <span className="text-[--metis-text-primary]">Full</span> views of the same brief version. This does not generate a new revision by itself.
               </p>
               <BriefModeToggle issueId={issue.id} mode={mode} />
+              <p className="text-[0.72rem] leading-snug text-[--metis-text-tertiary]">
+                Executive and full views are generated from the same issue record snapshot.
+              </p>
             </section>
 
             <section className={WORKFLOW_STEP} aria-labelledby="brief-step-2">
@@ -307,6 +313,12 @@ export default async function IssueBriefPage({
                   <dt className="font-medium uppercase tracking-[0.1em] text-[--metis-text-tertiary]">Stored revision</dt>
                   <dd className="text-[--metis-text-primary]">{storedBriefRevisionLabel ?? "No stored brief yet"}</dd>
                 </div>
+                {storedBriefRevisionLabel ? (
+                  <div className="flex flex-wrap gap-x-2 gap-y-0.5">
+                    <dt className="font-medium uppercase tracking-[0.1em] text-[--metis-text-tertiary]">View</dt>
+                    <dd className="text-[--metis-text-primary]">{briefViewLabel}</dd>
+                  </div>
+                ) : null}
                 {briefVersion ? (
                   <div className="flex min-w-0 max-w-full flex-wrap items-baseline gap-x-2 gap-y-1">
                     <dt className="shrink-0 font-medium uppercase tracking-[0.1em] text-[--metis-text-tertiary]">Freshness</dt>
@@ -334,13 +346,18 @@ export default async function IssueBriefPage({
               </dl>
               {briefVersion && !briefInSync ? (
                 <p id="brief-freshness-mode-helper" className="mt-2 text-[0.72rem] leading-snug text-[--metis-text-tertiary]">
-                  {regenerateModeHelper}
+                  {briefSyncHint}
+                </p>
+              ) : null}
+              {!briefVersionsAligned && latestFullBrief && latestExecutiveBrief ? (
+                <p className="mt-2 text-[0.72rem] leading-snug text-[--metis-status-warning-fg]">
+                  Executive and Full views are out of sync. Refresh the brief to align both from one snapshot.
                 </p>
               ) : null}
               <p className="text-[0.72rem] leading-snug text-[--metis-text-tertiary]">
-                <span className="text-[--metis-text-secondary]">Stored revision</span> is the numbered brief on file for this mode.{" "}
-                <span className="text-[--metis-text-secondary]">Freshness</span> watches whether briefing inputs changed after this revision — not exporting,
-                circulating, or saving another mode&apos;s revision. It is not tied only to issue version numbering.
+                <span className="text-[--metis-text-secondary]">Stored revision</span> is the numbered brief shared by both views.{" "}
+                <span className="text-[--metis-text-secondary]">Freshness</span> watches whether briefing inputs changed after this revision — not exporting or
+                circulation alone.
               </p>
             </section>
 
@@ -349,17 +366,15 @@ export default async function IssueBriefPage({
               className={`${WORKFLOW_STEP} scroll-mt-24`}
               aria-labelledby="brief-step-3"
             >
-              <div id="brief-step-3">{briefStepLabel("3", "Generate or regenerate")}</div>
+              <div id="brief-step-3">{briefStepLabel("3", "Generate or refresh brief")}</div>
               {hasBriefForMode && briefInSync ? (
                 <p className="text-[0.8rem] leading-relaxed text-[--metis-text-tertiary]">
-                  This revision matches the current issue record. Regenerate only if you want a <span className="text-[--metis-text-secondary]">new stored revision</span>{" "}
-                  (for example after substantive edits).
+                  This revision matches the current issue record. Refresh only if you want a{" "}
+                  <span className="text-[--metis-text-secondary]">new stored revision</span> (for example after substantive edits).
                 </p>
               ) : null}
               <p className="text-[0.72rem] leading-snug text-[--metis-text-tertiary]">
-                {mode === "full"
-                  ? "Generates or refreshes the Full issue brief only. Executive has its own stored revision."
-                  : "Generates or refreshes the Executive brief only. Full has its own stored revision."}
+                Generates or refreshes both Executive and Full views from the same issue record snapshot.
               </p>
               <GenerateBriefButton
                 issueId={issue.id}
@@ -483,9 +498,9 @@ export default async function IssueBriefPage({
               meta={
                 <div className="space-y-2">
                   <div className="flex items-center justify-between gap-3">
-                    <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">Mode</span>
+                    <span className="text-[0.62rem] uppercase tracking-[0.16em] text-[--metis-ink-soft]">View</span>
                     <Badge className="border-0 bg-[color-mix(in_oklab,var(--metis-surface-elevated)_70%,transparent)] text-[--metis-text-secondary]">
-                      {mode === "full" ? "Full" : "Executive"}
+                      {briefViewLabel}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between gap-3 border-t border-[--metis-outline-subtle] pt-2">
@@ -517,7 +532,7 @@ export default async function IssueBriefPage({
                             <span aria-hidden> →</span>
                           </Link>
                           <p id="brief-rail-freshness-helper" className="text-[0.68rem] leading-snug text-[--metis-paper-muted]">
-                            {regenerateModeHelper}
+                            {briefSyncHint}
                           </p>
                         </>
                       ) : null}

@@ -1,3 +1,5 @@
+import { enrichBriefs, enrichMessages } from "@/lib/demo/towerBriefingDerivation";
+
 export type DemoStageId = "stage-1" | "stage-2" | "stage-3" | "stage-4";
 export type DemoTabId = "situation" | "brief" | "messages";
 export type DemoTone = "critical" | "warning" | "info" | "success" | "neutral";
@@ -66,6 +68,31 @@ export type DemoBriefSection = {
   tone?: DemoTone;
 };
 
+export type DemoRecordBasisLine = {
+  line: string;
+  basisCodes: string[];
+  explanation: string;
+};
+
+export type DemoRecordGroundedDraft = {
+  title?: string;
+  bullets?: string[];
+  body?: string;
+  basis: DemoRecordBasisLine[];
+};
+
+export type DemoAiEnhancedDraft = {
+  label: "AI-enhanced wording";
+  body: string;
+  enhancementNote: string;
+};
+
+export type DemoBriefGuardrailsGrounded = {
+  safeToSay: string[];
+  doNotSayYet: string[];
+  basis: DemoRecordBasisLine[];
+};
+
 export type DemoBriefRecord = DemoRecordBase & {
   recordType: "brief";
   sections: DemoBriefSection[];
@@ -74,6 +101,10 @@ export type DemoBriefRecord = DemoRecordBase & {
   severity: string;
   urgency: string;
   briefingPosture: string;
+  recordGroundedPosition: DemoRecordGroundedDraft;
+  aiEnhancedPosition?: DemoAiEnhancedDraft;
+  recordGroundedDecisions: DemoRecordGroundedDraft;
+  recordGroundedGuardrails: DemoBriefGuardrailsGrounded;
 };
 
 export type DemoMessageRecord = DemoRecordBase & {
@@ -85,6 +116,11 @@ export type DemoMessageRecord = DemoRecordBase & {
   purposeLine: string;
   reviewBeforeUse: string[];
   provenanceLine: string;
+  recordGroundedDraft: DemoRecordGroundedDraft;
+  aiEnhancedDraft?: DemoAiEnhancedDraft;
+  allowedToSay: string[];
+  notSupportedYet: string[];
+  guardrailsApplied: string[];
 };
 
 export type DemoAttentionItem = {
@@ -183,7 +219,7 @@ const briefSection = (title: string, body: string[], tone?: DemoTone): DemoBrief
   ...(tone ? { tone } : {}),
 });
 
-export const towerBriefingDemo = {
+const towerBriefingDemoBase = {
   coreLine: "Before the incident, there was just an office party.",
   title: "The Tower Briefing Record",
   subtitle: "How a routine office update becomes a live incident briefing.",
@@ -1018,7 +1054,7 @@ export const towerBriefingDemo = {
         ], "critical"),
       ],
     },
-  ] satisfies DemoBriefRecord[],
+  ] as Omit<DemoBriefRecord, "recordGroundedPosition" | "aiEnhancedPosition" | "recordGroundedDecisions" | "recordGroundedGuardrails">[],
 
   messages: [
     {
@@ -1216,7 +1252,10 @@ export const towerBriefingDemo = {
       ],
       provenanceLine: "Derived from CLM-004; CLM-005 explicitly excluded pending validation.",
     },
-  ] satisfies DemoMessageRecord[],
+  ] as Omit<
+    DemoMessageRecord,
+    "recordGroundedDraft" | "aiEnhancedDraft" | "allowedToSay" | "notSupportedYet" | "guardrailsApplied"
+  >[],
 
   attentionItems: [
     {
@@ -1407,4 +1446,10 @@ export const towerBriefingDemo = {
       linkedRecordCodes: ["MSG-007", "MSG-008", "BRF-004"],
     },
   ] satisfies DemoActivityEvent[],
+};
+
+export const towerBriefingDemo = {
+  ...towerBriefingDemoBase,
+  briefs: enrichBriefs(towerBriefingDemoBase.briefs),
+  messages: enrichMessages(towerBriefingDemoBase.messages),
 };

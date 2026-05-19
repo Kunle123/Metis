@@ -4,6 +4,7 @@ import { useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { LockKeyhole } from "lucide-react";
 
+import { DemoCredibilityNote } from "@/components/demo/DemoDerivationLayers";
 import { DemoExecutiveBrief } from "@/components/demo/DemoExecutiveBrief";
 import { DemoMessageCard } from "@/components/demo/DemoMessageCard";
 import { Badge } from "@/components/ui/badge";
@@ -275,9 +276,10 @@ function MessagesView({
 }) {
   return (
     <div className="space-y-6">
+      <DemoCredibilityNote />
       <p className="max-w-prose text-[0.8125rem] leading-relaxed text-[--metis-text-secondary]">
-        Governed message drafts for this stage — approval status, purpose, and record basis. Actions are disabled in this
-        public demo.
+        Governed message drafts for this stage — record-grounded text first, then optional AI-enhanced wording. Actions are
+        disabled in this public demo.
       </p>
       <div className="space-y-5">
         {messages.map((m) => (
@@ -346,7 +348,9 @@ export function TowerBriefingDemoWorkspace() {
             <div className="mt-5 min-w-0">
               {selectedTab === "situation" ? <SituationView stage={stageData.stage} records={stageData.situationRecords} /> : null}
               {selectedTab === "brief" && stageData.currentBrief ? (
-                <DemoExecutiveBrief brief={stageData.currentBrief} stage={stageData.stage} />
+                <div className="space-y-4">
+                  <DemoExecutiveBrief brief={stageData.currentBrief} stage={stageData.stage} />
+                </div>
               ) : null}
               {selectedTab === "brief" && !stageData.currentBrief ? (
                 <p className="text-[0.8125rem] text-[--metis-text-tertiary]">No brief at this stage.</p>

@@ -271,7 +271,7 @@ export function BriefExecutiveSummaryCompare({
             value={variant}
             options={[
               { id: "original", label: "Stored wording" },
-              { id: "alternate", label: "Alternate draft" },
+              { id: "alternate", label: "AI-polished wording" },
             ]}
             onChange={setVariant}
           />
@@ -304,8 +304,8 @@ export function BriefExecutiveSummaryCompare({
       {briefAiSynthesisEnabled && !canCompare ? (
         <p className="text-[0.72rem] leading-relaxed text-[--metis-text-tertiary]">
           {alternateWording?.status === "failed"
-            ? "Alternate executive summary wording could not be produced for this version. Regenerate the brief to try again, or check synthesis configuration."
-            : "No separate alternate wording is stored for this version. Regenerate the full brief to capture an optional alternate executive summary when synthesis succeeds."}
+            ? "AI-polished wording could not be produced for this version. Refresh the brief to try again, or check synthesis configuration."
+            : "No AI-polished wording is stored for this version. Refresh the brief to capture optional drafting comparisons when synthesis succeeds."}
         </p>
       ) : null}
 
@@ -338,9 +338,9 @@ export function BriefExecutiveSummaryCompare({
             <p className="mt-1 text-[0.68rem] leading-snug text-[--metis-text-tertiary]">Same facts. Drafting comparison only.</p>
             <div className="mt-3 space-y-3 border-t border-[color-mix(in_oklab,var(--metis-outline-subtle)_65%,transparent)] pt-3">
               <div>
-                <p className="text-[0.72rem] font-medium text-[--metis-text-secondary]">Alternate wording</p>
+                <p className="text-[0.72rem] font-medium text-[--metis-text-secondary]">AI-polished wording</p>
                 <p className="mt-1 text-[0.68rem] leading-snug text-[--metis-text-tertiary]">
-                  This is a wording comparison only. The stored brief remains the source of truth.
+                  Same facts. Drafting comparison only. The stored brief remains the source of truth.
                 </p>
               </div>
               {comparePanel}

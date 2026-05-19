@@ -145,10 +145,20 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     );
   }
 
-  await prisma.briefVersion.update({
-    where: { id: briefVersion.id },
-    data: { artifact: validated.data as object },
-  });
+  await prisma.$transaction([
+    prisma.briefVersion.update({
+      where: { id: briefVersion.id },
+      data: { artifact: validated.data as object },
+    }),
+    prisma.briefVersion.updateMany({
+      where: {
+        issueId,
+        versionNumber: briefVersion.versionNumber,
+        mode: "full",
+      },
+      data: { artifact: validated.data as object },
+    }),
+  ]);
 
   return NextResponse.json({
     success: true,
