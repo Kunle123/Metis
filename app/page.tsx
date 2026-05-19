@@ -141,32 +141,53 @@ export default async function DashboardPage({
             />
 
             <div className="space-y-4 p-4 sm:p-5">
-              {issues.length === 0 ? (
-                <div className="rounded-[1.45rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-card)_72%,transparent)] px-6 py-10 text-center shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_10%,transparent)]">
-                  <p className="text-sm font-medium text-[--metis-paper]">No issue records yet</p>
-                  <p className="mt-3 text-sm leading-relaxed text-[--metis-paper-muted]">
-                    Create your first issue to track sources, open questions, briefs, Messages drafts, and exports. Templates are optional — they just
-                    pre-fill the same issue shape. Audience groups you reuse live under Settings → Audience groups.
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center gap-3">
+                  <p className="text-sm font-medium text-[--metis-paper]">
+                    {ledger === "archived" ? "Archived issues" : "Active issues"}
+                    <span className="font-normal text-[--metis-paper-muted]"> ({issues.length})</span>
                   </p>
-                  <Button asChild className="mt-6 rounded-full bg-[--metis-brass] px-5 text-[--metis-dark] hover:bg-[--metis-brass-soft]">
-                    <Link href="/setup">Create an issue</Link>
-                  </Button>
+                  <DashboardLedgerFilter ledger={ledger} />
                 </div>
-              ) : (
-                <>
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex flex-wrap items-center gap-3">
-                      <p className="text-sm text-[--metis-paper-muted]">
-                        {ledger === "archived" ? "Archived issues" : "Active issues"} ({issues.length})
-                      </p>
-                      <DashboardLedgerFilter ledger={ledger} />
-                    </div>
-                    <p className="text-xs text-[--metis-text-tertiary]">Sorted by recent activity. Attention chips highlight rows that may need work.</p>
+                {issues.length > 0 ? (
+                  <p className="text-xs text-[--metis-text-tertiary]">
+                    Sorted by recent activity. Attention chips highlight rows that may need work.
+                  </p>
+                ) : null}
+              </div>
+
+              {issues.length === 0 ? (
+                ledger === "archived" ? (
+                  <div className="rounded-[1.45rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-card)_72%,transparent)] px-6 py-10 text-center shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_10%,transparent)]">
+                    <p className="text-sm font-medium text-[--metis-paper]">No archived issues</p>
+                    <p className="mt-3 text-sm leading-relaxed text-[--metis-paper-muted]">
+                      Archived issues appear here after you archive them from an issue record. Deleted issues are not shown. Switch to Active to
+                      return to your working list.
+                    </p>
+                    <Button
+                      variant="outline"
+                      className="mt-6 rounded-full border-[--metis-outline-subtle] text-[--metis-paper]"
+                      asChild
+                    >
+                      <Link href="/?ledger=active">View active issues</Link>
+                    </Button>
                   </div>
-                  {issues.map((issue) => (
-                    <IssueSummaryRow key={issue.id} issue={issue} />
-                  ))}
-                </>
+                ) : (
+                  <div className="rounded-[1.45rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-card)_72%,transparent)] px-6 py-10 text-center shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_10%,transparent)]">
+                    <p className="text-sm font-medium text-[--metis-paper]">No active issues</p>
+                    <p className="mt-3 text-sm leading-relaxed text-[--metis-paper-muted]">
+                      Create your first issue to track sources, open questions, briefs, Messages drafts, and exports. Templates are optional — they
+                      just pre-fill the same issue shape. Audience groups you reuse live under Settings → Audience groups.
+                    </p>
+                    <Button asChild className="mt-6 rounded-full bg-[--metis-brass] px-5 text-[--metis-dark] hover:bg-[--metis-brass-soft]">
+                      <Link href="/setup">Create an issue</Link>
+                    </Button>
+                  </div>
+                )
+              ) : (
+                issues.map((issue) => (
+                  <IssueSummaryRow key={issue.id} issue={issue} />
+                ))
               )}
             </div>
           </SurfaceCard>

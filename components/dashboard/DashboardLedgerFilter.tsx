@@ -5,7 +5,7 @@ import type { IssueLedger } from "@/lib/issues/issueLifecycle";
 
 export function DashboardLedgerFilter({ ledger }: { ledger: IssueLedger }) {
   const segments: { id: IssueLedger; label: string; href: string }[] = [
-    { id: "active", label: "Active", href: "/" },
+    { id: "active", label: "Active", href: "/?ledger=active" },
     { id: "archived", label: "Archived", href: "/?ledger=archived" },
   ];
 
