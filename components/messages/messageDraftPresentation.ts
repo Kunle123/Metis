@@ -81,3 +81,101 @@ export function formatMessageGeneratedAt(iso: string | null | undefined): string
   if (Number.isNaN(d.getTime())) return null;
   return new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(d);
 }
+
+export const MESSAGE_OUTPUT_WORDING_COPY = {
+  prepareAction: "Prepare AI-polished wording",
+  previewSaveHelper: "Save a draft to prepare AI-polished wording.",
+  primaryOnlyNote: "AI-polished wording applies to the primary message body only. Supporting sections stay on stored wording.",
+  veryClose: "AI-polished wording is very close to the stored draft.",
+  prepareFailed: "AI-polished wording could not be prepared. Stored wording remains available.",
+} as const;
+
+/** @deprecated Use {@link MESSAGE_OUTPUT_WORDING_COPY}. */
+export const MESSAGE_WORDING_COMPARE_COPY = MESSAGE_OUTPUT_WORDING_COPY;
+
+export function normalizeMessageBodyForDiff(text: string): string {
+  return String(text ?? "")
+    .replaceAll("\\n", "\n")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/** Sections for display/copy — deterministic snapshot when present, else stored sections. */
+export function buildSectionsFromDeterministicSnapshot(artifact: MessageVariantArtifact): MessageVariantSection[] {
+  const det = artifact.metadata.deterministicSectionBodiesById;
+  if (!det || typeof det !== "object") {
+    return artifact.sections;
+  }
+  return artifact.sections.map((section) => ({
+    ...section,
+    body: det[section.id] ?? section.body,
+  }));
+}
+
+export type MessageOutputWordingState =
+  | { kind: "none" }
+  | {
+      kind: "available";
+      primarySectionId: string;
+      storedPrimaryBody: string;
+      polishedPrimaryBody: string;
+      veryClose: boolean;
+    }
+  | {
+      kind: "prepare";
+      primarySectionId: string;
+      storedPrimaryBody: string;
+    };
+
+/** @deprecated Use {@link MessageOutputWordingState}. */
+export type MessageWordingCompareState = MessageOutputWordingState;
+
+export function getMessageOutputWordingState(artifact: MessageVariantArtifact): MessageOutputWordingState {
+  const { primary } = splitMessageSectionsForDisplay(artifact.sections);
+  if (!primary) return { kind: "none" };
+
+  const det = artifact.metadata.deterministicSectionBodiesById;
+  const canCompare = Boolean(artifact.metadata.aiComparisonAvailable && det && typeof det === "object");
+  const storedFromSnapshot = det?.[primary.id];
+  const storedPrimaryBody =
+    typeof storedFromSnapshot === "string" && storedFromSnapshot.trim()
+      ? storedFromSnapshot
+      : primary.body;
+
+  if (canCompare && storedFromSnapshot) {
+    const polishedPrimaryBody = primary.body;
+    const veryClose =
+      normalizeMessageBodyForDiff(storedPrimaryBody) === normalizeMessageBodyForDiff(polishedPrimaryBody);
+    return {
+      kind: "available",
+      primarySectionId: primary.id,
+      storedPrimaryBody,
+      polishedPrimaryBody,
+      veryClose,
+    };
+  }
+
+  return {
+    kind: "prepare",
+    primarySectionId: primary.id,
+    storedPrimaryBody,
+  };
+}
+
+/** @deprecated Use {@link getMessageOutputWordingState}. */
+export const getMessageWordingCompareState = getMessageOutputWordingState;
+
+export function buildMessagePolishedFields(
+  wordingState: MessageOutputWordingState,
+): Partial<Record<"messagePrimaryBody", string>> {
+  if (wordingState.kind !== "available") return {};
+  return { messagePrimaryBody: wordingState.polishedPrimaryBody };
+}
+
+/** Artifact shaped for markdown copy / circulation — always stored (deterministic) wording. */
+export function artifactForStoredWordingCopy(artifact: MessageVariantArtifact): MessageVariantArtifact {
+  return {
+    ...artifact,
+    sections: buildSectionsFromDeterministicSnapshot(artifact),
+  };
+}

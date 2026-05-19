@@ -216,7 +216,7 @@ export default async function IssueMessagesPage({
         <div className="border-b border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_45%,transparent)] px-6 py-4 sm:px-7 sm:py-4">
           <div className="flex flex-wrap items-baseline justify-between gap-3">
             <h2 className="font-[Cormorant_Garamond] text-[1.8rem] leading-none text-[--metis-paper]">Messages</h2>
-            <p className="text-xs text-[--metis-paper-muted]">Deterministic preview + optional AI-enhanced view.</p>
+            <p className="text-xs text-[--metis-paper-muted]">Stored message wording with optional AI-polished wording when enabled.</p>
           </div>
         </div>
         <div className="px-6 py-5 sm:px-7 sm:py-6">

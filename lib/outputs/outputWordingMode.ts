@@ -3,7 +3,7 @@ import type { NormalizedAlternateWording } from "@/lib/brief/alternateWording";
 export type OutputWordingMode = "stored" | "ai-polished";
 
 /** Fields that can receive in-place AI-polished display (extensible per output view). */
-export type OutputPolishedFieldId = "currentPosition" | "executiveSummary";
+export type OutputPolishedFieldId = "currentPosition" | "executiveSummary" | "messagePrimaryBody";
 
 export type OutputPolishedFields = Partial<Record<OutputPolishedFieldId, string>>;
 

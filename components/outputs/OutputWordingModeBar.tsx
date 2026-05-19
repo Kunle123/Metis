@@ -21,6 +21,10 @@ export function OutputWordingModeBar({
   canSelectAiPolished,
   polishPreview,
   onPreviewReady,
+  onPreparePolished,
+  prepareActionLabel,
+  prepareLoading,
+  controlHelper,
   className,
 }: {
   wordingMode: OutputWordingMode;
@@ -31,7 +35,13 @@ export function OutputWordingModeBar({
     briefVersionId: string;
     request: BriefPolishPreviewRequest;
   } | null;
-  onPreviewReady: (text: string) => void;
+  onPreviewReady?: (text: string) => void;
+  /** Messages (and other outputs without brief polish-preview API). */
+  onPreparePolished?: () => void | Promise<void>;
+  prepareActionLabel?: string;
+  prepareLoading?: boolean;
+  /** Override default control helper (e.g. preview-only save hint). */
+  controlHelper?: string;
   className?: string;
 }) {
   const router = useRouter();
@@ -59,7 +69,7 @@ export function OutputWordingModeBar({
         return;
       }
       if (data && typeof data === "object" && data.success === true && typeof data.polished === "string") {
-        onPreviewReady(data.polished);
+        onPreviewReady?.(data.polished);
         onWordingModeChange("ai-polished");
         router.refresh();
         return;
@@ -97,19 +107,24 @@ export function OutputWordingModeBar({
             className="w-full min-w-0 sm:max-w-md"
           />
           <p className="max-w-2xl text-[0.62rem] leading-snug text-[--metis-text-tertiary]">
-            {OUTPUT_WORDING_COPY.controlHelper}
+            {controlHelper ?? OUTPUT_WORDING_COPY.controlHelper}
           </p>
         </div>
-        {!canSelectAiPolished && polishPreview ? (
+        {!canSelectAiPolished && (polishPreview || onPreparePolished) ? (
           <Button
             type="button"
             variant="outline"
             size="sm"
             className="h-8 shrink-0 border-[color-mix(in_oklab,var(--metis-status-info-fg)_22%,var(--metis-outline-subtle))] px-2.5 text-[0.68rem]"
-            disabled={loading}
-            onClick={() => void runPreview()}
+            disabled={loading || prepareLoading}
+            onClick={() => {
+              if (polishPreview) void runPreview();
+              else void onPreparePolished?.();
+            }}
           >
-            {loading ? "Generating…" : OUTPUT_WORDING_COPY.previewPolishedAction}
+            {loading || prepareLoading
+              ? "Generating…"
+              : (prepareActionLabel ?? OUTPUT_WORDING_COPY.previewPolishedAction)}
           </Button>
         ) : null}
       </div>

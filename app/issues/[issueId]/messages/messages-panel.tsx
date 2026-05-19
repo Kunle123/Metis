@@ -8,7 +8,6 @@ import { Copy } from "lucide-react";
 import { AiProvenance } from "@/components/ui/ai-provenance";
 import { Button } from "@/components/ui/button";
 import { ControlField, ControlSelect } from "@/components/ui/control";
-import { SegmentedControl } from "@/components/ui/segmented-control";
 import type { MessageApprovalStatus } from "@metis/shared/approvalStatus";
 import { MESSAGE_APPROVAL_STATUS_ORDER, MessageApprovalStatusSchema, approvalStatusDisplayLabel } from "@metis/shared/approvalStatus";
 import type { MessageVariantArtifact, MessageVariantTemplateId } from "@metis/shared/messageVariant";
@@ -16,17 +15,30 @@ import { approvalStatusBadgeClassNames } from "@/lib/approvals/approvalStatusUi"
 import { renderMessageVariantMarkdown } from "@/lib/messages/generateExternalCustomerUpdate";
 import { renderInternalStaffUpdateMarkdown } from "@/lib/messages/generateInternalStaffUpdate";
 import { renderMediaHoldingLineMarkdown } from "@/lib/messages/generateMediaHoldingLine";
+import { AiPolishedField } from "@/components/outputs/AiPolishedField";
+import { OutputWordingModeBar } from "@/components/outputs/OutputWordingModeBar";
 import { MessageDraftCard } from "@/components/messages/MessageDraftCard";
 import { MessageReviewRail } from "@/components/messages/MessageReviewRail";
 import {
+  artifactForStoredWordingCopy,
+  buildMessagePolishedFields,
+  buildSectionsFromDeterministicSnapshot,
   formatMessageGeneratedAt,
+  getMessageOutputWordingState,
+  MESSAGE_OUTPUT_WORDING_COPY,
   primarySectionLabel,
   splitMessageSectionsForDisplay,
 } from "@/components/messages/messageDraftPresentation";
+import {
+  canSelectAiPolishedMode,
+  isFieldShowingAiPolished,
+  resolveOutputFieldText,
+  OUTPUT_WORDING_COPY,
+  type OutputWordingMode,
+} from "@/lib/outputs/outputWordingMode";
 import { CollapsibleSection } from "@/components/review/CollapsibleSection";
 import { ReviewRailCard } from "@/components/review/ReviewRailCard";
 import type { ClaimAlignmentFinding } from "@/lib/conflicts/claimAlignment";
-
 type AudienceGroupOption = { id: string; label: string };
 
 type ClaimAlignmentReview =
@@ -56,11 +68,17 @@ function normalizeBodyText(text: string) {
 function MessageDraftBody({
   templateId,
   sections,
+  primaryBody,
+  isPrimaryAiPolished,
   normalizeBodyText: normalize,
+  showPrimaryOnlyNote,
 }: {
   templateId: MessageVariantTemplateId;
   sections: MessageVariantArtifact["sections"];
+  primaryBody: string;
+  isPrimaryAiPolished: boolean;
   normalizeBodyText: (text: string) => string;
+  showPrimaryOnlyNote?: boolean;
 }) {
   const { primary, supporting } = splitMessageSectionsForDisplay(sections);
 
@@ -71,10 +89,18 @@ function MessageDraftBody({
           <p className="text-[0.58rem] font-medium uppercase tracking-[0.12em] text-[--metis-brass-soft]">
             {primarySectionLabel(templateId)}
           </p>
-          <p className="mt-3 w-full min-w-0 whitespace-pre-line break-words text-[0.9375rem] leading-[1.7] text-[--metis-text-primary]">
-            {normalize(primary.body)}
-          </p>
+          <AiPolishedField active={isPrimaryAiPolished} className="mt-3">
+            <p className="w-full min-w-0 whitespace-pre-line break-words text-[0.9375rem] leading-[1.7] text-[--metis-text-primary]">
+              {normalize(primaryBody)}
+            </p>
+          </AiPolishedField>
         </section>
+      ) : null}
+
+      {showPrimaryOnlyNote ? (
+        <p className="text-[0.68rem] leading-snug text-[--metis-text-tertiary]">
+          {MESSAGE_OUTPUT_WORDING_COPY.primaryOnlyNote}
+        </p>
       ) : null}
 
       {supporting.length ? (
@@ -96,12 +122,8 @@ function MessageDraftBody({
   );
 }
 
-function normalizeForDiff(text: string) {
-  return normalizeBodyText(text).replace(/\s+/g, " ").trim();
-}
-
-const MESSAGES_AI_USER_FAILURE_NOTE =
-  "AI-enhanced wording could not be generated. Original draft is still available.";
+const MESSAGES_AI_PREPARE_FAILURE_NOTE =
+  "AI-polished wording could not be prepared. Stored wording remains available.";
 
 export function MessagesPanel({
   issueId,
@@ -146,10 +168,9 @@ export function MessagesPanel({
   const [loading, setLoading] = useState(false);
   const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
   const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
-  const [aiToggleOn, setAiToggleOn] = useState(false);
-  const [aiRow, setAiRow] = useState<LatestPayload>(null);
   const [aiNote, setAiNote] = useState<string | null>(null);
   const [approvalBusy, setApprovalBusy] = useState(false);
+  const [wordingMode, setWordingMode] = useState<OutputWordingMode>("stored");
 
   const selectValue = selectedStakeholderGroupId === null ? "" : selectedStakeholderGroupId;
 
@@ -179,30 +200,66 @@ export function MessagesPanel({
   ]);
 
   useEffect(() => {
-    // Changing template/audience resets AI view + cached AI row for this selection.
-    setAiToggleOn(false);
-    setAiRow(null);
     setAiNote(null);
   }, [selectedTemplateId, selectedStakeholderGroupId]);
 
-  const canShowAi = Boolean(messagesAiCleanupEnabled);
+  const outputWordingState = useMemo(
+    () => (latest ? getMessageOutputWordingState(latest.artifact) : { kind: "none" as const }),
+    [latest],
+  );
 
-  const compareStats = useMemo(() => {
-    const a = aiRow?.artifact;
-    if (!a) return null;
-    const det = a.metadata.deterministicSectionBodiesById;
-    const canCompare = Boolean(a.metadata.aiComparisonAvailable && det && typeof det === "object");
-    if (!canCompare) return null;
-    const changes = a.sections.filter((s) => normalizeForDiff(s.body) !== normalizeForDiff(String(det?.[s.id] ?? ""))).length;
-    return { changes, total: a.sections.length, veryClose: changes === 0 };
-  }, [aiRow]);
+  const polishedFields = useMemo(() => buildMessagePolishedFields(outputWordingState), [outputWordingState]);
 
-  const visibleArtifact = useMemo(() => {
-    // OFF => always deterministic preview (no DB write required).
-    if (!aiToggleOn) return deterministicPreview;
-    // ON => show AI-enhanced if we have it; otherwise fall back to deterministic while loading/generating.
-    return aiRow?.artifact ?? deterministicPreview;
-  }, [aiToggleOn, aiRow, deterministicPreview]);
+  const canSelectAiPolished = canSelectAiPolishedMode(polishedFields);
+
+  const showWordingControl = messagesAiCleanupEnabled;
+  const isPreviewOnly = !latest;
+  const wordingControlHelper = isPreviewOnly
+    ? MESSAGE_OUTPUT_WORDING_COPY.previewSaveHelper
+    : OUTPUT_WORDING_COPY.controlHelper;
+
+  const storedPrimaryBody = useMemo(() => {
+    if (outputWordingState.kind === "none") {
+      const { primary } = splitMessageSectionsForDisplay(deterministicPreview.sections);
+      return primary?.body ?? "";
+    }
+    return outputWordingState.storedPrimaryBody;
+  }, [outputWordingState, deterministicPreview.sections]);
+
+  const displayPrimaryBody = resolveOutputFieldText({
+    mode: wordingMode,
+    field: "messagePrimaryBody",
+    storedText: storedPrimaryBody,
+    polishedFields,
+  });
+
+  const isPrimaryAiPolished = isFieldShowingAiPolished({
+    mode: wordingMode,
+    field: "messagePrimaryBody",
+    polishedFields,
+  });
+
+  useEffect(() => {
+    if (wordingMode === "ai-polished" && !canSelectAiPolished) {
+      setWordingMode("stored");
+    }
+  }, [wordingMode, canSelectAiPolished]);
+
+  useEffect(() => {
+    setWordingMode("stored");
+  }, [selectedTemplateId, selectedStakeholderGroupId, latest?.id]);
+
+  const storedDisplaySections = useMemo(() => {
+    if (latest) {
+      return buildSectionsFromDeterministicSnapshot(latest.artifact);
+    }
+    return deterministicPreview.sections;
+  }, [latest, deterministicPreview.sections]);
+
+  const copySourceArtifact = useMemo(() => {
+    if (latest) return artifactForStoredWordingCopy(latest.artifact);
+    return deterministicPreview;
+  }, [latest, deterministicPreview]);
 
   const inSync = !latest ? false : savedDraftSynced;
 
@@ -247,20 +304,16 @@ export function MessagesPanel({
 
   const savedDraftLabel = latest ? `Message draft v${latest.versionNumber}` : null;
 
-  const viewingAiPolishedWording = useMemo(() => {
-    return Boolean(visibleArtifact.metadata?.aiWordingPolish === "ai_polished" && aiToggleOn);
-  }, [visibleArtifact.metadata?.aiWordingPolish, aiToggleOn]);
-
   const markdown = useMemo(() => {
-    if (!visibleArtifact) return "";
-    if (visibleArtifact.templateId === "internal_staff_update") {
-      return renderInternalStaffUpdateMarkdown(issueTitle, visibleArtifact);
+    if (!copySourceArtifact) return "";
+    if (copySourceArtifact.templateId === "internal_staff_update") {
+      return renderInternalStaffUpdateMarkdown(issueTitle, copySourceArtifact);
     }
-    if (visibleArtifact.templateId === "media_holding_line") {
-      return renderMediaHoldingLineMarkdown(issueTitle, visibleArtifact);
+    if (copySourceArtifact.templateId === "media_holding_line") {
+      return renderMediaHoldingLineMarkdown(issueTitle, copySourceArtifact);
     }
-    return renderMessageVariantMarkdown(issueTitle, visibleArtifact);
-  }, [visibleArtifact, issueTitle]);
+    return renderMessageVariantMarkdown(issueTitle, copySourceArtifact);
+  }, [copySourceArtifact, issueTitle]);
 
   function navigateToLens(nextGroupId: string | null) {
     const q = nextGroupId === null ? "issue" : nextGroupId;
@@ -301,10 +354,10 @@ export function MessagesPanel({
     }
   }
 
-  async function ensureAiEnhanced(): Promise<boolean> {
-    if (!messagesAiCleanupEnabled) return false;
-    // If we already have an AI row for this view state, keep it.
-    if (aiRow?.artifact?.metadata?.aiComparisonAvailable) return true;
+  async function prepareAiPolishedWording(): Promise<boolean> {
+    if (!messagesAiCleanupEnabled || !latest) return false;
+    if (outputWordingState.kind === "available") return true;
+
     setLoading(true);
     setAiNote(null);
     try {
@@ -332,70 +385,43 @@ export function MessagesPanel({
             deterministicFallbackAvailable: true,
           });
         }
-        setAiNote(MESSAGES_AI_USER_FAILURE_NOTE);
+        setAiNote(MESSAGES_AI_PREPARE_FAILURE_NOTE);
         return false;
       }
 
       const row = data as SavedDraftRow & { aiCleanup?: { ok: boolean; error?: string; detail?: string } };
-
       ingestSuccessfulVariantSave(row);
 
       if (row.aiCleanup?.ok === false) {
         if (process.env.NODE_ENV === "development") {
-          console.warn("[Messages AI] cleanup unsuccessful (deterministic variant saved)", {
+          console.warn("[Messages AI] cleanup unsuccessful (stored draft saved)", {
             error: row.aiCleanup.error,
             detail: row.aiCleanup.detail,
-            deterministicFallbackAvailable: true,
           });
         }
-        setAiNote(MESSAGES_AI_USER_FAILURE_NOTE);
+        setAiNote(MESSAGES_AI_PREPARE_FAILURE_NOTE);
         router.refresh();
         return false;
       }
 
-      setAiRow({
-        id: row.id,
-        versionNumber: row.versionNumber,
-        generatedFromIssueUpdatedAt: row.generatedFromIssueUpdatedAt,
-        stakeholderGroupId: row.stakeholderGroupId,
-        issueStakeholderId: row.issueStakeholderId,
-        artifact: row.artifact,
-        approvalStatus: row.approvalStatus,
-        approvalUpdatedAt: row.approvalUpdatedAt,
-        approvalUpdatedByUserId: row.approvalUpdatedByUserId,
-      });
       router.refresh();
-      const hasCompare = Boolean(row.artifact.metadata.aiComparisonAvailable && row.artifact.metadata.deterministicSectionBodiesById);
-      if (!hasCompare) {
-        setAiNote("AI-enhanced text was very close to the original; showing the original draft.");
+      const nextWording = getMessageOutputWordingState(row.artifact);
+      if (nextWording.kind !== "available") {
+        setAiNote(MESSAGE_OUTPUT_WORDING_COPY.veryClose);
         return false;
       }
+      setWordingMode("ai-polished");
       return true;
     } catch (e) {
       if (process.env.NODE_ENV === "development") {
-        console.warn("[Messages AI] ensureAiEnhanced failed", {
-          deterministicFallbackAvailable: true,
+        console.warn("[Messages AI] prepareAiPolishedWording failed", {
           ...(e instanceof Error ? { errorName: e.name, errorMessage: e.message } : { thrown: typeof e }),
         });
       }
-      setAiNote(MESSAGES_AI_USER_FAILURE_NOTE);
+      setAiNote(MESSAGES_AI_PREPARE_FAILURE_NOTE);
       return false;
     } finally {
       setLoading(false);
-    }
-  }
-
-  async function toggleAi(nextOn: boolean) {
-    setAiNote(null);
-    if (!nextOn) {
-      setAiToggleOn(false);
-      return;
-    }
-    // Turning ON should lazily generate/cached AI-enhanced version.
-    setAiToggleOn(true);
-    const ok = await ensureAiEnhanced();
-    if (!ok) {
-      setAiToggleOn(false);
     }
   }
 
@@ -408,9 +434,9 @@ export function MessagesPanel({
         setCopyFeedback("Copied preview is not a saved draft version.");
       } else {
         setCopyFeedback(
-          viewingAiPolishedWording
-            ? `Copied AI-enhanced wording for ${savedDraftLabel}. Alternate wording only — not a separate draft or higher-truth version.`
-            : `Copied original wording for ${savedDraftLabel}.`,
+          latest
+            ? `Copied stored wording for ${savedDraftLabel}. AI-polished display wording is not included in copy.`
+            : "Copied preview wording — not a saved draft version.",
         );
       }
       setTimeout(() => {
@@ -466,9 +492,6 @@ export function MessagesPanel({
           <span className="text-[--metis-text-primary]">Refresh saved draft</span> to regenerate from the record.
         </>
       )}
-      {viewingAiPolishedWording ? (
-        <span className="mt-1 block">AI-enhanced wording is an alternate view — not a separate approved version.</span>
-      ) : null}
     </>
   ) : (
     <>Preview only — not reviewed for claim alignment until you save a numbered draft.</>
@@ -479,7 +502,7 @@ export function MessagesPanel({
       <div className="min-w-0 space-y-4">
         {/* Configure (template / audience / wording) */}
         <div className="rounded-[1.25rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_40%,transparent)] px-4 py-4 sm:px-5 shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_22%,transparent)]">
-          <div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid min-w-0 gap-3 sm:grid-cols-2">
             <ControlField label="Template">
               <ControlSelect
                 aria-label="Message template"
@@ -510,20 +533,6 @@ export function MessagesPanel({
               </ControlSelect>
             </ControlField>
 
-            <SegmentedControl<"original" | "ai">
-              label="Wording"
-              disabled={loading}
-              value={aiToggleOn ? "ai" : "original"}
-              options={[
-                { id: "original", label: "Original" },
-                { id: "ai", label: "AI-enhanced", disabled: !canShowAi },
-              ]}
-              onChange={(next) => {
-                if (next === "original") void toggleAi(false);
-                else void toggleAi(true);
-              }}
-              className="min-w-0 lg:max-w-xl"
-            />
           </div>
 
           <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-[--metis-outline-subtle] pt-3 text-xs text-[--metis-paper-muted]">
@@ -532,9 +541,8 @@ export function MessagesPanel({
               <span className="text-[--metis-paper]">{selectedTemplateId.replaceAll("_", " ")}</span> ·{" "}
               <span className="text-[--metis-paper]">{selectedAudienceGroupLabel}</span>
               <span className="ml-2">{audienceHelperText}</span>
-              {aiToggleOn && loading ? <span className="ml-2">· Preparing AI wording…</span> : null}
+              {loading ? <span className="ml-2">· Preparing AI-polished wording…</span> : null}
               {aiNote ? <span className="ml-2">· {aiNote}</span> : null}
-              {aiToggleOn && compareStats?.veryClose ? <span className="ml-2">· AI wording is very close to the original.</span> : null}
             </div>
             <Link href="/audience-groups" className="text-xs text-[--metis-brass-soft] underline-offset-4 hover:underline">
               Manage audience groups →
@@ -550,7 +558,7 @@ export function MessagesPanel({
           inSync={inSync}
           approvalStatus={latest?.approvalStatus ?? null}
           claimFindingCount={claimFindings.length}
-          headline={visibleArtifact.metadata.publicHeadline}
+          headline={(latest?.artifact ?? deterministicPreview).metadata.publicHeadline}
           provenanceLine={provenanceLine}
           statusNote={draftStatusNote}
           controls={
@@ -570,12 +578,7 @@ export function MessagesPanel({
                     <Copy className="mr-2 h-3.5 w-3.5" />
                     {copyState === "copied" ? "Copied" : copyState === "error" ? "Copy failed" : "Copy"}
                   </Button>
-                  {canShowAi && aiToggleOn && aiRow ? (
-                    <Button type="button" variant="outline" size="sm" disabled={loading} onClick={() => void ensureAiEnhanced()}>
-                      Refresh AI wording
-                    </Button>
-                  ) : null}
-                  <AiProvenance mode={aiToggleOn ? "ai" : "original"} />
+                  <AiProvenance mode="original" />
                 </div>
                 <p className="min-w-0 text-[0.72rem] leading-snug text-[--metis-text-tertiary]">
                   {!latest ? "Copying preview does not create a saved version." : !inSync ? "Refresh regenerates from the latest issue snapshot." : "Save new version when wording should be re-derived."}
@@ -619,10 +622,28 @@ export function MessagesPanel({
             </div>
           }
         >
+          {showWordingControl ? (
+            <OutputWordingModeBar
+              wordingMode={wordingMode}
+              onWordingModeChange={setWordingMode}
+              canSelectAiPolished={canSelectAiPolished}
+              controlHelper={wordingControlHelper}
+              onPreparePolished={latest ? () => void prepareAiPolishedWording() : undefined}
+              prepareActionLabel={MESSAGE_OUTPUT_WORDING_COPY.prepareAction}
+              prepareLoading={loading}
+              className="-mx-1 mb-4 rounded-md border border-[color-mix(in_oklab,var(--metis-outline-subtle)_80%,transparent)] bg-[color-mix(in_oklab,var(--metis-surface-toolbar)_22%,transparent)] px-3 py-2.5"
+            />
+          ) : null}
+          {aiNote && showWordingControl ? (
+            <p className="mb-3 text-[0.68rem] leading-snug text-[--metis-status-warning-fg]">{aiNote}</p>
+          ) : null}
           <MessageDraftBody
             templateId={selectedTemplateId}
-            sections={visibleArtifact.sections}
+            sections={storedDisplaySections}
+            primaryBody={displayPrimaryBody}
+            isPrimaryAiPolished={isPrimaryAiPolished}
             normalizeBodyText={normalizeBodyText}
+            showPrimaryOnlyNote={showWordingControl}
           />
         </MessageDraftCard>
       </div>
