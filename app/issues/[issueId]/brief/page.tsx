@@ -7,7 +7,6 @@ import { ConfidencePill, SurfaceCard, MetisShell } from "@/components/MetisShell
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CollapsibleSection } from "@/components/review/CollapsibleSection";
-import { DenseSection } from "@/components/review/DenseSection";
 import { ReviewRailCard } from "@/components/review/ReviewRailCard";
 import { SourceReliabilityMeta } from "@/components/review/SourceReliabilityMeta";
 import { ReviewToolbar } from "@/components/review/ReviewToolbar";
@@ -21,25 +20,16 @@ import { isStoredBriefModeStale } from "@/lib/brief/briefFreshness";
 import { GenerateBriefButton } from "@/app/brief/generate-brief-button";
 import { IntakeSuggestionsPanel } from "@/app/issues/[issueId]/brief/intake-suggestions-panel";
 import { BriefModeToggle } from "@/app/issues/[issueId]/brief/brief-mode-toggle";
-import { BriefExecutiveSummaryCompare } from "@/app/issues/[issueId]/brief/brief-executive-summary-compare";
 import { ExecutiveBriefPresentation } from "@/components/brief/ExecutiveBriefPresentation";
+import { FullBriefPresentation } from "@/components/brief/FullBriefPresentation";
 import { getAlternateWordingForTarget } from "@/lib/brief/alternateWording";
+import { getExecutiveSummaryBlockBody } from "@/lib/brief/executiveBriefWordingMode";
 import { BRIEF_FRESHNESS_BENIGN_ACTIVITY_KINDS } from "@/lib/brief/briefFreshness";
 import { parseExecutiveBriefPresentation } from "@/lib/brief/parseExecutiveBriefPresentation";
 import { activityKindLabel } from "@/lib/issues/activityTimelineDisplay";
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
-
-function readinessFromConfidence(confidence: BriefConfidence) {
-  if (confidence === "Needs validation")
-    return { label: "Needs validation", tone: "bg-[--metis-status-danger-bg] text-[--metis-status-danger-fg]" };
-  if (confidence === "Unclear")
-    return { label: "Needs clarification", tone: "bg-[--metis-status-warning-bg] text-[--metis-status-warning-fg]" };
-  if (confidence === "Confirmed")
-    return { label: "Ready to circulate", tone: "bg-[--metis-status-success-bg] text-[--metis-status-success-fg]" };
-  return { label: "Ready for review", tone: "bg-[--metis-status-neutral-bg] text-[--metis-status-neutral-fg]" };
-}
 
 function displayTitles(id: string, fallback: string) {
   const map: Record<string, string> = {
@@ -139,6 +129,7 @@ export default async function IssueBriefPage({
     kind: "block",
     id: "Executive summary",
   });
+  const executiveSummaryStoredBody = getExecutiveSummaryBlockBody(artifact?.executive.blocks);
   const briefStaleForCurrentMode = briefVersion
     ? isStoredBriefModeStale({
         hasStoredBrief: true,
@@ -220,6 +211,13 @@ export default async function IssueBriefPage({
           issueId: issue.id,
           briefVersionId: briefVersion.id,
           hasExistingAlternate: executiveExecAlternateWording?.status === "succeeded",
+        }
+      : null;
+  const fullPolishPreviewContext =
+    mode === "full" && latestExecutiveBrief
+      ? {
+          issueId: issue.id,
+          briefVersionId: latestExecutiveBrief.id,
         }
       : null;
 
@@ -392,55 +390,22 @@ export default async function IssueBriefPage({
               <div id="brief-step-4-label">{briefStepLabel("4", "Read brief")}</div>
               <p className="text-[0.72rem] leading-snug text-[--metis-text-tertiary]">
                 {mode === "executive"
-                  ? "Executive brief uses a leadership presentation layout. Compare wording (when enabled) is a secondary control under Current position. Raw generated blocks sit under View generated text."
-                  : "Stored brief text for the mode you selected. Optional alternate executive wording (when enabled) appears only inside the executive summary area as a comparison."}
+                  ? "Executive brief uses a leadership presentation layout. When AI synthesis is enabled, use the Wording control below the header to view AI-polished text in place (highlighted fields). Raw generated blocks sit under View generated text."
+                  : "Stored brief text for the mode you selected. When AI synthesis is enabled, use the Wording control below the header to view AI-polished Executive summary in place (highlighted fields)."}
               </p>
 
               {artifact ? (
-                mode === "full" ? (
-                  <div className="rounded-[1.15rem] border border-[--metis-outline-subtle] bg-[color-mix(in_oklab,var(--metis-frame-soft)_86%,transparent)] px-3 py-4 shadow-[inset_0_1px_0_color-mix(in_oklab,var(--metis-outline-strong)_18%,transparent)] sm:px-5 sm:py-5">
-                    <div className="rounded-[1rem] border border-[--metis-outline-subtle] bg-[--metis-surface-card] px-3 py-4 sm:px-5 sm:py-5">
-                      <div className="space-y-6">
-                        {artifact.full.sections.map((section, index) => {
-                          const readiness = readinessFromConfidence(section.confidence);
-                          return (
-                            <DenseSection
-                              key={section.id}
-                              title={
-                                <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
-                                  <div className="min-w-0 space-y-2">
-                                    <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                                      <span className="text-[0.55rem] uppercase tracking-[0.18em] text-[--metis-text-tertiary]">
-                                        {String(index + 1).padStart(2, "0")}
-                                      </span>
-                                      <span className="text-base font-semibold leading-6 text-[--metis-text-primary]">
-                                        {displayTitles(section.id, section.title)}
-                                      </span>
-                                    </div>
-                                  </div>
-                                  <span className="shrink-0 text-xs text-[--metis-text-secondary]">
-                                    {readiness.label} · Updated {section.updatedAtLabel}
-                                  </span>
-                                </div>
-                              }
-                              className={index === 0 ? "border-t-0 pt-0" : undefined}
-                            >
-                              {section.id === "executive-summary" ? (
-                                <BriefExecutiveSummaryCompare
-                                  deterministicBody={section.body}
-                                  alternateWording={fullExecAlternateWording}
-                                  briefAiSynthesisEnabled={briefAiSynthesisEnabled}
-                                  polishPreview={null}
-                                />
-                              ) : (
-                                <p className="max-w-4xl whitespace-pre-line leading-7 text-[--metis-text-secondary]">{section.body}</p>
-                              )}
-                            </DenseSection>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
+                mode === "full" && briefVersion ? (
+                  <FullBriefPresentation
+                    title={issue.title}
+                    briefVersionLabel={storedBriefRevisionLabel ?? "Stored brief"}
+                    briefInSync={briefInSync}
+                    sections={artifact.full.sections}
+                    displayTitle={displayTitles}
+                    execSummaryAlternateWording={fullExecAlternateWording}
+                    briefAiSynthesisEnabled={briefAiSynthesisEnabled}
+                    polishPreview={fullPolishPreviewContext}
+                  />
                 ) : executivePresentationModel && briefVersion ? (
                   <ExecutiveBriefPresentation
                       model={executivePresentationModel}
@@ -452,6 +417,7 @@ export default async function IssueBriefPage({
                       executiveExecAlternateWording={executiveExecAlternateWording}
                       briefAiSynthesisEnabled={briefAiSynthesisEnabled}
                       polishPreview={executivePolishPreviewContext}
+                      executiveSummaryStoredBody={executiveSummaryStoredBody}
                     />
                 ) : null
               ) : (

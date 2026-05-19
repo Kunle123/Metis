@@ -1,8 +1,20 @@
+"use client";
+
 import type { ReactNode } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { AlertCircle } from "lucide-react";
 
-import { BriefExecutiveSummaryCompare } from "@/app/issues/[issueId]/brief/brief-executive-summary-compare";
+import { AiPolishedField } from "@/components/outputs/AiPolishedField";
+import { OutputWordingModeBar } from "@/components/outputs/OutputWordingModeBar";
+import {
+  buildExecutivePolishedFields,
+  canSelectExecutiveAiPolishedMode,
+  executiveBriefWordingCompareDeterministicBody,
+  isFieldShowingAiPolished,
+  shouldShowExecutiveBriefWordingControl,
+  type ExecutiveBriefWordingMode,
+} from "@/lib/brief/executiveBriefWordingMode";
 import { ExecutiveBriefSection } from "@/components/brief/ExecutiveBriefSection";
 import { Badge } from "@/components/ui/badge";
 import { CollapsibleSection } from "@/components/review/CollapsibleSection";
@@ -168,6 +180,7 @@ export function ExecutiveBriefPresentation({
   executiveExecAlternateWording,
   briefAiSynthesisEnabled,
   polishPreview,
+  executiveSummaryStoredBody,
 }: {
   model: ExecutiveBriefPresentationModel;
   issueId: string;
@@ -178,14 +191,58 @@ export function ExecutiveBriefPresentation({
   executiveExecAlternateWording: NormalizedAlternateWording;
   briefAiSynthesisEnabled: boolean;
   polishPreview?: { issueId: string; briefVersionId: string; hasExistingAlternate: boolean } | null;
+  /** Raw Executive summary block body from the stored artifact (compare target). */
+  executiveSummaryStoredBody: string;
 }) {
   const ownerForDecision = (owner: string | null) => {
     if (owner && !/not recorded|not assigned/i.test(owner)) return owner;
     return "Owner not assigned";
   };
 
+  const [wordingMode, setWordingMode] = useState<ExecutiveBriefWordingMode>("stored");
+  const [previewPolishedBody, setPreviewPolishedBody] = useState<string | null>(null);
+
   const { narrative, whyItMatters } = splitExecutiveSummary(model.position.executiveSummary);
   const executiveSummaryBody = narrative.trim() || model.position.executiveSummary.trim();
+  const storedCurrentPositionBody = executiveBriefWordingCompareDeterministicBody({
+    executiveSummaryStoredBody,
+    presentationExecutiveSummary: executiveSummaryBody || model.position.executiveSummary,
+  });
+
+  const polishedFields = buildExecutivePolishedFields({
+    alternateWording: executiveExecAlternateWording,
+    previewPolishedBody,
+    storedCurrentPositionBody,
+  });
+
+  const canSelectAiPolished = canSelectExecutiveAiPolishedMode(polishedFields);
+  const showWordingControl = shouldShowExecutiveBriefWordingControl({
+    briefAiSynthesisEnabled,
+    hasBriefVersion: Boolean(polishPreview),
+  });
+
+  const isCurrentPositionAi = isFieldShowingAiPolished({
+    mode: wordingMode,
+    field: "currentPosition",
+    polishedFields,
+  });
+
+  const storedNarrative = executiveSummaryBody;
+  const aiPositionSplit = polishedFields.currentPosition
+    ? splitExecutiveSummary(polishedFields.currentPosition)
+    : { narrative: "", whyItMatters: null as string | null };
+
+  const displayNarrative = isCurrentPositionAi
+    ? aiPositionSplit.narrative.trim() || polishedFields.currentPosition?.trim() || ""
+    : storedNarrative;
+
+  const displayWhyItMatters = isCurrentPositionAi ? aiPositionSplit.whyItMatters : whyItMatters;
+
+  useEffect(() => {
+    if (wordingMode === "ai-polished" && !canSelectAiPolished) {
+      setWordingMode("stored");
+    }
+  }, [wordingMode, canSelectAiPolished]);
 
   const assumptionItems = dedupeLineItems(model.claimGroups.filter((g) => g.id === "assumptions").flatMap((g) => g.items));
   const needsValidationItems = dedupeLineItems(
@@ -275,6 +332,20 @@ export function ExecutiveBriefPresentation({
           </p>
         </header>
 
+        {showWordingControl && polishPreview ? (
+          <OutputWordingModeBar
+            wordingMode={wordingMode}
+            onWordingModeChange={setWordingMode}
+            canSelectAiPolished={canSelectAiPolished}
+            polishPreview={{
+              issueId: polishPreview.issueId,
+              briefVersionId: polishPreview.briefVersionId,
+              request: { mode: "executive", scope: "executive-summary" },
+            }}
+            onPreviewReady={(text) => setPreviewPolishedBody(text)}
+          />
+        ) : null}
+
         <div className="space-y-5 px-4 py-5 sm:space-y-6 sm:px-7 sm:py-6">
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:gap-6">
             <ExecutiveBriefSection variant="emphasis" accent="brass" eyebrow="Read first" title="Current position">
@@ -292,26 +363,37 @@ export function ExecutiveBriefPresentation({
                 </p>
               ) : null}
 
-              {executiveSummaryBody ? (
-                <div className={cn("max-w-[42rem] border-t border-[color-mix(in_oklab,var(--metis-outline-subtle)_70%,transparent)] pt-4", PROSE_RESET)}>
-                  <BriefExecutiveSummaryCompare
-                    deterministicBody={executiveSummaryBody}
-                    alternateWording={executiveExecAlternateWording}
-                    briefAiSynthesisEnabled={briefAiSynthesisEnabled}
-                    polishPreview={polishPreview}
-                    layout="executive"
-                  />
-                </div>
-              ) : (
+              {displayNarrative ? (
+                <AiPolishedField
+                  active={isCurrentPositionAi}
+                  className={cn(
+                    "max-w-[42rem]",
+                    (recordSufficiencyParagraphs.length > 0 || showLede) &&
+                      "border-t border-[color-mix(in_oklab,var(--metis-outline-subtle)_70%,transparent)] pt-4",
+                    PROSE_RESET,
+                  )}
+                >
+                  <p
+                    className={cn(
+                      "whitespace-pre-line text-[0.875rem] leading-[1.7]",
+                      isCurrentPositionAi ? "text-[--metis-text-primary]" : "text-[--metis-text-secondary]",
+                    )}
+                  >
+                    {displayNarrative}
+                  </p>
+                  {displayWhyItMatters ? (
+                    <div className="mt-4 border-t border-[color-mix(in_oklab,var(--metis-outline-subtle)_70%,transparent)] pt-3">
+                      <p className="text-[0.58rem] font-medium uppercase tracking-[0.14em] text-[--metis-text-tertiary]">
+                        Why it matters
+                      </p>
+                      <p className="mt-1.5 text-[0.8125rem] leading-[1.55] text-[--metis-text-secondary]">{displayWhyItMatters}</p>
+                    </div>
+                  ) : null}
+                </AiPolishedField>
+              ) : !recordSufficiencyParagraphs.length && !showLede ? (
                 <p className="text-[0.8125rem] text-[--metis-text-tertiary]">No executive summary recorded.</p>
-              )}
-
-              {whyItMatters ? (
-                <div className="mt-4 max-w-[42rem] border-t border-[color-mix(in_oklab,var(--metis-outline-subtle)_70%,transparent)] pt-3">
-                  <p className="text-[0.58rem] font-medium uppercase tracking-[0.14em] text-[--metis-text-tertiary]">Why it matters</p>
-                  <p className="mt-1.5 text-[0.8125rem] leading-[1.55] text-[--metis-text-secondary]">{whyItMatters}</p>
-                </div>
               ) : null}
+
             </ExecutiveBriefSection>
 
             <ExecutiveBriefSection variant="neutral" accent="none" eyebrow="Action" title="Decisions needed">
