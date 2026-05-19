@@ -18,6 +18,10 @@ const baseIssue = {
   confirmedFacts: "Fact A",
   openQuestions: "Q1\nQ2",
   audience: "Board",
+  archivedAt: null,
+  archivedById: null,
+  deletedAt: null,
+  deletedById: null,
 } as unknown as Issue;
 
 const out = buildBriefSynthesisInput({

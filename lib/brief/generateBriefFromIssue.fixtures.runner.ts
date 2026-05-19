@@ -47,6 +47,10 @@ const baseIssue: Issue = {
   observationCodeSeq: 0,
   claimCodeSeq: 0,
   lastActivityAt: new Date(),
+  archivedAt: null,
+  archivedById: null,
+  deletedAt: null,
+  deletedById: null,
   createdAt: new Date(),
   updatedAt: new Date(),
 };
