@@ -1,0 +1,26 @@
+{
+  "name": "metis-walkthrough-video",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Metis product walkthrough — Remotion composition (1920×1080, ~2 min)",
+  "scripts": {
+    "studio": "remotion studio",
+    "preview": "remotion preview",
+    "render": "remotion render MetisWalkthrough out/metis-walkthrough.mp4",
+    "render:hq": "remotion render MetisWalkthrough out/metis-walkthrough.mp4 --codec=h264 --crf=18",
+    "voiceover": "node scripts/generate-voiceover.mjs"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.286",
+    "@remotion/google-fonts": "^4.0.286",
+    "@remotion/renderer": "^4.0.286",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "remotion": "^4.0.286"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "typescript": "^6.0.3"
+  }
+}
