@@ -11,6 +11,7 @@ function isApiPath(pathname: string) {
 
 function isPublicApi(pathname: string) {
   if (pathname.startsWith("/api/auth")) return true;
+  if (pathname === "/api/briefing-review" || pathname.startsWith("/api/briefing-review/")) return true;
   if (pathname === "/api/clerk/webhooks" || pathname.startsWith("/api/clerk/webhooks/")) return true;
   return false;
 }
@@ -33,6 +34,7 @@ function isAuthUiPublicPath(pathname: string) {
 
 function isPublicPagePath(pathname: string) {
   if (pathname === "/demo" || pathname.startsWith("/demo/")) return true;
+  if (pathname === "/briefing-review" || pathname.startsWith("/briefing-review/")) return true;
   return false;
 }
 
