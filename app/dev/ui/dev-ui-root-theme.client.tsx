@@ -1,64 +1,20 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useLayoutEffect } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import type { ReactNode } from "react";
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import {
-  applyRootDevThemePreview,
-  parseDevThemePreview,
-  readDevThemePreviewFromQuery,
-  readStoredDevThemePreview,
-  storeDevThemePreview,
-  type DevThemePreview,
-} from "@/components/dev/dev-theme-preview";
 
-function DevUiRootThemeInner({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const preview: DevThemePreview = parseDevThemePreview(searchParams.get("theme")) ?? "dark";
-
-  useLayoutEffect(() => {
-    if (!pathname?.startsWith("/dev/ui")) return;
-    const fromQuery = readDevThemePreviewFromQuery(window.location.search) ?? parseDevThemePreview(searchParams.get("theme"));
-    // Query param wins on `/dev/ui`. If absent, fall back to stored dev preview if present.
-    const next = fromQuery ?? readStoredDevThemePreview() ?? "dark";
-    applyRootDevThemePreview(next);
-  }, [pathname, searchParams]);
-
-  useEffect(() => {
-    return () => {
-      // Leaving `/dev/ui` should restore the global dev preview choice (if any), not forcibly dark.
-      const next = readStoredDevThemePreview() ?? "dark";
-      applyRootDevThemePreview(next);
-    };
-  }, []);
-
-  const syncUrl = useCallback(
-    (next: DevThemePreview) => {
-      const nextParams = new URLSearchParams(searchParams.toString());
-      if (next === "light") nextParams.set("theme", "light");
-      else nextParams.delete("theme");
-      const qs = nextParams.toString();
-      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
-    },
-    [pathname, router, searchParams],
-  );
-
-  const setPreviewTracked = useCallback(
-    (next: DevThemePreview) => {
-      if (!pathname?.startsWith("/dev/ui")) return;
-      storeDevThemePreview(next);
-      applyRootDevThemePreview(next);
-      syncUrl(next);
-    },
-    [pathname, syncUrl],
-  );
-
-  if (!pathname?.startsWith("/dev/ui")) {
-    return <>{children}</>;
-  }
+/**
+ * Dev preview bar for `/dev/ui` — quick light / dark override for visual
+ * token inspection.  Now delegates to `next-themes` instead of raw classList
+ * manipulation, so the switch propagates through all `useTheme` consumers.
+ */
+export function DevUiRootTheme({ children }: { children: ReactNode }) {
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   return (
     <>
@@ -66,34 +22,23 @@ function DevUiRootThemeInner({ children }: { children: React.ReactNode }) {
         <div className="min-w-0 space-y-1">
           <p className="text-[0.62rem] font-semibold uppercase tracking-[0.18em] text-[--metis-text-tertiary]">Dev preview · root theme class</p>
           <p className="text-sm leading-snug text-[--metis-text-secondary]">
-            Nested <code className="rounded bg-[color-mix(in_oklab,var(--metis-frame-soft)_82%,transparent)] px-1">.light</code> wrappers are invalid when{" "}
-            <code className="rounded px-1">{'<html>'}</code> stays <code className="rounded px-1">dark</code> — the document body and Metis shell never resolve
-            light tokens, so chips/inputs look washed out. This control sets <code className="rounded px-1">dark</code> or <code className="rounded px-1">light</code>{" "}
-            on <code className="rounded px-1">{'<html>'}</code> (exactly one); leaving the route restores <code className="rounded px-1">dark</code>.
-          </p>
-          <p className="text-xs text-[--metis-text-tertiary]">
-            Bookmark <span className="font-mono text-[--metis-text-secondary]">/dev/ui?theme=light</span>.
+            Switch theme for visual token inspection. Uses the same{" "}
+            <code className="rounded bg-[color-mix(in_oklab,var(--metis-frame-soft)_82%,transparent)] px-1">next-themes</code>{" "}
+            provider as the production appearance control.
           </p>
         </div>
-        <div className="flex shrink-0 gap-2">
-          <Button type="button" variant={preview === "dark" ? "default" : "outline"} size="sm" onClick={() => setPreviewTracked("dark")}>
-            Dark preview
-          </Button>
-          <Button type="button" variant={preview === "light" ? "default" : "outline"} size="sm" onClick={() => setPreviewTracked("light")}>
-            Light preview
-          </Button>
-        </div>
+        {mounted ? (
+          <div className="flex shrink-0 gap-2">
+            <Button type="button" variant={theme === "dark" ? "default" : "outline"} size="sm" onClick={() => setTheme("dark")}>
+              Dark preview
+            </Button>
+            <Button type="button" variant={theme === "light" ? "default" : "outline"} size="sm" onClick={() => setTheme("light")}>
+              Light preview
+            </Button>
+          </div>
+        ) : null}
       </div>
       {children}
     </>
-  );
-}
-
-/** `/dev/ui`: toggles `document.documentElement` between `dark` and `light`; restores `dark` on unmount. Wrapped in `Suspense` for `useSearchParams`. */
-export function DevUiRootTheme({ children }: { children: React.ReactNode }) {
-  return (
-    <Suspense fallback={<>{children}</>}>
-      <DevUiRootThemeInner>{children}</DevUiRootThemeInner>
-    </Suspense>
   );
 }

@@ -225,7 +225,7 @@
 }
 
 /*
- * Light theme scaffold: apply on `html.light` (via `/dev/ui` dev preview only — production keeps `html.dark`).
+ * Light theme scaffold: applied when `html.light` is set (via the Appearance control or system preference).
  * Nested `.light` islands are invalid when `html.dark` remains: body / shell / Card keep dark literals and token inheritance breaks.
  * :root retains dark-oriented values unchanged.
  */
@@ -515,7 +515,7 @@
 }
 
 /*
- * `html.light` is only toggled from `/dev/ui` (production stays `html.dark`).
+ * `html.light` overrides for component-specific selectors.
  * IMPORTANT: Keep these rules UNLAYERED. Identical selectors lived in `@layer base` but Tailwind utilities
  * (shell stage gradient, bg utilities on cards, etc.) still won the cascade inside their layer.
  */

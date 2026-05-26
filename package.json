@@ -39,7 +39,13 @@
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
     "db:clean-validation-users": "tsx scripts/clean-validation-users.ts",
-    "provision:user": "node scripts/provision-user.mjs"
+    "provision:user": "node scripts/provision-user.mjs",
+    "video:studio": "npm run studio --prefix video/walkthrough",
+    "video:render": "npm run render --prefix video/walkthrough",
+    "video:voiceover": "npm run voiceover --prefix video/walkthrough",
+    "video:voiceover:alba": "npm run voiceover:alba --prefix video/walkthrough",
+    "video:render:light": "npm run render:light --prefix video/walkthrough",
+    "video:voiceover:light": "npm run voiceover:light --prefix video/walkthrough"
   },
   "prisma": {
     "schema": "db/prisma/schema.prisma",
@@ -53,6 +59,7 @@
     "jose": "^6.2.2",
     "lucide-react": "^1.8.0",
     "next": "^16.2.4",
+    "next-themes": "^0.4.6",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "zod": "^4.3.6"

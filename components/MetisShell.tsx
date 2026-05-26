@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { AppearanceControl } from "@/components/theme/AppearanceControl";
 import { LogoutButton } from "@/components/LogoutButton";
 import { confidenceDisplayLabel } from "@/lib/ui/confidenceDisplayLabel";
 import {
@@ -577,6 +578,8 @@ export function MetisShell({
                   .map((i) => ({ id: i.id, href: navHrefForItem(i), label: i.shortLabel, isActive: i.path === activePath })),
               })}
             </nav>
+
+            <AppearanceControl className="mt-4 pt-3 border-t border-[color-mix(in_oklab,var(--metis-outline-subtle)_52%,transparent)]" />
           </div>
 
           <div className="shrink-0 border-t border-[color-mix(in_oklab,var(--metis-outline-subtle)_72%,transparent)] pt-3">
