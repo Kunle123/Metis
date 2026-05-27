@@ -210,6 +210,12 @@ export function MetisShell({
   organisationMembershipRole = null,
   issueRoutePrefix,
   activeIssue,
+  /** Below `md`, show this as the shell page title instead of `pageTitle` (dashboard: `Issues`). */
+  shellPageTitleShort,
+  /** Tighter shell header band on narrow viewports (dashboard). */
+  denseShellHeaderOnMobile,
+  /** Hide workspace snapshot metric strip below `md` (dashboard avoids duplicate KPI chrome). */
+  hideOperationalSnapshotOnMobile,
 }: {
   activePath: string;
   pageTitle: string;
@@ -231,6 +237,9 @@ export function MetisShell({
     updatedAt?: Date | null;
     isArchived?: boolean;
   };
+  shellPageTitleShort?: string;
+  denseShellHeaderOnMobile?: boolean;
+  hideOperationalSnapshotOnMobile?: boolean;
 }) {
   const shouldShowOperationalSnapshot = showOperationalSnapshot ?? activePath === "/";
   const globalNavItemVisible = filterGlobalNavItems(issueRoutePrefix);
@@ -620,8 +629,13 @@ export function MetisShell({
 
         <main className="relative min-h-0 min-w-0 px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
           <div className="metis-shell-stage mx-auto flex max-w-[1520px] flex-col overflow-x-clip rounded-[1.35rem] border border-white/8 bg-[linear-gradient(180deg,rgba(18,23,24,0.94),rgba(10,14,15,0.985))] shadow-[0_32px_120px_rgba(0,0,0,0.52)] sm:rounded-[1.65rem] lg:rounded-[2rem]">
-            <header className="metis-shell-band border-b border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.028),rgba(255,255,255,0.012))] px-5 py-5 sm:px-7 lg:px-8">
-              <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+            <header
+              className={cn(
+                "metis-shell-band border-b border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.028),rgba(255,255,255,0.012))] px-5 sm:px-7 lg:px-8",
+                denseShellHeaderOnMobile ? "py-3 sm:py-4 md:py-5" : "py-5",
+              )}
+            >
+              <div className="flex flex-col gap-3 md:gap-4 xl:flex-row xl:items-center xl:justify-between">
                 <div className="min-w-0 space-y-2">
                   {pageMeta ? <p className="text-[0.68rem] uppercase tracking-[0.28em] text-[--metis-ink-soft]">{pageMeta}</p> : null}
                   {issueRoutePrefix && activeIssue?.title ? (
@@ -629,7 +643,21 @@ export function MetisShell({
                       Issue · <span className="text-[--metis-paper]">{activeIssue.title}</span>
                     </p>
                   ) : null}
-                  <h1 className="metis-shell-page-title font-[Cormorant_Garamond] text-3xl text-[--metis-paper] sm:text-4xl">{pageTitle}</h1>
+                  <h1
+                    className={cn(
+                      "metis-shell-page-title font-[Cormorant_Garamond] text-[--metis-paper]",
+                      denseShellHeaderOnMobile ? "text-xl leading-tight sm:text-3xl md:text-4xl" : "text-3xl sm:text-4xl",
+                    )}
+                  >
+                    {shellPageTitleShort ? (
+                      <>
+                        <span className="md:hidden">{shellPageTitleShort}</span>
+                        <span className="hidden md:inline">{pageTitle}</span>
+                      </>
+                    ) : (
+                      pageTitle
+                    )}
+                  </h1>
                   {activeIssue?.ownerName ? (
                     <p className="text-[0.68rem] uppercase tracking-[0.22em] text-[--metis-ink-soft]">
                       Owner · <span className="text-[--metis-paper]">{activeIssue.ownerName}</span>
@@ -664,6 +692,11 @@ export function MetisShell({
                         Prepare output
                       </Link>
                     </Button>
+                  ) : activePath === "/" ? (
+                    <Button disabled className="hidden rounded-full px-5 md:inline-flex">
+                      <FileText className="mr-2 h-4 w-4" />
+                      Prepare output
+                    </Button>
                   ) : (
                     <Button disabled className="rounded-full px-5">
                       <FileText className="mr-2 h-4 w-4" />
@@ -675,7 +708,12 @@ export function MetisShell({
             </header>
 
             {shouldShowOperationalSnapshot ? (
-              <div className="metis-shell-band border-b border-white/8 bg-[rgba(255,255,255,0.016)] px-5 py-4 sm:px-7 lg:px-8">
+              <div
+                className={cn(
+                  "metis-shell-band border-b border-white/8 bg-[rgba(255,255,255,0.016)] px-5 py-4 sm:px-7 lg:px-8",
+                  hideOperationalSnapshotOnMobile && "hidden md:block",
+                )}
+              >
                 <div className="mb-2 flex items-center justify-between gap-3">
                   <p className="text-[0.58rem] uppercase tracking-[0.2em] text-[rgba(176,171,160,0.62)]">Workspace snapshot</p>
                 </div>

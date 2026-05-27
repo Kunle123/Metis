@@ -3,7 +3,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import type { IssueLedger } from "@/lib/issues/issueLifecycle";
 
-export function DashboardLedgerFilter({ ledger }: { ledger: IssueLedger }) {
+export function DashboardLedgerFilter({ ledger, className }: { ledger: IssueLedger; className?: string }) {
   const segments: { id: IssueLedger; label: string; href: string }[] = [
     { id: "active", label: "Active", href: "/?ledger=active" },
     { id: "archived", label: "Archived", href: "/?ledger=archived" },
@@ -13,7 +13,10 @@ export function DashboardLedgerFilter({ ledger }: { ledger: IssueLedger }) {
     <div
       role="group"
       aria-label="Issue register filter"
-      className="inline-flex h-[var(--metis-control-height-md)] items-stretch rounded-[var(--metis-control-radius-lg)] border border-[--metis-segmented-rail-border] bg-[--metis-segmented-rail-bg] p-[var(--metis-segmented-rail-padding)] shadow-[inset_0_1px_4px_color-mix(in_oklab,black_35%,transparent)]"
+      className={cn(
+        "inline-flex h-[var(--metis-control-height-md)] min-w-0 flex-1 items-stretch rounded-[var(--metis-control-radius-lg)] border border-[--metis-segmented-rail-border] bg-[--metis-segmented-rail-bg] p-[var(--metis-segmented-rail-padding)] shadow-[inset_0_1px_4px_color-mix(in_oklab,black_35%,transparent)] md:flex-initial",
+        className,
+      )}
     >
       {segments.map((s) => {
         const selected = ledger === s.id;
