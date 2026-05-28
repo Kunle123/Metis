@@ -68,7 +68,7 @@
       "senderTeam": "Corporate Affairs",
       "channel": "Metis intake from duty handover",
       "summary": "Corporate Affairs logs source-backed records from the duty manager overnight pack: planned works, contractor handback, station/security/NOC updates and customer floor report.",
-      "fullText": "Corporate Affairs — duty overnight pack logged\n\nLogged from duty manager phone briefing at 05:42. Each item below is recorded as a linked source in the issue record.\n\nSRC-001 Planned works notice (reported Sun 20:00): overnight concourse lighting, ticket gate and wayfinding; 05:30 handback; no planned train disruption.\nSRC-002 Contractor mobilisation (reported Sun 21:15): team on site; works commenced.\nSRC-003 Contractor handback note (reported Mon 04:28): ceiling panel sign-off pending at main entrance; possible roof drain residue — not confirmed structural failure.\nSRC-004 Station manager escalation (reported Mon 04:35): main entrance unlikely at 05:30; side entrance with staffing from 05:45 if security confirms.\nSRC-005 Security update (reported Mon 04:50): additional officers and barriers from 05:45.\nSRC-006 NOC confirmation (reported Mon 04:55): trains continue to call.\nSRC-007 Customer service floor report (reported Mon 05:32): passengers confused at main doors; low crowding.\n\nClaims, open questions and observations created from this pack per Metis discipline.",
+      "fullText": "Corporate Affairs — duty overnight pack logged\n\nLogged from duty manager phone briefing at 05:42. Transcribed items from the overnight sequence:\n\nPlanned works notice (reported Sun 20:00)\nOvernight concourse lighting, ticket gate and wayfinding; 05:30 handback target; no planned train disruption.\n\nContractor mobilisation (reported Sun 21:15)\nTeam on site; works commenced.\n\nContractor handback note (reported Mon 04:28)\nThe contractor has held back sign-off on the ceiling panels near the main entrance after noting staining or residue that may relate to a roof drain. This has not been confirmed as an active leak or structural issue.\n\nStation manager escalation (reported Mon 04:35)\nMain entrance unlikely at 05:30; side entrance proposed with extra staffing from 05:45 if security confirms.\n\nSecurity update (reported Mon 04:50)\nAdditional officers and barriers available from 05:45.\n\nNOC confirmation (reported Mon 04:55)\nTrains continue to call; no service change.\n\nCustomer service floor report (reported Mon 05:32)\nPassengers confused at main doors; low crowding at the side entrance.",
       "suggestedTimelineLabel": "Overnight pack logged",
       "becomesSource": false,
       "linkedSourceId": null,
@@ -833,7 +833,7 @@
         "dddd2004-0000-4000-a000-000000000004",
         "dddd2005-0000-4000-a000-000000000005"
       ],
-      "body": "Staff holding update — Bramley Junction (internal)\n\nUse this line with passengers\n- Bramley Junction is open via the side entrance. Trains are running as normal.\n- The main entrance is temporarily unavailable while final checks complete after overnight improvement works.\n\nDo not say\n- That the station is closed or trains are cancelled.\n- Anything about roof leaks/structural failure (not confirmed).\n- A reopening time until facilities confirms.\n\nEscalate\n- Direct press/social queries to corporate affairs duty.",
+      "body": "Staff holding update — Bramley Junction (internal)\n\nUse with passengers\n- Bramley Junction is open via the side entrance. Trains are running as normal.\n- The main entrance is temporarily unavailable while final checks complete after overnight improvement works.\n\nDo not say\n- The station is closed or trains are cancelled.\n- Anything about roof leaks or structural failure (not confirmed).\n- A reopening time until facilities confirms.\n\nEscalate\n- Direct press/social queries to corporate affairs duty.",
       "doNotSay": [
         "Do not say the station is closed.",
         "Do not confirm a structural failure or active roof leak.",
@@ -899,6 +899,25 @@
         "Q-005: What is the expected main entrance reopening time?"
       ],
       "caveatsAtGeneration": [],
+      "draftBody": "Staff holding update — Bramley Junction (internal)\n\nUse this line with passengers\n- Bramley Junction is open via the side entrance. Trains are running as normal.\n- The main entrance is temporarily unavailable while final checks complete after overnight improvement works.\n\nDo not say\n- That the station is closed or trains are cancelled.\n- Anything about roof leaks/structural failure (not confirmed).\n- A reopening time until facilities confirms.\n\nEscalate\n- Direct press/social queries to corporate affairs duty.",
+      "aiPolishedBody": "Staff holding update — Bramley Junction (internal)\n\nUse with passengers\n- Bramley Junction is open via the side entrance. Trains are running as normal.\n- The main entrance is temporarily unavailable while final checks complete after overnight improvement works.\n\nDo not say\n- The station is closed or trains are cancelled.\n- Anything about roof leaks or structural failure (not confirmed).\n- A reopening time until facilities confirms.\n\nEscalate\n- Direct press/social queries to corporate affairs duty.",
+      "wordingModeDefault": "ai_polished",
+      "aiPolish": {
+        "enabled": true,
+        "preparedAt": "2026-05-11T04:54:00.000Z",
+        "label": "AI-polished wording",
+        "summary": "Second-pass wording polish for clarity and tone, without changing facts or constraints.",
+        "preservedConstraints": [
+          "Do not say the station is closed.",
+          "Do not confirm a structural failure or active roof leak.",
+          "Do not give a main entrance reopening time yet."
+        ],
+        "changed": [
+          "Tightened phrasing",
+          "Improved readability",
+          "Kept point-in-time caveats and constraints"
+        ]
+      },
       "messageArtifact": {
         "templateId": "internal_staff_update",
         "metadata": {
@@ -946,7 +965,7 @@
         "dddd2004-0000-4000-a000-000000000004",
         "dddd2005-0000-4000-a000-000000000005"
       ],
-      "body": "Bramley Junction station is open via the side entrance. Trains are running as normal. The main entrance is temporarily unavailable while final checks are completed after overnight improvement works. Staff are on site to help direct passengers.",
+      "body": "Bramley Junction is open via the side entrance and trains are running as normal. The main entrance is temporarily unavailable while final checks complete after overnight improvement works. Staff are on site to direct passengers.",
       "doNotSay": [
         "Do not say the station is shut.",
         "Do not imply train cancellations."
@@ -1011,6 +1030,24 @@
         "Q-005: What is the expected main entrance reopening time?"
       ],
       "caveatsAtGeneration": [],
+      "draftBody": "Bramley Junction station is open via the side entrance. Trains are running as normal. The main entrance is temporarily unavailable while final checks are completed after overnight improvement works. Staff are on site to help direct passengers.",
+      "aiPolishedBody": "Bramley Junction is open via the side entrance and trains are running as normal. The main entrance is temporarily unavailable while final checks complete after overnight improvement works. Staff are on site to direct passengers.",
+      "wordingModeDefault": "ai_polished",
+      "aiPolish": {
+        "enabled": true,
+        "preparedAt": "2026-05-11T04:58:00.000Z",
+        "label": "AI-polished wording",
+        "summary": "Second-pass wording polish for clarity and tone, without changing facts or constraints.",
+        "preservedConstraints": [
+          "Do not say the station is shut.",
+          "Do not imply train cancellations."
+        ],
+        "changed": [
+          "Tightened phrasing",
+          "Improved readability",
+          "Kept point-in-time caveats and constraints"
+        ]
+      },
       "messageArtifact": {
         "templateId": "external_customer_resident_student",
         "metadata": {
@@ -1059,7 +1096,7 @@
         "dddd2005-0000-4000-a000-000000000005",
         "dddd2004-0000-4000-a000-000000000004"
       ],
-      "body": "Bramley Junction is open via the side entrance and trains are running as normal. The main entrance is temporarily closed while final checks are completed after overnight improvement works. We’ll share an update when the main entrance reopens.",
+      "body": "Bramley Junction is open via the side entrance and trains are running as normal. The main entrance is temporarily closed while final checks are completed after overnight improvement works. We’ll share an update once the main entrance reopens.",
       "doNotSay": [
         "Do not engage with speculation about structural issues."
       ],
@@ -1123,6 +1160,23 @@
         "Q-005: What is the expected main entrance reopening time?"
       ],
       "caveatsAtGeneration": [],
+      "draftBody": "Bramley Junction is open via the side entrance and trains are running as normal. The main entrance is temporarily closed while final checks are completed after overnight improvement works. We’ll share an update when the main entrance reopens.",
+      "aiPolishedBody": "Bramley Junction is open via the side entrance and trains are running as normal. The main entrance is temporarily closed while final checks are completed after overnight improvement works. We’ll share an update once the main entrance reopens.",
+      "wordingModeDefault": "ai_polished",
+      "aiPolish": {
+        "enabled": true,
+        "preparedAt": "2026-05-11T04:52:00.000Z",
+        "label": "AI-polished wording",
+        "summary": "Second-pass wording polish for clarity and tone, without changing facts or constraints.",
+        "preservedConstraints": [
+          "Do not engage with speculation about structural issues."
+        ],
+        "changed": [
+          "Tightened phrasing",
+          "Improved readability",
+          "Kept point-in-time caveats and constraints"
+        ]
+      },
       "messageArtifact": {
         "templateId": "external_customer_resident_student",
         "metadata": {
@@ -1175,7 +1229,7 @@
         "dddd2006-0000-4000-a000-000000000006",
         "dddd2007-0000-4000-a000-000000000007"
       ],
-      "body": "Bramley Junction remains open via the side entrance and trains are running as normal.\nThe main entrance is temporarily unavailable while final checks are completed after overnight improvement works.\nWe will provide an update once inspections and clean-up are complete.",
+      "body": "Bramley Junction remains open via the side entrance and trains are running as normal.\nThe main entrance is temporarily unavailable while final checks are completed after overnight improvement works.\nWe will update once inspections and clean-up are complete.",
       "doNotSay": [
         "That the station is closed.",
         "That trains are cancelled or diverted.",
@@ -1244,6 +1298,28 @@
         "Facilities inspection not yet complete — do not confirm ceiling safety or reopening time.",
         "Main entrance still closed at time of generation."
       ],
+      "draftBody": "Bramley Junction remains open via the side entrance and trains are running as normal.\nThe main entrance is temporarily unavailable while final checks are completed after overnight improvement works.\nWe will provide an update once inspections and clean-up are complete.",
+      "aiPolishedBody": "Bramley Junction remains open via the side entrance and trains are running as normal.\nThe main entrance is temporarily unavailable while final checks are completed after overnight improvement works.\nWe will update once inspections and clean-up are complete.",
+      "wordingModeDefault": "ai_polished",
+      "aiPolish": {
+        "enabled": true,
+        "preparedAt": "2026-05-11T05:18:00.000Z",
+        "label": "AI-polished wording",
+        "summary": "Second-pass wording polish for clarity and tone, without changing facts or constraints.",
+        "preservedConstraints": [
+          "Facilities inspection not yet complete — do not confirm ceiling safety or reopening time.",
+          "Main entrance still closed at time of generation.",
+          "That the station is closed.",
+          "That trains are cancelled or diverted.",
+          "That there is a confirmed structural failure or active leak.",
+          "A precise reopening time until station/facilities confirm."
+        ],
+        "changed": [
+          "Tightened phrasing",
+          "Improved readability",
+          "Kept point-in-time caveats and constraints"
+        ]
+      },
       "messageArtifact": {
         "templateId": "media_holding_line",
         "metadata": {
@@ -1495,7 +1571,7 @@
         "dddd2004-0000-4000-a000-000000000004",
         "dddd2005-0000-4000-a000-000000000005"
       ],
-      "body": "Bramley Junction station remains open via the side entrance. Trains are running as normal. The main entrance is temporarily unavailable while final checks are completed after overnight improvement works. We expect the main entrance to reopen around 08:00, subject to final confirmation. Staff are on site to help direct passengers.",
+      "body": "Bramley Junction remains open via the side entrance. Trains are running as normal. The main entrance is temporarily unavailable while final checks are completed after overnight improvement works. We expect the main entrance to reopen around 08:00, subject to final confirmation. Staff are on site to direct passengers.",
       "doNotSay": [
         "Do not state the main entrance has already reopened (expected ~08:00, not confirmed open yet)."
       ],
@@ -1558,6 +1634,24 @@
       "caveatsAtGeneration": [
         "Expected reopening around 08:00 — subject to final confirmation; not yet open at 07:22."
       ],
+      "draftBody": "Bramley Junction station remains open via the side entrance. Trains are running as normal. The main entrance is temporarily unavailable while final checks are completed after overnight improvement works. We expect the main entrance to reopen around 08:00, subject to final confirmation. Staff are on site to help direct passengers.",
+      "aiPolishedBody": "Bramley Junction remains open via the side entrance. Trains are running as normal. The main entrance is temporarily unavailable while final checks are completed after overnight improvement works. We expect the main entrance to reopen around 08:00, subject to final confirmation. Staff are on site to direct passengers.",
+      "wordingModeDefault": "ai_polished",
+      "aiPolish": {
+        "enabled": true,
+        "preparedAt": "2026-05-11T06:22:00.000Z",
+        "label": "AI-polished wording",
+        "summary": "Second-pass wording polish for clarity and tone, without changing facts or constraints.",
+        "preservedConstraints": [
+          "Expected reopening around 08:00 — subject to final confirmation; not yet open at 07:22.",
+          "Do not state the main entrance has already reopened (expected ~08:00, not confirmed open yet)."
+        ],
+        "changed": [
+          "Tightened phrasing",
+          "Improved readability",
+          "Kept point-in-time caveats and constraints"
+        ]
+      },
       "messageArtifact": {
         "templateId": "external_customer_resident_student",
         "metadata": {
@@ -1605,7 +1699,7 @@
         "dddd2004-0000-4000-a000-000000000004",
         "dddd2008-0000-4000-a000-000000000008"
       ],
-      "body": "Stakeholder note (draft)\n\nBramley Junction remains open via the side entrance and trains are running as normal.\nThe main entrance is temporarily unavailable following overnight improvement works. Facilities clearance has been recorded; reopening is expected around 08:00 subject to final checks.\n\nMitigations\n- Additional staff/security at the side entrance and clear passenger lines in use.\n- Accessibility/wayfinding checks on temporary arrangements are in progress.",
+      "body": "Stakeholder note (draft)\n\nBramley Junction remains open via the side entrance and trains are running as normal.\nThe main entrance is temporarily unavailable following overnight improvement works. Facilities clearance has been recorded; reopening is expected around 08:00, subject to final checks.\n\nMitigations\n- Additional staff/security at the side entrance and agreed passenger lines in use.\n- Accessibility and wayfinding checks for the temporary arrangements are in progress.",
       "doNotSay": [
         "Do not state that an accessibility assessment is complete if temporary signage actions are still in progress.",
         "Do not speculate on causes beyond what facilities has confirmed."
@@ -1669,6 +1763,25 @@
       "caveatsAtGeneration": [
         "Accessibility formal assessment not yet in Metis at generation — wording treats accessibility as being checked."
       ],
+      "draftBody": "Stakeholder note (draft)\n\nBramley Junction remains open via the side entrance and trains are running as normal.\nThe main entrance is temporarily unavailable following overnight improvement works. Facilities clearance has been recorded; reopening is expected around 08:00 subject to final checks.\n\nMitigations\n- Additional staff/security at the side entrance and clear passenger lines in use.\n- Accessibility/wayfinding checks on temporary arrangements are in progress.",
+      "aiPolishedBody": "Stakeholder note (draft)\n\nBramley Junction remains open via the side entrance and trains are running as normal.\nThe main entrance is temporarily unavailable following overnight improvement works. Facilities clearance has been recorded; reopening is expected around 08:00, subject to final checks.\n\nMitigations\n- Additional staff/security at the side entrance and agreed passenger lines in use.\n- Accessibility and wayfinding checks for the temporary arrangements are in progress.",
+      "wordingModeDefault": "ai_polished",
+      "aiPolish": {
+        "enabled": true,
+        "preparedAt": "2026-05-11T06:38:00.000Z",
+        "label": "AI-polished wording",
+        "summary": "Second-pass wording polish for clarity and tone, without changing facts or constraints.",
+        "preservedConstraints": [
+          "Accessibility formal assessment not yet in Metis at generation — wording treats accessibility as being checked.",
+          "Do not state that an accessibility assessment is complete if temporary signage actions are still in progress.",
+          "Do not speculate on causes beyond what facilities has confirmed."
+        ],
+        "changed": [
+          "Tightened phrasing",
+          "Improved readability",
+          "Kept point-in-time caveats and constraints"
+        ]
+      },
       "messageArtifact": {
         "templateId": "external_customer_resident_student",
         "metadata": {

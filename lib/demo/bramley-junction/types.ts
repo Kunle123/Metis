@@ -145,6 +145,21 @@ export type BramleyOutputExport = {
   briefArtifact?: unknown;
   /** Optional: full MessageVariant artifact for modals. */
   messageArtifact?: unknown;
+  /** Optional: Controlled draft body (pre-polish). */
+  draftBody?: string;
+  /** Optional: AI-polished wording body (second pass). */
+  aiPolishedBody?: string;
+  /** Which wording mode the modal should default to. */
+  wordingModeDefault?: "controlled_draft" | "ai_polished";
+  /** AI polish metadata for external demo modal. */
+  aiPolish?: {
+    enabled: boolean;
+    preparedAt: string;
+    label: string;
+    summary: string;
+    preservedConstraints: string[];
+    changed: string[];
+  };
 };
 
 export type BramleyCirculationExport = {

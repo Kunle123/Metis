@@ -22,7 +22,7 @@
       "eeee2005-0000-4000-a000-000000000005",
       "eeee2006-0000-4000-a000-000000000006"
     ],
-    "body": "Internal staff message — Green Saver (V1)\n\nIf asked by customers / colleagues\n- Northbank is preparing a new savings product called Green Saver linked to greener home improvements.\n- It is intended for eligible savings customers — not all customers.\n- We cannot confirm the launch rate, final eligibility wording or app availability yet.\n- Direct customers to our published channels once the announcement is authorised.\n\nAssisted digital\n- Include telephone and branch support routes; do not describe this as app-only.\n\nDo not say\n- Quote a launch rate.\n- That customers can apply today.",
+    "body": "Internal staff message — Green Saver (V1)\n\nIf asked by customers / colleagues\n- Northbank is preparing a new savings product called Green Saver, linked to greener home improvements.\n- It is intended for eligible savings customers — not all customers.\n- We cannot confirm the launch rate, final eligibility wording or app availability yet.\n- Direct customers to our published channels once the announcement is authorised.\n\nAssisted digital\n- Include telephone and branch support routes; do not describe this as app-only.\n\nDo not say\n- Quote a launch rate.\n- That customers can apply today.",
     "doNotSay": [
       "Do not quote 4.25% or any launch rate.",
       "Do not say customers can apply via the app yet."
@@ -93,6 +93,25 @@
     "caveatsAtGeneration": [
       "Pricing committee and app release approvals not yet in Metis."
     ],
+    "draftBody": "Internal staff message — Green Saver (V1)\n\nIf asked by customers / colleagues\n- Northbank is preparing a new savings product called Green Saver linked to greener home improvements.\n- It is intended for eligible savings customers — not all customers.\n- We cannot confirm the launch rate, final eligibility wording or app availability yet.\n- Direct customers to our published channels once the announcement is authorised.\n\nAssisted digital\n- Include telephone and branch support routes; do not describe this as app-only.\n\nDo not say\n- Quote a launch rate.\n- That customers can apply today.",
+    "aiPolishedBody": "Internal staff message — Green Saver (V1)\n\nIf asked by customers / colleagues\n- Northbank is preparing a new savings product called Green Saver, linked to greener home improvements.\n- It is intended for eligible savings customers — not all customers.\n- We cannot confirm the launch rate, final eligibility wording or app availability yet.\n- Direct customers to our published channels once the announcement is authorised.\n\nAssisted digital\n- Include telephone and branch support routes; do not describe this as app-only.\n\nDo not say\n- Quote a launch rate.\n- That customers can apply today.",
+    "wordingModeDefault": "ai_polished",
+    "aiPolish": {
+      "enabled": true,
+      "preparedAt": "2026-06-11T14:00:00.000Z",
+      "label": "AI-polished wording",
+      "summary": "Second-pass wording polish for clarity and tone, without changing facts or constraints.",
+      "preservedConstraints": [
+        "Pricing committee and app release approvals not yet in Metis.",
+        "Do not quote 4.25% or any launch rate.",
+        "Do not say customers can apply via the app yet."
+      ],
+      "changed": [
+        "Tightened phrasing",
+        "Improved readability",
+        "Kept point-in-time caveats and constraints"
+      ]
+    },
     "messageArtifact": {
       "templateId": "internal_staff_update",
       "metadata": {
@@ -142,7 +161,7 @@
       "eeee2004-0000-4000-a000-000000000004",
       "eeee2005-0000-4000-a000-000000000005"
     ],
-    "body": "We’re preparing a new savings product called Green Saver. It will be available to eligible customers — we’ll confirm details closer to launch. We’ll share more information once plans are finalised.",
+    "body": "We’re preparing a new savings product called Green Saver. It will be available to eligible customers — we’ll confirm key details closer to launch. We’ll share more information once plans are finalised.",
     "doNotSay": [
       "Do not quote the launch rate.",
       "Do not say the product is available now."
@@ -211,6 +230,24 @@
       "Q-005: What line should customer operations use before launch?"
     ],
     "caveatsAtGeneration": [],
+    "draftBody": "We’re preparing a new savings product called Green Saver. It will be available to eligible customers — we’ll confirm details closer to launch. We’ll share more information once plans are finalised.",
+    "aiPolishedBody": "We’re preparing a new savings product called Green Saver. It will be available to eligible customers — we’ll confirm key details closer to launch. We’ll share more information once plans are finalised.",
+    "wordingModeDefault": "ai_polished",
+    "aiPolish": {
+      "enabled": true,
+      "preparedAt": "2026-06-11T11:00:00.000Z",
+      "label": "AI-polished wording",
+      "summary": "Second-pass wording polish for clarity and tone, without changing facts or constraints.",
+      "preservedConstraints": [
+        "Do not quote the launch rate.",
+        "Do not say the product is available now."
+      ],
+      "changed": [
+        "Tightened phrasing",
+        "Improved readability",
+        "Kept point-in-time caveats and constraints"
+      ]
+    },
     "messageArtifact": {
       "templateId": "external_customer_resident_student",
       "metadata": {
@@ -467,7 +504,7 @@
       "eeee2004-0000-4000-a000-000000000004",
       "eeee2005-0000-4000-a000-000000000005"
     ],
-    "body": "Northbank Building Society is always reviewing its savings range for customers.\nWe do not comment on speculation about future products or pricing.\nWhen we have something to announce we will inform customers and media through our usual channels.",
+    "body": "Northbank Building Society is always reviewing its savings range for customers.\nWe do not comment on speculation about future products or pricing.\nWhen we have something to announce, we will inform customers and media through our usual channels.",
     "doNotSay": [
       "Do not confirm Green Saver launch.",
       "Do not quote rate or eligibility."
@@ -540,6 +577,25 @@
     "caveatsAtGeneration": [
       "Go/no-go not recorded in Metis at generation — holding line only."
     ],
+    "draftBody": "Northbank Building Society is always reviewing its savings range for customers.\nWe do not comment on speculation about future products or pricing.\nWhen we have something to announce we will inform customers and media through our usual channels.",
+    "aiPolishedBody": "Northbank Building Society is always reviewing its savings range for customers.\nWe do not comment on speculation about future products or pricing.\nWhen we have something to announce, we will inform customers and media through our usual channels.",
+    "wordingModeDefault": "ai_polished",
+    "aiPolish": {
+      "enabled": true,
+      "preparedAt": "2026-06-17T09:00:00.000Z",
+      "label": "AI-polished wording",
+      "summary": "Second-pass wording polish for clarity and tone, without changing facts or constraints.",
+      "preservedConstraints": [
+        "Go/no-go not recorded in Metis at generation — holding line only.",
+        "Do not confirm Green Saver launch.",
+        "Do not quote rate or eligibility."
+      ],
+      "changed": [
+        "Tightened phrasing",
+        "Improved readability",
+        "Kept point-in-time caveats and constraints"
+      ]
+    },
     "messageArtifact": {
       "templateId": "media_holding_line",
       "metadata": {
@@ -789,7 +845,7 @@
       "eeee2001-0000-4000-a000-000000000001",
       "eeee2007-0000-4000-a000-000000000007"
     ],
-    "body": "Green Saver is a new savings product from Northbank Building Society, designed for eligible customers who want to save towards energy-efficient home improvements. The launch rate is 4.25% gross/AER for eligible balances within product limits, subject to our terms. Full eligibility details will be available at launch. Customers can apply via our app, online banking, branch or telephone service when the product is available. If you need support, telephone and branch routes are available.",
+    "body": "Green Saver is a new savings product from Northbank Building Society, designed for eligible customers saving towards energy-efficient home improvements. The launch rate is 4.25% gross/AER for eligible balances within product limits, subject to our terms. Full eligibility details will be available at launch. Customers can apply via our app, online banking, branch or telephone service when the product is available. Telephone and branch support routes are available if you need them.",
     "doNotSay": [
       "Do not imply regulatory endorsement of green outcomes."
     ],
@@ -855,6 +911,23 @@
       "Q-005: What line should customer operations use before launch? (partially answered)"
     ],
     "caveatsAtGeneration": [],
+    "draftBody": "Green Saver is a new savings product from Northbank Building Society, designed for eligible customers who want to save towards energy-efficient home improvements. The launch rate is 4.25% gross/AER for eligible balances within product limits, subject to our terms. Full eligibility details will be available at launch. Customers can apply via our app, online banking, branch or telephone service when the product is available. If you need support, telephone and branch routes are available.",
+    "aiPolishedBody": "Green Saver is a new savings product from Northbank Building Society, designed for eligible customers saving towards energy-efficient home improvements. The launch rate is 4.25% gross/AER for eligible balances within product limits, subject to our terms. Full eligibility details will be available at launch. Customers can apply via our app, online banking, branch or telephone service when the product is available. Telephone and branch support routes are available if you need them.",
+    "wordingModeDefault": "ai_polished",
+    "aiPolish": {
+      "enabled": true,
+      "preparedAt": "2026-06-18T12:00:00.000Z",
+      "label": "AI-polished wording",
+      "summary": "Second-pass wording polish for clarity and tone, without changing facts or constraints.",
+      "preservedConstraints": [
+        "Do not imply regulatory endorsement of green outcomes."
+      ],
+      "changed": [
+        "Tightened phrasing",
+        "Improved readability",
+        "Kept point-in-time caveats and constraints"
+      ]
+    },
     "messageArtifact": {
       "templateId": "external_customer_resident_student",
       "metadata": {
@@ -902,7 +975,7 @@
       "eeee2009-0000-4000-a000-000000000009",
       "eeee2001-0000-4000-a000-000000000001"
     ],
-    "body": "Stakeholder message — Green Saver launch (post go/no-go)\n\nNorthbank Building Society is launching Green Saver, a savings product for eligible customers linked to saving towards energy-efficient home improvements.\nThe launch rate is 4.25% gross/AER for eligible balances within published limits.\nLaunch proceeds in line with the agreed window following steering group go/no-go.\nWe will use careful, factual wording on the ‘green’ proposition and avoid overclaiming outcomes.\nWe will monitor customer, media and digital journey feedback during the first 72 hours after announcement.",
+    "body": "Stakeholder message — Green Saver launch (post go/no-go)\n\nNorthbank Building Society is launching Green Saver, a savings product for eligible customers to help them save towards energy-efficient home improvements.\nThe launch rate is 4.25% gross/AER for eligible balances within published limits.\nLaunch proceeds in line with the agreed window following steering group go/no-go.\nWe will use careful, factual wording on the ‘green’ proposition and avoid overclaiming outcomes.\nWe will monitor customer, media and digital journey feedback during the first 72 hours after announcement.",
     "doNotSay": [
       "Do not imply endorsement of individual suppliers or partners.",
       "Do not overclaim environmental outcomes; keep wording factual and caveated."
@@ -967,6 +1040,24 @@
     ],
     "openQuestionsAtGeneration": [],
     "caveatsAtGeneration": [],
+    "draftBody": "Stakeholder message — Green Saver launch (post go/no-go)\n\nNorthbank Building Society is launching Green Saver, a savings product for eligible customers linked to saving towards energy-efficient home improvements.\nThe launch rate is 4.25% gross/AER for eligible balances within published limits.\nLaunch proceeds in line with the agreed window following steering group go/no-go.\nWe will use careful, factual wording on the ‘green’ proposition and avoid overclaiming outcomes.\nWe will monitor customer, media and digital journey feedback during the first 72 hours after announcement.",
+    "aiPolishedBody": "Stakeholder message — Green Saver launch (post go/no-go)\n\nNorthbank Building Society is launching Green Saver, a savings product for eligible customers to help them save towards energy-efficient home improvements.\nThe launch rate is 4.25% gross/AER for eligible balances within published limits.\nLaunch proceeds in line with the agreed window following steering group go/no-go.\nWe will use careful, factual wording on the ‘green’ proposition and avoid overclaiming outcomes.\nWe will monitor customer, media and digital journey feedback during the first 72 hours after announcement.",
+    "wordingModeDefault": "ai_polished",
+    "aiPolish": {
+      "enabled": true,
+      "preparedAt": "2026-06-19T08:30:00.000Z",
+      "label": "AI-polished wording",
+      "summary": "Second-pass wording polish for clarity and tone, without changing facts or constraints.",
+      "preservedConstraints": [
+        "Do not imply endorsement of individual suppliers or partners.",
+        "Do not overclaim environmental outcomes; keep wording factual and caveated."
+      ],
+      "changed": [
+        "Tightened phrasing",
+        "Improved readability",
+        "Kept point-in-time caveats and constraints"
+      ]
+    },
     "messageArtifact": {
       "templateId": "external_customer_resident_student",
       "metadata": {

@@ -193,6 +193,69 @@ function validateMessageOutputGovernance(output: BramleyOutputExport, dataset: B
   if (!primary?.body?.trim()) {
     errors.push(`${label}: messageArtifact primary section body is empty`);
   }
+
+  const aiPolish = (output as any).aiPolish as
+    | {
+        enabled?: boolean;
+      }
+    | undefined;
+  if (aiPolish?.enabled) {
+    const draftBody = (output as any).draftBody;
+    const aiPolishedBody = (output as any).aiPolishedBody;
+    const wordingModeDefault = (output as any).wordingModeDefault;
+
+    if (typeof draftBody !== "string" || !draftBody.trim()) errors.push(`${label}: ai polish enabled but draftBody missing/empty`);
+    if (typeof aiPolishedBody !== "string" || !aiPolishedBody.trim())
+      errors.push(`${label}: ai polish enabled but aiPolishedBody missing/empty`);
+    if (typeof draftBody === "string" && typeof aiPolishedBody === "string" && draftBody.trim() === aiPolishedBody.trim()) {
+      errors.push(`${label}: aiPolishedBody must differ from draftBody`);
+    }
+    if (wordingModeDefault !== "controlled_draft" && wordingModeDefault !== "ai_polished") {
+      errors.push(`${label}: ai polish enabled but wordingModeDefault invalid/missing`);
+    }
+
+    // Light-touch: ensure AI-polished wording doesn't embed forbidden phrases outside explicit "Do not say" blocks.
+    const stripDoNotSayBlock = (body: string): string => {
+      const lines = body.split("\n");
+      const idx = lines.findIndex((l) => l.trim().toLowerCase() === "do not say");
+      return (idx === -1 ? lines : lines.slice(0, idx)).join("\n");
+    };
+    const forbiddenNeedles = (output.doNotSay ?? [])
+      .map((s) =>
+        String(s)
+          .toLowerCase()
+          .trim()
+          .replace(/^do not\s+/, "")
+          .replace(/^(say|state|confirm|give|quote|imply|engage with)\s+/, "")
+          .replace(/[.]+$/g, "")
+          .trim(),
+      )
+      .filter((s) => s.length >= 12);
+    if (typeof aiPolishedBody === "string") {
+      const hay = stripDoNotSayBlock(aiPolishedBody).toLowerCase();
+      for (const needle of forbiddenNeedles) {
+        if (hay.includes(needle)) {
+          errors.push(`${label}: aiPolishedBody contains doNotSay-derived forbidden phrase "${needle}"`);
+        }
+      }
+    }
+  }
+
+  return errors;
+}
+
+/** Metis issue-record codes must not appear in human-submitted incoming update text. */
+const METIS_GENERATED_LABEL_IN_INPUT = /\b(SRC|CLM|OBS|Q)-\d{3}\b/;
+
+function validateIncomingUpdateFullText(incomingUpdates: { title: string; fullText: string }[]): string[] {
+  const errors: string[] = [];
+  for (const input of incomingUpdates) {
+    if (METIS_GENERATED_LABEL_IN_INPUT.test(input.fullText)) {
+      errors.push(
+        `${input.title}: incoming update fullText must not contain Metis-generated labels (SRC/CLM/Q/OBS-###)`,
+      );
+    }
+  }
   return errors;
 }
 
@@ -206,6 +269,8 @@ export function validateBramleyDataset(dataset: BramleyDataset): string[] {
   if (!dataset.issue.exportNote.includes("point-in-time")) {
     errors.push("issue.exportNote should clarify this is not point-in-time state");
   }
+
+  errors.push(...validateIncomingUpdateFullText(dataset.incomingUpdates));
 
   const q6 = dataset.openQuestions.find((q) => q.gapCode === "Q-006");
   if (q6?.status === "Open" && q6.resolvedByIncomingUpdateId) {
