@@ -46,6 +46,10 @@
   "exclude": [
     "node_modules",
     "design/**",
-    "video/**"
+    "video/**",
+    "**/*-timeline-asset/**",
+    "**/*timeline-asset*/**",
+    "northbank-timeline-asset/**",
+    "station-timeline-asset/**"
   ]
 }
