@@ -1,0 +1,134 @@
+[
+  {
+    "id": "dddd3001-0000-4000-a000-000000000001",
+    "gapCode": "Q-001",
+    "title": "Is the ceiling area safe for passenger use?",
+    "prompt": "Has facilities/engineering confirmed the main entrance ceiling zone is safe to open?",
+    "whyItMatters": "Reopening the main entrance without confirmation could create safety and reputational risk.",
+    "stakeholder": "Station operations / Facilities",
+    "severity": "Critical",
+    "status": "Resolved",
+    "partiallyAnsweredAt": null,
+    "resolvedAt": "2026-05-11T06:05:00.000Z",
+    "resolvedByIncomingUpdateId": "dddd0011-0000-4000-a000-000000000011",
+    "resolutionNote": null,
+    "linkedClaimIds": [
+      "dddd2003-0000-4000-a000-000000000003",
+      "dddd2008-0000-4000-a000-000000000008"
+    ],
+    "createdAt": "2026-05-11T04:50:00.000Z",
+    "updatedAt": "2026-05-11T06:08:00.000Z"
+  },
+  {
+    "id": "dddd3002-0000-4000-a000-000000000002",
+    "gapCode": "Q-002",
+    "title": "Can the side entrance safely handle early morning passenger flow?",
+    "prompt": "Is side entrance staffing, barriers and wayfinding sufficient for the peak?",
+    "whyItMatters": "Passenger safety and queue management depend on a viable alternate route.",
+    "stakeholder": "Station manager / Security",
+    "severity": "Important",
+    "status": "Resolved",
+    "partiallyAnsweredAt": null,
+    "resolvedAt": "2026-05-11T05:30:00.000Z",
+    "resolvedByIncomingUpdateId": "dddd0010-0000-4000-a000-000000000010",
+    "resolutionNote": null,
+    "linkedClaimIds": [
+      "dddd2004-0000-4000-a000-000000000004"
+    ],
+    "createdAt": "2026-05-11T04:50:00.000Z",
+    "updatedAt": "2026-05-11T05:24:00.000Z"
+  },
+  {
+    "id": "dddd3003-0000-4000-a000-000000000003",
+    "gapCode": "Q-003",
+    "title": "Are train services affected?",
+    "prompt": "Is any train service change required or planned?",
+    "whyItMatters": "Public lines must distinguish station access from train service.",
+    "stakeholder": "Network Operations",
+    "severity": "Important",
+    "status": "Resolved",
+    "partiallyAnsweredAt": null,
+    "resolvedAt": "2026-05-11T04:50:00.000Z",
+    "resolvedByIncomingUpdateId": "dddd0001-0000-4000-a000-000000000001",
+    "resolutionNote": "NOC confirmation recorded from duty overnight pack (operational report ~04:55).",
+    "linkedClaimIds": [
+      "dddd2005-0000-4000-a000-000000000005"
+    ],
+    "createdAt": "2026-05-11T04:50:00.000Z",
+    "updatedAt": "2026-05-11T04:50:00.000Z"
+  },
+  {
+    "id": "dddd3004-0000-4000-a000-000000000004",
+    "gapCode": "Q-004",
+    "title": "What public line should be used if asked whether the station is shut?",
+    "prompt": "What wording distinguishes main entrance closure from whole-station closure?",
+    "whyItMatters": "Social posts and passenger confusion create reputational risk.",
+    "stakeholder": "Corporate Affairs",
+    "severity": "Important",
+    "status": "Resolved",
+    "partiallyAnsweredAt": null,
+    "resolvedAt": "2026-05-11T05:18:00.000Z",
+    "resolvedByIncomingUpdateId": "dddd0009-0000-4000-a000-000000000009",
+    "resolutionNote": "Approved passenger, social and holding press lines in use from 05:52–06:18 — distinguishes main entrance closure from whole-station closure.",
+    "linkedClaimIds": [
+      "dddd2007-0000-4000-a000-000000000007"
+    ],
+    "createdAt": "2026-05-11T04:50:00.000Z",
+    "updatedAt": "2026-05-11T05:09:00.000Z"
+  },
+  {
+    "id": "dddd3005-0000-4000-a000-000000000005",
+    "gapCode": "Q-005",
+    "title": "What is the expected main entrance reopening time?",
+    "prompt": "When can we commit to reopening the main entrance?",
+    "whyItMatters": "Press and passenger messaging need a realistic time window.",
+    "stakeholder": "Station operations",
+    "severity": "Important",
+    "status": "Resolved",
+    "partiallyAnsweredAt": "2026-05-11T06:22:00.000Z",
+    "resolvedAt": "2026-05-11T07:12:00.000Z",
+    "resolvedByIncomingUpdateId": "dddd0013-0000-4000-a000-000000000013",
+    "resolutionNote": "Working estimate ~08:00 in updated passenger message from 07:22; main entrance confirmed open 08:12.",
+    "linkedClaimIds": [
+      "dddd2003-0000-4000-a000-000000000003"
+    ],
+    "createdAt": "2026-05-11T04:50:00.000Z",
+    "updatedAt": "2026-05-11T07:15:00.000Z"
+  },
+  {
+    "id": "dddd3006-0000-4000-a000-000000000006",
+    "gapCode": "Q-006",
+    "title": "Are accessibility arrangements adequate while the main entrance is closed?",
+    "prompt": "Is step-free access clearly signed and operationally supported?",
+    "whyItMatters": "Accessibility must be verified independently of general passenger flow.",
+    "stakeholder": "Accessibility lead",
+    "severity": "Important",
+    "status": "Open",
+    "partiallyAnsweredAt": null,
+    "resolvedAt": null,
+    "resolvedByIncomingUpdateId": null,
+    "resolutionNote": "Accessibility assessment logged in Metis; temporary signage improvements still being deployed (action required).",
+    "linkedClaimIds": [
+      "dddd2004-0000-4000-a000-000000000004"
+    ],
+    "createdAt": "2026-05-11T06:54:00.000Z",
+    "updatedAt": "2026-05-11T06:54:00.000Z"
+  },
+  {
+    "id": "dddd3007-0000-4000-a000-000000000007",
+    "gapCode": "Q-007",
+    "title": "What follow-up action is needed before future planned works?",
+    "prompt": "What handback criteria, signage and pre-agreed passenger messaging should be updated?",
+    "whyItMatters": "Executive request for learning and prevention.",
+    "stakeholder": "Regional operations / Corporate Affairs",
+    "severity": "Watch",
+    "status": "Open",
+    "partiallyAnsweredAt": null,
+    "resolvedAt": null,
+    "resolvedByIncomingUpdateId": null,
+    "resolutionNote": null,
+    "linkedClaimIds": [],
+    "createdAt": "2026-05-11T07:41:00.000Z",
+    "updatedAt": "2026-05-11T07:41:00.000Z"
+  }
+]

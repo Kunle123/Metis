@@ -1,0 +1,156 @@
+[
+  {
+    "id": "eeee2001-0000-4000-a000-000000000001",
+    "claimCode": "CLM-001",
+    "text": "Green Saver is planned for launch in the stated launch window (week commencing 22 June 2026, subject to dependencies).",
+    "status": "Confirmed",
+    "notes": null,
+    "linkedSourceIds": [
+      "eeee1001-0000-4000-a000-000000000001"
+    ],
+    "linkedIncomingUpdateIds": [
+      "eeee0001-0000-4000-a000-000000000001"
+    ],
+    "createdAt": "2026-06-08T10:00:00.000Z",
+    "updatedAt": "2026-06-08T10:00:00.000Z"
+  },
+  {
+    "id": "eeee2002-0000-4000-a000-000000000002",
+    "claimCode": "CLM-002",
+    "text": "The product is intended for eligible savings customers meeting published criteria.",
+    "status": "Confirmed",
+    "notes": null,
+    "linkedSourceIds": [
+      "eeee1001-0000-4000-a000-000000000001",
+      "eeee1003-0000-4000-a000-000000000003"
+    ],
+    "linkedIncomingUpdateIds": [
+      "eeee0001-0000-4000-a000-000000000001",
+      "eeee0004-0000-4000-a000-000000000004"
+    ],
+    "createdAt": "2026-06-08T10:00:00.000Z",
+    "updatedAt": "2026-06-10T08:45:00.000Z"
+  },
+  {
+    "id": "eeee2003-0000-4000-a000-000000000003",
+    "claimCode": "CLM-003",
+    "text": "A launch rate of 4.25% gross/AER was proposed pending pricing committee approval.",
+    "status": "NeedsValidation",
+    "notes": "Superseded by committee-approved rate once SRC-011 is in Metis.",
+    "linkedSourceIds": [
+      "eeee1002-0000-4000-a000-000000000002"
+    ],
+    "linkedIncomingUpdateIds": [
+      "eeee0003-0000-4000-a000-000000000003"
+    ],
+    "createdAt": "2026-06-09T09:15:00.000Z",
+    "updatedAt": "2026-06-18T10:45:00.000Z"
+  },
+  {
+    "id": "eeee2004-0000-4000-a000-000000000004",
+    "claimCode": "CLM-004",
+    "text": "Eligibility wording requires compliance approval before external customer or media use.",
+    "status": "Confirmed",
+    "notes": null,
+    "linkedSourceIds": [
+      "eeee1003-0000-4000-a000-000000000003"
+    ],
+    "linkedIncomingUpdateIds": [
+      "eeee0004-0000-4000-a000-000000000004"
+    ],
+    "createdAt": "2026-06-10T08:45:00.000Z",
+    "updatedAt": "2026-06-18T10:45:00.000Z"
+  },
+  {
+    "id": "eeee2005-0000-4000-a000-000000000005",
+    "claimCode": "CLM-005",
+    "text": "Environmental wording must avoid overclaiming and must not imply guaranteed green outcomes.",
+    "status": "Confirmed",
+    "notes": null,
+    "linkedSourceIds": [
+      "eeee1004-0000-4000-a000-000000000004"
+    ],
+    "linkedIncomingUpdateIds": [
+      "eeee0005-0000-4000-a000-000000000005"
+    ],
+    "createdAt": "2026-06-10T13:30:00.000Z",
+    "updatedAt": "2026-06-10T13:30:00.000Z"
+  },
+  {
+    "id": "eeee2006-0000-4000-a000-000000000006",
+    "claimCode": "CLM-006",
+    "text": "Customer operations require an approved agent line before public announcement.",
+    "status": "Confirmed",
+    "notes": null,
+    "linkedSourceIds": [
+      "eeee1005-0000-4000-a000-000000000005"
+    ],
+    "linkedIncomingUpdateIds": [
+      "eeee0006-0000-4000-a000-000000000006"
+    ],
+    "createdAt": "2026-06-11T09:00:00.000Z",
+    "updatedAt": "2026-06-19T08:00:00.000Z"
+  },
+  {
+    "id": "eeee2007-0000-4000-a000-000000000007",
+    "claimCode": "CLM-007",
+    "text": "Assisted digital and vulnerable customer support wording must be included in launch materials.",
+    "status": "Confirmed",
+    "notes": null,
+    "linkedSourceIds": [
+      "eeee1006-0000-4000-a000-000000000006"
+    ],
+    "linkedIncomingUpdateIds": [
+      "eeee0007-0000-4000-a000-000000000007"
+    ],
+    "createdAt": "2026-06-12T08:30:00.000Z",
+    "updatedAt": "2026-06-12T08:30:00.000Z"
+  },
+  {
+    "id": "eeee2008-0000-4000-a000-000000000008",
+    "claimCode": "CLM-008",
+    "text": "Mobile app release approval is a launch dependency until formally recorded.",
+    "status": "Confirmed",
+    "notes": "Closed when digital approval recorded.",
+    "linkedSourceIds": [
+      "eeee1007-0000-4000-a000-000000000007",
+      "eeee1010-0000-4000-a000-000000000010"
+    ],
+    "linkedIncomingUpdateIds": [
+      "eeee0008-0000-4000-a000-000000000008",
+      "eeee0012-0000-4000-a000-000000000012"
+    ],
+    "createdAt": "2026-06-15T08:00:00.000Z",
+    "updatedAt": "2026-06-18T09:30:00.000Z"
+  },
+  {
+    "id": "eeee2009-0000-4000-a000-000000000009",
+    "claimCode": "CLM-009",
+    "text": "Pricing committee approved the launch rate (4.25% gross/AER) and eligibility wording for external use.",
+    "status": "Confirmed",
+    "notes": null,
+    "linkedSourceIds": [
+      "eeee1011-0000-4000-a000-000000000011"
+    ],
+    "linkedIncomingUpdateIds": [
+      "eeee0013-0000-4000-a000-000000000013"
+    ],
+    "createdAt": "2026-06-18T10:45:00.000Z",
+    "updatedAt": "2026-06-18T10:45:00.000Z"
+  },
+  {
+    "id": "eeee2010-0000-4000-a000-000000000010",
+    "claimCode": "CLM-010",
+    "text": "Launch steering group approved proceeding to announcement subject to circulated approved outputs.",
+    "status": "Confirmed",
+    "notes": null,
+    "linkedSourceIds": [
+      "eeee1012-0000-4000-a000-000000000012"
+    ],
+    "linkedIncomingUpdateIds": [
+      "eeee0014-0000-4000-a000-000000000014"
+    ],
+    "createdAt": "2026-06-19T08:00:00.000Z",
+    "updatedAt": "2026-06-19T08:00:00.000Z"
+  }
+]

@@ -1,0 +1,251 @@
+[
+  {
+    "id": "dddd0015-0000-4000-a000-000000000015",
+    "inputType": "DUTY SUMMARY",
+    "title": "Duty manager summary to comms",
+    "senderTeam": "Duty Station Manager",
+    "channel": "phone briefing to corporate affairs duty",
+    "summary": "Handback delay at main entrance after overnight works. Station open via side entrance; trains running. Comms asked to open Metis issue and help with passenger/social lines.",
+    "fullText": "Duty manager → corporate affairs duty phone briefing\n\nSituation: planned overnight works largely complete but main entrance remains closed pending ceiling panel sign-off.\nStation is operating via side entrance with extra staff/security being deployed.\nNOC confirms trains calling — no service change.\nCustomer team reports growing confusion at main doors; no major crowding yet.\nNo confirmed safety failure; facilities inspection still required before main entrance reopening.\n\nReported overnight sequence (described in this briefing, not live comms channels):\n- Sun 20:00 — planned works notice issued for concourse lighting, gates and wayfinding; 05:30 handback target.\n- Sun 21:15 — contractor mobilised on site.\n- Mon 04:28 — contractor handback note: ceiling panel sign-off pending near main entrance (possible roof drain residue; not confirmed active leak).\n- Mon 04:35 — station manager: main entrance unlikely at 05:30; side entrance proposed with extra staffing from 05:45.\n- Mon 04:50 — security: barriers and two additional officers available from 05:45.\n- Mon 04:55 — NOC: trains continue to call; no service change.\n- Mon 05:32 — customer service: passengers asking at help point; low crowding at side entrance.\n\nAsk of comms:\n- Open controlled issue record in Metis and log the duty overnight pack as source-backed records.\n- Prepare staff and passenger lines distinguishing main entrance closure vs whole-station closure.\n- Stand by for possible social/media attention during the morning peak.",
+    "suggestedTimelineLabel": "Comms engaged",
+    "becomesSource": false,
+    "linkedSourceId": null,
+    "issueRecordImpacts": {
+      "statusNote": "Active issue opened — comms engaged"
+    },
+    "eventOccurredAt": "2026-05-11T04:42:00.000Z",
+    "sourceTimestamp": "2026-05-11T04:42:00.000Z",
+    "receivedByCommsAt": "2026-05-11T04:42:00.000Z",
+    "addedToMetisAt": "2026-05-11T04:42:00.000Z",
+    "intakeRoute": "direct_to_comms"
+  },
+  {
+    "id": "dddd0001-0000-4000-a000-000000000001",
+    "inputType": "COMMS INTAKE",
+    "title": "Duty overnight pack logged in Metis",
+    "senderTeam": "Corporate Affairs",
+    "channel": "Metis intake from duty handover",
+    "summary": "Corporate Affairs logs source-backed records from the duty manager overnight pack: planned works, contractor handback, station/security/NOC updates and customer floor report.",
+    "fullText": "Corporate Affairs — duty overnight pack logged\n\nLogged from duty manager phone briefing at 05:42. Each item below is recorded as a linked source in the issue record.\n\nSRC-001 Planned works notice (reported Sun 20:00): overnight concourse lighting, ticket gate and wayfinding; 05:30 handback; no planned train disruption.\nSRC-002 Contractor mobilisation (reported Sun 21:15): team on site; works commenced.\nSRC-003 Contractor handback note (reported Mon 04:28): ceiling panel sign-off pending at main entrance; possible roof drain residue — not confirmed structural failure.\nSRC-004 Station manager escalation (reported Mon 04:35): main entrance unlikely at 05:30; side entrance with staffing from 05:45 if security confirms.\nSRC-005 Security update (reported Mon 04:50): additional officers and barriers from 05:45.\nSRC-006 NOC confirmation (reported Mon 04:55): trains continue to call.\nSRC-007 Customer service floor report (reported Mon 05:32): passengers confused at main doors; low crowding.\n\nClaims, open questions and observations created from this pack per Metis discipline.",
+    "suggestedTimelineLabel": "Overnight pack logged",
+    "becomesSource": false,
+    "linkedSourceId": null,
+    "issueRecordImpacts": {
+      "claimsAdded": [
+        "dddd2001-0000-4000-a000-000000000001",
+        "dddd2002-0000-4000-a000-000000000002",
+        "dddd2003-0000-4000-a000-000000000003",
+        "dddd2004-0000-4000-a000-000000000004",
+        "dddd2005-0000-4000-a000-000000000005",
+        "dddd2006-0000-4000-a000-000000000006"
+      ],
+      "gapsOpened": [
+        "dddd3001-0000-4000-a000-000000000001",
+        "dddd3005-0000-4000-a000-000000000005",
+        "dddd3002-0000-4000-a000-000000000002",
+        "dddd3004-0000-4000-a000-000000000004"
+      ],
+      "gapsClosed": [
+        "dddd3003-0000-4000-a000-000000000003"
+      ],
+      "observationsAdded": [
+        "dddd4001-0000-4000-a000-000000000001",
+        "dddd4003-0000-4000-a000-000000000003",
+        "dddd4004-0000-4000-a000-000000000004"
+      ]
+    },
+    "eventOccurredAt": "2026-05-11T04:50:00.000Z",
+    "sourceTimestamp": "2026-05-11T04:50:00.000Z",
+    "receivedByCommsAt": "2026-05-11T04:42:00.000Z",
+    "addedToMetisAt": "2026-05-11T04:50:00.000Z",
+    "intakeRoute": "direct_to_comms"
+  },
+  {
+    "id": "dddd0008-0000-4000-a000-000000000008",
+    "inputType": "SOCIAL SIGNAL",
+    "title": "Social monitoring — local posts say station is shut",
+    "senderTeam": "Comms Monitoring",
+    "channel": "social monitoring note",
+    "summary": "Three local posts describe the station as shut, which is inaccurate because side entrance is open and trains are running.",
+    "fullText": "Social monitoring note (paraphrased, fictional)\n\nApprox. 03 local posts in 40 minutes describe Bramley Junction as 'shut' or 'closed'.\nExample themes: 'can't get in', 'station closed again', 'no trains' (last is inaccurate).\nNo verified influencer amplification. Engagement modest.\nRecommended: short corrective line emphasising trains running and side entrance open.",
+    "suggestedTimelineLabel": "Social inaccuracy",
+    "becomesSource": true,
+    "linkedSourceId": "dddd1008-0000-4000-a000-000000000008",
+    "issueRecordImpacts": {
+      "claimsAdded": [
+        "dddd2007-0000-4000-a000-000000000007"
+      ],
+      "observationsAdded": [
+        "dddd4002-0000-4000-a000-000000000002"
+      ],
+      "statusNote": "Managed operational disruption"
+    },
+    "eventOccurredAt": "2026-05-11T04:48:00.000Z",
+    "sourceTimestamp": "2026-05-11T04:48:00.000Z",
+    "receivedByCommsAt": "2026-05-11T04:48:00.000Z",
+    "addedToMetisAt": "2026-05-11T04:49:00.000Z",
+    "intakeRoute": "direct_to_comms"
+  },
+  {
+    "id": "dddd0009-0000-4000-a000-000000000009",
+    "inputType": "PRESS CALL",
+    "title": "Press office call log — reporter asks about reopening",
+    "senderTeam": "Press Office",
+    "channel": "call log",
+    "summary": "Local reporter asks whether planned works overran and whether passengers were locked out.",
+    "fullText": "Press call log — fictional local outlet\n\nReporter questions:\n1) Did planned overnight works overrun?\n2) Were passengers unable to enter the station?\n3) When will the main entrance reopen?\n\nDeadline: requested response within 45 minutes for online update.\nNo broadcast crew on site reported.",
+    "suggestedTimelineLabel": "Press enquiry",
+    "becomesSource": true,
+    "linkedSourceId": "dddd1009-0000-4000-a000-000000000009",
+    "issueRecordImpacts": {},
+    "eventOccurredAt": "2026-05-11T05:08:00.000Z",
+    "sourceTimestamp": "2026-05-11T05:08:00.000Z",
+    "receivedByCommsAt": "2026-05-11T05:08:00.000Z",
+    "addedToMetisAt": "2026-05-11T05:09:00.000Z",
+    "intakeRoute": "direct_to_comms"
+  },
+  {
+    "id": "dddd0016-0000-4000-a000-000000000016",
+    "inputType": "EXEC REQUEST",
+    "title": "Executive office request for short position note",
+    "senderTeam": "Executive Office",
+    "channel": "email to corporate affairs duty",
+    "summary": "Regional director's office requests a short position note for morning leadership covering customer impact, media handling and expected reopening.",
+    "fullText": "Executive office request — position note\n\nPlease provide a short executive position note covering:\n- what happened overnight and this morning at Bramley Junction\n- customer impact and mitigations\n- media/social handling and open risks\n- expected main entrance reopening (if known)\n\nAudience: regional leadership morning call.\nLength: one page maximum.\nDeadline: before 07:00 where possible.",
+    "suggestedTimelineLabel": "Executive request",
+    "becomesSource": false,
+    "linkedSourceId": null,
+    "issueRecordImpacts": {},
+    "eventOccurredAt": "2026-05-11T05:35:00.000Z",
+    "sourceTimestamp": "2026-05-11T05:35:00.000Z",
+    "receivedByCommsAt": "2026-05-11T05:35:00.000Z",
+    "addedToMetisAt": "2026-05-11T05:36:00.000Z",
+    "intakeRoute": "direct_to_comms"
+  },
+  {
+    "id": "dddd0010-0000-4000-a000-000000000010",
+    "inputType": "STATION UPDATE",
+    "title": "Station manager update — passenger flow manageable",
+    "senderTeam": "Station Manager",
+    "channel": "phone update to corporate affairs",
+    "summary": "Side entrance open, extra staff deployed, passenger flow manageable, no safety concerns reported.",
+    "fullText": "Station manager phone update to corporate affairs\n\nReported event time: 06:22 (station ops update).\nReceived by comms: 06:20 following press enquiry coordination.\n\nSide entrance open with additional staff and security.\nQueue time under 3 minutes at time of report.\nMain entrance remains closed pending facilities clearance.\nNo safety incidents. Customer team reports improving clarity with written line.",
+    "suggestedTimelineLabel": "Flow manageable",
+    "becomesSource": true,
+    "linkedSourceId": "dddd1010-0000-4000-a000-000000000010",
+    "issueRecordImpacts": {
+      "gapsClosed": [
+        "dddd3002-0000-4000-a000-000000000002"
+      ]
+    },
+    "eventOccurredAt": "2026-05-11T05:22:00.000Z",
+    "sourceTimestamp": "2026-05-11T05:22:00.000Z",
+    "receivedByCommsAt": "2026-05-11T05:20:00.000Z",
+    "addedToMetisAt": "2026-05-11T05:24:00.000Z",
+    "intakeRoute": "direct_to_comms"
+  },
+  {
+    "id": "dddd0011-0000-4000-a000-000000000011",
+    "inputType": "FACILITIES NOTE",
+    "title": "Facilities inspection summary forwarded to comms",
+    "senderTeam": "Facilities Engineer",
+    "channel": "email to station manager, copied to comms",
+    "summary": "Ceiling panels secure. Small roof drain repair needed later. Main entrance can reopen after clean-up and signage check.",
+    "fullText": "Facilities inspection note — main entrance canopy\n\nReported event time: inspection completed ~07:05.\nForwarded to comms: 07:06 via station manager email.\n\nCeiling panels secure for passenger use.\nMinor staining consistent with historic drain seepage; no active water ingress observed.\nRemedial roof drain repair scheduled non-urgent within 14 days.\nClearance: main entrance may reopen after contractor clean-up and signage check.",
+    "suggestedTimelineLabel": "Ceiling cleared",
+    "becomesSource": true,
+    "linkedSourceId": "dddd1011-0000-4000-a000-000000000011",
+    "issueRecordImpacts": {
+      "claimsAdded": [
+        "dddd2008-0000-4000-a000-000000000008"
+      ],
+      "gapsClosed": [
+        "dddd3001-0000-4000-a000-000000000001"
+      ],
+      "statusNote": "Reopening expected shortly"
+    },
+    "eventOccurredAt": "2026-05-11T06:05:00.000Z",
+    "sourceTimestamp": "2026-05-11T06:00:00.000Z",
+    "receivedByCommsAt": "2026-05-11T06:06:00.000Z",
+    "addedToMetisAt": "2026-05-11T06:08:00.000Z",
+    "intakeRoute": "direct_to_comms"
+  },
+  {
+    "id": "dddd0012-0000-4000-a000-000000000012",
+    "inputType": "ACCESSIBILITY NOTE",
+    "title": "Accessibility assessment forwarded to comms",
+    "senderTeam": "Accessibility Lead",
+    "channel": "email to corporate affairs",
+    "summary": "Step-free access available through side entrance, but temporary signage needs improvement.",
+    "fullText": "Accessibility assessment\n\nReported event time: 07:50 observation window.\nReceived by comms: 07:52.\n\nStep-free route available via side entrance lift (operational).\nTemporary signage not meeting usual contrast/position standards.\nRecommendation: deploy high-visibility directional totems within 30 minutes.\nNo reported barriers for wheelchair users during observation window.",
+    "suggestedTimelineLabel": "Accessibility check",
+    "becomesSource": true,
+    "linkedSourceId": "dddd1012-0000-4000-a000-000000000012",
+    "issueRecordImpacts": {
+      "gapsOpened": [
+        "dddd3006-0000-4000-a000-000000000006"
+      ],
+      "observationsAdded": [
+        "dddd4005-0000-4000-a000-000000000005"
+      ]
+    },
+    "eventOccurredAt": "2026-05-11T06:50:00.000Z",
+    "sourceTimestamp": "2026-05-11T06:50:00.000Z",
+    "receivedByCommsAt": "2026-05-11T06:52:00.000Z",
+    "addedToMetisAt": "2026-05-11T06:54:00.000Z",
+    "intakeRoute": "direct_to_comms"
+  },
+  {
+    "id": "dddd0013-0000-4000-a000-000000000013",
+    "inputType": "OPS CONFIRMATION",
+    "title": "Station manager confirmation — main entrance reopened",
+    "senderTeam": "Station Manager",
+    "channel": "phone confirmation to corporate affairs",
+    "summary": "Main entrance reopened. Side entrance remains available. Staff continue to monitor.",
+    "fullText": "Reopening confirmation — station manager to comms\n\nReported event time: main entrance opened 08:12.\nReceived by comms: 08:13 phone confirmation.\n\nMain entrance opened after clean-up and signage checks.\nSide entrance remains open to avoid bottlenecks.\nPassenger flow normalising. No further press queries in last 20 minutes.",
+    "suggestedTimelineLabel": "Main entrance open",
+    "becomesSource": true,
+    "linkedSourceId": "dddd1013-0000-4000-a000-000000000013",
+    "issueRecordImpacts": {
+      "claimsAdded": [
+        "dddd2009-0000-4000-a000-000000000009"
+      ],
+      "gapsClosed": [
+        "dddd3005-0000-4000-a000-000000000005",
+        "dddd3004-0000-4000-a000-000000000004"
+      ],
+      "statusNote": "Operational disruption closed"
+    },
+    "eventOccurredAt": "2026-05-11T07:12:00.000Z",
+    "sourceTimestamp": "2026-05-11T07:12:00.000Z",
+    "receivedByCommsAt": "2026-05-11T07:13:00.000Z",
+    "addedToMetisAt": "2026-05-11T07:15:00.000Z",
+    "intakeRoute": "direct_to_comms"
+  },
+  {
+    "id": "dddd0014-0000-4000-a000-000000000014",
+    "inputType": "EXEC ACTION",
+    "title": "Follow-up actions requested",
+    "senderTeam": "Regional Operations Director",
+    "channel": "exec action note",
+    "summary": "Request short review of what happened, customer impact, media handling, and improvements for future planned works.",
+    "fullText": "Executive follow-up request\n\nPlease provide a short post-incident review covering:\n- timeline of handback and comms decisions\n- customer impact assessment\n- media/social handling\n- lessons for future planned works handback criteria\n\nTarget: draft to regional leadership within 2 working days.",
+    "suggestedTimelineLabel": "Exec follow-up",
+    "becomesSource": false,
+    "linkedSourceId": null,
+    "issueRecordImpacts": {
+      "gapsOpened": [
+        "dddd3007-0000-4000-a000-000000000007"
+      ],
+      "observationsAdded": [
+        "dddd4006-0000-4000-a000-000000000006"
+      ],
+      "statusNote": "Review / audit stage"
+    },
+    "eventOccurredAt": "2026-05-11T07:40:00.000Z",
+    "sourceTimestamp": "2026-05-11T07:40:00.000Z",
+    "receivedByCommsAt": "2026-05-11T07:40:00.000Z",
+    "addedToMetisAt": "2026-05-11T07:41:00.000Z",
+    "intakeRoute": "direct_to_comms"
+  }
+]

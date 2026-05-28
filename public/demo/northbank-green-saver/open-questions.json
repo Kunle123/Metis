@@ -1,0 +1,135 @@
+[
+  {
+    "id": "eeee3001-0000-4000-a000-000000000001",
+    "gapCode": "Q-001",
+    "title": "Has pricing been formally approved?",
+    "prompt": "Can we quote the launch rate externally?",
+    "whyItMatters": "Quoting an unapproved rate creates regulatory and conduct risk.",
+    "stakeholder": "Commercial Pricing / Compliance",
+    "severity": "Critical",
+    "status": "Resolved",
+    "partiallyAnsweredAt": null,
+    "resolvedAt": "2026-06-18T10:45:00.000Z",
+    "resolvedByIncomingUpdateId": "eeee0013-0000-4000-a000-000000000013",
+    "resolutionNote": "Pricing committee minute recorded in Metis.",
+    "linkedClaimIds": [
+      "eeee2003-0000-4000-a000-000000000003",
+      "eeee2009-0000-4000-a000-000000000009"
+    ],
+    "createdAt": "2026-06-09T09:15:00.000Z",
+    "updatedAt": "2026-06-18T10:45:00.000Z"
+  },
+  {
+    "id": "eeee3002-0000-4000-a000-000000000002",
+    "gapCode": "Q-002",
+    "title": "What eligibility wording is approved for external use?",
+    "prompt": "Which eligibility text can customer and media variants use?",
+    "whyItMatters": "Mis-stating eligibility creates fair value and customer detriment risk.",
+    "stakeholder": "Compliance",
+    "severity": "Critical",
+    "status": "Resolved",
+    "partiallyAnsweredAt": "2026-06-10T13:30:00.000Z",
+    "resolvedAt": "2026-06-18T10:45:00.000Z",
+    "resolvedByIncomingUpdateId": "eeee0013-0000-4000-a000-000000000013",
+    "resolutionNote": "Compliance pack v3 eligibility wording approved with pricing committee.",
+    "linkedClaimIds": [
+      "eeee2002-0000-4000-a000-000000000002",
+      "eeee2004-0000-4000-a000-000000000004"
+    ],
+    "createdAt": "2026-06-10T08:45:00.000Z",
+    "updatedAt": "2026-06-18T10:45:00.000Z"
+  },
+  {
+    "id": "eeee3003-0000-4000-a000-000000000003",
+    "gapCode": "Q-003",
+    "title": "What can we safely say about the green proposition?",
+    "prompt": "What environmental claims are approved for external use?",
+    "whyItMatters": "Overclaiming on green outcomes creates legal and reputational risk.",
+    "stakeholder": "Legal / Corporate Affairs",
+    "severity": "Important",
+    "status": "Resolved",
+    "partiallyAnsweredAt": "2026-06-10T13:30:00.000Z",
+    "resolvedAt": "2026-06-10T13:30:00.000Z",
+    "resolvedByIncomingUpdateId": "eeee0005-0000-4000-a000-000000000005",
+    "resolutionNote": "Legal approved support/linked-to language with anti-overclaiming caveats.",
+    "linkedClaimIds": [
+      "eeee2005-0000-4000-a000-000000000005"
+    ],
+    "createdAt": "2026-06-10T08:45:00.000Z",
+    "updatedAt": "2026-06-10T13:30:00.000Z"
+  },
+  {
+    "id": "eeee3004-0000-4000-a000-000000000004",
+    "gapCode": "Q-004",
+    "title": "Is the app release approved?",
+    "prompt": "Can we direct customers to the app journey?",
+    "whyItMatters": "Directing customers to an unavailable journey creates conduct risk.",
+    "stakeholder": "Digital Product",
+    "severity": "Important",
+    "status": "Resolved",
+    "partiallyAnsweredAt": null,
+    "resolvedAt": "2026-06-18T09:30:00.000Z",
+    "resolvedByIncomingUpdateId": "eeee0012-0000-4000-a000-000000000012",
+    "resolutionNote": "Final build approval recorded.",
+    "linkedClaimIds": [
+      "eeee2008-0000-4000-a000-000000000008"
+    ],
+    "createdAt": "2026-06-15T08:00:00.000Z",
+    "updatedAt": "2026-06-18T09:30:00.000Z"
+  },
+  {
+    "id": "eeee3005-0000-4000-a000-000000000005",
+    "gapCode": "Q-005",
+    "title": "What line should customer operations use before launch?",
+    "prompt": "What approved agent script is available?",
+    "whyItMatters": "Agents need a controlled line before announcement.",
+    "stakeholder": "Customer Operations",
+    "severity": "Important",
+    "status": "Resolved",
+    "partiallyAnsweredAt": "2026-06-11T14:00:00.000Z",
+    "resolvedAt": "2026-06-19T08:00:00.000Z",
+    "resolvedByIncomingUpdateId": "eeee0014-0000-4000-a000-000000000014",
+    "resolutionNote": "Internal staff message variant V1 circulated; go/no-go confirmed announcement authorised.",
+    "linkedClaimIds": [
+      "eeee2006-0000-4000-a000-000000000006"
+    ],
+    "createdAt": "2026-06-11T09:00:00.000Z",
+    "updatedAt": "2026-06-19T08:00:00.000Z"
+  },
+  {
+    "id": "eeee3006-0000-4000-a000-000000000006",
+    "gapCode": "Q-006",
+    "title": "What support wording is needed for assisted digital/vulnerable customers?",
+    "prompt": "Are assisted digital routes clearly stated in customer variants?",
+    "whyItMatters": "Vulnerable customers must not be directed to digital-only journeys.",
+    "stakeholder": "Accessibility and Inclusion",
+    "severity": "Important",
+    "status": "Resolved",
+    "partiallyAnsweredAt": "2026-06-11T14:00:00.000Z",
+    "resolvedAt": "2026-06-18T12:00:00.000Z",
+    "resolvedByIncomingUpdateId": "eeee0012-0000-4000-a000-000000000012",
+    "resolutionNote": "Reflected in staff V1 and customer V2 variants; ongoing monitoring via watchlist.",
+    "linkedClaimIds": [
+      "eeee2007-0000-4000-a000-000000000007"
+    ],
+    "createdAt": "2026-06-12T08:30:00.000Z",
+    "updatedAt": "2026-06-18T10:45:00.000Z"
+  },
+  {
+    "id": "eeee3007-0000-4000-a000-000000000007",
+    "gapCode": "Q-007",
+    "title": "What should be watched in the first 72 hours after launch?",
+    "prompt": "What items are on the post-launch watchlist?",
+    "whyItMatters": "Leadership expects disciplined monitoring after announcement.",
+    "stakeholder": "Corporate Affairs",
+    "severity": "Watch",
+    "status": "Open",
+    "partiallyAnsweredAt": null,
+    "resolvedAt": null,
+    "resolvedByIncomingUpdateId": null,
+    "resolutionNote": "Watchlist brief issued; items to be updated as confirmed during 72-hour window.",
+    "linkedClaimIds": [],
+    "createdAt": "2026-06-19T09:15:00.000Z",
+    "updatedAt": "2026-06-19T09:15:00.000Z"
+  }
+]

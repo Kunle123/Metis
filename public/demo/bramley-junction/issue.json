@@ -1,0 +1,41 @@
+{
+  "id": "dddddddd-dddd-4ddd-addd-dddddddddd01",
+  "slug": "demo-bramley-junction",
+  "exportKind": "final_current_state",
+  "asOf": "2026-05-11T08:00:00.000Z",
+  "exportNote": "Final/current issue summary as of end of demo window. Not the point-in-time issue state for earlier timeline cards or outputs — use each output's snapshot fields and linked records for historical views.",
+  "title": "Bramley Junction: main entrance reopening delay",
+  "summary": "Planned overnight works at Bramley Junction delayed main entrance reopening after contractor handback sign-off on ceiling panels. Station remained open via side entrance; trains continued to call; passenger and social confusion managed with coordinated lines. Main entrance reopened 08:12; post-incident review underway.",
+  "issueType": "Planned works handback delay",
+  "severity": "Important",
+  "status": "Ready for review",
+  "priority": "High",
+  "operatorPosture": "Active",
+  "ownerName": "Duty Station Support",
+  "audience": "Station operations, customer service, corporate affairs, regional leadership",
+  "currentControlledPosition": "Main entrance reopened 08:12; side entrance remains available; trains running; passenger flow normalising; post-incident review in progress.",
+  "confirmedFacts": "- Planned overnight works scheduled with 05:30 handback target.\n- Main entrance opening delayed pending ceiling panel inspection.\n- Station remained open via side entrance with additional staffing.\n- Train services continued to call (NOC confirmed).\n- Main entrance reopened 08:12 after facilities clearance.",
+  "context": "Fictional UK rail operator scenario for demonstration.\n\nFixed timeline: Sunday planned works notice; Monday handback day (May 2026).\n\nOvernight operational events were handled by station, contractor, security and NOC channels first.\n\nCorporate affairs engaged from ~05:42 when duty management briefed comms; the duty overnight pack was logged in Metis at 05:50 as source-backed records.\n\nNo real organisation, passenger, or journalist names.",
+  "statusMilestones": [
+    {
+      "at": "2026-05-11T04:42:00.000Z",
+      "label": "Comms engaged — issue opened in Metis"
+    },
+    {
+      "at": "2026-05-11T04:48:00.000Z",
+      "label": "Managed operational disruption"
+    },
+    {
+      "at": "2026-05-11T06:12:00.000Z",
+      "label": "Reopening expected shortly"
+    },
+    {
+      "at": "2026-05-11T07:12:00.000Z",
+      "label": "Operational disruption closed"
+    },
+    {
+      "at": "2026-05-11T08:00:00.000Z",
+      "label": "Review / audit stage"
+    }
+  ]
+}

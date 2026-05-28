@@ -1,0 +1,146 @@
+[
+  {
+    "id": "dddd2001-0000-4000-a000-000000000001",
+    "claimCode": "CLM-001",
+    "text": "Planned overnight works were scheduled at Bramley Junction with expected handback before the morning peak.",
+    "status": "Confirmed",
+    "notes": null,
+    "linkedSourceIds": [
+      "dddd1001-0000-4000-a000-000000000001"
+    ],
+    "linkedIncomingUpdateIds": [
+      "dddd0001-0000-4000-a000-000000000001"
+    ],
+    "createdAt": "2026-05-11T04:50:00.000Z",
+    "updatedAt": "2026-05-11T04:50:00.000Z"
+  },
+  {
+    "id": "dddd2002-0000-4000-a000-000000000002",
+    "claimCode": "CLM-002",
+    "text": "Most planned works were completed as expected overnight.",
+    "status": "Confirmed",
+    "notes": null,
+    "linkedSourceIds": [
+      "dddd1002-0000-4000-a000-000000000002",
+      "dddd1003-0000-4000-a000-000000000003"
+    ],
+    "linkedIncomingUpdateIds": [
+      "dddd0001-0000-4000-a000-000000000001",
+      "dddd0001-0000-4000-a000-000000000001"
+    ],
+    "createdAt": "2026-05-11T04:50:00.000Z",
+    "updatedAt": "2026-05-11T04:50:00.000Z"
+  },
+  {
+    "id": "dddd2003-0000-4000-a000-000000000003",
+    "claimCode": "CLM-003",
+    "text": "Main entrance opening was delayed pending final inspection of ceiling panels near the main entrance.",
+    "status": "Confirmed",
+    "notes": "Pending sign-off was precautionary; not reported as confirmed structural failure.",
+    "linkedSourceIds": [
+      "dddd1003-0000-4000-a000-000000000003",
+      "dddd1004-0000-4000-a000-000000000004"
+    ],
+    "linkedIncomingUpdateIds": [
+      "dddd0001-0000-4000-a000-000000000001",
+      "dddd0001-0000-4000-a000-000000000001"
+    ],
+    "createdAt": "2026-05-11T04:50:00.000Z",
+    "updatedAt": "2026-05-11T04:50:00.000Z"
+  },
+  {
+    "id": "dddd2004-0000-4000-a000-000000000004",
+    "claimCode": "CLM-004",
+    "text": "The station remained open via the side entrance while the main entrance was unavailable.",
+    "status": "Confirmed",
+    "notes": null,
+    "linkedSourceIds": [
+      "dddd1004-0000-4000-a000-000000000004",
+      "dddd1010-0000-4000-a000-000000000010"
+    ],
+    "linkedIncomingUpdateIds": [
+      "dddd0001-0000-4000-a000-000000000001",
+      "dddd0010-0000-4000-a000-000000000010"
+    ],
+    "createdAt": "2026-05-11T04:50:00.000Z",
+    "updatedAt": "2026-05-11T05:24:00.000Z"
+  },
+  {
+    "id": "dddd2005-0000-4000-a000-000000000005",
+    "claimCode": "CLM-005",
+    "text": "Train services continued to call at Bramley Junction with no planned service changes.",
+    "status": "Confirmed",
+    "notes": null,
+    "linkedSourceIds": [
+      "dddd1006-0000-4000-a000-000000000006",
+      "dddd1001-0000-4000-a000-000000000001"
+    ],
+    "linkedIncomingUpdateIds": [
+      "dddd0001-0000-4000-a000-000000000001"
+    ],
+    "createdAt": "2026-05-11T04:50:00.000Z",
+    "updatedAt": "2026-05-11T04:50:00.000Z"
+  },
+  {
+    "id": "dddd2006-0000-4000-a000-000000000006",
+    "claimCode": "CLM-006",
+    "text": "Passenger impact was limited but visible at the main entrance during the early morning peak.",
+    "status": "Confirmed",
+    "notes": null,
+    "linkedSourceIds": [
+      "dddd1007-0000-4000-a000-000000000007",
+      "dddd1010-0000-4000-a000-000000000010"
+    ],
+    "linkedIncomingUpdateIds": [
+      "dddd0001-0000-4000-a000-000000000001",
+      "dddd0010-0000-4000-a000-000000000010"
+    ],
+    "createdAt": "2026-05-11T04:50:00.000Z",
+    "updatedAt": "2026-05-11T05:24:00.000Z"
+  },
+  {
+    "id": "dddd2007-0000-4000-a000-000000000007",
+    "claimCode": "CLM-007",
+    "text": "Some external commentary incorrectly described the station as fully shut.",
+    "status": "Confirmed",
+    "notes": null,
+    "linkedSourceIds": [
+      "dddd1008-0000-4000-a000-000000000008"
+    ],
+    "linkedIncomingUpdateIds": [
+      "dddd0008-0000-4000-a000-000000000008"
+    ],
+    "createdAt": "2026-05-11T04:49:00.000Z",
+    "updatedAt": "2026-05-11T04:49:00.000Z"
+  },
+  {
+    "id": "dddd2008-0000-4000-a000-000000000008",
+    "claimCode": "CLM-008",
+    "text": "Ceiling panels in the main entrance area were later confirmed secure for passenger use.",
+    "status": "Confirmed",
+    "notes": "Remedial roof drain work scheduled non-urgent.",
+    "linkedSourceIds": [
+      "dddd1011-0000-4000-a000-000000000011"
+    ],
+    "linkedIncomingUpdateIds": [
+      "dddd0011-0000-4000-a000-000000000011"
+    ],
+    "createdAt": "2026-05-11T06:08:00.000Z",
+    "updatedAt": "2026-05-11T06:08:00.000Z"
+  },
+  {
+    "id": "dddd2009-0000-4000-a000-000000000009",
+    "claimCode": "CLM-009",
+    "text": "The main entrance reopened at 08:12 following clean-up and signage checks.",
+    "status": "Confirmed",
+    "notes": null,
+    "linkedSourceIds": [
+      "dddd1013-0000-4000-a000-000000000013"
+    ],
+    "linkedIncomingUpdateIds": [
+      "dddd0013-0000-4000-a000-000000000013"
+    ],
+    "createdAt": "2026-05-11T07:15:00.000Z",
+    "updatedAt": "2026-05-11T07:15:00.000Z"
+  }
+]

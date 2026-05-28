@@ -1,0 +1,68 @@
+[
+  {
+    "id": "eeee7001-0000-4000-a000-000000000001",
+    "at": "2026-06-15T11:00:00.000Z",
+    "eventType": "Circulated",
+    "channel": "Leadership distribution",
+    "audienceLabel": "Senior leadership",
+    "postureState": "Ready for review",
+    "note": "Executive brief V1 — pre-approval readiness position.",
+    "briefVersionId": "eeee6001-0000-4000-a000-000000000001",
+    "outputId": "eeee5003-0000-4000-a000-000000000003"
+  },
+  {
+    "id": "eeee7002-0000-4000-a000-000000000002",
+    "at": "2026-06-17T09:30:00.000Z",
+    "eventType": "Shared for review",
+    "channel": "Press office",
+    "audienceLabel": "Trade media",
+    "postureState": "Ready for review",
+    "note": "Press holding variant after trade journalist enquiry.",
+    "briefVersionId": "eeee6001-0000-4000-a000-000000000001",
+    "outputId": "eeee5004-0000-4000-a000-000000000004"
+  },
+  {
+    "id": "eeee7003-0000-4000-a000-000000000003",
+    "at": "2026-06-18T11:30:00.000Z",
+    "eventType": "Circulated",
+    "channel": "Leadership distribution",
+    "audienceLabel": "Senior leadership",
+    "postureState": "Approved",
+    "note": "Executive brief V2 — supersedes V1 after pricing and digital approvals.",
+    "briefVersionId": "eeee6002-0000-4000-a000-000000000002",
+    "outputId": "eeee5005-0000-4000-a000-000000000005"
+  },
+  {
+    "id": "eeee7004-0000-4000-a000-000000000004",
+    "at": "2026-06-18T12:15:00.000Z",
+    "eventType": "Published",
+    "channel": "Website / app",
+    "audienceLabel": "Customers",
+    "postureState": "Approved",
+    "note": "Customer message variant V2 with approved rate and channels.",
+    "briefVersionId": "eeee6002-0000-4000-a000-000000000002",
+    "outputId": "eeee5006-0000-4000-a000-000000000006"
+  },
+  {
+    "id": "eeee7005-0000-4000-a000-000000000005",
+    "at": "2026-06-19T10:05:00.000Z",
+    "eventType": "Exported",
+    "channel": "Leadership pack",
+    "audienceLabel": "Senior leadership",
+    "postureState": "Approved",
+    "note": "HTML export of executive brief V2 for leadership circulation.",
+    "briefVersionId": "eeee6002-0000-4000-a000-000000000002",
+    "outputId": "eeee5009-0000-4000-a000-000000000009"
+  },
+  {
+    "id": "eeee7006-0000-4000-a000-000000000006",
+    "at": "2026-06-19T10:15:00.000Z",
+    "eventType": "Audit recorded",
+    "channel": "Governance log",
+    "audienceLabel": "Governance record",
+    "postureState": "Approved",
+    "note": "Circulation audit for Green Saver launch readiness outputs.",
+    "briefVersionId": "eeee6002-0000-4000-a000-000000000002",
+    "outputId": "eeee5010-0000-4000-a000-000000000010"
+  }
+]

@@ -1,0 +1,41 @@
+{
+  "id": "eeeeeeee-eeee-4eee-aeee-eeeeeeeeee01",
+  "slug": "demo-northbank-green-saver",
+  "exportKind": "final_current_state",
+  "asOf": "2026-06-19T10:15:00.000Z",
+  "exportNote": "This is the final/current issue summary as of the end of the launch readiness window. It is not the point-in-time issue state used by earlier timeline cards or outputs — use each output's snapshot fields for historical views.",
+  "title": "Northbank Green Saver: product launch readiness",
+  "summary": "Northbank Building Society is preparing to launch Green Saver, a savings product linked to funding energy-efficient home improvements. Corporate Affairs maintained a two-week source-backed readiness record: pricing and digital dependencies were closed, go/no-go approved announcement, and approved message variants circulated with audit trail.",
+  "issueType": "Product launch readiness",
+  "severity": "Normal",
+  "status": "Ready for review",
+  "priority": "High",
+  "operatorPosture": "Monitoring",
+  "ownerName": "Launch Readiness Lead",
+  "audience": "Corporate Affairs, Product, Compliance, Legal, Digital, Customer Operations, Accessibility, Executive Office, Press Office",
+  "currentControlledPosition": "Green Saver launch approved for announcement; 4.25% gross/AER and eligibility wording approved; app release approved; post-launch 72-hour watchlist active.",
+  "confirmedFacts": "- Green Saver planned for launch week commencing 22 June 2026.\n- Pricing committee approved 4.25% gross/AER for eligible customers.\n- App release approved; go/no-go confirmed announcement may proceed.\n- Environmental and eligibility caveats apply to all external lines.\n- Post-launch watchlist covers media, customer confusion, vulnerable customers and digital journey.",
+  "context": "Fictional UK building society scenario for Metis demonstration — financial services / regulated launch readiness.\n\nTwo working weeks of cross-functional inputs (product, pricing, compliance, legal, digital, operations, accessibility, media, executive).\n\nMetis used for claims discipline, open questions, executive brief versions, message variants, comparison and circulation audit — not campaign planning.\n\nNo real organisation, product, customer or journalist names.",
+  "statusMilestones": [
+    {
+      "at": "2026-06-08T10:00:00.000Z",
+      "label": "Launch readiness issue opened"
+    },
+    {
+      "at": "2026-06-15T10:15:00.000Z",
+      "label": "Executive readiness brief requested"
+    },
+    {
+      "at": "2026-06-18T10:45:00.000Z",
+      "label": "Pricing and eligibility approved"
+    },
+    {
+      "at": "2026-06-19T08:00:00.000Z",
+      "label": "Launch approved for announcement"
+    },
+    {
+      "at": "2026-06-19T10:15:00.000Z",
+      "label": "Circulation audit recorded"
+    }
+  ]
+}

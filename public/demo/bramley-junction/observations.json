@@ -1,0 +1,68 @@
+[
+  {
+    "id": "dddd4001-0000-4000-a000-000000000001",
+    "observationCode": "OBS-001",
+    "title": "Main entrance vs whole station confusion",
+    "body": "The key communications risk is confusion between “main entrance closed” and “station closed”.",
+    "confidence": "Likely",
+    "authorRole": "Corporate Affairs",
+    "authorName": "Duty Comms Manager",
+    "timestampLabel": "Mon 04:40",
+    "createdAt": "2026-05-11T04:50:00.000Z"
+  },
+  {
+    "id": "dddd4002-0000-4000-a000-000000000002",
+    "observationCode": "OBS-002",
+    "title": "Reputationally visible despite modest operational impact",
+    "body": "The issue is operationally modest but reputationally visible during the morning peak.",
+    "confidence": "Likely",
+    "authorRole": "Corporate Affairs",
+    "authorName": "Duty Comms Manager",
+    "timestampLabel": "Mon 05:50",
+    "createdAt": "2026-05-11T04:49:00.000Z"
+  },
+  {
+    "id": "dddd4003-0000-4000-a000-000000000003",
+    "observationCode": "OBS-003",
+    "title": "Avoid speculation on roof drainage",
+    "body": "Staff need a clear line to avoid speculation about roof drainage before facilities confirms.",
+    "confidence": "Confirmed",
+    "authorRole": "Station Operations",
+    "authorName": "Duty Station Support",
+    "timestampLabel": "Mon 04:36",
+    "createdAt": "2026-05-11T04:50:00.000Z"
+  },
+  {
+    "id": "dddd4004-0000-4000-a000-000000000004",
+    "observationCode": "OBS-004",
+    "title": "Lead with what remains available",
+    "body": "Passenger messaging should lead with what remains available: trains running, side entrance open.",
+    "confidence": "Confirmed",
+    "authorRole": "Customer Experience",
+    "authorName": "Customer Service Lead",
+    "timestampLabel": "Mon 04:42",
+    "createdAt": "2026-05-11T04:50:00.000Z"
+  },
+  {
+    "id": "dddd4005-0000-4000-a000-000000000005",
+    "observationCode": "OBS-005",
+    "title": "Check accessibility separately",
+    "body": "Accessibility impact should be checked separately, not assumed from general flow reports.",
+    "confidence": "Likely",
+    "authorRole": "Accessibility",
+    "authorName": "Accessibility Lead",
+    "timestampLabel": "Mon 07:52",
+    "createdAt": "2026-05-11T06:54:00.000Z"
+  },
+  {
+    "id": "dddd4006-0000-4000-a000-000000000006",
+    "observationCode": "OBS-006",
+    "title": "Future works handback focus",
+    "body": "Later review should focus on handback criteria, temporary signage and pre-agreed passenger messaging for planned works.",
+    "confidence": "Likely",
+    "authorRole": "Regional Operations",
+    "authorName": "Regional Operations Director",
+    "timestampLabel": "Mon 08:42",
+    "createdAt": "2026-05-11T07:41:00.000Z"
+  }
+]

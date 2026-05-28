@@ -1,0 +1,61 @@
+import { BRAMLEY_BRIEF_VERSION_IDS, BRAMLEY_CIRCULATION_IDS, BRAMLEY_OUTPUT_IDS } from "./ids";
+import type { BramleyCirculationExport } from "./types";
+import { bramleyIso } from "./timestamps";
+
+export const bramleyCirculationEvents: BramleyCirculationExport[] = [
+  {
+    id: BRAMLEY_CIRCULATION_IDS.pressDraft,
+    at: bramleyIso("2026-05-11T06:18:00"),
+    eventType: "Shared for review",
+    channel: "Press office",
+    audienceLabel: "Local media",
+    postureState: "Ready for review",
+    note: "Holding press line coordinated ahead of reporter deadline.",
+    briefVersionId: null,
+    outputId: BRAMLEY_OUTPUT_IDS.pressLine,
+  },
+  {
+    id: BRAMLEY_CIRCULATION_IDS.execV1,
+    at: bramleyIso("2026-05-11T06:50:00"),
+    eventType: "Circulated",
+    channel: "Leadership distribution",
+    audienceLabel: "Senior leadership",
+    postureState: "Ready for review",
+    note: "Executive brief V1 sent to morning leadership list.",
+    briefVersionId: BRAMLEY_BRIEF_VERSION_IDS.executiveV1,
+    outputId: BRAMLEY_OUTPUT_IDS.executiveV1,
+  },
+  {
+    id: BRAMLEY_CIRCULATION_IDS.passengerV2,
+    at: bramleyIso("2026-05-11T07:25:00"),
+    eventType: "Published",
+    channel: "Station PA / digital",
+    audienceLabel: "Passengers",
+    postureState: "Approved",
+    note: "Updated passenger message with expected reopening window.",
+    briefVersionId: null,
+    outputId: BRAMLEY_OUTPUT_IDS.passengerV2,
+  },
+  {
+    id: BRAMLEY_CIRCULATION_IDS.execV2,
+    at: bramleyIso("2026-05-11T08:30:00"),
+    eventType: "Circulated",
+    channel: "Leadership distribution",
+    audienceLabel: "Senior leadership",
+    postureState: "Approved",
+    note: "Executive brief V2 supersedes V1 after main entrance reopening.",
+    briefVersionId: BRAMLEY_BRIEF_VERSION_IDS.executiveV2,
+    outputId: BRAMLEY_OUTPUT_IDS.executiveV2,
+  },
+  {
+    id: BRAMLEY_CIRCULATION_IDS.auditSummary,
+    at: bramleyIso("2026-05-11T09:00:00"),
+    eventType: "Audit recorded",
+    channel: "Governance log",
+    audienceLabel: "Governance record",
+    postureState: "Approved",
+    note: "Circulation audit captured for outputs issued during incident window.",
+    briefVersionId: null,
+    outputId: BRAMLEY_OUTPUT_IDS.circulationAudit,
+  },
+];

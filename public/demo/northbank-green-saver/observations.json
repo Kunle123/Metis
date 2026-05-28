@@ -1,0 +1,68 @@
+[
+  {
+    "id": "eeee4001-0000-4000-a000-000000000001",
+    "observationCode": "OBS-001",
+    "title": "Overclaiming risk before approvals",
+    "body": "The main comms risk is stating rate, eligibility or app availability before formal approvals are in Metis.",
+    "confidence": "Confirmed",
+    "authorRole": "Corporate Affairs",
+    "authorName": "Launch Readiness Lead",
+    "timestampLabel": "Wed 10 Jun",
+    "createdAt": "2026-06-09T09:15:00.000Z"
+  },
+  {
+    "id": "eeee4002-0000-4000-a000-000000000002",
+    "observationCode": "OBS-002",
+    "title": "Positive product story needs caveats",
+    "body": "The product story is positive but requires disciplined caveats — this is readiness, not a campaign.",
+    "confidence": "Likely",
+    "authorRole": "Corporate Affairs",
+    "authorName": "Launch Readiness Lead",
+    "timestampLabel": "Mon 8 Jun",
+    "createdAt": "2026-06-08T10:00:00.000Z"
+  },
+  {
+    "id": "eeee4003-0000-4000-a000-000000000003",
+    "observationCode": "OBS-003",
+    "title": "Leadership needs readiness not a campaign plan",
+    "body": "Executive audience needs a readiness view with dependencies and decisions — not marketing campaign detail.",
+    "confidence": "Confirmed",
+    "authorRole": "Corporate Affairs",
+    "authorName": "Launch Readiness Lead",
+    "timestampLabel": "Mon 8 Jun",
+    "createdAt": "2026-06-08T10:00:00.000Z"
+  },
+  {
+    "id": "eeee4004-0000-4000-a000-000000000004",
+    "observationCode": "OBS-004",
+    "title": "Ops and accessibility are launch dependencies",
+    "body": "Customer operations and accessibility wording should be treated as launch readiness dependencies, not afterthoughts.",
+    "confidence": "Likely",
+    "authorRole": "Corporate Affairs",
+    "authorName": "Launch Readiness Lead",
+    "timestampLabel": "Thu 11 Jun",
+    "createdAt": "2026-06-11T09:00:00.000Z"
+  },
+  {
+    "id": "eeee4005-0000-4000-a000-000000000005",
+    "observationCode": "OBS-005",
+    "title": "Trade press may force holding line",
+    "body": "Trade press interest may require a holding line before final go/no-go even when internal confidence is high.",
+    "confidence": "Likely",
+    "authorRole": "Press Office",
+    "authorName": "Press Manager",
+    "timestampLabel": "Wed 17 Jun",
+    "createdAt": "2026-06-17T08:30:00.000Z"
+  },
+  {
+    "id": "eeee4006-0000-4000-a000-000000000006",
+    "observationCode": "OBS-006",
+    "title": "Version compare should show approval changes",
+    "body": "Executive brief comparison should highlight what changed after digital and pricing approvals.",
+    "confidence": "Likely",
+    "authorRole": "Corporate Affairs",
+    "authorName": "Launch Readiness Lead",
+    "timestampLabel": "Mon 15 Jun",
+    "createdAt": "2026-06-15T08:00:00.000Z"
+  }
+]

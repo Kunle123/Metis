@@ -1,0 +1,721 @@
+[
+  {
+    "timestamp": "2026-05-11T04:42:00.000Z",
+    "displayTime": "Mon 05:42",
+    "lane": "incoming_update",
+    "title": "Duty manager summary to comms",
+    "subtitle": "Duty Station Manager · phone briefing to corporate affairs duty",
+    "badge": "DUTY SUMMARY",
+    "linkedRecordType": "incoming_update",
+    "linkedRecordId": "dddd0015-0000-4000-a000-000000000015",
+    "relatedRecordIds": [],
+    "intake": {
+      "reportedEventAt": "2026-05-11T04:42:00.000Z",
+      "sourceTimestamp": "2026-05-11T04:42:00.000Z",
+      "receivedByCommsAt": "2026-05-11T04:42:00.000Z",
+      "addedToMetisAt": "2026-05-11T04:42:00.000Z",
+      "intakeRoute": "direct_to_comms"
+    }
+  },
+  {
+    "timestamp": "2026-05-11T04:42:00.000Z",
+    "displayTime": "Mon 05:42",
+    "lane": "issue_record",
+    "title": "Issue record updated from Comms engaged",
+    "subtitle": "status updated",
+    "badge": "RECORD UPDATED",
+    "linkedRecordType": "issue_record_update",
+    "linkedRecordId": "dddd0015-0000-4000-a000-000000000015::issue_record_update",
+    "relatedRecordIds": [],
+    "impact": {
+      "linkedSourceId": null,
+      "claimsAdded": [],
+      "gapsOpened": [],
+      "gapsClosed": [],
+      "observationsAdded": [],
+      "statusNote": "Active issue opened — comms engaged"
+    }
+  },
+  {
+    "timestamp": "2026-05-11T04:42:00.000Z",
+    "displayTime": "Mon 05:42",
+    "lane": "issue_record",
+    "title": "Issue status",
+    "subtitle": "Comms engaged — issue opened in Metis",
+    "badge": "DECISION",
+    "linkedRecordType": "issue",
+    "linkedRecordId": "dddddddd-dddd-4ddd-addd-dddddddddd01",
+    "relatedRecordIds": []
+  },
+  {
+    "timestamp": "2026-05-11T04:48:00.000Z",
+    "displayTime": "Mon 05:48",
+    "lane": "issue_record",
+    "title": "Issue status",
+    "subtitle": "Managed operational disruption",
+    "badge": "DECISION",
+    "linkedRecordType": "issue",
+    "linkedRecordId": "dddddddd-dddd-4ddd-addd-dddddddddd01",
+    "relatedRecordIds": []
+  },
+  {
+    "timestamp": "2026-05-11T04:49:00.000Z",
+    "displayTime": "Mon 05:49",
+    "lane": "incoming_update",
+    "title": "Social monitoring — local posts say station is shut",
+    "subtitle": "Comms Monitoring · social monitoring note",
+    "badge": "SOCIAL SIGNAL",
+    "linkedRecordType": "incoming_update",
+    "linkedRecordId": "dddd0008-0000-4000-a000-000000000008",
+    "relatedRecordIds": [
+      "dddd1008-0000-4000-a000-000000000008",
+      "dddd2007-0000-4000-a000-000000000007",
+      "dddd4002-0000-4000-a000-000000000002"
+    ],
+    "intake": {
+      "reportedEventAt": "2026-05-11T04:48:00.000Z",
+      "sourceTimestamp": "2026-05-11T04:48:00.000Z",
+      "receivedByCommsAt": "2026-05-11T04:48:00.000Z",
+      "addedToMetisAt": "2026-05-11T04:49:00.000Z",
+      "intakeRoute": "direct_to_comms"
+    }
+  },
+  {
+    "timestamp": "2026-05-11T04:49:00.000Z",
+    "displayTime": "Mon 05:49",
+    "lane": "issue_record",
+    "title": "Issue record updated from Social inaccuracy",
+    "subtitle": "+1 claims · +1 observations · status updated",
+    "badge": "RECORD UPDATED",
+    "linkedRecordType": "issue_record_update",
+    "linkedRecordId": "dddd0008-0000-4000-a000-000000000008::issue_record_update",
+    "relatedRecordIds": [
+      "dddd1008-0000-4000-a000-000000000008",
+      "dddd2007-0000-4000-a000-000000000007",
+      "dddd4002-0000-4000-a000-000000000002"
+    ],
+    "impact": {
+      "linkedSourceId": "dddd1008-0000-4000-a000-000000000008",
+      "claimsAdded": [
+        "dddd2007-0000-4000-a000-000000000007"
+      ],
+      "gapsOpened": [],
+      "gapsClosed": [],
+      "observationsAdded": [
+        "dddd4002-0000-4000-a000-000000000002"
+      ],
+      "statusNote": "Managed operational disruption"
+    }
+  },
+  {
+    "timestamp": "2026-05-11T04:50:00.000Z",
+    "displayTime": "Mon 05:50",
+    "lane": "incoming_update",
+    "title": "Duty overnight pack logged in Metis",
+    "subtitle": "Corporate Affairs · Metis intake from duty handover",
+    "badge": "COMMS INTAKE",
+    "linkedRecordType": "incoming_update",
+    "linkedRecordId": "dddd0001-0000-4000-a000-000000000001",
+    "relatedRecordIds": [
+      "dddd2001-0000-4000-a000-000000000001",
+      "dddd2002-0000-4000-a000-000000000002",
+      "dddd2003-0000-4000-a000-000000000003",
+      "dddd2004-0000-4000-a000-000000000004",
+      "dddd2005-0000-4000-a000-000000000005",
+      "dddd2006-0000-4000-a000-000000000006",
+      "dddd3001-0000-4000-a000-000000000001",
+      "dddd3005-0000-4000-a000-000000000005",
+      "dddd3002-0000-4000-a000-000000000002",
+      "dddd3004-0000-4000-a000-000000000004",
+      "dddd3003-0000-4000-a000-000000000003",
+      "dddd4001-0000-4000-a000-000000000001",
+      "dddd4003-0000-4000-a000-000000000003",
+      "dddd4004-0000-4000-a000-000000000004"
+    ],
+    "intake": {
+      "reportedEventAt": "2026-05-11T04:50:00.000Z",
+      "sourceTimestamp": "2026-05-11T04:50:00.000Z",
+      "receivedByCommsAt": "2026-05-11T04:42:00.000Z",
+      "addedToMetisAt": "2026-05-11T04:50:00.000Z",
+      "intakeRoute": "direct_to_comms"
+    }
+  },
+  {
+    "timestamp": "2026-05-11T04:50:00.000Z",
+    "displayTime": "Mon 05:50",
+    "lane": "issue_record",
+    "title": "Issue record updated from Overnight pack logged",
+    "subtitle": "+6 claims · +4 open questions · +3 observations · 1 questions closed",
+    "badge": "RECORD UPDATED",
+    "linkedRecordType": "issue_record_update",
+    "linkedRecordId": "dddd0001-0000-4000-a000-000000000001::issue_record_update",
+    "relatedRecordIds": [
+      "dddd2001-0000-4000-a000-000000000001",
+      "dddd2002-0000-4000-a000-000000000002",
+      "dddd2003-0000-4000-a000-000000000003",
+      "dddd2004-0000-4000-a000-000000000004",
+      "dddd2005-0000-4000-a000-000000000005",
+      "dddd2006-0000-4000-a000-000000000006",
+      "dddd3001-0000-4000-a000-000000000001",
+      "dddd3005-0000-4000-a000-000000000005",
+      "dddd3002-0000-4000-a000-000000000002",
+      "dddd3004-0000-4000-a000-000000000004",
+      "dddd3003-0000-4000-a000-000000000003",
+      "dddd4001-0000-4000-a000-000000000001",
+      "dddd4003-0000-4000-a000-000000000003",
+      "dddd4004-0000-4000-a000-000000000004"
+    ],
+    "impact": {
+      "linkedSourceId": null,
+      "claimsAdded": [
+        "dddd2001-0000-4000-a000-000000000001",
+        "dddd2002-0000-4000-a000-000000000002",
+        "dddd2003-0000-4000-a000-000000000003",
+        "dddd2004-0000-4000-a000-000000000004",
+        "dddd2005-0000-4000-a000-000000000005",
+        "dddd2006-0000-4000-a000-000000000006"
+      ],
+      "gapsOpened": [
+        "dddd3001-0000-4000-a000-000000000001",
+        "dddd3005-0000-4000-a000-000000000005",
+        "dddd3002-0000-4000-a000-000000000002",
+        "dddd3004-0000-4000-a000-000000000004"
+      ],
+      "gapsClosed": [
+        "dddd3003-0000-4000-a000-000000000003"
+      ],
+      "observationsAdded": [
+        "dddd4001-0000-4000-a000-000000000001",
+        "dddd4003-0000-4000-a000-000000000003",
+        "dddd4004-0000-4000-a000-000000000004"
+      ],
+      "statusNote": null
+    }
+  },
+  {
+    "timestamp": "2026-05-11T04:52:00.000Z",
+    "displayTime": "Mon 05:52",
+    "lane": "metis_output",
+    "title": "Social response line",
+    "subtitle": "Social media replies · Approved",
+    "badge": "SOCIAL RESPONSE LINE",
+    "linkedRecordType": "output",
+    "linkedRecordId": "dddd5003-0000-4000-a000-000000000003",
+    "relatedRecordIds": [
+      "dddd1008-0000-4000-a000-000000000008",
+      "dddd1006-0000-4000-a000-000000000006",
+      "dddd1004-0000-4000-a000-000000000004",
+      "dddd2007-0000-4000-a000-000000000007",
+      "dddd2005-0000-4000-a000-000000000005",
+      "dddd2004-0000-4000-a000-000000000004"
+    ]
+  },
+  {
+    "timestamp": "2026-05-11T04:54:00.000Z",
+    "displayTime": "Mon 05:54",
+    "lane": "metis_output",
+    "title": "Staff holding update",
+    "subtitle": "Station staff and customer service · Ready for review",
+    "badge": "STAFF HOLDING UPDATE",
+    "linkedRecordType": "output",
+    "linkedRecordId": "dddd5001-0000-4000-a000-000000000001",
+    "relatedRecordIds": [
+      "dddd1001-0000-4000-a000-000000000001",
+      "dddd1003-0000-4000-a000-000000000003",
+      "dddd1004-0000-4000-a000-000000000004",
+      "dddd1006-0000-4000-a000-000000000006",
+      "dddd2001-0000-4000-a000-000000000001",
+      "dddd2003-0000-4000-a000-000000000003",
+      "dddd2004-0000-4000-a000-000000000004",
+      "dddd2005-0000-4000-a000-000000000005"
+    ]
+  },
+  {
+    "timestamp": "2026-05-11T04:58:00.000Z",
+    "displayTime": "Mon 05:58",
+    "lane": "metis_output",
+    "title": "Passenger message draft",
+    "subtitle": "Passengers · Approved",
+    "badge": "PASSENGER MESSAGE",
+    "linkedRecordType": "output",
+    "linkedRecordId": "dddd5002-0000-4000-a000-000000000002",
+    "relatedRecordIds": [
+      "dddd1004-0000-4000-a000-000000000004",
+      "dddd1006-0000-4000-a000-000000000006",
+      "dddd2004-0000-4000-a000-000000000004",
+      "dddd2005-0000-4000-a000-000000000005"
+    ]
+  },
+  {
+    "timestamp": "2026-05-11T05:09:00.000Z",
+    "displayTime": "Mon 06:09",
+    "lane": "incoming_update",
+    "title": "Press office call log — reporter asks about reopening",
+    "subtitle": "Press Office · call log",
+    "badge": "PRESS CALL",
+    "linkedRecordType": "incoming_update",
+    "linkedRecordId": "dddd0009-0000-4000-a000-000000000009",
+    "relatedRecordIds": [
+      "dddd1009-0000-4000-a000-000000000009"
+    ],
+    "intake": {
+      "reportedEventAt": "2026-05-11T05:08:00.000Z",
+      "sourceTimestamp": "2026-05-11T05:08:00.000Z",
+      "receivedByCommsAt": "2026-05-11T05:08:00.000Z",
+      "addedToMetisAt": "2026-05-11T05:09:00.000Z",
+      "intakeRoute": "direct_to_comms"
+    }
+  },
+  {
+    "timestamp": "2026-05-11T05:09:00.000Z",
+    "displayTime": "Mon 06:09",
+    "lane": "issue_record",
+    "title": "Issue record updated from Press enquiry",
+    "subtitle": "Issue record updated",
+    "badge": "RECORD UPDATED",
+    "linkedRecordType": "issue_record_update",
+    "linkedRecordId": "dddd0009-0000-4000-a000-000000000009::issue_record_update",
+    "relatedRecordIds": [
+      "dddd1009-0000-4000-a000-000000000009"
+    ],
+    "impact": {
+      "linkedSourceId": "dddd1009-0000-4000-a000-000000000009",
+      "claimsAdded": [],
+      "gapsOpened": [],
+      "gapsClosed": [],
+      "observationsAdded": [],
+      "statusNote": null
+    }
+  },
+  {
+    "timestamp": "2026-05-11T05:18:00.000Z",
+    "displayTime": "Mon 06:18",
+    "lane": "metis_output",
+    "title": "Holding press line",
+    "subtitle": "Local media · Ready for review",
+    "badge": "HOLDING PRESS LINE",
+    "linkedRecordType": "output",
+    "linkedRecordId": "dddd5004-0000-4000-a000-000000000004",
+    "relatedRecordIds": [
+      "dddd1003-0000-4000-a000-000000000003",
+      "dddd1004-0000-4000-a000-000000000004",
+      "dddd1006-0000-4000-a000-000000000006",
+      "dddd1007-0000-4000-a000-000000000007",
+      "dddd1008-0000-4000-a000-000000000008",
+      "dddd1009-0000-4000-a000-000000000009",
+      "dddd2003-0000-4000-a000-000000000003",
+      "dddd2004-0000-4000-a000-000000000004",
+      "dddd2005-0000-4000-a000-000000000005",
+      "dddd2006-0000-4000-a000-000000000006",
+      "dddd2007-0000-4000-a000-000000000007"
+    ]
+  },
+  {
+    "timestamp": "2026-05-11T05:24:00.000Z",
+    "displayTime": "Mon 06:24",
+    "lane": "incoming_update",
+    "title": "Station manager update — passenger flow manageable",
+    "subtitle": "Station Manager · phone update to corporate affairs",
+    "badge": "STATION UPDATE",
+    "linkedRecordType": "incoming_update",
+    "linkedRecordId": "dddd0010-0000-4000-a000-000000000010",
+    "relatedRecordIds": [
+      "dddd1010-0000-4000-a000-000000000010",
+      "dddd3002-0000-4000-a000-000000000002"
+    ],
+    "intake": {
+      "reportedEventAt": "2026-05-11T05:22:00.000Z",
+      "sourceTimestamp": "2026-05-11T05:22:00.000Z",
+      "receivedByCommsAt": "2026-05-11T05:20:00.000Z",
+      "addedToMetisAt": "2026-05-11T05:24:00.000Z",
+      "intakeRoute": "direct_to_comms"
+    }
+  },
+  {
+    "timestamp": "2026-05-11T05:24:00.000Z",
+    "displayTime": "Mon 06:24",
+    "lane": "issue_record",
+    "title": "Issue record updated from Flow manageable",
+    "subtitle": "1 questions closed",
+    "badge": "RECORD UPDATED",
+    "linkedRecordType": "issue_record_update",
+    "linkedRecordId": "dddd0010-0000-4000-a000-000000000010::issue_record_update",
+    "relatedRecordIds": [
+      "dddd1010-0000-4000-a000-000000000010",
+      "dddd3002-0000-4000-a000-000000000002"
+    ],
+    "impact": {
+      "linkedSourceId": "dddd1010-0000-4000-a000-000000000010",
+      "claimsAdded": [],
+      "gapsOpened": [],
+      "gapsClosed": [
+        "dddd3002-0000-4000-a000-000000000002"
+      ],
+      "observationsAdded": [],
+      "statusNote": null
+    }
+  },
+  {
+    "timestamp": "2026-05-11T05:36:00.000Z",
+    "displayTime": "Mon 06:36",
+    "lane": "incoming_update",
+    "title": "Executive office request for short position note",
+    "subtitle": "Executive Office · email to corporate affairs duty",
+    "badge": "EXEC REQUEST",
+    "linkedRecordType": "incoming_update",
+    "linkedRecordId": "dddd0016-0000-4000-a000-000000000016",
+    "relatedRecordIds": [],
+    "intake": {
+      "reportedEventAt": "2026-05-11T05:35:00.000Z",
+      "sourceTimestamp": "2026-05-11T05:35:00.000Z",
+      "receivedByCommsAt": "2026-05-11T05:35:00.000Z",
+      "addedToMetisAt": "2026-05-11T05:36:00.000Z",
+      "intakeRoute": "direct_to_comms"
+    }
+  },
+  {
+    "timestamp": "2026-05-11T05:40:00.000Z",
+    "displayTime": "Mon 06:40",
+    "lane": "issue_record",
+    "title": "Compare executive brief versions",
+    "subtitle": "V1 → V2 after reopening evidence",
+    "badge": "COMPARE",
+    "linkedRecordType": "brief_comparison",
+    "linkedRecordId": "dddd6201-0000-4000-a000-000000000001",
+    "relatedRecordIds": []
+  },
+  {
+    "timestamp": "2026-05-11T05:48:00.000Z",
+    "displayTime": "Mon 06:48",
+    "lane": "metis_output",
+    "title": "Executive brief V1",
+    "subtitle": "Senior leadership · Ready for review",
+    "badge": "EXECUTIVE BRIEF",
+    "linkedRecordType": "output",
+    "linkedRecordId": "dddd5005-0000-4000-a000-000000000005",
+    "relatedRecordIds": [
+      "dddd1001-0000-4000-a000-000000000001",
+      "dddd1003-0000-4000-a000-000000000003",
+      "dddd1004-0000-4000-a000-000000000004",
+      "dddd1006-0000-4000-a000-000000000006",
+      "dddd1007-0000-4000-a000-000000000007",
+      "dddd1008-0000-4000-a000-000000000008",
+      "dddd1009-0000-4000-a000-000000000009",
+      "dddd2001-0000-4000-a000-000000000001",
+      "dddd2002-0000-4000-a000-000000000002",
+      "dddd2003-0000-4000-a000-000000000003",
+      "dddd2004-0000-4000-a000-000000000004",
+      "dddd2005-0000-4000-a000-000000000005",
+      "dddd2006-0000-4000-a000-000000000006",
+      "dddd2007-0000-4000-a000-000000000007"
+    ]
+  },
+  {
+    "timestamp": "2026-05-11T06:08:00.000Z",
+    "displayTime": "Mon 07:08",
+    "lane": "incoming_update",
+    "title": "Facilities inspection summary forwarded to comms",
+    "subtitle": "Facilities Engineer · email to station manager, copied to comms",
+    "badge": "FACILITIES NOTE",
+    "linkedRecordType": "incoming_update",
+    "linkedRecordId": "dddd0011-0000-4000-a000-000000000011",
+    "relatedRecordIds": [
+      "dddd1011-0000-4000-a000-000000000011",
+      "dddd2008-0000-4000-a000-000000000008",
+      "dddd3001-0000-4000-a000-000000000001"
+    ],
+    "intake": {
+      "reportedEventAt": "2026-05-11T06:05:00.000Z",
+      "sourceTimestamp": "2026-05-11T06:00:00.000Z",
+      "receivedByCommsAt": "2026-05-11T06:06:00.000Z",
+      "addedToMetisAt": "2026-05-11T06:08:00.000Z",
+      "intakeRoute": "direct_to_comms"
+    }
+  },
+  {
+    "timestamp": "2026-05-11T06:08:00.000Z",
+    "displayTime": "Mon 07:08",
+    "lane": "issue_record",
+    "title": "Issue record updated from Ceiling cleared",
+    "subtitle": "+1 claims · 1 questions closed · status updated",
+    "badge": "RECORD UPDATED",
+    "linkedRecordType": "issue_record_update",
+    "linkedRecordId": "dddd0011-0000-4000-a000-000000000011::issue_record_update",
+    "relatedRecordIds": [
+      "dddd1011-0000-4000-a000-000000000011",
+      "dddd2008-0000-4000-a000-000000000008",
+      "dddd3001-0000-4000-a000-000000000001"
+    ],
+    "impact": {
+      "linkedSourceId": "dddd1011-0000-4000-a000-000000000011",
+      "claimsAdded": [
+        "dddd2008-0000-4000-a000-000000000008"
+      ],
+      "gapsOpened": [],
+      "gapsClosed": [
+        "dddd3001-0000-4000-a000-000000000001"
+      ],
+      "observationsAdded": [],
+      "statusNote": "Reopening expected shortly"
+    }
+  },
+  {
+    "timestamp": "2026-05-11T06:12:00.000Z",
+    "displayTime": "Mon 07:12",
+    "lane": "issue_record",
+    "title": "Issue status",
+    "subtitle": "Reopening expected shortly",
+    "badge": "DECISION",
+    "linkedRecordType": "issue",
+    "linkedRecordId": "dddddddd-dddd-4ddd-addd-dddddddddd01",
+    "relatedRecordIds": []
+  },
+  {
+    "timestamp": "2026-05-11T06:22:00.000Z",
+    "displayTime": "Mon 07:22",
+    "lane": "metis_output",
+    "title": "Updated passenger message",
+    "subtitle": "Passengers · Approved",
+    "badge": "PASSENGER MESSAGE",
+    "linkedRecordType": "output",
+    "linkedRecordId": "dddd5006-0000-4000-a000-000000000006",
+    "relatedRecordIds": [
+      "dddd1011-0000-4000-a000-000000000011",
+      "dddd1004-0000-4000-a000-000000000004",
+      "dddd1006-0000-4000-a000-000000000006",
+      "dddd2008-0000-4000-a000-000000000008",
+      "dddd2004-0000-4000-a000-000000000004",
+      "dddd2005-0000-4000-a000-000000000005"
+    ]
+  },
+  {
+    "timestamp": "2026-05-11T06:38:00.000Z",
+    "displayTime": "Mon 07:38",
+    "lane": "metis_output",
+    "title": "Councillor and stakeholder note",
+    "subtitle": "Local authority / accessibility / transport stakeholders · Ready for review",
+    "badge": "STAKEHOLDER NOTE",
+    "linkedRecordType": "output",
+    "linkedRecordId": "dddd5007-0000-4000-a000-000000000007",
+    "relatedRecordIds": [
+      "dddd1011-0000-4000-a000-000000000011",
+      "dddd1010-0000-4000-a000-000000000010",
+      "dddd1004-0000-4000-a000-000000000004",
+      "dddd1009-0000-4000-a000-000000000009",
+      "dddd2004-0000-4000-a000-000000000004",
+      "dddd2008-0000-4000-a000-000000000008"
+    ]
+  },
+  {
+    "timestamp": "2026-05-11T06:54:00.000Z",
+    "displayTime": "Mon 07:54",
+    "lane": "incoming_update",
+    "title": "Accessibility assessment forwarded to comms",
+    "subtitle": "Accessibility Lead · email to corporate affairs",
+    "badge": "ACCESSIBILITY NOTE",
+    "linkedRecordType": "incoming_update",
+    "linkedRecordId": "dddd0012-0000-4000-a000-000000000012",
+    "relatedRecordIds": [
+      "dddd1012-0000-4000-a000-000000000012",
+      "dddd3006-0000-4000-a000-000000000006",
+      "dddd4005-0000-4000-a000-000000000005"
+    ],
+    "intake": {
+      "reportedEventAt": "2026-05-11T06:50:00.000Z",
+      "sourceTimestamp": "2026-05-11T06:50:00.000Z",
+      "receivedByCommsAt": "2026-05-11T06:52:00.000Z",
+      "addedToMetisAt": "2026-05-11T06:54:00.000Z",
+      "intakeRoute": "direct_to_comms"
+    }
+  },
+  {
+    "timestamp": "2026-05-11T06:54:00.000Z",
+    "displayTime": "Mon 07:54",
+    "lane": "issue_record",
+    "title": "Issue record updated from Accessibility check",
+    "subtitle": "+1 open questions · +1 observations",
+    "badge": "RECORD UPDATED",
+    "linkedRecordType": "issue_record_update",
+    "linkedRecordId": "dddd0012-0000-4000-a000-000000000012::issue_record_update",
+    "relatedRecordIds": [
+      "dddd1012-0000-4000-a000-000000000012",
+      "dddd3006-0000-4000-a000-000000000006",
+      "dddd4005-0000-4000-a000-000000000005"
+    ],
+    "impact": {
+      "linkedSourceId": "dddd1012-0000-4000-a000-000000000012",
+      "claimsAdded": [],
+      "gapsOpened": [
+        "dddd3006-0000-4000-a000-000000000006"
+      ],
+      "gapsClosed": [],
+      "observationsAdded": [
+        "dddd4005-0000-4000-a000-000000000005"
+      ],
+      "statusNote": null
+    }
+  },
+  {
+    "timestamp": "2026-05-11T07:12:00.000Z",
+    "displayTime": "Mon 08:12",
+    "lane": "issue_record",
+    "title": "Issue status",
+    "subtitle": "Operational disruption closed",
+    "badge": "DECISION",
+    "linkedRecordType": "issue",
+    "linkedRecordId": "dddddddd-dddd-4ddd-addd-dddddddddd01",
+    "relatedRecordIds": []
+  },
+  {
+    "timestamp": "2026-05-11T07:15:00.000Z",
+    "displayTime": "Mon 08:15",
+    "lane": "incoming_update",
+    "title": "Station manager confirmation — main entrance reopened",
+    "subtitle": "Station Manager · phone confirmation to corporate affairs",
+    "badge": "OPS CONFIRMATION",
+    "linkedRecordType": "incoming_update",
+    "linkedRecordId": "dddd0013-0000-4000-a000-000000000013",
+    "relatedRecordIds": [
+      "dddd1013-0000-4000-a000-000000000013",
+      "dddd2009-0000-4000-a000-000000000009",
+      "dddd3005-0000-4000-a000-000000000005",
+      "dddd3004-0000-4000-a000-000000000004"
+    ],
+    "intake": {
+      "reportedEventAt": "2026-05-11T07:12:00.000Z",
+      "sourceTimestamp": "2026-05-11T07:12:00.000Z",
+      "receivedByCommsAt": "2026-05-11T07:13:00.000Z",
+      "addedToMetisAt": "2026-05-11T07:15:00.000Z",
+      "intakeRoute": "direct_to_comms"
+    }
+  },
+  {
+    "timestamp": "2026-05-11T07:15:00.000Z",
+    "displayTime": "Mon 08:15",
+    "lane": "issue_record",
+    "title": "Issue record updated from Main entrance open",
+    "subtitle": "+1 claims · 2 questions closed · status updated",
+    "badge": "RECORD UPDATED",
+    "linkedRecordType": "issue_record_update",
+    "linkedRecordId": "dddd0013-0000-4000-a000-000000000013::issue_record_update",
+    "relatedRecordIds": [
+      "dddd1013-0000-4000-a000-000000000013",
+      "dddd2009-0000-4000-a000-000000000009",
+      "dddd3005-0000-4000-a000-000000000005",
+      "dddd3004-0000-4000-a000-000000000004"
+    ],
+    "impact": {
+      "linkedSourceId": "dddd1013-0000-4000-a000-000000000013",
+      "claimsAdded": [
+        "dddd2009-0000-4000-a000-000000000009"
+      ],
+      "gapsOpened": [],
+      "gapsClosed": [
+        "dddd3005-0000-4000-a000-000000000005",
+        "dddd3004-0000-4000-a000-000000000004"
+      ],
+      "observationsAdded": [],
+      "statusNote": "Operational disruption closed"
+    }
+  },
+  {
+    "timestamp": "2026-05-11T07:28:00.000Z",
+    "displayTime": "Mon 08:28",
+    "lane": "metis_output",
+    "title": "Executive brief V2",
+    "subtitle": "Senior leadership · Approved",
+    "badge": "EXECUTIVE BRIEF",
+    "linkedRecordType": "output",
+    "linkedRecordId": "dddd5008-0000-4000-a000-000000000008",
+    "relatedRecordIds": [
+      "dddd1011-0000-4000-a000-000000000011",
+      "dddd1013-0000-4000-a000-000000000013",
+      "dddd1010-0000-4000-a000-000000000010",
+      "dddd1008-0000-4000-a000-000000000008",
+      "dddd2008-0000-4000-a000-000000000008",
+      "dddd2009-0000-4000-a000-000000000009",
+      "dddd2006-0000-4000-a000-000000000006",
+      "dddd2007-0000-4000-a000-000000000007"
+    ]
+  },
+  {
+    "timestamp": "2026-05-11T07:41:00.000Z",
+    "displayTime": "Mon 08:41",
+    "lane": "incoming_update",
+    "title": "Follow-up actions requested",
+    "subtitle": "Regional Operations Director · exec action note",
+    "badge": "EXEC ACTION",
+    "linkedRecordType": "incoming_update",
+    "linkedRecordId": "dddd0014-0000-4000-a000-000000000014",
+    "relatedRecordIds": [
+      "dddd3007-0000-4000-a000-000000000007",
+      "dddd4006-0000-4000-a000-000000000006"
+    ],
+    "intake": {
+      "reportedEventAt": "2026-05-11T07:40:00.000Z",
+      "sourceTimestamp": "2026-05-11T07:40:00.000Z",
+      "receivedByCommsAt": "2026-05-11T07:40:00.000Z",
+      "addedToMetisAt": "2026-05-11T07:41:00.000Z",
+      "intakeRoute": "direct_to_comms"
+    }
+  },
+  {
+    "timestamp": "2026-05-11T07:41:00.000Z",
+    "displayTime": "Mon 08:41",
+    "lane": "issue_record",
+    "title": "Issue record updated from Exec follow-up",
+    "subtitle": "+1 open questions · +1 observations · status updated",
+    "badge": "RECORD UPDATED",
+    "linkedRecordType": "issue_record_update",
+    "linkedRecordId": "dddd0014-0000-4000-a000-000000000014::issue_record_update",
+    "relatedRecordIds": [
+      "dddd3007-0000-4000-a000-000000000007",
+      "dddd4006-0000-4000-a000-000000000006"
+    ],
+    "impact": {
+      "linkedSourceId": null,
+      "claimsAdded": [],
+      "gapsOpened": [
+        "dddd3007-0000-4000-a000-000000000007"
+      ],
+      "gapsClosed": [],
+      "observationsAdded": [
+        "dddd4006-0000-4000-a000-000000000006"
+      ],
+      "statusNote": "Review / audit stage"
+    }
+  },
+  {
+    "timestamp": "2026-05-11T07:45:00.000Z",
+    "displayTime": "Mon 08:45",
+    "lane": "metis_output",
+    "title": "Post-incident review note",
+    "subtitle": "Operations and comms leadership · Draft",
+    "badge": "POST INCIDENT REVIEW",
+    "linkedRecordType": "output",
+    "linkedRecordId": "dddd5009-0000-4000-a000-000000000009",
+    "relatedRecordIds": []
+  },
+  {
+    "timestamp": "2026-05-11T08:00:00.000Z",
+    "displayTime": "Mon 09:00",
+    "lane": "issue_record",
+    "title": "Issue status",
+    "subtitle": "Review / audit stage",
+    "badge": "DECISION",
+    "linkedRecordType": "issue",
+    "linkedRecordId": "dddddddd-dddd-4ddd-addd-dddddddddd01",
+    "relatedRecordIds": []
+  },
+  {
+    "timestamp": "2026-05-11T08:00:00.000Z",
+    "displayTime": "Mon 09:00",
+    "lane": "metis_output",
+    "title": "Circulation audit",
+    "subtitle": "Governance record · Approved",
+    "badge": "CIRCULATION AUDIT",
+    "linkedRecordType": "output",
+    "linkedRecordId": "dddd5010-0000-4000-a000-000000000010",
+    "relatedRecordIds": []
+  }
+]

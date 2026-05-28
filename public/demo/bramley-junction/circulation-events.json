@@ -1,0 +1,57 @@
+[
+  {
+    "id": "dddd7001-0000-4000-a000-000000000001",
+    "at": "2026-05-11T05:18:00.000Z",
+    "eventType": "Shared for review",
+    "channel": "Press office",
+    "audienceLabel": "Local media",
+    "postureState": "Ready for review",
+    "note": "Holding press line coordinated ahead of reporter deadline.",
+    "briefVersionId": null,
+    "outputId": "dddd5004-0000-4000-a000-000000000004"
+  },
+  {
+    "id": "dddd7002-0000-4000-a000-000000000002",
+    "at": "2026-05-11T05:50:00.000Z",
+    "eventType": "Circulated",
+    "channel": "Leadership distribution",
+    "audienceLabel": "Senior leadership",
+    "postureState": "Ready for review",
+    "note": "Executive brief V1 sent to morning leadership list.",
+    "briefVersionId": "dddd6001-0000-4000-a000-000000000001",
+    "outputId": "dddd5005-0000-4000-a000-000000000005"
+  },
+  {
+    "id": "dddd7003-0000-4000-a000-000000000003",
+    "at": "2026-05-11T06:25:00.000Z",
+    "eventType": "Published",
+    "channel": "Station PA / digital",
+    "audienceLabel": "Passengers",
+    "postureState": "Approved",
+    "note": "Updated passenger message with expected reopening window.",
+    "briefVersionId": null,
+    "outputId": "dddd5006-0000-4000-a000-000000000006"
+  },
+  {
+    "id": "dddd7004-0000-4000-a000-000000000004",
+    "at": "2026-05-11T07:30:00.000Z",
+    "eventType": "Circulated",
+    "channel": "Leadership distribution",
+    "audienceLabel": "Senior leadership",
+    "postureState": "Approved",
+    "note": "Executive brief V2 supersedes V1 after main entrance reopening.",
+    "briefVersionId": "dddd6002-0000-4000-a000-000000000002",
+    "outputId": "dddd5008-0000-4000-a000-000000000008"
+  },
+  {
+    "id": "dddd7005-0000-4000-a000-000000000005",
+    "at": "2026-05-11T08:00:00.000Z",
+    "eventType": "Audit recorded",
+    "channel": "Governance log",
+    "audienceLabel": "Governance record",
+    "postureState": "Approved",
+    "note": "Circulation audit captured for outputs issued during incident window.",
+    "briefVersionId": null,
+    "outputId": "dddd5010-0000-4000-a000-000000000010"
+  }
+]

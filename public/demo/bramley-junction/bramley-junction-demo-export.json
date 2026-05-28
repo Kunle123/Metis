@@ -1,0 +1,2812 @@
+{
+  "issue": {
+    "id": "dddddddd-dddd-4ddd-addd-dddddddddd01",
+    "slug": "demo-bramley-junction",
+    "exportKind": "final_current_state",
+    "asOf": "2026-05-11T08:00:00.000Z",
+    "exportNote": "Final/current issue summary as of end of demo window. Not the point-in-time issue state for earlier timeline cards or outputs — use each output's snapshot fields and linked records for historical views.",
+    "title": "Bramley Junction: main entrance reopening delay",
+    "summary": "Planned overnight works at Bramley Junction delayed main entrance reopening after contractor handback sign-off on ceiling panels. Station remained open via side entrance; trains continued to call; passenger and social confusion managed with coordinated lines. Main entrance reopened 08:12; post-incident review underway.",
+    "issueType": "Planned works handback delay",
+    "severity": "Important",
+    "status": "Ready for review",
+    "priority": "High",
+    "operatorPosture": "Active",
+    "ownerName": "Duty Station Support",
+    "audience": "Station operations, customer service, corporate affairs, regional leadership",
+    "currentControlledPosition": "Main entrance reopened 08:12; side entrance remains available; trains running; passenger flow normalising; post-incident review in progress.",
+    "confirmedFacts": "- Planned overnight works scheduled with 05:30 handback target.\n- Main entrance opening delayed pending ceiling panel inspection.\n- Station remained open via side entrance with additional staffing.\n- Train services continued to call (NOC confirmed).\n- Main entrance reopened 08:12 after facilities clearance.",
+    "context": "Fictional UK rail operator scenario for demonstration.\n\nFixed timeline: Sunday planned works notice; Monday handback day (May 2026).\n\nOvernight operational events were handled by station, contractor, security and NOC channels first.\n\nCorporate affairs engaged from ~05:42 when duty management briefed comms; the duty overnight pack was logged in Metis at 05:50 as source-backed records.\n\nNo real organisation, passenger, or journalist names.",
+    "statusMilestones": [
+      {
+        "at": "2026-05-11T04:42:00.000Z",
+        "label": "Comms engaged — issue opened in Metis"
+      },
+      {
+        "at": "2026-05-11T04:48:00.000Z",
+        "label": "Managed operational disruption"
+      },
+      {
+        "at": "2026-05-11T06:12:00.000Z",
+        "label": "Reopening expected shortly"
+      },
+      {
+        "at": "2026-05-11T07:12:00.000Z",
+        "label": "Operational disruption closed"
+      },
+      {
+        "at": "2026-05-11T08:00:00.000Z",
+        "label": "Review / audit stage"
+      }
+    ]
+  },
+  "incomingUpdates": [
+    {
+      "id": "dddd0015-0000-4000-a000-000000000015",
+      "inputType": "DUTY SUMMARY",
+      "title": "Duty manager summary to comms",
+      "senderTeam": "Duty Station Manager",
+      "channel": "phone briefing to corporate affairs duty",
+      "summary": "Handback delay at main entrance after overnight works. Station open via side entrance; trains running. Comms asked to open Metis issue and help with passenger/social lines.",
+      "fullText": "Duty manager → corporate affairs duty phone briefing\n\nSituation: planned overnight works largely complete but main entrance remains closed pending ceiling panel sign-off.\nStation is operating via side entrance with extra staff/security being deployed.\nNOC confirms trains calling — no service change.\nCustomer team reports growing confusion at main doors; no major crowding yet.\nNo confirmed safety failure; facilities inspection still required before main entrance reopening.\n\nReported overnight sequence (described in this briefing, not live comms channels):\n- Sun 20:00 — planned works notice issued for concourse lighting, gates and wayfinding; 05:30 handback target.\n- Sun 21:15 — contractor mobilised on site.\n- Mon 04:28 — contractor handback note: ceiling panel sign-off pending near main entrance (possible roof drain residue; not confirmed active leak).\n- Mon 04:35 — station manager: main entrance unlikely at 05:30; side entrance proposed with extra staffing from 05:45.\n- Mon 04:50 — security: barriers and two additional officers available from 05:45.\n- Mon 04:55 — NOC: trains continue to call; no service change.\n- Mon 05:32 — customer service: passengers asking at help point; low crowding at side entrance.\n\nAsk of comms:\n- Open controlled issue record in Metis and log the duty overnight pack as source-backed records.\n- Prepare staff and passenger lines distinguishing main entrance closure vs whole-station closure.\n- Stand by for possible social/media attention during the morning peak.",
+      "suggestedTimelineLabel": "Comms engaged",
+      "becomesSource": false,
+      "linkedSourceId": null,
+      "issueRecordImpacts": {
+        "statusNote": "Active issue opened — comms engaged"
+      },
+      "eventOccurredAt": "2026-05-11T04:42:00.000Z",
+      "sourceTimestamp": "2026-05-11T04:42:00.000Z",
+      "receivedByCommsAt": "2026-05-11T04:42:00.000Z",
+      "addedToMetisAt": "2026-05-11T04:42:00.000Z",
+      "intakeRoute": "direct_to_comms"
+    },
+    {
+      "id": "dddd0001-0000-4000-a000-000000000001",
+      "inputType": "COMMS INTAKE",
+      "title": "Duty overnight pack logged in Metis",
+      "senderTeam": "Corporate Affairs",
+      "channel": "Metis intake from duty handover",
+      "summary": "Corporate Affairs logs source-backed records from the duty manager overnight pack: planned works, contractor handback, station/security/NOC updates and customer floor report.",
+      "fullText": "Corporate Affairs — duty overnight pack logged\n\nLogged from duty manager phone briefing at 05:42. Each item below is recorded as a linked source in the issue record.\n\nSRC-001 Planned works notice (reported Sun 20:00): overnight concourse lighting, ticket gate and wayfinding; 05:30 handback; no planned train disruption.\nSRC-002 Contractor mobilisation (reported Sun 21:15): team on site; works commenced.\nSRC-003 Contractor handback note (reported Mon 04:28): ceiling panel sign-off pending at main entrance; possible roof drain residue — not confirmed structural failure.\nSRC-004 Station manager escalation (reported Mon 04:35): main entrance unlikely at 05:30; side entrance with staffing from 05:45 if security confirms.\nSRC-005 Security update (reported Mon 04:50): additional officers and barriers from 05:45.\nSRC-006 NOC confirmation (reported Mon 04:55): trains continue to call.\nSRC-007 Customer service floor report (reported Mon 05:32): passengers confused at main doors; low crowding.\n\nClaims, open questions and observations created from this pack per Metis discipline.",
+      "suggestedTimelineLabel": "Overnight pack logged",
+      "becomesSource": false,
+      "linkedSourceId": null,
+      "issueRecordImpacts": {
+        "claimsAdded": [
+          "dddd2001-0000-4000-a000-000000000001",
+          "dddd2002-0000-4000-a000-000000000002",
+          "dddd2003-0000-4000-a000-000000000003",
+          "dddd2004-0000-4000-a000-000000000004",
+          "dddd2005-0000-4000-a000-000000000005",
+          "dddd2006-0000-4000-a000-000000000006"
+        ],
+        "gapsOpened": [
+          "dddd3001-0000-4000-a000-000000000001",
+          "dddd3005-0000-4000-a000-000000000005",
+          "dddd3002-0000-4000-a000-000000000002",
+          "dddd3004-0000-4000-a000-000000000004"
+        ],
+        "gapsClosed": [
+          "dddd3003-0000-4000-a000-000000000003"
+        ],
+        "observationsAdded": [
+          "dddd4001-0000-4000-a000-000000000001",
+          "dddd4003-0000-4000-a000-000000000003",
+          "dddd4004-0000-4000-a000-000000000004"
+        ]
+      },
+      "eventOccurredAt": "2026-05-11T04:50:00.000Z",
+      "sourceTimestamp": "2026-05-11T04:50:00.000Z",
+      "receivedByCommsAt": "2026-05-11T04:42:00.000Z",
+      "addedToMetisAt": "2026-05-11T04:50:00.000Z",
+      "intakeRoute": "direct_to_comms"
+    },
+    {
+      "id": "dddd0008-0000-4000-a000-000000000008",
+      "inputType": "SOCIAL SIGNAL",
+      "title": "Social monitoring — local posts say station is shut",
+      "senderTeam": "Comms Monitoring",
+      "channel": "social monitoring note",
+      "summary": "Three local posts describe the station as shut, which is inaccurate because side entrance is open and trains are running.",
+      "fullText": "Social monitoring note (paraphrased, fictional)\n\nApprox. 03 local posts in 40 minutes describe Bramley Junction as 'shut' or 'closed'.\nExample themes: 'can't get in', 'station closed again', 'no trains' (last is inaccurate).\nNo verified influencer amplification. Engagement modest.\nRecommended: short corrective line emphasising trains running and side entrance open.",
+      "suggestedTimelineLabel": "Social inaccuracy",
+      "becomesSource": true,
+      "linkedSourceId": "dddd1008-0000-4000-a000-000000000008",
+      "issueRecordImpacts": {
+        "claimsAdded": [
+          "dddd2007-0000-4000-a000-000000000007"
+        ],
+        "observationsAdded": [
+          "dddd4002-0000-4000-a000-000000000002"
+        ],
+        "statusNote": "Managed operational disruption"
+      },
+      "eventOccurredAt": "2026-05-11T04:48:00.000Z",
+      "sourceTimestamp": "2026-05-11T04:48:00.000Z",
+      "receivedByCommsAt": "2026-05-11T04:48:00.000Z",
+      "addedToMetisAt": "2026-05-11T04:49:00.000Z",
+      "intakeRoute": "direct_to_comms"
+    },
+    {
+      "id": "dddd0009-0000-4000-a000-000000000009",
+      "inputType": "PRESS CALL",
+      "title": "Press office call log — reporter asks about reopening",
+      "senderTeam": "Press Office",
+      "channel": "call log",
+      "summary": "Local reporter asks whether planned works overran and whether passengers were locked out.",
+      "fullText": "Press call log — fictional local outlet\n\nReporter questions:\n1) Did planned overnight works overrun?\n2) Were passengers unable to enter the station?\n3) When will the main entrance reopen?\n\nDeadline: requested response within 45 minutes for online update.\nNo broadcast crew on site reported.",
+      "suggestedTimelineLabel": "Press enquiry",
+      "becomesSource": true,
+      "linkedSourceId": "dddd1009-0000-4000-a000-000000000009",
+      "issueRecordImpacts": {},
+      "eventOccurredAt": "2026-05-11T05:08:00.000Z",
+      "sourceTimestamp": "2026-05-11T05:08:00.000Z",
+      "receivedByCommsAt": "2026-05-11T05:08:00.000Z",
+      "addedToMetisAt": "2026-05-11T05:09:00.000Z",
+      "intakeRoute": "direct_to_comms"
+    },
+    {
+      "id": "dddd0016-0000-4000-a000-000000000016",
+      "inputType": "EXEC REQUEST",
+      "title": "Executive office request for short position note",
+      "senderTeam": "Executive Office",
+      "channel": "email to corporate affairs duty",
+      "summary": "Regional director's office requests a short position note for morning leadership covering customer impact, media handling and expected reopening.",
+      "fullText": "Executive office request — position note\n\nPlease provide a short executive position note covering:\n- what happened overnight and this morning at Bramley Junction\n- customer impact and mitigations\n- media/social handling and open risks\n- expected main entrance reopening (if known)\n\nAudience: regional leadership morning call.\nLength: one page maximum.\nDeadline: before 07:00 where possible.",
+      "suggestedTimelineLabel": "Executive request",
+      "becomesSource": false,
+      "linkedSourceId": null,
+      "issueRecordImpacts": {},
+      "eventOccurredAt": "2026-05-11T05:35:00.000Z",
+      "sourceTimestamp": "2026-05-11T05:35:00.000Z",
+      "receivedByCommsAt": "2026-05-11T05:35:00.000Z",
+      "addedToMetisAt": "2026-05-11T05:36:00.000Z",
+      "intakeRoute": "direct_to_comms"
+    },
+    {
+      "id": "dddd0010-0000-4000-a000-000000000010",
+      "inputType": "STATION UPDATE",
+      "title": "Station manager update — passenger flow manageable",
+      "senderTeam": "Station Manager",
+      "channel": "phone update to corporate affairs",
+      "summary": "Side entrance open, extra staff deployed, passenger flow manageable, no safety concerns reported.",
+      "fullText": "Station manager phone update to corporate affairs\n\nReported event time: 06:22 (station ops update).\nReceived by comms: 06:20 following press enquiry coordination.\n\nSide entrance open with additional staff and security.\nQueue time under 3 minutes at time of report.\nMain entrance remains closed pending facilities clearance.\nNo safety incidents. Customer team reports improving clarity with written line.",
+      "suggestedTimelineLabel": "Flow manageable",
+      "becomesSource": true,
+      "linkedSourceId": "dddd1010-0000-4000-a000-000000000010",
+      "issueRecordImpacts": {
+        "gapsClosed": [
+          "dddd3002-0000-4000-a000-000000000002"
+        ]
+      },
+      "eventOccurredAt": "2026-05-11T05:22:00.000Z",
+      "sourceTimestamp": "2026-05-11T05:22:00.000Z",
+      "receivedByCommsAt": "2026-05-11T05:20:00.000Z",
+      "addedToMetisAt": "2026-05-11T05:24:00.000Z",
+      "intakeRoute": "direct_to_comms"
+    },
+    {
+      "id": "dddd0011-0000-4000-a000-000000000011",
+      "inputType": "FACILITIES NOTE",
+      "title": "Facilities inspection summary forwarded to comms",
+      "senderTeam": "Facilities Engineer",
+      "channel": "email to station manager, copied to comms",
+      "summary": "Ceiling panels secure. Small roof drain repair needed later. Main entrance can reopen after clean-up and signage check.",
+      "fullText": "Facilities inspection note — main entrance canopy\n\nReported event time: inspection completed ~07:05.\nForwarded to comms: 07:06 via station manager email.\n\nCeiling panels secure for passenger use.\nMinor staining consistent with historic drain seepage; no active water ingress observed.\nRemedial roof drain repair scheduled non-urgent within 14 days.\nClearance: main entrance may reopen after contractor clean-up and signage check.",
+      "suggestedTimelineLabel": "Ceiling cleared",
+      "becomesSource": true,
+      "linkedSourceId": "dddd1011-0000-4000-a000-000000000011",
+      "issueRecordImpacts": {
+        "claimsAdded": [
+          "dddd2008-0000-4000-a000-000000000008"
+        ],
+        "gapsClosed": [
+          "dddd3001-0000-4000-a000-000000000001"
+        ],
+        "statusNote": "Reopening expected shortly"
+      },
+      "eventOccurredAt": "2026-05-11T06:05:00.000Z",
+      "sourceTimestamp": "2026-05-11T06:00:00.000Z",
+      "receivedByCommsAt": "2026-05-11T06:06:00.000Z",
+      "addedToMetisAt": "2026-05-11T06:08:00.000Z",
+      "intakeRoute": "direct_to_comms"
+    },
+    {
+      "id": "dddd0012-0000-4000-a000-000000000012",
+      "inputType": "ACCESSIBILITY NOTE",
+      "title": "Accessibility assessment forwarded to comms",
+      "senderTeam": "Accessibility Lead",
+      "channel": "email to corporate affairs",
+      "summary": "Step-free access available through side entrance, but temporary signage needs improvement.",
+      "fullText": "Accessibility assessment\n\nReported event time: 07:50 observation window.\nReceived by comms: 07:52.\n\nStep-free route available via side entrance lift (operational).\nTemporary signage not meeting usual contrast/position standards.\nRecommendation: deploy high-visibility directional totems within 30 minutes.\nNo reported barriers for wheelchair users during observation window.",
+      "suggestedTimelineLabel": "Accessibility check",
+      "becomesSource": true,
+      "linkedSourceId": "dddd1012-0000-4000-a000-000000000012",
+      "issueRecordImpacts": {
+        "gapsOpened": [
+          "dddd3006-0000-4000-a000-000000000006"
+        ],
+        "observationsAdded": [
+          "dddd4005-0000-4000-a000-000000000005"
+        ]
+      },
+      "eventOccurredAt": "2026-05-11T06:50:00.000Z",
+      "sourceTimestamp": "2026-05-11T06:50:00.000Z",
+      "receivedByCommsAt": "2026-05-11T06:52:00.000Z",
+      "addedToMetisAt": "2026-05-11T06:54:00.000Z",
+      "intakeRoute": "direct_to_comms"
+    },
+    {
+      "id": "dddd0013-0000-4000-a000-000000000013",
+      "inputType": "OPS CONFIRMATION",
+      "title": "Station manager confirmation — main entrance reopened",
+      "senderTeam": "Station Manager",
+      "channel": "phone confirmation to corporate affairs",
+      "summary": "Main entrance reopened. Side entrance remains available. Staff continue to monitor.",
+      "fullText": "Reopening confirmation — station manager to comms\n\nReported event time: main entrance opened 08:12.\nReceived by comms: 08:13 phone confirmation.\n\nMain entrance opened after clean-up and signage checks.\nSide entrance remains open to avoid bottlenecks.\nPassenger flow normalising. No further press queries in last 20 minutes.",
+      "suggestedTimelineLabel": "Main entrance open",
+      "becomesSource": true,
+      "linkedSourceId": "dddd1013-0000-4000-a000-000000000013",
+      "issueRecordImpacts": {
+        "claimsAdded": [
+          "dddd2009-0000-4000-a000-000000000009"
+        ],
+        "gapsClosed": [
+          "dddd3005-0000-4000-a000-000000000005",
+          "dddd3004-0000-4000-a000-000000000004"
+        ],
+        "statusNote": "Operational disruption closed"
+      },
+      "eventOccurredAt": "2026-05-11T07:12:00.000Z",
+      "sourceTimestamp": "2026-05-11T07:12:00.000Z",
+      "receivedByCommsAt": "2026-05-11T07:13:00.000Z",
+      "addedToMetisAt": "2026-05-11T07:15:00.000Z",
+      "intakeRoute": "direct_to_comms"
+    },
+    {
+      "id": "dddd0014-0000-4000-a000-000000000014",
+      "inputType": "EXEC ACTION",
+      "title": "Follow-up actions requested",
+      "senderTeam": "Regional Operations Director",
+      "channel": "exec action note",
+      "summary": "Request short review of what happened, customer impact, media handling, and improvements for future planned works.",
+      "fullText": "Executive follow-up request\n\nPlease provide a short post-incident review covering:\n- timeline of handback and comms decisions\n- customer impact assessment\n- media/social handling\n- lessons for future planned works handback criteria\n\nTarget: draft to regional leadership within 2 working days.",
+      "suggestedTimelineLabel": "Exec follow-up",
+      "becomesSource": false,
+      "linkedSourceId": null,
+      "issueRecordImpacts": {
+        "gapsOpened": [
+          "dddd3007-0000-4000-a000-000000000007"
+        ],
+        "observationsAdded": [
+          "dddd4006-0000-4000-a000-000000000006"
+        ],
+        "statusNote": "Review / audit stage"
+      },
+      "eventOccurredAt": "2026-05-11T07:40:00.000Z",
+      "sourceTimestamp": "2026-05-11T07:40:00.000Z",
+      "receivedByCommsAt": "2026-05-11T07:40:00.000Z",
+      "addedToMetisAt": "2026-05-11T07:41:00.000Z",
+      "intakeRoute": "direct_to_comms"
+    }
+  ],
+  "sources": [
+    {
+      "id": "dddd1001-0000-4000-a000-000000000001",
+      "sourceCode": "SRC-001",
+      "title": "Planned works notice — Bramley Junction overnight",
+      "tier": "Authoritative internal record",
+      "reliability": "High (internal planned works notice)",
+      "note": "Linked incoming update dddd0001-0000-4000-a000-000000000001",
+      "snippet": "Overnight concourse lighting, ticket gate and wayfinding works. Expected handback 05:30. No planned train service disruption.",
+      "timestampLabel": "Sun 20:00",
+      "linkedIncomingUpdateId": "dddd0001-0000-4000-a000-000000000001",
+      "eventOccurredAt": "2026-05-11T04:50:00.000Z",
+      "addedToMetisAt": "2026-05-11T04:50:00.000Z"
+    },
+    {
+      "id": "dddd1002-0000-4000-a000-000000000002",
+      "sourceCode": "SRC-002",
+      "title": "Contractor mobilisation update",
+      "tier": "Internal operational source",
+      "reliability": "High (contractor site report)",
+      "note": "Linked incoming update dddd0001-0000-4000-a000-000000000001",
+      "snippet": "Team on site; works commenced on lighting, gates and signage. Handback target 05:30.",
+      "timestampLabel": "Sun 21:15",
+      "linkedIncomingUpdateId": "dddd0001-0000-4000-a000-000000000001",
+      "eventOccurredAt": "2026-05-11T04:50:00.000Z",
+      "addedToMetisAt": "2026-05-11T04:50:00.000Z"
+    },
+    {
+      "id": "dddd1003-0000-4000-a000-000000000003",
+      "sourceCode": "SRC-003",
+      "title": "Handback note — ceiling panels pending sign-off",
+      "tier": "Internal operational source",
+      "reliability": "Medium–High (contractor; pending engineering confirmation)",
+      "note": "Linked incoming update dddd0001-0000-4000-a000-000000000001",
+      "snippet": "Final sign-off withheld on main entrance ceiling zone; possible roof drain seepage — not confirmed as active leak.",
+      "timestampLabel": "Mon 04:28",
+      "linkedIncomingUpdateId": "dddd0001-0000-4000-a000-000000000001",
+      "eventOccurredAt": "2026-05-11T04:50:00.000Z",
+      "addedToMetisAt": "2026-05-11T04:50:00.000Z"
+    },
+    {
+      "id": "dddd1004-0000-4000-a000-000000000004",
+      "sourceCode": "SRC-004",
+      "title": "Station manager escalation — main entrance delay",
+      "tier": "Internal operational source",
+      "reliability": "High (station manager operational report)",
+      "note": "Linked incoming update dddd0001-0000-4000-a000-000000000001",
+      "snippet": "Main entrance unlikely at 05:30; side entrance proposed with extra staffing from 05:45.",
+      "timestampLabel": "Mon 04:35",
+      "linkedIncomingUpdateId": "dddd0001-0000-4000-a000-000000000001",
+      "eventOccurredAt": "2026-05-11T04:50:00.000Z",
+      "addedToMetisAt": "2026-05-11T04:50:00.000Z"
+    },
+    {
+      "id": "dddd1005-0000-4000-a000-000000000005",
+      "sourceCode": "SRC-005",
+      "title": "Security update — side entrance capacity",
+      "tier": "Internal operational source",
+      "reliability": "High (security supervisor)",
+      "note": "Linked incoming update dddd0001-0000-4000-a000-000000000001",
+      "snippet": "Additional officers and barriers available from 05:45.",
+      "timestampLabel": "Mon 04:50",
+      "linkedIncomingUpdateId": "dddd0001-0000-4000-a000-000000000001",
+      "eventOccurredAt": "2026-05-11T04:50:00.000Z",
+      "addedToMetisAt": "2026-05-11T04:50:00.000Z"
+    },
+    {
+      "id": "dddd1006-0000-4000-a000-000000000006",
+      "sourceCode": "SRC-006",
+      "title": "Network Operations — trains calling",
+      "tier": "Authoritative internal record",
+      "reliability": "High (NOC confirmation)",
+      "note": "Linked incoming update dddd0001-0000-4000-a000-000000000001",
+      "snippet": "No train service changes; station access routing is a station matter.",
+      "timestampLabel": "Mon 04:55",
+      "linkedIncomingUpdateId": "dddd0001-0000-4000-a000-000000000001",
+      "eventOccurredAt": "2026-05-11T04:50:00.000Z",
+      "addedToMetisAt": "2026-05-11T04:50:00.000Z"
+    },
+    {
+      "id": "dddd1007-0000-4000-a000-000000000007",
+      "sourceCode": "SRC-007",
+      "title": "Customer service floor report",
+      "tier": "Internal operational source",
+      "reliability": "Medium (operational observation)",
+      "note": "Linked incoming update dddd0001-0000-4000-a000-000000000001",
+      "snippet": "Passengers confused by closed main doors; low crowding; request approved written line.",
+      "timestampLabel": "Mon 05:32",
+      "linkedIncomingUpdateId": "dddd0001-0000-4000-a000-000000000001",
+      "eventOccurredAt": "2026-05-11T04:50:00.000Z",
+      "addedToMetisAt": "2026-05-11T04:50:00.000Z"
+    },
+    {
+      "id": "dddd1008-0000-4000-a000-000000000008",
+      "sourceCode": "SRC-008",
+      "title": "Social monitoring — inaccurate closure posts",
+      "tier": "Social monitoring",
+      "reliability": "Medium (monitoring summary; paraphrased)",
+      "note": "Linked incoming update dddd0008-0000-4000-a000-000000000008",
+      "snippet": "Local posts describe station as shut; side entrance open and trains running.",
+      "timestampLabel": "Mon 05:48",
+      "linkedIncomingUpdateId": "dddd0008-0000-4000-a000-000000000008",
+      "eventOccurredAt": "2026-05-11T04:48:00.000Z",
+      "addedToMetisAt": "2026-05-11T04:49:00.000Z"
+    },
+    {
+      "id": "dddd1009-0000-4000-a000-000000000009",
+      "sourceCode": "SRC-009",
+      "title": "Press call log — local reporter",
+      "tier": "Media enquiry",
+      "reliability": "High (press office log)",
+      "note": "Linked incoming update dddd0009-0000-4000-a000-000000000009",
+      "snippet": "Questions on overrun, passenger access, and reopening time; 45-minute response window.",
+      "timestampLabel": "Mon 06:08",
+      "linkedIncomingUpdateId": "dddd0009-0000-4000-a000-000000000009",
+      "eventOccurredAt": "2026-05-11T05:08:00.000Z",
+      "addedToMetisAt": "2026-05-11T05:09:00.000Z"
+    },
+    {
+      "id": "dddd1010-0000-4000-a000-000000000010",
+      "sourceCode": "SRC-010",
+      "title": "Station update — passenger flow",
+      "tier": "Internal operational source",
+      "reliability": "High (station manager)",
+      "note": "Linked incoming update dddd0010-0000-4000-a000-000000000010",
+      "snippet": "Side entrance open; queues under 3 minutes; main entrance still closed.",
+      "timestampLabel": "Mon 06:22",
+      "linkedIncomingUpdateId": "dddd0010-0000-4000-a000-000000000010",
+      "eventOccurredAt": "2026-05-11T05:22:00.000Z",
+      "addedToMetisAt": "2026-05-11T05:24:00.000Z"
+    },
+    {
+      "id": "dddd1011-0000-4000-a000-000000000011",
+      "sourceCode": "SRC-011",
+      "title": "Facilities inspection — ceiling secure",
+      "tier": "Internal operational source",
+      "reliability": "High (facilities engineer inspection)",
+      "note": "Linked incoming update dddd0011-0000-4000-a000-000000000011",
+      "snippet": "Panels secure; minor drain remedial works later; clearance to reopen after clean-up.",
+      "timestampLabel": "Mon 07:05",
+      "linkedIncomingUpdateId": "dddd0011-0000-4000-a000-000000000011",
+      "eventOccurredAt": "2026-05-11T06:05:00.000Z",
+      "addedToMetisAt": "2026-05-11T06:08:00.000Z"
+    },
+    {
+      "id": "dddd1012-0000-4000-a000-000000000012",
+      "sourceCode": "SRC-012",
+      "title": "Accessibility assessment — side entrance",
+      "tier": "Internal operational source",
+      "reliability": "Medium–High (accessibility lead)",
+      "note": "Linked incoming update dddd0012-0000-4000-a000-000000000012",
+      "snippet": "Step-free route via side lift; temporary signage needs improvement.",
+      "timestampLabel": "Mon 07:50",
+      "linkedIncomingUpdateId": "dddd0012-0000-4000-a000-000000000012",
+      "eventOccurredAt": "2026-05-11T06:50:00.000Z",
+      "addedToMetisAt": "2026-05-11T06:54:00.000Z"
+    },
+    {
+      "id": "dddd1013-0000-4000-a000-000000000013",
+      "sourceCode": "SRC-013",
+      "title": "Reopening confirmation — main entrance",
+      "tier": "Internal operational source",
+      "reliability": "High (station manager)",
+      "note": "Linked incoming update dddd0013-0000-4000-a000-000000000013",
+      "snippet": "Main entrance opened 08:12; side entrance remains available.",
+      "timestampLabel": "Mon 08:12",
+      "linkedIncomingUpdateId": "dddd0013-0000-4000-a000-000000000013",
+      "eventOccurredAt": "2026-05-11T07:12:00.000Z",
+      "addedToMetisAt": "2026-05-11T07:15:00.000Z"
+    }
+  ],
+  "claims": [
+    {
+      "id": "dddd2001-0000-4000-a000-000000000001",
+      "claimCode": "CLM-001",
+      "text": "Planned overnight works were scheduled at Bramley Junction with expected handback before the morning peak.",
+      "status": "Confirmed",
+      "notes": null,
+      "linkedSourceIds": [
+        "dddd1001-0000-4000-a000-000000000001"
+      ],
+      "linkedIncomingUpdateIds": [
+        "dddd0001-0000-4000-a000-000000000001"
+      ],
+      "createdAt": "2026-05-11T04:50:00.000Z",
+      "updatedAt": "2026-05-11T04:50:00.000Z"
+    },
+    {
+      "id": "dddd2002-0000-4000-a000-000000000002",
+      "claimCode": "CLM-002",
+      "text": "Most planned works were completed as expected overnight.",
+      "status": "Confirmed",
+      "notes": null,
+      "linkedSourceIds": [
+        "dddd1002-0000-4000-a000-000000000002",
+        "dddd1003-0000-4000-a000-000000000003"
+      ],
+      "linkedIncomingUpdateIds": [
+        "dddd0001-0000-4000-a000-000000000001",
+        "dddd0001-0000-4000-a000-000000000001"
+      ],
+      "createdAt": "2026-05-11T04:50:00.000Z",
+      "updatedAt": "2026-05-11T04:50:00.000Z"
+    },
+    {
+      "id": "dddd2003-0000-4000-a000-000000000003",
+      "claimCode": "CLM-003",
+      "text": "Main entrance opening was delayed pending final inspection of ceiling panels near the main entrance.",
+      "status": "Confirmed",
+      "notes": "Pending sign-off was precautionary; not reported as confirmed structural failure.",
+      "linkedSourceIds": [
+        "dddd1003-0000-4000-a000-000000000003",
+        "dddd1004-0000-4000-a000-000000000004"
+      ],
+      "linkedIncomingUpdateIds": [
+        "dddd0001-0000-4000-a000-000000000001",
+        "dddd0001-0000-4000-a000-000000000001"
+      ],
+      "createdAt": "2026-05-11T04:50:00.000Z",
+      "updatedAt": "2026-05-11T04:50:00.000Z"
+    },
+    {
+      "id": "dddd2004-0000-4000-a000-000000000004",
+      "claimCode": "CLM-004",
+      "text": "The station remained open via the side entrance while the main entrance was unavailable.",
+      "status": "Confirmed",
+      "notes": null,
+      "linkedSourceIds": [
+        "dddd1004-0000-4000-a000-000000000004",
+        "dddd1010-0000-4000-a000-000000000010"
+      ],
+      "linkedIncomingUpdateIds": [
+        "dddd0001-0000-4000-a000-000000000001",
+        "dddd0010-0000-4000-a000-000000000010"
+      ],
+      "createdAt": "2026-05-11T04:50:00.000Z",
+      "updatedAt": "2026-05-11T05:24:00.000Z"
+    },
+    {
+      "id": "dddd2005-0000-4000-a000-000000000005",
+      "claimCode": "CLM-005",
+      "text": "Train services continued to call at Bramley Junction with no planned service changes.",
+      "status": "Confirmed",
+      "notes": null,
+      "linkedSourceIds": [
+        "dddd1006-0000-4000-a000-000000000006",
+        "dddd1001-0000-4000-a000-000000000001"
+      ],
+      "linkedIncomingUpdateIds": [
+        "dddd0001-0000-4000-a000-000000000001"
+      ],
+      "createdAt": "2026-05-11T04:50:00.000Z",
+      "updatedAt": "2026-05-11T04:50:00.000Z"
+    },
+    {
+      "id": "dddd2006-0000-4000-a000-000000000006",
+      "claimCode": "CLM-006",
+      "text": "Passenger impact was limited but visible at the main entrance during the early morning peak.",
+      "status": "Confirmed",
+      "notes": null,
+      "linkedSourceIds": [
+        "dddd1007-0000-4000-a000-000000000007",
+        "dddd1010-0000-4000-a000-000000000010"
+      ],
+      "linkedIncomingUpdateIds": [
+        "dddd0001-0000-4000-a000-000000000001",
+        "dddd0010-0000-4000-a000-000000000010"
+      ],
+      "createdAt": "2026-05-11T04:50:00.000Z",
+      "updatedAt": "2026-05-11T05:24:00.000Z"
+    },
+    {
+      "id": "dddd2007-0000-4000-a000-000000000007",
+      "claimCode": "CLM-007",
+      "text": "Some external commentary incorrectly described the station as fully shut.",
+      "status": "Confirmed",
+      "notes": null,
+      "linkedSourceIds": [
+        "dddd1008-0000-4000-a000-000000000008"
+      ],
+      "linkedIncomingUpdateIds": [
+        "dddd0008-0000-4000-a000-000000000008"
+      ],
+      "createdAt": "2026-05-11T04:49:00.000Z",
+      "updatedAt": "2026-05-11T04:49:00.000Z"
+    },
+    {
+      "id": "dddd2008-0000-4000-a000-000000000008",
+      "claimCode": "CLM-008",
+      "text": "Ceiling panels in the main entrance area were later confirmed secure for passenger use.",
+      "status": "Confirmed",
+      "notes": "Remedial roof drain work scheduled non-urgent.",
+      "linkedSourceIds": [
+        "dddd1011-0000-4000-a000-000000000011"
+      ],
+      "linkedIncomingUpdateIds": [
+        "dddd0011-0000-4000-a000-000000000011"
+      ],
+      "createdAt": "2026-05-11T06:08:00.000Z",
+      "updatedAt": "2026-05-11T06:08:00.000Z"
+    },
+    {
+      "id": "dddd2009-0000-4000-a000-000000000009",
+      "claimCode": "CLM-009",
+      "text": "The main entrance reopened at 08:12 following clean-up and signage checks.",
+      "status": "Confirmed",
+      "notes": null,
+      "linkedSourceIds": [
+        "dddd1013-0000-4000-a000-000000000013"
+      ],
+      "linkedIncomingUpdateIds": [
+        "dddd0013-0000-4000-a000-000000000013"
+      ],
+      "createdAt": "2026-05-11T07:15:00.000Z",
+      "updatedAt": "2026-05-11T07:15:00.000Z"
+    }
+  ],
+  "openQuestions": [
+    {
+      "id": "dddd3001-0000-4000-a000-000000000001",
+      "gapCode": "Q-001",
+      "title": "Is the ceiling area safe for passenger use?",
+      "prompt": "Has facilities/engineering confirmed the main entrance ceiling zone is safe to open?",
+      "whyItMatters": "Reopening the main entrance without confirmation could create safety and reputational risk.",
+      "stakeholder": "Station operations / Facilities",
+      "severity": "Critical",
+      "status": "Resolved",
+      "partiallyAnsweredAt": null,
+      "resolvedAt": "2026-05-11T06:05:00.000Z",
+      "resolvedByIncomingUpdateId": "dddd0011-0000-4000-a000-000000000011",
+      "resolutionNote": null,
+      "linkedClaimIds": [
+        "dddd2003-0000-4000-a000-000000000003",
+        "dddd2008-0000-4000-a000-000000000008"
+      ],
+      "createdAt": "2026-05-11T04:50:00.000Z",
+      "updatedAt": "2026-05-11T06:08:00.000Z"
+    },
+    {
+      "id": "dddd3002-0000-4000-a000-000000000002",
+      "gapCode": "Q-002",
+      "title": "Can the side entrance safely handle early morning passenger flow?",
+      "prompt": "Is side entrance staffing, barriers and wayfinding sufficient for the peak?",
+      "whyItMatters": "Passenger safety and queue management depend on a viable alternate route.",
+      "stakeholder": "Station manager / Security",
+      "severity": "Important",
+      "status": "Resolved",
+      "partiallyAnsweredAt": null,
+      "resolvedAt": "2026-05-11T05:30:00.000Z",
+      "resolvedByIncomingUpdateId": "dddd0010-0000-4000-a000-000000000010",
+      "resolutionNote": null,
+      "linkedClaimIds": [
+        "dddd2004-0000-4000-a000-000000000004"
+      ],
+      "createdAt": "2026-05-11T04:50:00.000Z",
+      "updatedAt": "2026-05-11T05:24:00.000Z"
+    },
+    {
+      "id": "dddd3003-0000-4000-a000-000000000003",
+      "gapCode": "Q-003",
+      "title": "Are train services affected?",
+      "prompt": "Is any train service change required or planned?",
+      "whyItMatters": "Public lines must distinguish station access from train service.",
+      "stakeholder": "Network Operations",
+      "severity": "Important",
+      "status": "Resolved",
+      "partiallyAnsweredAt": null,
+      "resolvedAt": "2026-05-11T04:50:00.000Z",
+      "resolvedByIncomingUpdateId": "dddd0001-0000-4000-a000-000000000001",
+      "resolutionNote": "NOC confirmation recorded from duty overnight pack (operational report ~04:55).",
+      "linkedClaimIds": [
+        "dddd2005-0000-4000-a000-000000000005"
+      ],
+      "createdAt": "2026-05-11T04:50:00.000Z",
+      "updatedAt": "2026-05-11T04:50:00.000Z"
+    },
+    {
+      "id": "dddd3004-0000-4000-a000-000000000004",
+      "gapCode": "Q-004",
+      "title": "What public line should be used if asked whether the station is shut?",
+      "prompt": "What wording distinguishes main entrance closure from whole-station closure?",
+      "whyItMatters": "Social posts and passenger confusion create reputational risk.",
+      "stakeholder": "Corporate Affairs",
+      "severity": "Important",
+      "status": "Resolved",
+      "partiallyAnsweredAt": null,
+      "resolvedAt": "2026-05-11T05:18:00.000Z",
+      "resolvedByIncomingUpdateId": "dddd0009-0000-4000-a000-000000000009",
+      "resolutionNote": "Approved passenger, social and holding press lines in use from 05:52–06:18 — distinguishes main entrance closure from whole-station closure.",
+      "linkedClaimIds": [
+        "dddd2007-0000-4000-a000-000000000007"
+      ],
+      "createdAt": "2026-05-11T04:50:00.000Z",
+      "updatedAt": "2026-05-11T05:09:00.000Z"
+    },
+    {
+      "id": "dddd3005-0000-4000-a000-000000000005",
+      "gapCode": "Q-005",
+      "title": "What is the expected main entrance reopening time?",
+      "prompt": "When can we commit to reopening the main entrance?",
+      "whyItMatters": "Press and passenger messaging need a realistic time window.",
+      "stakeholder": "Station operations",
+      "severity": "Important",
+      "status": "Resolved",
+      "partiallyAnsweredAt": "2026-05-11T06:22:00.000Z",
+      "resolvedAt": "2026-05-11T07:12:00.000Z",
+      "resolvedByIncomingUpdateId": "dddd0013-0000-4000-a000-000000000013",
+      "resolutionNote": "Working estimate ~08:00 in updated passenger message from 07:22; main entrance confirmed open 08:12.",
+      "linkedClaimIds": [
+        "dddd2003-0000-4000-a000-000000000003"
+      ],
+      "createdAt": "2026-05-11T04:50:00.000Z",
+      "updatedAt": "2026-05-11T07:15:00.000Z"
+    },
+    {
+      "id": "dddd3006-0000-4000-a000-000000000006",
+      "gapCode": "Q-006",
+      "title": "Are accessibility arrangements adequate while the main entrance is closed?",
+      "prompt": "Is step-free access clearly signed and operationally supported?",
+      "whyItMatters": "Accessibility must be verified independently of general passenger flow.",
+      "stakeholder": "Accessibility lead",
+      "severity": "Important",
+      "status": "Open",
+      "partiallyAnsweredAt": null,
+      "resolvedAt": null,
+      "resolvedByIncomingUpdateId": null,
+      "resolutionNote": "Accessibility assessment logged in Metis; temporary signage improvements still being deployed (action required).",
+      "linkedClaimIds": [
+        "dddd2004-0000-4000-a000-000000000004"
+      ],
+      "createdAt": "2026-05-11T06:54:00.000Z",
+      "updatedAt": "2026-05-11T06:54:00.000Z"
+    },
+    {
+      "id": "dddd3007-0000-4000-a000-000000000007",
+      "gapCode": "Q-007",
+      "title": "What follow-up action is needed before future planned works?",
+      "prompt": "What handback criteria, signage and pre-agreed passenger messaging should be updated?",
+      "whyItMatters": "Executive request for learning and prevention.",
+      "stakeholder": "Regional operations / Corporate Affairs",
+      "severity": "Watch",
+      "status": "Open",
+      "partiallyAnsweredAt": null,
+      "resolvedAt": null,
+      "resolvedByIncomingUpdateId": null,
+      "resolutionNote": null,
+      "linkedClaimIds": [],
+      "createdAt": "2026-05-11T07:41:00.000Z",
+      "updatedAt": "2026-05-11T07:41:00.000Z"
+    }
+  ],
+  "observations": [
+    {
+      "id": "dddd4001-0000-4000-a000-000000000001",
+      "observationCode": "OBS-001",
+      "title": "Main entrance vs whole station confusion",
+      "body": "The key communications risk is confusion between “main entrance closed” and “station closed”.",
+      "confidence": "Likely",
+      "authorRole": "Corporate Affairs",
+      "authorName": "Duty Comms Manager",
+      "timestampLabel": "Mon 04:40",
+      "createdAt": "2026-05-11T04:50:00.000Z"
+    },
+    {
+      "id": "dddd4002-0000-4000-a000-000000000002",
+      "observationCode": "OBS-002",
+      "title": "Reputationally visible despite modest operational impact",
+      "body": "The issue is operationally modest but reputationally visible during the morning peak.",
+      "confidence": "Likely",
+      "authorRole": "Corporate Affairs",
+      "authorName": "Duty Comms Manager",
+      "timestampLabel": "Mon 05:50",
+      "createdAt": "2026-05-11T04:49:00.000Z"
+    },
+    {
+      "id": "dddd4003-0000-4000-a000-000000000003",
+      "observationCode": "OBS-003",
+      "title": "Avoid speculation on roof drainage",
+      "body": "Staff need a clear line to avoid speculation about roof drainage before facilities confirms.",
+      "confidence": "Confirmed",
+      "authorRole": "Station Operations",
+      "authorName": "Duty Station Support",
+      "timestampLabel": "Mon 04:36",
+      "createdAt": "2026-05-11T04:50:00.000Z"
+    },
+    {
+      "id": "dddd4004-0000-4000-a000-000000000004",
+      "observationCode": "OBS-004",
+      "title": "Lead with what remains available",
+      "body": "Passenger messaging should lead with what remains available: trains running, side entrance open.",
+      "confidence": "Confirmed",
+      "authorRole": "Customer Experience",
+      "authorName": "Customer Service Lead",
+      "timestampLabel": "Mon 04:42",
+      "createdAt": "2026-05-11T04:50:00.000Z"
+    },
+    {
+      "id": "dddd4005-0000-4000-a000-000000000005",
+      "observationCode": "OBS-005",
+      "title": "Check accessibility separately",
+      "body": "Accessibility impact should be checked separately, not assumed from general flow reports.",
+      "confidence": "Likely",
+      "authorRole": "Accessibility",
+      "authorName": "Accessibility Lead",
+      "timestampLabel": "Mon 07:52",
+      "createdAt": "2026-05-11T06:54:00.000Z"
+    },
+    {
+      "id": "dddd4006-0000-4000-a000-000000000006",
+      "observationCode": "OBS-006",
+      "title": "Future works handback focus",
+      "body": "Later review should focus on handback criteria, temporary signage and pre-agreed passenger messaging for planned works.",
+      "confidence": "Likely",
+      "authorRole": "Regional Operations",
+      "authorName": "Regional Operations Director",
+      "timestampLabel": "Mon 08:42",
+      "createdAt": "2026-05-11T07:41:00.000Z"
+    }
+  ],
+  "outputs": [
+    {
+      "id": "dddd5001-0000-4000-a000-000000000001",
+      "kind": "staff_holding_update",
+      "title": "Staff holding update",
+      "audience": "Station staff and customer service",
+      "intendedUse": "Internal holding line for colleagues while safety checks and reopening timing remain unconfirmed.",
+      "status": "Ready for review",
+      "versionNumber": 1,
+      "generatedAt": "2026-05-11T04:54:00.000Z",
+      "supersededBy": null,
+      "linkedSourceIds": [
+        "dddd1001-0000-4000-a000-000000000001",
+        "dddd1003-0000-4000-a000-000000000003",
+        "dddd1004-0000-4000-a000-000000000004",
+        "dddd1006-0000-4000-a000-000000000006"
+      ],
+      "linkedClaimIds": [
+        "dddd2001-0000-4000-a000-000000000001",
+        "dddd2003-0000-4000-a000-000000000003",
+        "dddd2004-0000-4000-a000-000000000004",
+        "dddd2005-0000-4000-a000-000000000005"
+      ],
+      "body": "Staff holding update — Bramley Junction (internal)\n\nUse this line with passengers\n- Bramley Junction is open via the side entrance. Trains are running as normal.\n- The main entrance is temporarily unavailable while final checks complete after overnight improvement works.\n\nDo not say\n- That the station is closed or trains are cancelled.\n- Anything about roof leaks/structural failure (not confirmed).\n- A reopening time until facilities confirms.\n\nEscalate\n- Direct press/social queries to corporate affairs duty.",
+      "doNotSay": [
+        "Do not say the station is closed.",
+        "Do not confirm a structural failure or active roof leak.",
+        "Do not give a main entrance reopening time yet."
+      ],
+      "metisMessageVariantId": "dddd6101-0000-4000-a000-000000000001",
+      "metisBriefVersionId": null,
+      "templateId": "internal_staff_update",
+      "basedOnSnapshotAt": "2026-05-11T04:54:00.000Z",
+      "includedRecordIds": [
+        "dddd0015-0000-4000-a000-000000000015",
+        "dddd0001-0000-4000-a000-000000000001",
+        "dddd0008-0000-4000-a000-000000000008",
+        "dddd1001-0000-4000-a000-000000000001",
+        "dddd1002-0000-4000-a000-000000000002",
+        "dddd1003-0000-4000-a000-000000000003",
+        "dddd1004-0000-4000-a000-000000000004",
+        "dddd1005-0000-4000-a000-000000000005",
+        "dddd1006-0000-4000-a000-000000000006",
+        "dddd1007-0000-4000-a000-000000000007",
+        "dddd1008-0000-4000-a000-000000000008",
+        "dddd2001-0000-4000-a000-000000000001",
+        "dddd2002-0000-4000-a000-000000000002",
+        "dddd2003-0000-4000-a000-000000000003",
+        "dddd2004-0000-4000-a000-000000000004",
+        "dddd2005-0000-4000-a000-000000000005",
+        "dddd2006-0000-4000-a000-000000000006",
+        "dddd2007-0000-4000-a000-000000000007",
+        "dddd3001-0000-4000-a000-000000000001",
+        "dddd3002-0000-4000-a000-000000000002",
+        "dddd3003-0000-4000-a000-000000000003",
+        "dddd3004-0000-4000-a000-000000000004",
+        "dddd3005-0000-4000-a000-000000000005",
+        "dddd4001-0000-4000-a000-000000000001",
+        "dddd4002-0000-4000-a000-000000000002",
+        "dddd4003-0000-4000-a000-000000000003",
+        "dddd4004-0000-4000-a000-000000000004"
+      ],
+      "notYetKnownRecordIds": [
+        "dddd0009-0000-4000-a000-000000000009",
+        "dddd0016-0000-4000-a000-000000000016",
+        "dddd0010-0000-4000-a000-000000000010",
+        "dddd0011-0000-4000-a000-000000000011",
+        "dddd0012-0000-4000-a000-000000000012",
+        "dddd0013-0000-4000-a000-000000000013",
+        "dddd0014-0000-4000-a000-000000000014",
+        "dddd1009-0000-4000-a000-000000000009",
+        "dddd1010-0000-4000-a000-000000000010",
+        "dddd1011-0000-4000-a000-000000000011",
+        "dddd1012-0000-4000-a000-000000000012",
+        "dddd1013-0000-4000-a000-000000000013",
+        "dddd2008-0000-4000-a000-000000000008",
+        "dddd2009-0000-4000-a000-000000000009",
+        "dddd3006-0000-4000-a000-000000000006",
+        "dddd3007-0000-4000-a000-000000000007",
+        "dddd4005-0000-4000-a000-000000000005",
+        "dddd4006-0000-4000-a000-000000000006"
+      ],
+      "openQuestionsAtGeneration": [
+        "Q-001: Is the ceiling area safe for passenger use?",
+        "Q-002: Can the side entrance safely handle early morning passenger flow?",
+        "Q-004: What public line should be used if asked whether the station is shut?",
+        "Q-005: What is the expected main entrance reopening time?"
+      ],
+      "caveatsAtGeneration": [],
+      "messageArtifact": {
+        "templateId": "internal_staff_update",
+        "metadata": {
+          "publicHeadline": "Bramley Junction",
+          "lastRevisionLabel": "Mon 05:54",
+          "openGapsLabel": "Q-001: Is the ceiling area safe for passenger use?, Q-002: Can the side entrance safely handle early morning passenger flow?, Q-004: What public line should be used if asked whether the station is shut?, Q-005: What is the expected main entrance reopening time?",
+          "audienceLabel": "Station staff and customer service",
+          "lensSource": "issue_audience_only",
+          "issueLevelAudienceNote": null,
+          "aiWordingPolish": "deterministic_only",
+          "aiComparisonAvailable": false
+        },
+        "sections": [
+          {
+            "id": "primary",
+            "title": "Staff holding update",
+            "body": "Staff holding update — Bramley Junction (internal)\n\nUse this line with passengers\n- Bramley Junction is open via the side entrance. Trains are running as normal.\n- The main entrance is temporarily unavailable while final checks complete after overnight improvement works.\n\nDo not say\n- That the station is closed or trains are cancelled.\n- Anything about roof leaks/structural failure (not confirmed).\n- A reopening time until facilities confirms.\n\nEscalate\n- Direct press/social queries to corporate affairs duty."
+          }
+        ],
+        "guardrails": {
+          "mustAvoid": [
+            "Do not say the station is closed.",
+            "Do not confirm a structural failure or active roof leak.",
+            "Do not give a main entrance reopening time yet."
+          ],
+          "toneNotes": "Controlled, factual, and caveated where uncertain; no speculation."
+        }
+      }
+    },
+    {
+      "id": "dddd5002-0000-4000-a000-000000000002",
+      "kind": "passenger_message",
+      "title": "Passenger message draft",
+      "audience": "Passengers",
+      "intendedUse": "Short cautious passenger line for screens/PA/app while reopening time is not confirmed.",
+      "status": "Approved",
+      "versionNumber": 1,
+      "generatedAt": "2026-05-11T04:58:00.000Z",
+      "supersededBy": "dddd5006-0000-4000-a000-000000000006",
+      "linkedSourceIds": [
+        "dddd1004-0000-4000-a000-000000000004",
+        "dddd1006-0000-4000-a000-000000000006"
+      ],
+      "linkedClaimIds": [
+        "dddd2004-0000-4000-a000-000000000004",
+        "dddd2005-0000-4000-a000-000000000005"
+      ],
+      "body": "Bramley Junction station is open via the side entrance. Trains are running as normal. The main entrance is temporarily unavailable while final checks are completed after overnight improvement works. Staff are on site to help direct passengers.",
+      "doNotSay": [
+        "Do not say the station is shut.",
+        "Do not imply train cancellations."
+      ],
+      "metisMessageVariantId": "dddd6102-0000-4000-a000-000000000002",
+      "metisBriefVersionId": null,
+      "templateId": "external_customer_resident_student",
+      "basedOnSnapshotAt": "2026-05-11T04:58:00.000Z",
+      "includedRecordIds": [
+        "dddd0015-0000-4000-a000-000000000015",
+        "dddd0001-0000-4000-a000-000000000001",
+        "dddd0008-0000-4000-a000-000000000008",
+        "dddd1001-0000-4000-a000-000000000001",
+        "dddd1002-0000-4000-a000-000000000002",
+        "dddd1003-0000-4000-a000-000000000003",
+        "dddd1004-0000-4000-a000-000000000004",
+        "dddd1005-0000-4000-a000-000000000005",
+        "dddd1006-0000-4000-a000-000000000006",
+        "dddd1007-0000-4000-a000-000000000007",
+        "dddd1008-0000-4000-a000-000000000008",
+        "dddd2001-0000-4000-a000-000000000001",
+        "dddd2002-0000-4000-a000-000000000002",
+        "dddd2003-0000-4000-a000-000000000003",
+        "dddd2004-0000-4000-a000-000000000004",
+        "dddd2005-0000-4000-a000-000000000005",
+        "dddd2006-0000-4000-a000-000000000006",
+        "dddd2007-0000-4000-a000-000000000007",
+        "dddd3001-0000-4000-a000-000000000001",
+        "dddd3002-0000-4000-a000-000000000002",
+        "dddd3003-0000-4000-a000-000000000003",
+        "dddd3004-0000-4000-a000-000000000004",
+        "dddd3005-0000-4000-a000-000000000005",
+        "dddd4001-0000-4000-a000-000000000001",
+        "dddd4002-0000-4000-a000-000000000002",
+        "dddd4003-0000-4000-a000-000000000003",
+        "dddd4004-0000-4000-a000-000000000004"
+      ],
+      "notYetKnownRecordIds": [
+        "dddd0009-0000-4000-a000-000000000009",
+        "dddd0016-0000-4000-a000-000000000016",
+        "dddd0010-0000-4000-a000-000000000010",
+        "dddd0011-0000-4000-a000-000000000011",
+        "dddd0012-0000-4000-a000-000000000012",
+        "dddd0013-0000-4000-a000-000000000013",
+        "dddd0014-0000-4000-a000-000000000014",
+        "dddd1009-0000-4000-a000-000000000009",
+        "dddd1010-0000-4000-a000-000000000010",
+        "dddd1011-0000-4000-a000-000000000011",
+        "dddd1012-0000-4000-a000-000000000012",
+        "dddd1013-0000-4000-a000-000000000013",
+        "dddd2008-0000-4000-a000-000000000008",
+        "dddd2009-0000-4000-a000-000000000009",
+        "dddd3006-0000-4000-a000-000000000006",
+        "dddd3007-0000-4000-a000-000000000007",
+        "dddd4005-0000-4000-a000-000000000005",
+        "dddd4006-0000-4000-a000-000000000006"
+      ],
+      "openQuestionsAtGeneration": [
+        "Q-001: Is the ceiling area safe for passenger use?",
+        "Q-002: Can the side entrance safely handle early morning passenger flow?",
+        "Q-004: What public line should be used if asked whether the station is shut?",
+        "Q-005: What is the expected main entrance reopening time?"
+      ],
+      "caveatsAtGeneration": [],
+      "messageArtifact": {
+        "templateId": "external_customer_resident_student",
+        "metadata": {
+          "publicHeadline": "Bramley Junction",
+          "lastRevisionLabel": "Mon 05:58",
+          "openGapsLabel": "Q-001: Is the ceiling area safe for passenger use?, Q-002: Can the side entrance safely handle early morning passenger flow?, Q-004: What public line should be used if asked whether the station is shut?, Q-005: What is the expected main entrance reopening time?",
+          "audienceLabel": "Passengers",
+          "lensSource": "issue_audience_only",
+          "issueLevelAudienceNote": null,
+          "aiWordingPolish": "deterministic_only",
+          "aiComparisonAvailable": false
+        },
+        "sections": [
+          {
+            "id": "primary",
+            "title": "Passenger message draft",
+            "body": "Bramley Junction station is open via the side entrance. Trains are running as normal. The main entrance is temporarily unavailable while final checks are completed after overnight improvement works. Staff are on site to help direct passengers."
+          }
+        ],
+        "guardrails": {
+          "mustAvoid": [
+            "Do not say the station is shut.",
+            "Do not imply train cancellations."
+          ],
+          "toneNotes": "Controlled, factual, and caveated where uncertain; no speculation."
+        }
+      }
+    },
+    {
+      "id": "dddd5003-0000-4000-a000-000000000003",
+      "kind": "social_response_line",
+      "title": "Social response line",
+      "audience": "Social media replies",
+      "intendedUse": "Reply line correcting ‘station shut’ claims without speculating on cause or timing.",
+      "status": "Approved",
+      "versionNumber": 1,
+      "generatedAt": "2026-05-11T04:52:00.000Z",
+      "supersededBy": null,
+      "linkedSourceIds": [
+        "dddd1008-0000-4000-a000-000000000008",
+        "dddd1006-0000-4000-a000-000000000006",
+        "dddd1004-0000-4000-a000-000000000004"
+      ],
+      "linkedClaimIds": [
+        "dddd2007-0000-4000-a000-000000000007",
+        "dddd2005-0000-4000-a000-000000000005",
+        "dddd2004-0000-4000-a000-000000000004"
+      ],
+      "body": "Bramley Junction is open via the side entrance and trains are running as normal. The main entrance is temporarily closed while final checks are completed after overnight improvement works. We’ll share an update when the main entrance reopens.",
+      "doNotSay": [
+        "Do not engage with speculation about structural issues."
+      ],
+      "metisMessageVariantId": "dddd6103-0000-4000-a000-000000000003",
+      "metisBriefVersionId": null,
+      "templateId": "external_customer_resident_student",
+      "basedOnSnapshotAt": "2026-05-11T04:52:00.000Z",
+      "includedRecordIds": [
+        "dddd0015-0000-4000-a000-000000000015",
+        "dddd0001-0000-4000-a000-000000000001",
+        "dddd0008-0000-4000-a000-000000000008",
+        "dddd1001-0000-4000-a000-000000000001",
+        "dddd1002-0000-4000-a000-000000000002",
+        "dddd1003-0000-4000-a000-000000000003",
+        "dddd1004-0000-4000-a000-000000000004",
+        "dddd1005-0000-4000-a000-000000000005",
+        "dddd1006-0000-4000-a000-000000000006",
+        "dddd1007-0000-4000-a000-000000000007",
+        "dddd1008-0000-4000-a000-000000000008",
+        "dddd2001-0000-4000-a000-000000000001",
+        "dddd2002-0000-4000-a000-000000000002",
+        "dddd2003-0000-4000-a000-000000000003",
+        "dddd2004-0000-4000-a000-000000000004",
+        "dddd2005-0000-4000-a000-000000000005",
+        "dddd2006-0000-4000-a000-000000000006",
+        "dddd2007-0000-4000-a000-000000000007",
+        "dddd3001-0000-4000-a000-000000000001",
+        "dddd3002-0000-4000-a000-000000000002",
+        "dddd3003-0000-4000-a000-000000000003",
+        "dddd3004-0000-4000-a000-000000000004",
+        "dddd3005-0000-4000-a000-000000000005",
+        "dddd4001-0000-4000-a000-000000000001",
+        "dddd4002-0000-4000-a000-000000000002",
+        "dddd4003-0000-4000-a000-000000000003",
+        "dddd4004-0000-4000-a000-000000000004"
+      ],
+      "notYetKnownRecordIds": [
+        "dddd0009-0000-4000-a000-000000000009",
+        "dddd0016-0000-4000-a000-000000000016",
+        "dddd0010-0000-4000-a000-000000000010",
+        "dddd0011-0000-4000-a000-000000000011",
+        "dddd0012-0000-4000-a000-000000000012",
+        "dddd0013-0000-4000-a000-000000000013",
+        "dddd0014-0000-4000-a000-000000000014",
+        "dddd1009-0000-4000-a000-000000000009",
+        "dddd1010-0000-4000-a000-000000000010",
+        "dddd1011-0000-4000-a000-000000000011",
+        "dddd1012-0000-4000-a000-000000000012",
+        "dddd1013-0000-4000-a000-000000000013",
+        "dddd2008-0000-4000-a000-000000000008",
+        "dddd2009-0000-4000-a000-000000000009",
+        "dddd3006-0000-4000-a000-000000000006",
+        "dddd3007-0000-4000-a000-000000000007",
+        "dddd4005-0000-4000-a000-000000000005",
+        "dddd4006-0000-4000-a000-000000000006"
+      ],
+      "openQuestionsAtGeneration": [
+        "Q-001: Is the ceiling area safe for passenger use?",
+        "Q-002: Can the side entrance safely handle early morning passenger flow?",
+        "Q-004: What public line should be used if asked whether the station is shut?",
+        "Q-005: What is the expected main entrance reopening time?"
+      ],
+      "caveatsAtGeneration": [],
+      "messageArtifact": {
+        "templateId": "external_customer_resident_student",
+        "metadata": {
+          "publicHeadline": "Bramley Junction",
+          "lastRevisionLabel": "Mon 05:52",
+          "openGapsLabel": "Q-001: Is the ceiling area safe for passenger use?, Q-002: Can the side entrance safely handle early morning passenger flow?, Q-004: What public line should be used if asked whether the station is shut?, Q-005: What is the expected main entrance reopening time?",
+          "audienceLabel": "Social media replies",
+          "lensSource": "issue_audience_only",
+          "issueLevelAudienceNote": null,
+          "aiWordingPolish": "deterministic_only",
+          "aiComparisonAvailable": false
+        },
+        "sections": [
+          {
+            "id": "primary",
+            "title": "Social response line",
+            "body": "Bramley Junction is open via the side entrance and trains are running as normal. The main entrance is temporarily closed while final checks are completed after overnight improvement works. We’ll share an update when the main entrance reopens."
+          }
+        ],
+        "guardrails": {
+          "mustAvoid": [
+            "Do not engage with speculation about structural issues."
+          ],
+          "toneNotes": "Controlled, factual, and caveated where uncertain; no speculation."
+        }
+      }
+    },
+    {
+      "id": "dddd5004-0000-4000-a000-000000000004",
+      "kind": "holding_press_line",
+      "title": "Holding press line",
+      "audience": "Local media",
+      "intendedUse": "Holding statement for press office response window; avoid committing a reopening time.",
+      "status": "Ready for review",
+      "versionNumber": 1,
+      "generatedAt": "2026-05-11T05:18:00.000Z",
+      "supersededBy": null,
+      "linkedSourceIds": [
+        "dddd1003-0000-4000-a000-000000000003",
+        "dddd1004-0000-4000-a000-000000000004",
+        "dddd1006-0000-4000-a000-000000000006",
+        "dddd1007-0000-4000-a000-000000000007",
+        "dddd1008-0000-4000-a000-000000000008",
+        "dddd1009-0000-4000-a000-000000000009"
+      ],
+      "linkedClaimIds": [
+        "dddd2003-0000-4000-a000-000000000003",
+        "dddd2004-0000-4000-a000-000000000004",
+        "dddd2005-0000-4000-a000-000000000005",
+        "dddd2006-0000-4000-a000-000000000006",
+        "dddd2007-0000-4000-a000-000000000007"
+      ],
+      "body": "Bramley Junction remains open via the side entrance and trains are running as normal.\nThe main entrance is temporarily unavailable while final checks are completed after overnight improvement works.\nWe will provide an update once inspections and clean-up are complete.",
+      "doNotSay": [
+        "That the station is closed.",
+        "That trains are cancelled or diverted.",
+        "That there is a confirmed structural failure or active leak.",
+        "A precise reopening time until station/facilities confirm."
+      ],
+      "metisMessageVariantId": "dddd6104-0000-4000-a000-000000000004",
+      "metisBriefVersionId": null,
+      "templateId": "media_holding_line",
+      "basedOnSnapshotAt": "2026-05-11T05:18:00.000Z",
+      "includedRecordIds": [
+        "dddd0015-0000-4000-a000-000000000015",
+        "dddd0001-0000-4000-a000-000000000001",
+        "dddd0008-0000-4000-a000-000000000008",
+        "dddd0009-0000-4000-a000-000000000009",
+        "dddd1001-0000-4000-a000-000000000001",
+        "dddd1002-0000-4000-a000-000000000002",
+        "dddd1003-0000-4000-a000-000000000003",
+        "dddd1004-0000-4000-a000-000000000004",
+        "dddd1005-0000-4000-a000-000000000005",
+        "dddd1006-0000-4000-a000-000000000006",
+        "dddd1007-0000-4000-a000-000000000007",
+        "dddd1008-0000-4000-a000-000000000008",
+        "dddd1009-0000-4000-a000-000000000009",
+        "dddd2001-0000-4000-a000-000000000001",
+        "dddd2002-0000-4000-a000-000000000002",
+        "dddd2003-0000-4000-a000-000000000003",
+        "dddd2004-0000-4000-a000-000000000004",
+        "dddd2005-0000-4000-a000-000000000005",
+        "dddd2006-0000-4000-a000-000000000006",
+        "dddd2007-0000-4000-a000-000000000007",
+        "dddd3001-0000-4000-a000-000000000001",
+        "dddd3002-0000-4000-a000-000000000002",
+        "dddd3003-0000-4000-a000-000000000003",
+        "dddd3004-0000-4000-a000-000000000004",
+        "dddd3005-0000-4000-a000-000000000005",
+        "dddd4001-0000-4000-a000-000000000001",
+        "dddd4002-0000-4000-a000-000000000002",
+        "dddd4003-0000-4000-a000-000000000003",
+        "dddd4004-0000-4000-a000-000000000004"
+      ],
+      "notYetKnownRecordIds": [
+        "dddd0016-0000-4000-a000-000000000016",
+        "dddd0010-0000-4000-a000-000000000010",
+        "dddd0011-0000-4000-a000-000000000011",
+        "dddd0012-0000-4000-a000-000000000012",
+        "dddd0013-0000-4000-a000-000000000013",
+        "dddd0014-0000-4000-a000-000000000014",
+        "dddd1010-0000-4000-a000-000000000010",
+        "dddd1011-0000-4000-a000-000000000011",
+        "dddd1012-0000-4000-a000-000000000012",
+        "dddd1013-0000-4000-a000-000000000013",
+        "dddd2008-0000-4000-a000-000000000008",
+        "dddd2009-0000-4000-a000-000000000009",
+        "dddd3006-0000-4000-a000-000000000006",
+        "dddd3007-0000-4000-a000-000000000007",
+        "dddd4005-0000-4000-a000-000000000005",
+        "dddd4006-0000-4000-a000-000000000006"
+      ],
+      "openQuestionsAtGeneration": [
+        "Q-001: Is the ceiling area safe for passenger use?",
+        "Q-002: Can the side entrance safely handle early morning passenger flow?",
+        "Q-005: What is the expected main entrance reopening time?"
+      ],
+      "caveatsAtGeneration": [
+        "Facilities inspection not yet complete — do not confirm ceiling safety or reopening time.",
+        "Main entrance still closed at time of generation."
+      ],
+      "messageArtifact": {
+        "templateId": "media_holding_line",
+        "metadata": {
+          "publicHeadline": "Bramley Junction",
+          "lastRevisionLabel": "Mon 06:18",
+          "openGapsLabel": "Q-001: Is the ceiling area safe for passenger use?, Q-002: Can the side entrance safely handle early morning passenger flow?, Q-005: What is the expected main entrance reopening time?",
+          "audienceLabel": "Local media",
+          "lensSource": "issue_audience_only",
+          "issueLevelAudienceNote": null,
+          "aiWordingPolish": "deterministic_only",
+          "aiComparisonAvailable": false
+        },
+        "sections": [
+          {
+            "id": "primary",
+            "title": "Holding press line",
+            "body": "Bramley Junction remains open via the side entrance and trains are running as normal.\nThe main entrance is temporarily unavailable while final checks are completed after overnight improvement works.\nWe will provide an update once inspections and clean-up are complete."
+          }
+        ],
+        "guardrails": {
+          "mustAvoid": [
+            "That the station is closed.",
+            "That trains are cancelled or diverted.",
+            "That there is a confirmed structural failure or active leak.",
+            "A precise reopening time until station/facilities confirm."
+          ],
+          "toneNotes": "Controlled, factual, and caveated where uncertain; no speculation."
+        }
+      }
+    },
+    {
+      "id": "dddd5005-0000-4000-a000-000000000005",
+      "kind": "executive_brief",
+      "title": "Executive brief V1",
+      "audience": "Senior leadership",
+      "status": "Ready for review",
+      "versionNumber": 1,
+      "generatedAt": "2026-05-11T05:48:00.000Z",
+      "supersededBy": "dddd5008-0000-4000-a000-000000000008",
+      "linkedSourceIds": [
+        "dddd1001-0000-4000-a000-000000000001",
+        "dddd1003-0000-4000-a000-000000000003",
+        "dddd1004-0000-4000-a000-000000000004",
+        "dddd1006-0000-4000-a000-000000000006",
+        "dddd1007-0000-4000-a000-000000000007",
+        "dddd1008-0000-4000-a000-000000000008",
+        "dddd1009-0000-4000-a000-000000000009"
+      ],
+      "linkedClaimIds": [
+        "dddd2001-0000-4000-a000-000000000001",
+        "dddd2002-0000-4000-a000-000000000002",
+        "dddd2003-0000-4000-a000-000000000003",
+        "dddd2004-0000-4000-a000-000000000004",
+        "dddd2005-0000-4000-a000-000000000005",
+        "dddd2006-0000-4000-a000-000000000006",
+        "dddd2007-0000-4000-a000-000000000007"
+      ],
+      "body": "Executive brief — Bramley Junction main entrance delay (V1)\n\nCurrent position\n- Main entrance delayed after overnight planned works handback.\n- Station open via side entrance; trains running.\n- Comms engaged from 05:42 when duty manager briefed corporate affairs; duty overnight pack logged in Metis at 05:50.\n- Social monitoring (05:48) and press enquiry (06:08) drove external messaging; executive office requested this note at 06:35.\n\nWhat happened (from duty pack and subsequent updates logged in Metis)\n- Planned works scheduled with 05:30 handback (SRC-001).\n- Contractor withheld final ceiling panel sign-off at main entrance (SRC-003).\n- Station manager escalated likely miss of 05:30 target (SRC-004).\n\nCustomer impact\n- Limited but visible at main entrance; help point queries (SRC-007).\n- Some social posts incorrectly describe station as shut (SRC-008).\n\nOperational position\n- Side entrance staffing and barriers deployed (SRC-005).\n- NOC confirms trains calling (SRC-006).\n\nMedia / reputation\n- Local reporter deadline following 06:08 press call; holding line drafted after enquiry.\n\nOpen questions\n- Ceiling area safety confirmation.\n- Expected main entrance reopening time.\n\nNext actions\n- Maintain side entrance flow; staff and passenger lines in use.\n- Respond to press within window using holding line.\n- Await facilities inspection outcome before committing reopening time.\n\nConfidence / caveats\n- Based only on records in Metis as of 06:48; facilities clearance and reopening not yet logged.\n- No confirmed safety failure reported; ceiling issue is precautionary pending inspection.\n- Do not state station is closed or trains affected.",
+      "doNotSay": [
+        "Do not state main entrance has reopened.",
+        "Do not state facilities have cleared ceiling."
+      ],
+      "metisMessageVariantId": null,
+      "metisBriefVersionId": "dddd6001-0000-4000-a000-000000000001",
+      "templateId": null,
+      "basedOnSnapshotAt": "2026-05-11T05:48:00.000Z",
+      "includedRecordIds": [
+        "dddd0015-0000-4000-a000-000000000015",
+        "dddd0001-0000-4000-a000-000000000001",
+        "dddd0008-0000-4000-a000-000000000008",
+        "dddd0009-0000-4000-a000-000000000009",
+        "dddd0016-0000-4000-a000-000000000016",
+        "dddd0010-0000-4000-a000-000000000010",
+        "dddd1001-0000-4000-a000-000000000001",
+        "dddd1002-0000-4000-a000-000000000002",
+        "dddd1003-0000-4000-a000-000000000003",
+        "dddd1004-0000-4000-a000-000000000004",
+        "dddd1005-0000-4000-a000-000000000005",
+        "dddd1006-0000-4000-a000-000000000006",
+        "dddd1007-0000-4000-a000-000000000007",
+        "dddd1008-0000-4000-a000-000000000008",
+        "dddd1009-0000-4000-a000-000000000009",
+        "dddd1010-0000-4000-a000-000000000010",
+        "dddd2001-0000-4000-a000-000000000001",
+        "dddd2002-0000-4000-a000-000000000002",
+        "dddd2003-0000-4000-a000-000000000003",
+        "dddd2004-0000-4000-a000-000000000004",
+        "dddd2005-0000-4000-a000-000000000005",
+        "dddd2006-0000-4000-a000-000000000006",
+        "dddd2007-0000-4000-a000-000000000007",
+        "dddd3001-0000-4000-a000-000000000001",
+        "dddd3002-0000-4000-a000-000000000002",
+        "dddd3003-0000-4000-a000-000000000003",
+        "dddd3004-0000-4000-a000-000000000004",
+        "dddd3005-0000-4000-a000-000000000005",
+        "dddd4001-0000-4000-a000-000000000001",
+        "dddd4002-0000-4000-a000-000000000002",
+        "dddd4003-0000-4000-a000-000000000003",
+        "dddd4004-0000-4000-a000-000000000004"
+      ],
+      "notYetKnownRecordIds": [
+        "dddd0011-0000-4000-a000-000000000011",
+        "dddd0012-0000-4000-a000-000000000012",
+        "dddd0013-0000-4000-a000-000000000013",
+        "dddd0014-0000-4000-a000-000000000014",
+        "dddd1011-0000-4000-a000-000000000011",
+        "dddd1012-0000-4000-a000-000000000012",
+        "dddd1013-0000-4000-a000-000000000013",
+        "dddd2008-0000-4000-a000-000000000008",
+        "dddd2009-0000-4000-a000-000000000009",
+        "dddd3006-0000-4000-a000-000000000006",
+        "dddd3007-0000-4000-a000-000000000007",
+        "dddd4005-0000-4000-a000-000000000005",
+        "dddd4006-0000-4000-a000-000000000006"
+      ],
+      "openQuestionsAtGeneration": [
+        "Q-001: Is the ceiling area safe for passenger use?",
+        "Q-005: What is the expected main entrance reopening time?"
+      ],
+      "caveatsAtGeneration": [
+        "Based on Metis records as of 06:48 only — excludes facilities clearance and reopening logged later.",
+        "Overnight operational detail from duty pack logged in Metis after 05:42 comms engagement.",
+        "Q-001 ceiling safety and Q-005 reopening time still open at generation."
+      ],
+      "briefArtifact": {
+        "lede": "Main entrance reopened 08:12; side entrance remains available; trains running; passenger flow normalising; post-incident review in progress.",
+        "metadata": {
+          "audience": "Senior leadership",
+          "circulation": "Internal",
+          "lastRevisionLabel": "Mon 06:48",
+          "openGapsLabel": "Q-001: Is the ceiling area safe for passenger use?, Q-005: What is the expected main entrance reopening time?"
+        },
+        "full": {
+          "sections": [
+            {
+              "id": "executive-summary",
+              "title": "Executive summary",
+              "body": "Executive brief — Bramley Junction main entrance delay (V1)  Current position - Main entrance delayed after overnight planned works handback. - Station open via side entrance; trains running. - Comms engaged from 05:42 when duty manager briefed corporate affairs; duty overnight pack logged in Metis at 05:50.",
+              "confidence": "Likely",
+              "updatedAtLabel": "Mon 06:48",
+              "evidenceRefs": []
+            },
+            {
+              "id": "chronology",
+              "title": "Chronology",
+              "body": "Point-in-time record (Metis timeline reference)\n- Last revision label: Mon 06:48\n- Open gaps label: Q-001: Is the ceiling area safe for passenger use?, Q-005: What is the expected main entrance reopening time?",
+              "confidence": "Likely",
+              "updatedAtLabel": "Mon 06:48",
+              "evidenceRefs": []
+            },
+            {
+              "id": "confirmed-vs-unclear",
+              "title": "Confirmed vs unclear",
+              "body": "Confirmed facts\n- Planned overnight works scheduled with 05:30 handback target.\n- Main entrance opening delayed pending ceiling panel inspection.\n- Station remained open via side entrance with additional staffing.\n- Train services continued to call (NOC confirmed).\n- Main entrance reopened 08:12 after facilities clearance.\n\nOpen questions / unresolved needs\n- Q-001: Is the ceiling area safe for passenger use?\n- Q-005: What is the expected main entrance reopening time?",
+              "confidence": "Likely",
+              "updatedAtLabel": "Mon 06:48",
+              "evidenceRefs": []
+            },
+            {
+              "id": "narrative-map",
+              "title": "Narrative map",
+              "body": "Audience implications\n- Station operations, customer service, corporate affairs, regional leadership\n\nClaims and assumptions (register excerpt)\n- CLM-001: Planned overnight works were scheduled at Bramley Junction with expected handback before the morning peak.\n- CLM-002: Most planned works were completed as expected overnight.\n- CLM-003: Main entrance opening was delayed pending final inspection of ceiling panels near the main entrance.\n- CLM-004: The station remained open via the side entrance while the main entrance was unavailable.\n- CLM-005: Train services continued to call at Bramley Junction with no planned service changes.\n- CLM-006: Passenger impact was limited but visible at the main entrance during the early morning peak.\n- CLM-007: Some external commentary incorrectly described the station as fully shut.",
+              "confidence": "Likely",
+              "updatedAtLabel": "Mon 06:48",
+              "evidenceRefs": []
+            },
+            {
+              "id": "implications",
+              "title": "Implications",
+              "body": "Evidence base\n- SRC-001 — Planned works notice — Bramley Junction overnight (Authoritative internal record)\n- SRC-003 — Handback note — ceiling panels pending sign-off (Internal operational source)\n- SRC-004 — Station manager escalation — main entrance delay (Internal operational source)\n- SRC-006 — Network Operations — trains calling (Authoritative internal record)\n- SRC-007 — Customer service floor report (Internal operational source)\n- SRC-008 — Social monitoring — inaccurate closure posts (Social monitoring)\n- SRC-009 — Press call log — local reporter (Media enquiry)\n\nObservations\n- Main entrance vs whole station confusion\n- Reputationally visible despite modest operational impact\n- Avoid speculation on roof drainage\n- Lead with what remains available\n- Check accessibility separately\n- Future works handback focus\n\nGuardrails / wording constraints\n- Based on Metis records as of 06:48 only — excludes facilities clearance and reopening logged later.\n- Overnight operational detail from duty pack logged in Metis after 05:42 comms engagement.\n- Q-001 ceiling safety and Q-005 reopening time still open at generation.\n- Do not state main entrance has reopened.\n- Do not state facilities have cleared ceiling.",
+              "confidence": "Likely",
+              "updatedAtLabel": "Mon 06:48",
+              "evidenceRefs": []
+            },
+            {
+              "id": "recommended-actions",
+              "title": "Recommended actions",
+              "body": "1) Maintain controlled posture; update as sources change.",
+              "confidence": "Likely",
+              "updatedAtLabel": "Mon 06:48",
+              "evidenceRefs": []
+            }
+          ]
+        },
+        "executive": {
+          "blocks": [
+            {
+              "label": "Executive summary",
+              "body": "Executive brief — Bramley Junction main entrance delay (V1)  Current position - Main entrance delayed after overnight planned works handback. - Station open via side entrance; trains running. - Comms engaged from 05:42 when duty manager briefed corporate affairs; duty overnight pack logged in Metis at 05:50."
+            },
+            {
+              "label": "Current assessment",
+              "body": "Status: Ready for review\nSeverity: Important\nUrgency: High\nBriefing posture: Active\nOpen questions: Q-001: Is the ceiling area safe for passenger use?, Q-005: What is the expected main entrance reopening time?\nIssue owner: Duty Station Support"
+            },
+            {
+              "label": "Confirmed facts",
+              "body": "- Planned overnight works scheduled with 05:30 handback target.\n- Main entrance opening delayed pending ceiling panel inspection.\n- Station remained open via side entrance with additional staffing.\n- Train services continued to call (NOC confirmed).\n- Main entrance reopened 08:12 after facilities clearance."
+            },
+            {
+              "label": "Claims and assumptions",
+              "body": "- CLM-001: Planned overnight works were scheduled at Bramley Junction with expected handback before the morning peak.\n- CLM-002: Most planned works were completed as expected overnight.\n- CLM-003: Main entrance opening was delayed pending final inspection of ceiling panels near the main entrance.\n- CLM-004: The station remained open via the side entrance while the main entrance was unavailable.\n- CLM-005: Train services continued to call at Bramley Junction with no planned service changes.\n- CLM-006: Passenger impact was limited but visible at the main entrance during the early morning peak.\n- CLM-007: Some external commentary incorrectly described the station as fully shut."
+            },
+            {
+              "label": "Open questions and unresolved needs",
+              "body": "- Q-001: Is the ceiling area safe for passenger use?\n- Q-005: What is the expected main entrance reopening time?"
+            },
+            {
+              "label": "Evidence base",
+              "body": "- SRC-001 — Planned works notice — Bramley Junction overnight (Authoritative internal record)\n- SRC-003 — Handback note — ceiling panels pending sign-off (Internal operational source)\n- SRC-004 — Station manager escalation — main entrance delay (Internal operational source)\n- SRC-006 — Network Operations — trains calling (Authoritative internal record)\n- SRC-007 — Customer service floor report (Internal operational source)\n- SRC-008 — Social monitoring — inaccurate closure posts (Social monitoring)\n- SRC-009 — Press call log — local reporter (Media enquiry)"
+            },
+            {
+              "label": "Observations",
+              "body": "- Main entrance vs whole station confusion\n- Reputationally visible despite modest operational impact\n- Avoid speculation on roof drainage\n- Lead with what remains available\n- Check accessibility separately\n- Future works handback focus"
+            },
+            {
+              "label": "Audience implications",
+              "body": "- Station operations, customer service, corporate affairs, regional leadership"
+            },
+            {
+              "label": "Recommended decisions / next actions",
+              "body": "1) Maintain controlled posture; update as sources change."
+            },
+            {
+              "label": "What not to say yet / uncertainty guardrails",
+              "body": "- Based on Metis records as of 06:48 only — excludes facilities clearance and reopening logged later.\n- Overnight operational detail from duty pack logged in Metis after 05:42 comms engagement.\n- Q-001 ceiling safety and Q-005 reopening time still open at generation.\n- Do not state main entrance has reopened.\n- Do not state facilities have cleared ceiling."
+            }
+          ],
+          "immediateActions": []
+        }
+      }
+    },
+    {
+      "id": "dddd5006-0000-4000-a000-000000000006",
+      "kind": "passenger_message",
+      "title": "Updated passenger message",
+      "audience": "Passengers",
+      "intendedUse": "Updated passenger line once facilities clearance is recorded; still caveated until reopening confirmed.",
+      "status": "Approved",
+      "versionNumber": 2,
+      "generatedAt": "2026-05-11T06:22:00.000Z",
+      "supersededBy": null,
+      "linkedSourceIds": [
+        "dddd1011-0000-4000-a000-000000000011",
+        "dddd1004-0000-4000-a000-000000000004",
+        "dddd1006-0000-4000-a000-000000000006"
+      ],
+      "linkedClaimIds": [
+        "dddd2008-0000-4000-a000-000000000008",
+        "dddd2004-0000-4000-a000-000000000004",
+        "dddd2005-0000-4000-a000-000000000005"
+      ],
+      "body": "Bramley Junction station remains open via the side entrance. Trains are running as normal. The main entrance is temporarily unavailable while final checks are completed after overnight improvement works. We expect the main entrance to reopen around 08:00, subject to final confirmation. Staff are on site to help direct passengers.",
+      "doNotSay": [
+        "Do not state the main entrance has already reopened (expected ~08:00, not confirmed open yet)."
+      ],
+      "metisMessageVariantId": "dddd6105-0000-4000-a000-000000000005",
+      "metisBriefVersionId": null,
+      "templateId": "external_customer_resident_student",
+      "basedOnSnapshotAt": "2026-05-11T06:22:00.000Z",
+      "includedRecordIds": [
+        "dddd0015-0000-4000-a000-000000000015",
+        "dddd0001-0000-4000-a000-000000000001",
+        "dddd0008-0000-4000-a000-000000000008",
+        "dddd0009-0000-4000-a000-000000000009",
+        "dddd0016-0000-4000-a000-000000000016",
+        "dddd0010-0000-4000-a000-000000000010",
+        "dddd0011-0000-4000-a000-000000000011",
+        "dddd1001-0000-4000-a000-000000000001",
+        "dddd1002-0000-4000-a000-000000000002",
+        "dddd1003-0000-4000-a000-000000000003",
+        "dddd1004-0000-4000-a000-000000000004",
+        "dddd1005-0000-4000-a000-000000000005",
+        "dddd1006-0000-4000-a000-000000000006",
+        "dddd1007-0000-4000-a000-000000000007",
+        "dddd1008-0000-4000-a000-000000000008",
+        "dddd1009-0000-4000-a000-000000000009",
+        "dddd1010-0000-4000-a000-000000000010",
+        "dddd1011-0000-4000-a000-000000000011",
+        "dddd2001-0000-4000-a000-000000000001",
+        "dddd2002-0000-4000-a000-000000000002",
+        "dddd2003-0000-4000-a000-000000000003",
+        "dddd2004-0000-4000-a000-000000000004",
+        "dddd2005-0000-4000-a000-000000000005",
+        "dddd2006-0000-4000-a000-000000000006",
+        "dddd2007-0000-4000-a000-000000000007",
+        "dddd2008-0000-4000-a000-000000000008",
+        "dddd3001-0000-4000-a000-000000000001",
+        "dddd3002-0000-4000-a000-000000000002",
+        "dddd3003-0000-4000-a000-000000000003",
+        "dddd3004-0000-4000-a000-000000000004",
+        "dddd3005-0000-4000-a000-000000000005",
+        "dddd4001-0000-4000-a000-000000000001",
+        "dddd4002-0000-4000-a000-000000000002",
+        "dddd4003-0000-4000-a000-000000000003",
+        "dddd4004-0000-4000-a000-000000000004"
+      ],
+      "notYetKnownRecordIds": [
+        "dddd0012-0000-4000-a000-000000000012",
+        "dddd0013-0000-4000-a000-000000000013",
+        "dddd0014-0000-4000-a000-000000000014",
+        "dddd1012-0000-4000-a000-000000000012",
+        "dddd1013-0000-4000-a000-000000000013",
+        "dddd2009-0000-4000-a000-000000000009",
+        "dddd3006-0000-4000-a000-000000000006",
+        "dddd3007-0000-4000-a000-000000000007",
+        "dddd4005-0000-4000-a000-000000000005",
+        "dddd4006-0000-4000-a000-000000000006"
+      ],
+      "openQuestionsAtGeneration": [
+        "Q-005: What is the expected main entrance reopening time? (partially answered)"
+      ],
+      "caveatsAtGeneration": [
+        "Expected reopening around 08:00 — subject to final confirmation; not yet open at 07:22."
+      ],
+      "messageArtifact": {
+        "templateId": "external_customer_resident_student",
+        "metadata": {
+          "publicHeadline": "Bramley Junction",
+          "lastRevisionLabel": "Mon 07:22",
+          "openGapsLabel": "Q-005: What is the expected main entrance reopening time? (partially answered)",
+          "audienceLabel": "Passengers",
+          "lensSource": "issue_audience_only",
+          "issueLevelAudienceNote": null,
+          "aiWordingPolish": "deterministic_only",
+          "aiComparisonAvailable": false
+        },
+        "sections": [
+          {
+            "id": "primary",
+            "title": "Updated passenger message",
+            "body": "Bramley Junction station remains open via the side entrance. Trains are running as normal. The main entrance is temporarily unavailable while final checks are completed after overnight improvement works. We expect the main entrance to reopen around 08:00, subject to final confirmation. Staff are on site to help direct passengers."
+          }
+        ],
+        "guardrails": {
+          "mustAvoid": [
+            "Do not state the main entrance has already reopened (expected ~08:00, not confirmed open yet)."
+          ],
+          "toneNotes": "Controlled, factual, and caveated where uncertain; no speculation."
+        }
+      }
+    },
+    {
+      "id": "dddd5007-0000-4000-a000-000000000007",
+      "kind": "stakeholder_note",
+      "title": "Councillor and stakeholder note",
+      "audience": "Local authority / accessibility / transport stakeholders",
+      "intendedUse": "Caveated stakeholder update for partners; avoid overclaiming accessibility assessment completion.",
+      "status": "Ready for review",
+      "versionNumber": 1,
+      "generatedAt": "2026-05-11T06:38:00.000Z",
+      "supersededBy": null,
+      "linkedSourceIds": [
+        "dddd1011-0000-4000-a000-000000000011",
+        "dddd1010-0000-4000-a000-000000000010",
+        "dddd1004-0000-4000-a000-000000000004",
+        "dddd1009-0000-4000-a000-000000000009"
+      ],
+      "linkedClaimIds": [
+        "dddd2004-0000-4000-a000-000000000004",
+        "dddd2008-0000-4000-a000-000000000008"
+      ],
+      "body": "Stakeholder note (draft)\n\nBramley Junction remains open via the side entrance and trains are running as normal.\nThe main entrance is temporarily unavailable following overnight improvement works. Facilities clearance has been recorded; reopening is expected around 08:00 subject to final checks.\n\nMitigations\n- Additional staff/security at the side entrance and clear passenger lines in use.\n- Accessibility/wayfinding checks on temporary arrangements are in progress.",
+      "doNotSay": [
+        "Do not state that an accessibility assessment is complete if temporary signage actions are still in progress.",
+        "Do not speculate on causes beyond what facilities has confirmed."
+      ],
+      "metisMessageVariantId": "dddd6106-0000-4000-a000-000000000006",
+      "metisBriefVersionId": null,
+      "templateId": "external_customer_resident_student",
+      "basedOnSnapshotAt": "2026-05-11T06:38:00.000Z",
+      "includedRecordIds": [
+        "dddd0015-0000-4000-a000-000000000015",
+        "dddd0001-0000-4000-a000-000000000001",
+        "dddd0008-0000-4000-a000-000000000008",
+        "dddd0009-0000-4000-a000-000000000009",
+        "dddd0016-0000-4000-a000-000000000016",
+        "dddd0010-0000-4000-a000-000000000010",
+        "dddd0011-0000-4000-a000-000000000011",
+        "dddd1001-0000-4000-a000-000000000001",
+        "dddd1002-0000-4000-a000-000000000002",
+        "dddd1003-0000-4000-a000-000000000003",
+        "dddd1004-0000-4000-a000-000000000004",
+        "dddd1005-0000-4000-a000-000000000005",
+        "dddd1006-0000-4000-a000-000000000006",
+        "dddd1007-0000-4000-a000-000000000007",
+        "dddd1008-0000-4000-a000-000000000008",
+        "dddd1009-0000-4000-a000-000000000009",
+        "dddd1010-0000-4000-a000-000000000010",
+        "dddd1011-0000-4000-a000-000000000011",
+        "dddd2001-0000-4000-a000-000000000001",
+        "dddd2002-0000-4000-a000-000000000002",
+        "dddd2003-0000-4000-a000-000000000003",
+        "dddd2004-0000-4000-a000-000000000004",
+        "dddd2005-0000-4000-a000-000000000005",
+        "dddd2006-0000-4000-a000-000000000006",
+        "dddd2007-0000-4000-a000-000000000007",
+        "dddd2008-0000-4000-a000-000000000008",
+        "dddd3001-0000-4000-a000-000000000001",
+        "dddd3002-0000-4000-a000-000000000002",
+        "dddd3003-0000-4000-a000-000000000003",
+        "dddd3004-0000-4000-a000-000000000004",
+        "dddd3005-0000-4000-a000-000000000005",
+        "dddd4001-0000-4000-a000-000000000001",
+        "dddd4002-0000-4000-a000-000000000002",
+        "dddd4003-0000-4000-a000-000000000003",
+        "dddd4004-0000-4000-a000-000000000004"
+      ],
+      "notYetKnownRecordIds": [
+        "dddd0012-0000-4000-a000-000000000012",
+        "dddd0013-0000-4000-a000-000000000013",
+        "dddd0014-0000-4000-a000-000000000014",
+        "dddd1012-0000-4000-a000-000000000012",
+        "dddd1013-0000-4000-a000-000000000013",
+        "dddd2009-0000-4000-a000-000000000009",
+        "dddd3006-0000-4000-a000-000000000006",
+        "dddd3007-0000-4000-a000-000000000007",
+        "dddd4005-0000-4000-a000-000000000005",
+        "dddd4006-0000-4000-a000-000000000006"
+      ],
+      "openQuestionsAtGeneration": [
+        "Q-005: What is the expected main entrance reopening time? (partially answered)"
+      ],
+      "caveatsAtGeneration": [
+        "Accessibility formal assessment not yet in Metis at generation — wording treats accessibility as being checked."
+      ],
+      "messageArtifact": {
+        "templateId": "external_customer_resident_student",
+        "metadata": {
+          "publicHeadline": "Bramley Junction",
+          "lastRevisionLabel": "Mon 07:38",
+          "openGapsLabel": "Q-005: What is the expected main entrance reopening time? (partially answered)",
+          "audienceLabel": "Local authority / accessibility / transport stakeholders",
+          "lensSource": "issue_audience_only",
+          "issueLevelAudienceNote": null,
+          "aiWordingPolish": "deterministic_only",
+          "aiComparisonAvailable": false
+        },
+        "sections": [
+          {
+            "id": "primary",
+            "title": "Councillor and stakeholder note",
+            "body": "Stakeholder note (draft)\n\nBramley Junction remains open via the side entrance and trains are running as normal.\nThe main entrance is temporarily unavailable following overnight improvement works. Facilities clearance has been recorded; reopening is expected around 08:00 subject to final checks.\n\nMitigations\n- Additional staff/security at the side entrance and clear passenger lines in use.\n- Accessibility/wayfinding checks on temporary arrangements are in progress."
+          }
+        ],
+        "guardrails": {
+          "mustAvoid": [
+            "Do not state that an accessibility assessment is complete if temporary signage actions are still in progress.",
+            "Do not speculate on causes beyond what facilities has confirmed."
+          ],
+          "toneNotes": "Controlled, factual, and caveated where uncertain; no speculation."
+        }
+      }
+    },
+    {
+      "id": "dddd5008-0000-4000-a000-000000000008",
+      "kind": "executive_brief",
+      "title": "Executive brief V2",
+      "audience": "Senior leadership",
+      "status": "Approved",
+      "versionNumber": 2,
+      "generatedAt": "2026-05-11T07:28:00.000Z",
+      "supersededBy": null,
+      "linkedSourceIds": [
+        "dddd1011-0000-4000-a000-000000000011",
+        "dddd1013-0000-4000-a000-000000000013",
+        "dddd1010-0000-4000-a000-000000000010",
+        "dddd1008-0000-4000-a000-000000000008"
+      ],
+      "linkedClaimIds": [
+        "dddd2008-0000-4000-a000-000000000008",
+        "dddd2009-0000-4000-a000-000000000009",
+        "dddd2006-0000-4000-a000-000000000006",
+        "dddd2007-0000-4000-a000-000000000007"
+      ],
+      "body": "Executive brief — Bramley Junction update (V2)\n\nCurrent position\n- Main entrance reopened 08:12 after facilities clearance.\n- Side entrance remains available; passenger flow normalising.\n- Press/social position contained with corrective lines.\n\nWhat changed since V1\n- Facilities confirmed ceiling panels secure (SRC-011).\n- Main entrance reopened (SRC-013).\n- Passenger impact remained limited; queues manageable via side entrance.\n\nCustomer impact\n- Morning peak confusion at main doors; no significant crowding reported after mitigations.\n\nOperational position\n- Remedial roof drain repair scheduled non-urgent.\n- Executive request for post-incident review received.\n\nOpen questions\n- Accessibility signage improvements (action in progress).\n- Follow-up actions for future planned works handback (Q-007).\n\nNext actions\n- Complete post-incident review note.\n- Confirm circulation audit for governance record.",
+      "doNotSay": [],
+      "metisMessageVariantId": null,
+      "metisBriefVersionId": "dddd6002-0000-4000-a000-000000000002",
+      "templateId": null,
+      "basedOnSnapshotAt": "2026-05-11T07:28:00.000Z",
+      "includedRecordIds": [
+        "dddd0015-0000-4000-a000-000000000015",
+        "dddd0001-0000-4000-a000-000000000001",
+        "dddd0008-0000-4000-a000-000000000008",
+        "dddd0009-0000-4000-a000-000000000009",
+        "dddd0016-0000-4000-a000-000000000016",
+        "dddd0010-0000-4000-a000-000000000010",
+        "dddd0011-0000-4000-a000-000000000011",
+        "dddd0012-0000-4000-a000-000000000012",
+        "dddd0013-0000-4000-a000-000000000013",
+        "dddd1001-0000-4000-a000-000000000001",
+        "dddd1002-0000-4000-a000-000000000002",
+        "dddd1003-0000-4000-a000-000000000003",
+        "dddd1004-0000-4000-a000-000000000004",
+        "dddd1005-0000-4000-a000-000000000005",
+        "dddd1006-0000-4000-a000-000000000006",
+        "dddd1007-0000-4000-a000-000000000007",
+        "dddd1008-0000-4000-a000-000000000008",
+        "dddd1009-0000-4000-a000-000000000009",
+        "dddd1010-0000-4000-a000-000000000010",
+        "dddd1011-0000-4000-a000-000000000011",
+        "dddd1012-0000-4000-a000-000000000012",
+        "dddd1013-0000-4000-a000-000000000013",
+        "dddd2001-0000-4000-a000-000000000001",
+        "dddd2002-0000-4000-a000-000000000002",
+        "dddd2003-0000-4000-a000-000000000003",
+        "dddd2004-0000-4000-a000-000000000004",
+        "dddd2005-0000-4000-a000-000000000005",
+        "dddd2006-0000-4000-a000-000000000006",
+        "dddd2007-0000-4000-a000-000000000007",
+        "dddd2008-0000-4000-a000-000000000008",
+        "dddd2009-0000-4000-a000-000000000009",
+        "dddd3001-0000-4000-a000-000000000001",
+        "dddd3002-0000-4000-a000-000000000002",
+        "dddd3003-0000-4000-a000-000000000003",
+        "dddd3004-0000-4000-a000-000000000004",
+        "dddd3005-0000-4000-a000-000000000005",
+        "dddd3006-0000-4000-a000-000000000006",
+        "dddd4001-0000-4000-a000-000000000001",
+        "dddd4002-0000-4000-a000-000000000002",
+        "dddd4003-0000-4000-a000-000000000003",
+        "dddd4004-0000-4000-a000-000000000004",
+        "dddd4005-0000-4000-a000-000000000005"
+      ],
+      "notYetKnownRecordIds": [
+        "dddd0014-0000-4000-a000-000000000014",
+        "dddd3007-0000-4000-a000-000000000007",
+        "dddd4006-0000-4000-a000-000000000006"
+      ],
+      "openQuestionsAtGeneration": [
+        "Q-006: Are accessibility arrangements adequate while the main entrance is closed?"
+      ],
+      "caveatsAtGeneration": [],
+      "briefArtifact": {
+        "lede": "Main entrance reopened 08:12; side entrance remains available; trains running; passenger flow normalising; post-incident review in progress.",
+        "metadata": {
+          "audience": "Senior leadership",
+          "circulation": "Internal",
+          "lastRevisionLabel": "Mon 08:28",
+          "openGapsLabel": "Q-006: Are accessibility arrangements adequate while the main entrance is closed?"
+        },
+        "full": {
+          "sections": [
+            {
+              "id": "executive-summary",
+              "title": "Executive summary",
+              "body": "Executive brief — Bramley Junction update (V2)  Current position - Main entrance reopened 08:12 after facilities clearance. - Side entrance remains available; passenger flow normalising. - Press/social position contained with corrective lines.",
+              "confidence": "Likely",
+              "updatedAtLabel": "Mon 08:28",
+              "evidenceRefs": []
+            },
+            {
+              "id": "chronology",
+              "title": "Chronology",
+              "body": "Point-in-time record (Metis timeline reference)\n- Last revision label: Mon 08:28\n- Open gaps label: Q-006: Are accessibility arrangements adequate while the main entrance is closed?",
+              "confidence": "Likely",
+              "updatedAtLabel": "Mon 08:28",
+              "evidenceRefs": []
+            },
+            {
+              "id": "confirmed-vs-unclear",
+              "title": "Confirmed vs unclear",
+              "body": "Confirmed facts\n- Planned overnight works scheduled with 05:30 handback target.\n- Main entrance opening delayed pending ceiling panel inspection.\n- Station remained open via side entrance with additional staffing.\n- Train services continued to call (NOC confirmed).\n- Main entrance reopened 08:12 after facilities clearance.\n\nOpen questions / unresolved needs\n- Q-006: Are accessibility arrangements adequate while the main entrance is closed?",
+              "confidence": "Likely",
+              "updatedAtLabel": "Mon 08:28",
+              "evidenceRefs": []
+            },
+            {
+              "id": "narrative-map",
+              "title": "Narrative map",
+              "body": "Audience implications\n- Station operations, customer service, corporate affairs, regional leadership\n\nClaims and assumptions (register excerpt)\n- CLM-008: Ceiling panels in the main entrance area were later confirmed secure for passenger use.\n- CLM-009: The main entrance reopened at 08:12 following clean-up and signage checks.\n- CLM-006: Passenger impact was limited but visible at the main entrance during the early morning peak.\n- CLM-007: Some external commentary incorrectly described the station as fully shut.",
+              "confidence": "Likely",
+              "updatedAtLabel": "Mon 08:28",
+              "evidenceRefs": []
+            },
+            {
+              "id": "implications",
+              "title": "Implications",
+              "body": "Evidence base\n- SRC-011 — Facilities inspection — ceiling secure (Internal operational source)\n- SRC-013 — Reopening confirmation — main entrance (Internal operational source)\n- SRC-010 — Station update — passenger flow (Internal operational source)\n- SRC-008 — Social monitoring — inaccurate closure posts (Social monitoring)\n\nObservations\n- Main entrance vs whole station confusion\n- Reputationally visible despite modest operational impact\n- Avoid speculation on roof drainage\n- Lead with what remains available\n- Check accessibility separately\n- Future works handback focus\n\nGuardrails / wording constraints\nAvoid speculative language until records are attributable.",
+              "confidence": "Likely",
+              "updatedAtLabel": "Mon 08:28",
+              "evidenceRefs": []
+            },
+            {
+              "id": "recommended-actions",
+              "title": "Recommended actions",
+              "body": "1) Maintain controlled posture; update as sources change.",
+              "confidence": "Likely",
+              "updatedAtLabel": "Mon 08:28",
+              "evidenceRefs": []
+            }
+          ]
+        },
+        "executive": {
+          "blocks": [
+            {
+              "label": "Executive summary",
+              "body": "Executive brief — Bramley Junction update (V2)  Current position - Main entrance reopened 08:12 after facilities clearance. - Side entrance remains available; passenger flow normalising. - Press/social position contained with corrective lines."
+            },
+            {
+              "label": "Current assessment",
+              "body": "Status: Ready for review\nSeverity: Important\nUrgency: High\nBriefing posture: Active\nOpen questions: Q-006: Are accessibility arrangements adequate while the main entrance is closed?\nIssue owner: Duty Station Support"
+            },
+            {
+              "label": "What changed",
+              "body": "- Updated position based on new records added since prior revision.\n- See comparison view for detailed diffs between executive brief versions."
+            },
+            {
+              "label": "Confirmed facts",
+              "body": "- Planned overnight works scheduled with 05:30 handback target.\n- Main entrance opening delayed pending ceiling panel inspection.\n- Station remained open via side entrance with additional staffing.\n- Train services continued to call (NOC confirmed).\n- Main entrance reopened 08:12 after facilities clearance."
+            },
+            {
+              "label": "Claims and assumptions",
+              "body": "- CLM-008: Ceiling panels in the main entrance area were later confirmed secure for passenger use.\n- CLM-009: The main entrance reopened at 08:12 following clean-up and signage checks.\n- CLM-006: Passenger impact was limited but visible at the main entrance during the early morning peak.\n- CLM-007: Some external commentary incorrectly described the station as fully shut."
+            },
+            {
+              "label": "Open questions and unresolved needs",
+              "body": "- Q-006: Are accessibility arrangements adequate while the main entrance is closed?"
+            },
+            {
+              "label": "Evidence base",
+              "body": "- SRC-011 — Facilities inspection — ceiling secure (Internal operational source)\n- SRC-013 — Reopening confirmation — main entrance (Internal operational source)\n- SRC-010 — Station update — passenger flow (Internal operational source)\n- SRC-008 — Social monitoring — inaccurate closure posts (Social monitoring)"
+            },
+            {
+              "label": "Observations",
+              "body": "- Main entrance vs whole station confusion\n- Reputationally visible despite modest operational impact\n- Avoid speculation on roof drainage\n- Lead with what remains available\n- Check accessibility separately\n- Future works handback focus"
+            },
+            {
+              "label": "Audience implications",
+              "body": "- Station operations, customer service, corporate affairs, regional leadership"
+            },
+            {
+              "label": "Recommended decisions / next actions",
+              "body": "1) Maintain controlled posture; update as sources change."
+            },
+            {
+              "label": "What not to say yet / uncertainty guardrails",
+              "body": "Avoid speculative language until records are attributable."
+            }
+          ],
+          "immediateActions": []
+        }
+      }
+    },
+    {
+      "id": "dddd5009-0000-4000-a000-000000000009",
+      "kind": "post_incident_review",
+      "title": "Post-incident review note",
+      "audience": "Operations and comms leadership",
+      "status": "Draft",
+      "versionNumber": 1,
+      "generatedAt": "2026-05-11T07:45:00.000Z",
+      "supersededBy": null,
+      "linkedSourceIds": [],
+      "linkedClaimIds": [],
+      "body": "Post-incident review note — Bramley Junction planned works handback (draft)\n\nSummary\n- Overnight planned works largely succeeded; main entrance handback delayed by ceiling panel sign-off and inspection.\n- Station remained open via side entrance; trains unaffected.\n- Reputation risk driven by ‘station shut’ confusion rather than service cancellation.\n\nTimeline\n- See linked incoming updates and outputs from 05:42 comms engagement through 08:12 reopening.\n\nWhat worked\n- Early NOC confirmation on trains.\n- Side entrance opening with security support.\n- Rapid passenger/social corrective lines.\n\nWhat caused confusion\n- Main entrance closure visible to passengers without clear alternate routing signage.\n- Social posts conflating entrance closure with whole-station closure.\n\nRecommended actions\n1. Pre-agree passenger messaging pack for planned works handback delays.\n2. Temporary signage standard for side-entrance-only access.\n3. Handback checklist requiring facilities sign-off before public reopening target.\n\nOwners\n- Station operations (handback criteria).\n- Corporate affairs (messaging pack).\n- Accessibility lead (signage standard).",
+      "doNotSay": [],
+      "metisMessageVariantId": null,
+      "metisBriefVersionId": "dddd6003-0000-4000-a000-000000000003",
+      "templateId": null,
+      "basedOnSnapshotAt": "2026-05-11T07:45:00.000Z",
+      "includedRecordIds": [
+        "dddd0015-0000-4000-a000-000000000015",
+        "dddd0001-0000-4000-a000-000000000001",
+        "dddd0008-0000-4000-a000-000000000008",
+        "dddd0009-0000-4000-a000-000000000009",
+        "dddd0016-0000-4000-a000-000000000016",
+        "dddd0010-0000-4000-a000-000000000010",
+        "dddd0011-0000-4000-a000-000000000011",
+        "dddd0012-0000-4000-a000-000000000012",
+        "dddd0013-0000-4000-a000-000000000013",
+        "dddd0014-0000-4000-a000-000000000014",
+        "dddd1001-0000-4000-a000-000000000001",
+        "dddd1002-0000-4000-a000-000000000002",
+        "dddd1003-0000-4000-a000-000000000003",
+        "dddd1004-0000-4000-a000-000000000004",
+        "dddd1005-0000-4000-a000-000000000005",
+        "dddd1006-0000-4000-a000-000000000006",
+        "dddd1007-0000-4000-a000-000000000007",
+        "dddd1008-0000-4000-a000-000000000008",
+        "dddd1009-0000-4000-a000-000000000009",
+        "dddd1010-0000-4000-a000-000000000010",
+        "dddd1011-0000-4000-a000-000000000011",
+        "dddd1012-0000-4000-a000-000000000012",
+        "dddd1013-0000-4000-a000-000000000013",
+        "dddd2001-0000-4000-a000-000000000001",
+        "dddd2002-0000-4000-a000-000000000002",
+        "dddd2003-0000-4000-a000-000000000003",
+        "dddd2004-0000-4000-a000-000000000004",
+        "dddd2005-0000-4000-a000-000000000005",
+        "dddd2006-0000-4000-a000-000000000006",
+        "dddd2007-0000-4000-a000-000000000007",
+        "dddd2008-0000-4000-a000-000000000008",
+        "dddd2009-0000-4000-a000-000000000009",
+        "dddd3001-0000-4000-a000-000000000001",
+        "dddd3002-0000-4000-a000-000000000002",
+        "dddd3003-0000-4000-a000-000000000003",
+        "dddd3004-0000-4000-a000-000000000004",
+        "dddd3005-0000-4000-a000-000000000005",
+        "dddd3006-0000-4000-a000-000000000006",
+        "dddd3007-0000-4000-a000-000000000007",
+        "dddd4001-0000-4000-a000-000000000001",
+        "dddd4002-0000-4000-a000-000000000002",
+        "dddd4003-0000-4000-a000-000000000003",
+        "dddd4004-0000-4000-a000-000000000004",
+        "dddd4005-0000-4000-a000-000000000005",
+        "dddd4006-0000-4000-a000-000000000006"
+      ],
+      "notYetKnownRecordIds": [],
+      "openQuestionsAtGeneration": [
+        "Q-006: Are accessibility arrangements adequate while the main entrance is closed?",
+        "Q-007: What follow-up action is needed before future planned works?"
+      ],
+      "caveatsAtGeneration": []
+    },
+    {
+      "id": "dddd5010-0000-4000-a000-000000000010",
+      "kind": "circulation_audit",
+      "title": "Circulation audit",
+      "audience": "Governance record",
+      "status": "Approved",
+      "versionNumber": null,
+      "generatedAt": "2026-05-11T08:00:00.000Z",
+      "supersededBy": null,
+      "linkedSourceIds": [],
+      "linkedClaimIds": [],
+      "body": "Circulation audit — governance record (Mon 09:00)\n\nComms engagement\n- 05:42 Duty manager briefing to corporate affairs; Metis issue opened.\n- 05:50 Duty overnight pack logged in Metis (SRC-001–SRC-007 from duty handover).\n\nOutputs circulated / coordinated\n- 05:54 Staff holding update — station staff & customer service (after comms engagement).\n- 05:58 Passenger message — digital/PA (approved for use).\n- 05:52 Social response line — after social monitoring note (approved).\n- 06:18 Holding press line — after 06:08 press enquiry (approved for reporter window).\n- 06:48 Executive brief V1 — after 06:35 executive request.\n- 07:22 Updated passenger message — digital/PA.\n- 07:38 Stakeholder note — local authority & accessibility contacts.\n- 08:28 Executive brief V2 — senior leadership (supersedes V1 for position).\n- 08:45 Post-incident review note — operations & comms leadership (draft).\n\nAudit posture\n- All lines tied to sources recorded in Metis issue record.\n- V2 executive brief reflects reopening confirmation and facilities clearance.",
+      "doNotSay": [],
+      "metisMessageVariantId": null,
+      "metisBriefVersionId": null,
+      "templateId": null,
+      "basedOnSnapshotAt": "2026-05-11T08:00:00.000Z",
+      "includedRecordIds": [
+        "dddd0015-0000-4000-a000-000000000015",
+        "dddd0001-0000-4000-a000-000000000001",
+        "dddd0008-0000-4000-a000-000000000008",
+        "dddd0009-0000-4000-a000-000000000009",
+        "dddd0016-0000-4000-a000-000000000016",
+        "dddd0010-0000-4000-a000-000000000010",
+        "dddd0011-0000-4000-a000-000000000011",
+        "dddd0012-0000-4000-a000-000000000012",
+        "dddd0013-0000-4000-a000-000000000013",
+        "dddd0014-0000-4000-a000-000000000014",
+        "dddd1001-0000-4000-a000-000000000001",
+        "dddd1002-0000-4000-a000-000000000002",
+        "dddd1003-0000-4000-a000-000000000003",
+        "dddd1004-0000-4000-a000-000000000004",
+        "dddd1005-0000-4000-a000-000000000005",
+        "dddd1006-0000-4000-a000-000000000006",
+        "dddd1007-0000-4000-a000-000000000007",
+        "dddd1008-0000-4000-a000-000000000008",
+        "dddd1009-0000-4000-a000-000000000009",
+        "dddd1010-0000-4000-a000-000000000010",
+        "dddd1011-0000-4000-a000-000000000011",
+        "dddd1012-0000-4000-a000-000000000012",
+        "dddd1013-0000-4000-a000-000000000013",
+        "dddd2001-0000-4000-a000-000000000001",
+        "dddd2002-0000-4000-a000-000000000002",
+        "dddd2003-0000-4000-a000-000000000003",
+        "dddd2004-0000-4000-a000-000000000004",
+        "dddd2005-0000-4000-a000-000000000005",
+        "dddd2006-0000-4000-a000-000000000006",
+        "dddd2007-0000-4000-a000-000000000007",
+        "dddd2008-0000-4000-a000-000000000008",
+        "dddd2009-0000-4000-a000-000000000009",
+        "dddd3001-0000-4000-a000-000000000001",
+        "dddd3002-0000-4000-a000-000000000002",
+        "dddd3003-0000-4000-a000-000000000003",
+        "dddd3004-0000-4000-a000-000000000004",
+        "dddd3005-0000-4000-a000-000000000005",
+        "dddd3006-0000-4000-a000-000000000006",
+        "dddd3007-0000-4000-a000-000000000007",
+        "dddd4001-0000-4000-a000-000000000001",
+        "dddd4002-0000-4000-a000-000000000002",
+        "dddd4003-0000-4000-a000-000000000003",
+        "dddd4004-0000-4000-a000-000000000004",
+        "dddd4005-0000-4000-a000-000000000005",
+        "dddd4006-0000-4000-a000-000000000006"
+      ],
+      "notYetKnownRecordIds": [],
+      "openQuestionsAtGeneration": [
+        "Q-006: Are accessibility arrangements adequate while the main entrance is closed?",
+        "Q-007: What follow-up action is needed before future planned works?"
+      ],
+      "caveatsAtGeneration": []
+    }
+  ],
+  "circulationEvents": [
+    {
+      "id": "dddd7001-0000-4000-a000-000000000001",
+      "at": "2026-05-11T05:18:00.000Z",
+      "eventType": "Shared for review",
+      "channel": "Press office",
+      "audienceLabel": "Local media",
+      "postureState": "Ready for review",
+      "note": "Holding press line coordinated ahead of reporter deadline.",
+      "briefVersionId": null,
+      "outputId": "dddd5004-0000-4000-a000-000000000004"
+    },
+    {
+      "id": "dddd7002-0000-4000-a000-000000000002",
+      "at": "2026-05-11T05:50:00.000Z",
+      "eventType": "Circulated",
+      "channel": "Leadership distribution",
+      "audienceLabel": "Senior leadership",
+      "postureState": "Ready for review",
+      "note": "Executive brief V1 sent to morning leadership list.",
+      "briefVersionId": "dddd6001-0000-4000-a000-000000000001",
+      "outputId": "dddd5005-0000-4000-a000-000000000005"
+    },
+    {
+      "id": "dddd7003-0000-4000-a000-000000000003",
+      "at": "2026-05-11T06:25:00.000Z",
+      "eventType": "Published",
+      "channel": "Station PA / digital",
+      "audienceLabel": "Passengers",
+      "postureState": "Approved",
+      "note": "Updated passenger message with expected reopening window.",
+      "briefVersionId": null,
+      "outputId": "dddd5006-0000-4000-a000-000000000006"
+    },
+    {
+      "id": "dddd7004-0000-4000-a000-000000000004",
+      "at": "2026-05-11T07:30:00.000Z",
+      "eventType": "Circulated",
+      "channel": "Leadership distribution",
+      "audienceLabel": "Senior leadership",
+      "postureState": "Approved",
+      "note": "Executive brief V2 supersedes V1 after main entrance reopening.",
+      "briefVersionId": "dddd6002-0000-4000-a000-000000000002",
+      "outputId": "dddd5008-0000-4000-a000-000000000008"
+    },
+    {
+      "id": "dddd7005-0000-4000-a000-000000000005",
+      "at": "2026-05-11T08:00:00.000Z",
+      "eventType": "Audit recorded",
+      "channel": "Governance log",
+      "audienceLabel": "Governance record",
+      "postureState": "Approved",
+      "note": "Circulation audit captured for outputs issued during incident window.",
+      "briefVersionId": null,
+      "outputId": "dddd5010-0000-4000-a000-000000000010"
+    }
+  ],
+  "timelineProjection": [
+    {
+      "timestamp": "2026-05-11T04:42:00.000Z",
+      "displayTime": "Mon 05:42",
+      "lane": "incoming_update",
+      "title": "Duty manager summary to comms",
+      "subtitle": "Duty Station Manager · phone briefing to corporate affairs duty",
+      "badge": "DUTY SUMMARY",
+      "linkedRecordType": "incoming_update",
+      "linkedRecordId": "dddd0015-0000-4000-a000-000000000015",
+      "relatedRecordIds": [],
+      "intake": {
+        "reportedEventAt": "2026-05-11T04:42:00.000Z",
+        "sourceTimestamp": "2026-05-11T04:42:00.000Z",
+        "receivedByCommsAt": "2026-05-11T04:42:00.000Z",
+        "addedToMetisAt": "2026-05-11T04:42:00.000Z",
+        "intakeRoute": "direct_to_comms"
+      }
+    },
+    {
+      "timestamp": "2026-05-11T04:42:00.000Z",
+      "displayTime": "Mon 05:42",
+      "lane": "issue_record",
+      "title": "Issue record updated from Comms engaged",
+      "subtitle": "status updated",
+      "badge": "RECORD UPDATED",
+      "linkedRecordType": "issue_record_update",
+      "linkedRecordId": "dddd0015-0000-4000-a000-000000000015::issue_record_update",
+      "relatedRecordIds": [],
+      "impact": {
+        "linkedSourceId": null,
+        "claimsAdded": [],
+        "gapsOpened": [],
+        "gapsClosed": [],
+        "observationsAdded": [],
+        "statusNote": "Active issue opened — comms engaged"
+      }
+    },
+    {
+      "timestamp": "2026-05-11T04:42:00.000Z",
+      "displayTime": "Mon 05:42",
+      "lane": "issue_record",
+      "title": "Issue status",
+      "subtitle": "Comms engaged — issue opened in Metis",
+      "badge": "DECISION",
+      "linkedRecordType": "issue",
+      "linkedRecordId": "dddddddd-dddd-4ddd-addd-dddddddddd01",
+      "relatedRecordIds": []
+    },
+    {
+      "timestamp": "2026-05-11T04:48:00.000Z",
+      "displayTime": "Mon 05:48",
+      "lane": "issue_record",
+      "title": "Issue status",
+      "subtitle": "Managed operational disruption",
+      "badge": "DECISION",
+      "linkedRecordType": "issue",
+      "linkedRecordId": "dddddddd-dddd-4ddd-addd-dddddddddd01",
+      "relatedRecordIds": []
+    },
+    {
+      "timestamp": "2026-05-11T04:49:00.000Z",
+      "displayTime": "Mon 05:49",
+      "lane": "incoming_update",
+      "title": "Social monitoring — local posts say station is shut",
+      "subtitle": "Comms Monitoring · social monitoring note",
+      "badge": "SOCIAL SIGNAL",
+      "linkedRecordType": "incoming_update",
+      "linkedRecordId": "dddd0008-0000-4000-a000-000000000008",
+      "relatedRecordIds": [
+        "dddd1008-0000-4000-a000-000000000008",
+        "dddd2007-0000-4000-a000-000000000007",
+        "dddd4002-0000-4000-a000-000000000002"
+      ],
+      "intake": {
+        "reportedEventAt": "2026-05-11T04:48:00.000Z",
+        "sourceTimestamp": "2026-05-11T04:48:00.000Z",
+        "receivedByCommsAt": "2026-05-11T04:48:00.000Z",
+        "addedToMetisAt": "2026-05-11T04:49:00.000Z",
+        "intakeRoute": "direct_to_comms"
+      }
+    },
+    {
+      "timestamp": "2026-05-11T04:49:00.000Z",
+      "displayTime": "Mon 05:49",
+      "lane": "issue_record",
+      "title": "Issue record updated from Social inaccuracy",
+      "subtitle": "+1 claims · +1 observations · status updated",
+      "badge": "RECORD UPDATED",
+      "linkedRecordType": "issue_record_update",
+      "linkedRecordId": "dddd0008-0000-4000-a000-000000000008::issue_record_update",
+      "relatedRecordIds": [
+        "dddd1008-0000-4000-a000-000000000008",
+        "dddd2007-0000-4000-a000-000000000007",
+        "dddd4002-0000-4000-a000-000000000002"
+      ],
+      "impact": {
+        "linkedSourceId": "dddd1008-0000-4000-a000-000000000008",
+        "claimsAdded": [
+          "dddd2007-0000-4000-a000-000000000007"
+        ],
+        "gapsOpened": [],
+        "gapsClosed": [],
+        "observationsAdded": [
+          "dddd4002-0000-4000-a000-000000000002"
+        ],
+        "statusNote": "Managed operational disruption"
+      }
+    },
+    {
+      "timestamp": "2026-05-11T04:50:00.000Z",
+      "displayTime": "Mon 05:50",
+      "lane": "incoming_update",
+      "title": "Duty overnight pack logged in Metis",
+      "subtitle": "Corporate Affairs · Metis intake from duty handover",
+      "badge": "COMMS INTAKE",
+      "linkedRecordType": "incoming_update",
+      "linkedRecordId": "dddd0001-0000-4000-a000-000000000001",
+      "relatedRecordIds": [
+        "dddd2001-0000-4000-a000-000000000001",
+        "dddd2002-0000-4000-a000-000000000002",
+        "dddd2003-0000-4000-a000-000000000003",
+        "dddd2004-0000-4000-a000-000000000004",
+        "dddd2005-0000-4000-a000-000000000005",
+        "dddd2006-0000-4000-a000-000000000006",
+        "dddd3001-0000-4000-a000-000000000001",
+        "dddd3005-0000-4000-a000-000000000005",
+        "dddd3002-0000-4000-a000-000000000002",
+        "dddd3004-0000-4000-a000-000000000004",
+        "dddd3003-0000-4000-a000-000000000003",
+        "dddd4001-0000-4000-a000-000000000001",
+        "dddd4003-0000-4000-a000-000000000003",
+        "dddd4004-0000-4000-a000-000000000004"
+      ],
+      "intake": {
+        "reportedEventAt": "2026-05-11T04:50:00.000Z",
+        "sourceTimestamp": "2026-05-11T04:50:00.000Z",
+        "receivedByCommsAt": "2026-05-11T04:42:00.000Z",
+        "addedToMetisAt": "2026-05-11T04:50:00.000Z",
+        "intakeRoute": "direct_to_comms"
+      }
+    },
+    {
+      "timestamp": "2026-05-11T04:50:00.000Z",
+      "displayTime": "Mon 05:50",
+      "lane": "issue_record",
+      "title": "Issue record updated from Overnight pack logged",
+      "subtitle": "+6 claims · +4 open questions · +3 observations · 1 questions closed",
+      "badge": "RECORD UPDATED",
+      "linkedRecordType": "issue_record_update",
+      "linkedRecordId": "dddd0001-0000-4000-a000-000000000001::issue_record_update",
+      "relatedRecordIds": [
+        "dddd2001-0000-4000-a000-000000000001",
+        "dddd2002-0000-4000-a000-000000000002",
+        "dddd2003-0000-4000-a000-000000000003",
+        "dddd2004-0000-4000-a000-000000000004",
+        "dddd2005-0000-4000-a000-000000000005",
+        "dddd2006-0000-4000-a000-000000000006",
+        "dddd3001-0000-4000-a000-000000000001",
+        "dddd3005-0000-4000-a000-000000000005",
+        "dddd3002-0000-4000-a000-000000000002",
+        "dddd3004-0000-4000-a000-000000000004",
+        "dddd3003-0000-4000-a000-000000000003",
+        "dddd4001-0000-4000-a000-000000000001",
+        "dddd4003-0000-4000-a000-000000000003",
+        "dddd4004-0000-4000-a000-000000000004"
+      ],
+      "impact": {
+        "linkedSourceId": null,
+        "claimsAdded": [
+          "dddd2001-0000-4000-a000-000000000001",
+          "dddd2002-0000-4000-a000-000000000002",
+          "dddd2003-0000-4000-a000-000000000003",
+          "dddd2004-0000-4000-a000-000000000004",
+          "dddd2005-0000-4000-a000-000000000005",
+          "dddd2006-0000-4000-a000-000000000006"
+        ],
+        "gapsOpened": [
+          "dddd3001-0000-4000-a000-000000000001",
+          "dddd3005-0000-4000-a000-000000000005",
+          "dddd3002-0000-4000-a000-000000000002",
+          "dddd3004-0000-4000-a000-000000000004"
+        ],
+        "gapsClosed": [
+          "dddd3003-0000-4000-a000-000000000003"
+        ],
+        "observationsAdded": [
+          "dddd4001-0000-4000-a000-000000000001",
+          "dddd4003-0000-4000-a000-000000000003",
+          "dddd4004-0000-4000-a000-000000000004"
+        ],
+        "statusNote": null
+      }
+    },
+    {
+      "timestamp": "2026-05-11T04:52:00.000Z",
+      "displayTime": "Mon 05:52",
+      "lane": "metis_output",
+      "title": "Social response line",
+      "subtitle": "Social media replies · Approved",
+      "badge": "SOCIAL RESPONSE LINE",
+      "linkedRecordType": "output",
+      "linkedRecordId": "dddd5003-0000-4000-a000-000000000003",
+      "relatedRecordIds": [
+        "dddd1008-0000-4000-a000-000000000008",
+        "dddd1006-0000-4000-a000-000000000006",
+        "dddd1004-0000-4000-a000-000000000004",
+        "dddd2007-0000-4000-a000-000000000007",
+        "dddd2005-0000-4000-a000-000000000005",
+        "dddd2004-0000-4000-a000-000000000004"
+      ]
+    },
+    {
+      "timestamp": "2026-05-11T04:54:00.000Z",
+      "displayTime": "Mon 05:54",
+      "lane": "metis_output",
+      "title": "Staff holding update",
+      "subtitle": "Station staff and customer service · Ready for review",
+      "badge": "STAFF HOLDING UPDATE",
+      "linkedRecordType": "output",
+      "linkedRecordId": "dddd5001-0000-4000-a000-000000000001",
+      "relatedRecordIds": [
+        "dddd1001-0000-4000-a000-000000000001",
+        "dddd1003-0000-4000-a000-000000000003",
+        "dddd1004-0000-4000-a000-000000000004",
+        "dddd1006-0000-4000-a000-000000000006",
+        "dddd2001-0000-4000-a000-000000000001",
+        "dddd2003-0000-4000-a000-000000000003",
+        "dddd2004-0000-4000-a000-000000000004",
+        "dddd2005-0000-4000-a000-000000000005"
+      ]
+    },
+    {
+      "timestamp": "2026-05-11T04:58:00.000Z",
+      "displayTime": "Mon 05:58",
+      "lane": "metis_output",
+      "title": "Passenger message draft",
+      "subtitle": "Passengers · Approved",
+      "badge": "PASSENGER MESSAGE",
+      "linkedRecordType": "output",
+      "linkedRecordId": "dddd5002-0000-4000-a000-000000000002",
+      "relatedRecordIds": [
+        "dddd1004-0000-4000-a000-000000000004",
+        "dddd1006-0000-4000-a000-000000000006",
+        "dddd2004-0000-4000-a000-000000000004",
+        "dddd2005-0000-4000-a000-000000000005"
+      ]
+    },
+    {
+      "timestamp": "2026-05-11T05:09:00.000Z",
+      "displayTime": "Mon 06:09",
+      "lane": "incoming_update",
+      "title": "Press office call log — reporter asks about reopening",
+      "subtitle": "Press Office · call log",
+      "badge": "PRESS CALL",
+      "linkedRecordType": "incoming_update",
+      "linkedRecordId": "dddd0009-0000-4000-a000-000000000009",
+      "relatedRecordIds": [
+        "dddd1009-0000-4000-a000-000000000009"
+      ],
+      "intake": {
+        "reportedEventAt": "2026-05-11T05:08:00.000Z",
+        "sourceTimestamp": "2026-05-11T05:08:00.000Z",
+        "receivedByCommsAt": "2026-05-11T05:08:00.000Z",
+        "addedToMetisAt": "2026-05-11T05:09:00.000Z",
+        "intakeRoute": "direct_to_comms"
+      }
+    },
+    {
+      "timestamp": "2026-05-11T05:09:00.000Z",
+      "displayTime": "Mon 06:09",
+      "lane": "issue_record",
+      "title": "Issue record updated from Press enquiry",
+      "subtitle": "Issue record updated",
+      "badge": "RECORD UPDATED",
+      "linkedRecordType": "issue_record_update",
+      "linkedRecordId": "dddd0009-0000-4000-a000-000000000009::issue_record_update",
+      "relatedRecordIds": [
+        "dddd1009-0000-4000-a000-000000000009"
+      ],
+      "impact": {
+        "linkedSourceId": "dddd1009-0000-4000-a000-000000000009",
+        "claimsAdded": [],
+        "gapsOpened": [],
+        "gapsClosed": [],
+        "observationsAdded": [],
+        "statusNote": null
+      }
+    },
+    {
+      "timestamp": "2026-05-11T05:18:00.000Z",
+      "displayTime": "Mon 06:18",
+      "lane": "metis_output",
+      "title": "Holding press line",
+      "subtitle": "Local media · Ready for review",
+      "badge": "HOLDING PRESS LINE",
+      "linkedRecordType": "output",
+      "linkedRecordId": "dddd5004-0000-4000-a000-000000000004",
+      "relatedRecordIds": [
+        "dddd1003-0000-4000-a000-000000000003",
+        "dddd1004-0000-4000-a000-000000000004",
+        "dddd1006-0000-4000-a000-000000000006",
+        "dddd1007-0000-4000-a000-000000000007",
+        "dddd1008-0000-4000-a000-000000000008",
+        "dddd1009-0000-4000-a000-000000000009",
+        "dddd2003-0000-4000-a000-000000000003",
+        "dddd2004-0000-4000-a000-000000000004",
+        "dddd2005-0000-4000-a000-000000000005",
+        "dddd2006-0000-4000-a000-000000000006",
+        "dddd2007-0000-4000-a000-000000000007"
+      ]
+    },
+    {
+      "timestamp": "2026-05-11T05:24:00.000Z",
+      "displayTime": "Mon 06:24",
+      "lane": "incoming_update",
+      "title": "Station manager update — passenger flow manageable",
+      "subtitle": "Station Manager · phone update to corporate affairs",
+      "badge": "STATION UPDATE",
+      "linkedRecordType": "incoming_update",
+      "linkedRecordId": "dddd0010-0000-4000-a000-000000000010",
+      "relatedRecordIds": [
+        "dddd1010-0000-4000-a000-000000000010",
+        "dddd3002-0000-4000-a000-000000000002"
+      ],
+      "intake": {
+        "reportedEventAt": "2026-05-11T05:22:00.000Z",
+        "sourceTimestamp": "2026-05-11T05:22:00.000Z",
+        "receivedByCommsAt": "2026-05-11T05:20:00.000Z",
+        "addedToMetisAt": "2026-05-11T05:24:00.000Z",
+        "intakeRoute": "direct_to_comms"
+      }
+    },
+    {
+      "timestamp": "2026-05-11T05:24:00.000Z",
+      "displayTime": "Mon 06:24",
+      "lane": "issue_record",
+      "title": "Issue record updated from Flow manageable",
+      "subtitle": "1 questions closed",
+      "badge": "RECORD UPDATED",
+      "linkedRecordType": "issue_record_update",
+      "linkedRecordId": "dddd0010-0000-4000-a000-000000000010::issue_record_update",
+      "relatedRecordIds": [
+        "dddd1010-0000-4000-a000-000000000010",
+        "dddd3002-0000-4000-a000-000000000002"
+      ],
+      "impact": {
+        "linkedSourceId": "dddd1010-0000-4000-a000-000000000010",
+        "claimsAdded": [],
+        "gapsOpened": [],
+        "gapsClosed": [
+          "dddd3002-0000-4000-a000-000000000002"
+        ],
+        "observationsAdded": [],
+        "statusNote": null
+      }
+    },
+    {
+      "timestamp": "2026-05-11T05:36:00.000Z",
+      "displayTime": "Mon 06:36",
+      "lane": "incoming_update",
+      "title": "Executive office request for short position note",
+      "subtitle": "Executive Office · email to corporate affairs duty",
+      "badge": "EXEC REQUEST",
+      "linkedRecordType": "incoming_update",
+      "linkedRecordId": "dddd0016-0000-4000-a000-000000000016",
+      "relatedRecordIds": [],
+      "intake": {
+        "reportedEventAt": "2026-05-11T05:35:00.000Z",
+        "sourceTimestamp": "2026-05-11T05:35:00.000Z",
+        "receivedByCommsAt": "2026-05-11T05:35:00.000Z",
+        "addedToMetisAt": "2026-05-11T05:36:00.000Z",
+        "intakeRoute": "direct_to_comms"
+      }
+    },
+    {
+      "timestamp": "2026-05-11T05:40:00.000Z",
+      "displayTime": "Mon 06:40",
+      "lane": "issue_record",
+      "title": "Compare executive brief versions",
+      "subtitle": "V1 → V2 after reopening evidence",
+      "badge": "COMPARE",
+      "linkedRecordType": "brief_comparison",
+      "linkedRecordId": "dddd6201-0000-4000-a000-000000000001",
+      "relatedRecordIds": []
+    },
+    {
+      "timestamp": "2026-05-11T05:48:00.000Z",
+      "displayTime": "Mon 06:48",
+      "lane": "metis_output",
+      "title": "Executive brief V1",
+      "subtitle": "Senior leadership · Ready for review",
+      "badge": "EXECUTIVE BRIEF",
+      "linkedRecordType": "output",
+      "linkedRecordId": "dddd5005-0000-4000-a000-000000000005",
+      "relatedRecordIds": [
+        "dddd1001-0000-4000-a000-000000000001",
+        "dddd1003-0000-4000-a000-000000000003",
+        "dddd1004-0000-4000-a000-000000000004",
+        "dddd1006-0000-4000-a000-000000000006",
+        "dddd1007-0000-4000-a000-000000000007",
+        "dddd1008-0000-4000-a000-000000000008",
+        "dddd1009-0000-4000-a000-000000000009",
+        "dddd2001-0000-4000-a000-000000000001",
+        "dddd2002-0000-4000-a000-000000000002",
+        "dddd2003-0000-4000-a000-000000000003",
+        "dddd2004-0000-4000-a000-000000000004",
+        "dddd2005-0000-4000-a000-000000000005",
+        "dddd2006-0000-4000-a000-000000000006",
+        "dddd2007-0000-4000-a000-000000000007"
+      ]
+    },
+    {
+      "timestamp": "2026-05-11T06:08:00.000Z",
+      "displayTime": "Mon 07:08",
+      "lane": "incoming_update",
+      "title": "Facilities inspection summary forwarded to comms",
+      "subtitle": "Facilities Engineer · email to station manager, copied to comms",
+      "badge": "FACILITIES NOTE",
+      "linkedRecordType": "incoming_update",
+      "linkedRecordId": "dddd0011-0000-4000-a000-000000000011",
+      "relatedRecordIds": [
+        "dddd1011-0000-4000-a000-000000000011",
+        "dddd2008-0000-4000-a000-000000000008",
+        "dddd3001-0000-4000-a000-000000000001"
+      ],
+      "intake": {
+        "reportedEventAt": "2026-05-11T06:05:00.000Z",
+        "sourceTimestamp": "2026-05-11T06:00:00.000Z",
+        "receivedByCommsAt": "2026-05-11T06:06:00.000Z",
+        "addedToMetisAt": "2026-05-11T06:08:00.000Z",
+        "intakeRoute": "direct_to_comms"
+      }
+    },
+    {
+      "timestamp": "2026-05-11T06:08:00.000Z",
+      "displayTime": "Mon 07:08",
+      "lane": "issue_record",
+      "title": "Issue record updated from Ceiling cleared",
+      "subtitle": "+1 claims · 1 questions closed · status updated",
+      "badge": "RECORD UPDATED",
+      "linkedRecordType": "issue_record_update",
+      "linkedRecordId": "dddd0011-0000-4000-a000-000000000011::issue_record_update",
+      "relatedRecordIds": [
+        "dddd1011-0000-4000-a000-000000000011",
+        "dddd2008-0000-4000-a000-000000000008",
+        "dddd3001-0000-4000-a000-000000000001"
+      ],
+      "impact": {
+        "linkedSourceId": "dddd1011-0000-4000-a000-000000000011",
+        "claimsAdded": [
+          "dddd2008-0000-4000-a000-000000000008"
+        ],
+        "gapsOpened": [],
+        "gapsClosed": [
+          "dddd3001-0000-4000-a000-000000000001"
+        ],
+        "observationsAdded": [],
+        "statusNote": "Reopening expected shortly"
+      }
+    },
+    {
+      "timestamp": "2026-05-11T06:12:00.000Z",
+      "displayTime": "Mon 07:12",
+      "lane": "issue_record",
+      "title": "Issue status",
+      "subtitle": "Reopening expected shortly",
+      "badge": "DECISION",
+      "linkedRecordType": "issue",
+      "linkedRecordId": "dddddddd-dddd-4ddd-addd-dddddddddd01",
+      "relatedRecordIds": []
+    },
+    {
+      "timestamp": "2026-05-11T06:22:00.000Z",
+      "displayTime": "Mon 07:22",
+      "lane": "metis_output",
+      "title": "Updated passenger message",
+      "subtitle": "Passengers · Approved",
+      "badge": "PASSENGER MESSAGE",
+      "linkedRecordType": "output",
+      "linkedRecordId": "dddd5006-0000-4000-a000-000000000006",
+      "relatedRecordIds": [
+        "dddd1011-0000-4000-a000-000000000011",
+        "dddd1004-0000-4000-a000-000000000004",
+        "dddd1006-0000-4000-a000-000000000006",
+        "dddd2008-0000-4000-a000-000000000008",
+        "dddd2004-0000-4000-a000-000000000004",
+        "dddd2005-0000-4000-a000-000000000005"
+      ]
+    },
+    {
+      "timestamp": "2026-05-11T06:38:00.000Z",
+      "displayTime": "Mon 07:38",
+      "lane": "metis_output",
+      "title": "Councillor and stakeholder note",
+      "subtitle": "Local authority / accessibility / transport stakeholders · Ready for review",
+      "badge": "STAKEHOLDER NOTE",
+      "linkedRecordType": "output",
+      "linkedRecordId": "dddd5007-0000-4000-a000-000000000007",
+      "relatedRecordIds": [
+        "dddd1011-0000-4000-a000-000000000011",
+        "dddd1010-0000-4000-a000-000000000010",
+        "dddd1004-0000-4000-a000-000000000004",
+        "dddd1009-0000-4000-a000-000000000009",
+        "dddd2004-0000-4000-a000-000000000004",
+        "dddd2008-0000-4000-a000-000000000008"
+      ]
+    },
+    {
+      "timestamp": "2026-05-11T06:54:00.000Z",
+      "displayTime": "Mon 07:54",
+      "lane": "incoming_update",
+      "title": "Accessibility assessment forwarded to comms",
+      "subtitle": "Accessibility Lead · email to corporate affairs",
+      "badge": "ACCESSIBILITY NOTE",
+      "linkedRecordType": "incoming_update",
+      "linkedRecordId": "dddd0012-0000-4000-a000-000000000012",
+      "relatedRecordIds": [
+        "dddd1012-0000-4000-a000-000000000012",
+        "dddd3006-0000-4000-a000-000000000006",
+        "dddd4005-0000-4000-a000-000000000005"
+      ],
+      "intake": {
+        "reportedEventAt": "2026-05-11T06:50:00.000Z",
+        "sourceTimestamp": "2026-05-11T06:50:00.000Z",
+        "receivedByCommsAt": "2026-05-11T06:52:00.000Z",
+        "addedToMetisAt": "2026-05-11T06:54:00.000Z",
+        "intakeRoute": "direct_to_comms"
+      }
+    },
+    {
+      "timestamp": "2026-05-11T06:54:00.000Z",
+      "displayTime": "Mon 07:54",
+      "lane": "issue_record",
+      "title": "Issue record updated from Accessibility check",
+      "subtitle": "+1 open questions · +1 observations",
+      "badge": "RECORD UPDATED",
+      "linkedRecordType": "issue_record_update",
+      "linkedRecordId": "dddd0012-0000-4000-a000-000000000012::issue_record_update",
+      "relatedRecordIds": [
+        "dddd1012-0000-4000-a000-000000000012",
+        "dddd3006-0000-4000-a000-000000000006",
+        "dddd4005-0000-4000-a000-000000000005"
+      ],
+      "impact": {
+        "linkedSourceId": "dddd1012-0000-4000-a000-000000000012",
+        "claimsAdded": [],
+        "gapsOpened": [
+          "dddd3006-0000-4000-a000-000000000006"
+        ],
+        "gapsClosed": [],
+        "observationsAdded": [
+          "dddd4005-0000-4000-a000-000000000005"
+        ],
+        "statusNote": null
+      }
+    },
+    {
+      "timestamp": "2026-05-11T07:12:00.000Z",
+      "displayTime": "Mon 08:12",
+      "lane": "issue_record",
+      "title": "Issue status",
+      "subtitle": "Operational disruption closed",
+      "badge": "DECISION",
+      "linkedRecordType": "issue",
+      "linkedRecordId": "dddddddd-dddd-4ddd-addd-dddddddddd01",
+      "relatedRecordIds": []
+    },
+    {
+      "timestamp": "2026-05-11T07:15:00.000Z",
+      "displayTime": "Mon 08:15",
+      "lane": "incoming_update",
+      "title": "Station manager confirmation — main entrance reopened",
+      "subtitle": "Station Manager · phone confirmation to corporate affairs",
+      "badge": "OPS CONFIRMATION",
+      "linkedRecordType": "incoming_update",
+      "linkedRecordId": "dddd0013-0000-4000-a000-000000000013",
+      "relatedRecordIds": [
+        "dddd1013-0000-4000-a000-000000000013",
+        "dddd2009-0000-4000-a000-000000000009",
+        "dddd3005-0000-4000-a000-000000000005",
+        "dddd3004-0000-4000-a000-000000000004"
+      ],
+      "intake": {
+        "reportedEventAt": "2026-05-11T07:12:00.000Z",
+        "sourceTimestamp": "2026-05-11T07:12:00.000Z",
+        "receivedByCommsAt": "2026-05-11T07:13:00.000Z",
+        "addedToMetisAt": "2026-05-11T07:15:00.000Z",
+        "intakeRoute": "direct_to_comms"
+      }
+    },
+    {
+      "timestamp": "2026-05-11T07:15:00.000Z",
+      "displayTime": "Mon 08:15",
+      "lane": "issue_record",
+      "title": "Issue record updated from Main entrance open",
+      "subtitle": "+1 claims · 2 questions closed · status updated",
+      "badge": "RECORD UPDATED",
+      "linkedRecordType": "issue_record_update",
+      "linkedRecordId": "dddd0013-0000-4000-a000-000000000013::issue_record_update",
+      "relatedRecordIds": [
+        "dddd1013-0000-4000-a000-000000000013",
+        "dddd2009-0000-4000-a000-000000000009",
+        "dddd3005-0000-4000-a000-000000000005",
+        "dddd3004-0000-4000-a000-000000000004"
+      ],
+      "impact": {
+        "linkedSourceId": "dddd1013-0000-4000-a000-000000000013",
+        "claimsAdded": [
+          "dddd2009-0000-4000-a000-000000000009"
+        ],
+        "gapsOpened": [],
+        "gapsClosed": [
+          "dddd3005-0000-4000-a000-000000000005",
+          "dddd3004-0000-4000-a000-000000000004"
+        ],
+        "observationsAdded": [],
+        "statusNote": "Operational disruption closed"
+      }
+    },
+    {
+      "timestamp": "2026-05-11T07:28:00.000Z",
+      "displayTime": "Mon 08:28",
+      "lane": "metis_output",
+      "title": "Executive brief V2",
+      "subtitle": "Senior leadership · Approved",
+      "badge": "EXECUTIVE BRIEF",
+      "linkedRecordType": "output",
+      "linkedRecordId": "dddd5008-0000-4000-a000-000000000008",
+      "relatedRecordIds": [
+        "dddd1011-0000-4000-a000-000000000011",
+        "dddd1013-0000-4000-a000-000000000013",
+        "dddd1010-0000-4000-a000-000000000010",
+        "dddd1008-0000-4000-a000-000000000008",
+        "dddd2008-0000-4000-a000-000000000008",
+        "dddd2009-0000-4000-a000-000000000009",
+        "dddd2006-0000-4000-a000-000000000006",
+        "dddd2007-0000-4000-a000-000000000007"
+      ]
+    },
+    {
+      "timestamp": "2026-05-11T07:41:00.000Z",
+      "displayTime": "Mon 08:41",
+      "lane": "incoming_update",
+      "title": "Follow-up actions requested",
+      "subtitle": "Regional Operations Director · exec action note",
+      "badge": "EXEC ACTION",
+      "linkedRecordType": "incoming_update",
+      "linkedRecordId": "dddd0014-0000-4000-a000-000000000014",
+      "relatedRecordIds": [
+        "dddd3007-0000-4000-a000-000000000007",
+        "dddd4006-0000-4000-a000-000000000006"
+      ],
+      "intake": {
+        "reportedEventAt": "2026-05-11T07:40:00.000Z",
+        "sourceTimestamp": "2026-05-11T07:40:00.000Z",
+        "receivedByCommsAt": "2026-05-11T07:40:00.000Z",
+        "addedToMetisAt": "2026-05-11T07:41:00.000Z",
+        "intakeRoute": "direct_to_comms"
+      }
+    },
+    {
+      "timestamp": "2026-05-11T07:41:00.000Z",
+      "displayTime": "Mon 08:41",
+      "lane": "issue_record",
+      "title": "Issue record updated from Exec follow-up",
+      "subtitle": "+1 open questions · +1 observations · status updated",
+      "badge": "RECORD UPDATED",
+      "linkedRecordType": "issue_record_update",
+      "linkedRecordId": "dddd0014-0000-4000-a000-000000000014::issue_record_update",
+      "relatedRecordIds": [
+        "dddd3007-0000-4000-a000-000000000007",
+        "dddd4006-0000-4000-a000-000000000006"
+      ],
+      "impact": {
+        "linkedSourceId": null,
+        "claimsAdded": [],
+        "gapsOpened": [
+          "dddd3007-0000-4000-a000-000000000007"
+        ],
+        "gapsClosed": [],
+        "observationsAdded": [
+          "dddd4006-0000-4000-a000-000000000006"
+        ],
+        "statusNote": "Review / audit stage"
+      }
+    },
+    {
+      "timestamp": "2026-05-11T07:45:00.000Z",
+      "displayTime": "Mon 08:45",
+      "lane": "metis_output",
+      "title": "Post-incident review note",
+      "subtitle": "Operations and comms leadership · Draft",
+      "badge": "POST INCIDENT REVIEW",
+      "linkedRecordType": "output",
+      "linkedRecordId": "dddd5009-0000-4000-a000-000000000009",
+      "relatedRecordIds": []
+    },
+    {
+      "timestamp": "2026-05-11T08:00:00.000Z",
+      "displayTime": "Mon 09:00",
+      "lane": "issue_record",
+      "title": "Issue status",
+      "subtitle": "Review / audit stage",
+      "badge": "DECISION",
+      "linkedRecordType": "issue",
+      "linkedRecordId": "dddddddd-dddd-4ddd-addd-dddddddddd01",
+      "relatedRecordIds": []
+    },
+    {
+      "timestamp": "2026-05-11T08:00:00.000Z",
+      "displayTime": "Mon 09:00",
+      "lane": "metis_output",
+      "title": "Circulation audit",
+      "subtitle": "Governance record · Approved",
+      "badge": "CIRCULATION AUDIT",
+      "linkedRecordType": "output",
+      "linkedRecordId": "dddd5010-0000-4000-a000-000000000010",
+      "relatedRecordIds": []
+    }
+  ]
+}

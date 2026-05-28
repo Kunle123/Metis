@@ -1,0 +1,1221 @@
+[
+  {
+    "id": "dddd5001-0000-4000-a000-000000000001",
+    "kind": "staff_holding_update",
+    "title": "Staff holding update",
+    "audience": "Station staff and customer service",
+    "intendedUse": "Internal holding line for colleagues while safety checks and reopening timing remain unconfirmed.",
+    "status": "Ready for review",
+    "versionNumber": 1,
+    "generatedAt": "2026-05-11T04:54:00.000Z",
+    "supersededBy": null,
+    "linkedSourceIds": [
+      "dddd1001-0000-4000-a000-000000000001",
+      "dddd1003-0000-4000-a000-000000000003",
+      "dddd1004-0000-4000-a000-000000000004",
+      "dddd1006-0000-4000-a000-000000000006"
+    ],
+    "linkedClaimIds": [
+      "dddd2001-0000-4000-a000-000000000001",
+      "dddd2003-0000-4000-a000-000000000003",
+      "dddd2004-0000-4000-a000-000000000004",
+      "dddd2005-0000-4000-a000-000000000005"
+    ],
+    "body": "Staff holding update — Bramley Junction (internal)\n\nUse this line with passengers\n- Bramley Junction is open via the side entrance. Trains are running as normal.\n- The main entrance is temporarily unavailable while final checks complete after overnight improvement works.\n\nDo not say\n- That the station is closed or trains are cancelled.\n- Anything about roof leaks/structural failure (not confirmed).\n- A reopening time until facilities confirms.\n\nEscalate\n- Direct press/social queries to corporate affairs duty.",
+    "doNotSay": [
+      "Do not say the station is closed.",
+      "Do not confirm a structural failure or active roof leak.",
+      "Do not give a main entrance reopening time yet."
+    ],
+    "metisMessageVariantId": "dddd6101-0000-4000-a000-000000000001",
+    "metisBriefVersionId": null,
+    "templateId": "internal_staff_update",
+    "basedOnSnapshotAt": "2026-05-11T04:54:00.000Z",
+    "includedRecordIds": [
+      "dddd0015-0000-4000-a000-000000000015",
+      "dddd0001-0000-4000-a000-000000000001",
+      "dddd0008-0000-4000-a000-000000000008",
+      "dddd1001-0000-4000-a000-000000000001",
+      "dddd1002-0000-4000-a000-000000000002",
+      "dddd1003-0000-4000-a000-000000000003",
+      "dddd1004-0000-4000-a000-000000000004",
+      "dddd1005-0000-4000-a000-000000000005",
+      "dddd1006-0000-4000-a000-000000000006",
+      "dddd1007-0000-4000-a000-000000000007",
+      "dddd1008-0000-4000-a000-000000000008",
+      "dddd2001-0000-4000-a000-000000000001",
+      "dddd2002-0000-4000-a000-000000000002",
+      "dddd2003-0000-4000-a000-000000000003",
+      "dddd2004-0000-4000-a000-000000000004",
+      "dddd2005-0000-4000-a000-000000000005",
+      "dddd2006-0000-4000-a000-000000000006",
+      "dddd2007-0000-4000-a000-000000000007",
+      "dddd3001-0000-4000-a000-000000000001",
+      "dddd3002-0000-4000-a000-000000000002",
+      "dddd3003-0000-4000-a000-000000000003",
+      "dddd3004-0000-4000-a000-000000000004",
+      "dddd3005-0000-4000-a000-000000000005",
+      "dddd4001-0000-4000-a000-000000000001",
+      "dddd4002-0000-4000-a000-000000000002",
+      "dddd4003-0000-4000-a000-000000000003",
+      "dddd4004-0000-4000-a000-000000000004"
+    ],
+    "notYetKnownRecordIds": [
+      "dddd0009-0000-4000-a000-000000000009",
+      "dddd0016-0000-4000-a000-000000000016",
+      "dddd0010-0000-4000-a000-000000000010",
+      "dddd0011-0000-4000-a000-000000000011",
+      "dddd0012-0000-4000-a000-000000000012",
+      "dddd0013-0000-4000-a000-000000000013",
+      "dddd0014-0000-4000-a000-000000000014",
+      "dddd1009-0000-4000-a000-000000000009",
+      "dddd1010-0000-4000-a000-000000000010",
+      "dddd1011-0000-4000-a000-000000000011",
+      "dddd1012-0000-4000-a000-000000000012",
+      "dddd1013-0000-4000-a000-000000000013",
+      "dddd2008-0000-4000-a000-000000000008",
+      "dddd2009-0000-4000-a000-000000000009",
+      "dddd3006-0000-4000-a000-000000000006",
+      "dddd3007-0000-4000-a000-000000000007",
+      "dddd4005-0000-4000-a000-000000000005",
+      "dddd4006-0000-4000-a000-000000000006"
+    ],
+    "openQuestionsAtGeneration": [
+      "Q-001: Is the ceiling area safe for passenger use?",
+      "Q-002: Can the side entrance safely handle early morning passenger flow?",
+      "Q-004: What public line should be used if asked whether the station is shut?",
+      "Q-005: What is the expected main entrance reopening time?"
+    ],
+    "caveatsAtGeneration": [],
+    "messageArtifact": {
+      "templateId": "internal_staff_update",
+      "metadata": {
+        "publicHeadline": "Bramley Junction",
+        "lastRevisionLabel": "Mon 05:54",
+        "openGapsLabel": "Q-001: Is the ceiling area safe for passenger use?, Q-002: Can the side entrance safely handle early morning passenger flow?, Q-004: What public line should be used if asked whether the station is shut?, Q-005: What is the expected main entrance reopening time?",
+        "audienceLabel": "Station staff and customer service",
+        "lensSource": "issue_audience_only",
+        "issueLevelAudienceNote": null,
+        "aiWordingPolish": "deterministic_only",
+        "aiComparisonAvailable": false
+      },
+      "sections": [
+        {
+          "id": "primary",
+          "title": "Staff holding update",
+          "body": "Staff holding update — Bramley Junction (internal)\n\nUse this line with passengers\n- Bramley Junction is open via the side entrance. Trains are running as normal.\n- The main entrance is temporarily unavailable while final checks complete after overnight improvement works.\n\nDo not say\n- That the station is closed or trains are cancelled.\n- Anything about roof leaks/structural failure (not confirmed).\n- A reopening time until facilities confirms.\n\nEscalate\n- Direct press/social queries to corporate affairs duty."
+        }
+      ],
+      "guardrails": {
+        "mustAvoid": [
+          "Do not say the station is closed.",
+          "Do not confirm a structural failure or active roof leak.",
+          "Do not give a main entrance reopening time yet."
+        ],
+        "toneNotes": "Controlled, factual, and caveated where uncertain; no speculation."
+      }
+    }
+  },
+  {
+    "id": "dddd5002-0000-4000-a000-000000000002",
+    "kind": "passenger_message",
+    "title": "Passenger message draft",
+    "audience": "Passengers",
+    "intendedUse": "Short cautious passenger line for screens/PA/app while reopening time is not confirmed.",
+    "status": "Approved",
+    "versionNumber": 1,
+    "generatedAt": "2026-05-11T04:58:00.000Z",
+    "supersededBy": "dddd5006-0000-4000-a000-000000000006",
+    "linkedSourceIds": [
+      "dddd1004-0000-4000-a000-000000000004",
+      "dddd1006-0000-4000-a000-000000000006"
+    ],
+    "linkedClaimIds": [
+      "dddd2004-0000-4000-a000-000000000004",
+      "dddd2005-0000-4000-a000-000000000005"
+    ],
+    "body": "Bramley Junction station is open via the side entrance. Trains are running as normal. The main entrance is temporarily unavailable while final checks are completed after overnight improvement works. Staff are on site to help direct passengers.",
+    "doNotSay": [
+      "Do not say the station is shut.",
+      "Do not imply train cancellations."
+    ],
+    "metisMessageVariantId": "dddd6102-0000-4000-a000-000000000002",
+    "metisBriefVersionId": null,
+    "templateId": "external_customer_resident_student",
+    "basedOnSnapshotAt": "2026-05-11T04:58:00.000Z",
+    "includedRecordIds": [
+      "dddd0015-0000-4000-a000-000000000015",
+      "dddd0001-0000-4000-a000-000000000001",
+      "dddd0008-0000-4000-a000-000000000008",
+      "dddd1001-0000-4000-a000-000000000001",
+      "dddd1002-0000-4000-a000-000000000002",
+      "dddd1003-0000-4000-a000-000000000003",
+      "dddd1004-0000-4000-a000-000000000004",
+      "dddd1005-0000-4000-a000-000000000005",
+      "dddd1006-0000-4000-a000-000000000006",
+      "dddd1007-0000-4000-a000-000000000007",
+      "dddd1008-0000-4000-a000-000000000008",
+      "dddd2001-0000-4000-a000-000000000001",
+      "dddd2002-0000-4000-a000-000000000002",
+      "dddd2003-0000-4000-a000-000000000003",
+      "dddd2004-0000-4000-a000-000000000004",
+      "dddd2005-0000-4000-a000-000000000005",
+      "dddd2006-0000-4000-a000-000000000006",
+      "dddd2007-0000-4000-a000-000000000007",
+      "dddd3001-0000-4000-a000-000000000001",
+      "dddd3002-0000-4000-a000-000000000002",
+      "dddd3003-0000-4000-a000-000000000003",
+      "dddd3004-0000-4000-a000-000000000004",
+      "dddd3005-0000-4000-a000-000000000005",
+      "dddd4001-0000-4000-a000-000000000001",
+      "dddd4002-0000-4000-a000-000000000002",
+      "dddd4003-0000-4000-a000-000000000003",
+      "dddd4004-0000-4000-a000-000000000004"
+    ],
+    "notYetKnownRecordIds": [
+      "dddd0009-0000-4000-a000-000000000009",
+      "dddd0016-0000-4000-a000-000000000016",
+      "dddd0010-0000-4000-a000-000000000010",
+      "dddd0011-0000-4000-a000-000000000011",
+      "dddd0012-0000-4000-a000-000000000012",
+      "dddd0013-0000-4000-a000-000000000013",
+      "dddd0014-0000-4000-a000-000000000014",
+      "dddd1009-0000-4000-a000-000000000009",
+      "dddd1010-0000-4000-a000-000000000010",
+      "dddd1011-0000-4000-a000-000000000011",
+      "dddd1012-0000-4000-a000-000000000012",
+      "dddd1013-0000-4000-a000-000000000013",
+      "dddd2008-0000-4000-a000-000000000008",
+      "dddd2009-0000-4000-a000-000000000009",
+      "dddd3006-0000-4000-a000-000000000006",
+      "dddd3007-0000-4000-a000-000000000007",
+      "dddd4005-0000-4000-a000-000000000005",
+      "dddd4006-0000-4000-a000-000000000006"
+    ],
+    "openQuestionsAtGeneration": [
+      "Q-001: Is the ceiling area safe for passenger use?",
+      "Q-002: Can the side entrance safely handle early morning passenger flow?",
+      "Q-004: What public line should be used if asked whether the station is shut?",
+      "Q-005: What is the expected main entrance reopening time?"
+    ],
+    "caveatsAtGeneration": [],
+    "messageArtifact": {
+      "templateId": "external_customer_resident_student",
+      "metadata": {
+        "publicHeadline": "Bramley Junction",
+        "lastRevisionLabel": "Mon 05:58",
+        "openGapsLabel": "Q-001: Is the ceiling area safe for passenger use?, Q-002: Can the side entrance safely handle early morning passenger flow?, Q-004: What public line should be used if asked whether the station is shut?, Q-005: What is the expected main entrance reopening time?",
+        "audienceLabel": "Passengers",
+        "lensSource": "issue_audience_only",
+        "issueLevelAudienceNote": null,
+        "aiWordingPolish": "deterministic_only",
+        "aiComparisonAvailable": false
+      },
+      "sections": [
+        {
+          "id": "primary",
+          "title": "Passenger message draft",
+          "body": "Bramley Junction station is open via the side entrance. Trains are running as normal. The main entrance is temporarily unavailable while final checks are completed after overnight improvement works. Staff are on site to help direct passengers."
+        }
+      ],
+      "guardrails": {
+        "mustAvoid": [
+          "Do not say the station is shut.",
+          "Do not imply train cancellations."
+        ],
+        "toneNotes": "Controlled, factual, and caveated where uncertain; no speculation."
+      }
+    }
+  },
+  {
+    "id": "dddd5003-0000-4000-a000-000000000003",
+    "kind": "social_response_line",
+    "title": "Social response line",
+    "audience": "Social media replies",
+    "intendedUse": "Reply line correcting ‘station shut’ claims without speculating on cause or timing.",
+    "status": "Approved",
+    "versionNumber": 1,
+    "generatedAt": "2026-05-11T04:52:00.000Z",
+    "supersededBy": null,
+    "linkedSourceIds": [
+      "dddd1008-0000-4000-a000-000000000008",
+      "dddd1006-0000-4000-a000-000000000006",
+      "dddd1004-0000-4000-a000-000000000004"
+    ],
+    "linkedClaimIds": [
+      "dddd2007-0000-4000-a000-000000000007",
+      "dddd2005-0000-4000-a000-000000000005",
+      "dddd2004-0000-4000-a000-000000000004"
+    ],
+    "body": "Bramley Junction is open via the side entrance and trains are running as normal. The main entrance is temporarily closed while final checks are completed after overnight improvement works. We’ll share an update when the main entrance reopens.",
+    "doNotSay": [
+      "Do not engage with speculation about structural issues."
+    ],
+    "metisMessageVariantId": "dddd6103-0000-4000-a000-000000000003",
+    "metisBriefVersionId": null,
+    "templateId": "external_customer_resident_student",
+    "basedOnSnapshotAt": "2026-05-11T04:52:00.000Z",
+    "includedRecordIds": [
+      "dddd0015-0000-4000-a000-000000000015",
+      "dddd0001-0000-4000-a000-000000000001",
+      "dddd0008-0000-4000-a000-000000000008",
+      "dddd1001-0000-4000-a000-000000000001",
+      "dddd1002-0000-4000-a000-000000000002",
+      "dddd1003-0000-4000-a000-000000000003",
+      "dddd1004-0000-4000-a000-000000000004",
+      "dddd1005-0000-4000-a000-000000000005",
+      "dddd1006-0000-4000-a000-000000000006",
+      "dddd1007-0000-4000-a000-000000000007",
+      "dddd1008-0000-4000-a000-000000000008",
+      "dddd2001-0000-4000-a000-000000000001",
+      "dddd2002-0000-4000-a000-000000000002",
+      "dddd2003-0000-4000-a000-000000000003",
+      "dddd2004-0000-4000-a000-000000000004",
+      "dddd2005-0000-4000-a000-000000000005",
+      "dddd2006-0000-4000-a000-000000000006",
+      "dddd2007-0000-4000-a000-000000000007",
+      "dddd3001-0000-4000-a000-000000000001",
+      "dddd3002-0000-4000-a000-000000000002",
+      "dddd3003-0000-4000-a000-000000000003",
+      "dddd3004-0000-4000-a000-000000000004",
+      "dddd3005-0000-4000-a000-000000000005",
+      "dddd4001-0000-4000-a000-000000000001",
+      "dddd4002-0000-4000-a000-000000000002",
+      "dddd4003-0000-4000-a000-000000000003",
+      "dddd4004-0000-4000-a000-000000000004"
+    ],
+    "notYetKnownRecordIds": [
+      "dddd0009-0000-4000-a000-000000000009",
+      "dddd0016-0000-4000-a000-000000000016",
+      "dddd0010-0000-4000-a000-000000000010",
+      "dddd0011-0000-4000-a000-000000000011",
+      "dddd0012-0000-4000-a000-000000000012",
+      "dddd0013-0000-4000-a000-000000000013",
+      "dddd0014-0000-4000-a000-000000000014",
+      "dddd1009-0000-4000-a000-000000000009",
+      "dddd1010-0000-4000-a000-000000000010",
+      "dddd1011-0000-4000-a000-000000000011",
+      "dddd1012-0000-4000-a000-000000000012",
+      "dddd1013-0000-4000-a000-000000000013",
+      "dddd2008-0000-4000-a000-000000000008",
+      "dddd2009-0000-4000-a000-000000000009",
+      "dddd3006-0000-4000-a000-000000000006",
+      "dddd3007-0000-4000-a000-000000000007",
+      "dddd4005-0000-4000-a000-000000000005",
+      "dddd4006-0000-4000-a000-000000000006"
+    ],
+    "openQuestionsAtGeneration": [
+      "Q-001: Is the ceiling area safe for passenger use?",
+      "Q-002: Can the side entrance safely handle early morning passenger flow?",
+      "Q-004: What public line should be used if asked whether the station is shut?",
+      "Q-005: What is the expected main entrance reopening time?"
+    ],
+    "caveatsAtGeneration": [],
+    "messageArtifact": {
+      "templateId": "external_customer_resident_student",
+      "metadata": {
+        "publicHeadline": "Bramley Junction",
+        "lastRevisionLabel": "Mon 05:52",
+        "openGapsLabel": "Q-001: Is the ceiling area safe for passenger use?, Q-002: Can the side entrance safely handle early morning passenger flow?, Q-004: What public line should be used if asked whether the station is shut?, Q-005: What is the expected main entrance reopening time?",
+        "audienceLabel": "Social media replies",
+        "lensSource": "issue_audience_only",
+        "issueLevelAudienceNote": null,
+        "aiWordingPolish": "deterministic_only",
+        "aiComparisonAvailable": false
+      },
+      "sections": [
+        {
+          "id": "primary",
+          "title": "Social response line",
+          "body": "Bramley Junction is open via the side entrance and trains are running as normal. The main entrance is temporarily closed while final checks are completed after overnight improvement works. We’ll share an update when the main entrance reopens."
+        }
+      ],
+      "guardrails": {
+        "mustAvoid": [
+          "Do not engage with speculation about structural issues."
+        ],
+        "toneNotes": "Controlled, factual, and caveated where uncertain; no speculation."
+      }
+    }
+  },
+  {
+    "id": "dddd5004-0000-4000-a000-000000000004",
+    "kind": "holding_press_line",
+    "title": "Holding press line",
+    "audience": "Local media",
+    "intendedUse": "Holding statement for press office response window; avoid committing a reopening time.",
+    "status": "Ready for review",
+    "versionNumber": 1,
+    "generatedAt": "2026-05-11T05:18:00.000Z",
+    "supersededBy": null,
+    "linkedSourceIds": [
+      "dddd1003-0000-4000-a000-000000000003",
+      "dddd1004-0000-4000-a000-000000000004",
+      "dddd1006-0000-4000-a000-000000000006",
+      "dddd1007-0000-4000-a000-000000000007",
+      "dddd1008-0000-4000-a000-000000000008",
+      "dddd1009-0000-4000-a000-000000000009"
+    ],
+    "linkedClaimIds": [
+      "dddd2003-0000-4000-a000-000000000003",
+      "dddd2004-0000-4000-a000-000000000004",
+      "dddd2005-0000-4000-a000-000000000005",
+      "dddd2006-0000-4000-a000-000000000006",
+      "dddd2007-0000-4000-a000-000000000007"
+    ],
+    "body": "Bramley Junction remains open via the side entrance and trains are running as normal.\nThe main entrance is temporarily unavailable while final checks are completed after overnight improvement works.\nWe will provide an update once inspections and clean-up are complete.",
+    "doNotSay": [
+      "That the station is closed.",
+      "That trains are cancelled or diverted.",
+      "That there is a confirmed structural failure or active leak.",
+      "A precise reopening time until station/facilities confirm."
+    ],
+    "metisMessageVariantId": "dddd6104-0000-4000-a000-000000000004",
+    "metisBriefVersionId": null,
+    "templateId": "media_holding_line",
+    "basedOnSnapshotAt": "2026-05-11T05:18:00.000Z",
+    "includedRecordIds": [
+      "dddd0015-0000-4000-a000-000000000015",
+      "dddd0001-0000-4000-a000-000000000001",
+      "dddd0008-0000-4000-a000-000000000008",
+      "dddd0009-0000-4000-a000-000000000009",
+      "dddd1001-0000-4000-a000-000000000001",
+      "dddd1002-0000-4000-a000-000000000002",
+      "dddd1003-0000-4000-a000-000000000003",
+      "dddd1004-0000-4000-a000-000000000004",
+      "dddd1005-0000-4000-a000-000000000005",
+      "dddd1006-0000-4000-a000-000000000006",
+      "dddd1007-0000-4000-a000-000000000007",
+      "dddd1008-0000-4000-a000-000000000008",
+      "dddd1009-0000-4000-a000-000000000009",
+      "dddd2001-0000-4000-a000-000000000001",
+      "dddd2002-0000-4000-a000-000000000002",
+      "dddd2003-0000-4000-a000-000000000003",
+      "dddd2004-0000-4000-a000-000000000004",
+      "dddd2005-0000-4000-a000-000000000005",
+      "dddd2006-0000-4000-a000-000000000006",
+      "dddd2007-0000-4000-a000-000000000007",
+      "dddd3001-0000-4000-a000-000000000001",
+      "dddd3002-0000-4000-a000-000000000002",
+      "dddd3003-0000-4000-a000-000000000003",
+      "dddd3004-0000-4000-a000-000000000004",
+      "dddd3005-0000-4000-a000-000000000005",
+      "dddd4001-0000-4000-a000-000000000001",
+      "dddd4002-0000-4000-a000-000000000002",
+      "dddd4003-0000-4000-a000-000000000003",
+      "dddd4004-0000-4000-a000-000000000004"
+    ],
+    "notYetKnownRecordIds": [
+      "dddd0016-0000-4000-a000-000000000016",
+      "dddd0010-0000-4000-a000-000000000010",
+      "dddd0011-0000-4000-a000-000000000011",
+      "dddd0012-0000-4000-a000-000000000012",
+      "dddd0013-0000-4000-a000-000000000013",
+      "dddd0014-0000-4000-a000-000000000014",
+      "dddd1010-0000-4000-a000-000000000010",
+      "dddd1011-0000-4000-a000-000000000011",
+      "dddd1012-0000-4000-a000-000000000012",
+      "dddd1013-0000-4000-a000-000000000013",
+      "dddd2008-0000-4000-a000-000000000008",
+      "dddd2009-0000-4000-a000-000000000009",
+      "dddd3006-0000-4000-a000-000000000006",
+      "dddd3007-0000-4000-a000-000000000007",
+      "dddd4005-0000-4000-a000-000000000005",
+      "dddd4006-0000-4000-a000-000000000006"
+    ],
+    "openQuestionsAtGeneration": [
+      "Q-001: Is the ceiling area safe for passenger use?",
+      "Q-002: Can the side entrance safely handle early morning passenger flow?",
+      "Q-005: What is the expected main entrance reopening time?"
+    ],
+    "caveatsAtGeneration": [
+      "Facilities inspection not yet complete — do not confirm ceiling safety or reopening time.",
+      "Main entrance still closed at time of generation."
+    ],
+    "messageArtifact": {
+      "templateId": "media_holding_line",
+      "metadata": {
+        "publicHeadline": "Bramley Junction",
+        "lastRevisionLabel": "Mon 06:18",
+        "openGapsLabel": "Q-001: Is the ceiling area safe for passenger use?, Q-002: Can the side entrance safely handle early morning passenger flow?, Q-005: What is the expected main entrance reopening time?",
+        "audienceLabel": "Local media",
+        "lensSource": "issue_audience_only",
+        "issueLevelAudienceNote": null,
+        "aiWordingPolish": "deterministic_only",
+        "aiComparisonAvailable": false
+      },
+      "sections": [
+        {
+          "id": "primary",
+          "title": "Holding press line",
+          "body": "Bramley Junction remains open via the side entrance and trains are running as normal.\nThe main entrance is temporarily unavailable while final checks are completed after overnight improvement works.\nWe will provide an update once inspections and clean-up are complete."
+        }
+      ],
+      "guardrails": {
+        "mustAvoid": [
+          "That the station is closed.",
+          "That trains are cancelled or diverted.",
+          "That there is a confirmed structural failure or active leak.",
+          "A precise reopening time until station/facilities confirm."
+        ],
+        "toneNotes": "Controlled, factual, and caveated where uncertain; no speculation."
+      }
+    }
+  },
+  {
+    "id": "dddd5005-0000-4000-a000-000000000005",
+    "kind": "executive_brief",
+    "title": "Executive brief V1",
+    "audience": "Senior leadership",
+    "status": "Ready for review",
+    "versionNumber": 1,
+    "generatedAt": "2026-05-11T05:48:00.000Z",
+    "supersededBy": "dddd5008-0000-4000-a000-000000000008",
+    "linkedSourceIds": [
+      "dddd1001-0000-4000-a000-000000000001",
+      "dddd1003-0000-4000-a000-000000000003",
+      "dddd1004-0000-4000-a000-000000000004",
+      "dddd1006-0000-4000-a000-000000000006",
+      "dddd1007-0000-4000-a000-000000000007",
+      "dddd1008-0000-4000-a000-000000000008",
+      "dddd1009-0000-4000-a000-000000000009"
+    ],
+    "linkedClaimIds": [
+      "dddd2001-0000-4000-a000-000000000001",
+      "dddd2002-0000-4000-a000-000000000002",
+      "dddd2003-0000-4000-a000-000000000003",
+      "dddd2004-0000-4000-a000-000000000004",
+      "dddd2005-0000-4000-a000-000000000005",
+      "dddd2006-0000-4000-a000-000000000006",
+      "dddd2007-0000-4000-a000-000000000007"
+    ],
+    "body": "Executive brief — Bramley Junction main entrance delay (V1)\n\nCurrent position\n- Main entrance delayed after overnight planned works handback.\n- Station open via side entrance; trains running.\n- Comms engaged from 05:42 when duty manager briefed corporate affairs; duty overnight pack logged in Metis at 05:50.\n- Social monitoring (05:48) and press enquiry (06:08) drove external messaging; executive office requested this note at 06:35.\n\nWhat happened (from duty pack and subsequent updates logged in Metis)\n- Planned works scheduled with 05:30 handback (SRC-001).\n- Contractor withheld final ceiling panel sign-off at main entrance (SRC-003).\n- Station manager escalated likely miss of 05:30 target (SRC-004).\n\nCustomer impact\n- Limited but visible at main entrance; help point queries (SRC-007).\n- Some social posts incorrectly describe station as shut (SRC-008).\n\nOperational position\n- Side entrance staffing and barriers deployed (SRC-005).\n- NOC confirms trains calling (SRC-006).\n\nMedia / reputation\n- Local reporter deadline following 06:08 press call; holding line drafted after enquiry.\n\nOpen questions\n- Ceiling area safety confirmation.\n- Expected main entrance reopening time.\n\nNext actions\n- Maintain side entrance flow; staff and passenger lines in use.\n- Respond to press within window using holding line.\n- Await facilities inspection outcome before committing reopening time.\n\nConfidence / caveats\n- Based only on records in Metis as of 06:48; facilities clearance and reopening not yet logged.\n- No confirmed safety failure reported; ceiling issue is precautionary pending inspection.\n- Do not state station is closed or trains affected.",
+    "doNotSay": [
+      "Do not state main entrance has reopened.",
+      "Do not state facilities have cleared ceiling."
+    ],
+    "metisMessageVariantId": null,
+    "metisBriefVersionId": "dddd6001-0000-4000-a000-000000000001",
+    "templateId": null,
+    "basedOnSnapshotAt": "2026-05-11T05:48:00.000Z",
+    "includedRecordIds": [
+      "dddd0015-0000-4000-a000-000000000015",
+      "dddd0001-0000-4000-a000-000000000001",
+      "dddd0008-0000-4000-a000-000000000008",
+      "dddd0009-0000-4000-a000-000000000009",
+      "dddd0016-0000-4000-a000-000000000016",
+      "dddd0010-0000-4000-a000-000000000010",
+      "dddd1001-0000-4000-a000-000000000001",
+      "dddd1002-0000-4000-a000-000000000002",
+      "dddd1003-0000-4000-a000-000000000003",
+      "dddd1004-0000-4000-a000-000000000004",
+      "dddd1005-0000-4000-a000-000000000005",
+      "dddd1006-0000-4000-a000-000000000006",
+      "dddd1007-0000-4000-a000-000000000007",
+      "dddd1008-0000-4000-a000-000000000008",
+      "dddd1009-0000-4000-a000-000000000009",
+      "dddd1010-0000-4000-a000-000000000010",
+      "dddd2001-0000-4000-a000-000000000001",
+      "dddd2002-0000-4000-a000-000000000002",
+      "dddd2003-0000-4000-a000-000000000003",
+      "dddd2004-0000-4000-a000-000000000004",
+      "dddd2005-0000-4000-a000-000000000005",
+      "dddd2006-0000-4000-a000-000000000006",
+      "dddd2007-0000-4000-a000-000000000007",
+      "dddd3001-0000-4000-a000-000000000001",
+      "dddd3002-0000-4000-a000-000000000002",
+      "dddd3003-0000-4000-a000-000000000003",
+      "dddd3004-0000-4000-a000-000000000004",
+      "dddd3005-0000-4000-a000-000000000005",
+      "dddd4001-0000-4000-a000-000000000001",
+      "dddd4002-0000-4000-a000-000000000002",
+      "dddd4003-0000-4000-a000-000000000003",
+      "dddd4004-0000-4000-a000-000000000004"
+    ],
+    "notYetKnownRecordIds": [
+      "dddd0011-0000-4000-a000-000000000011",
+      "dddd0012-0000-4000-a000-000000000012",
+      "dddd0013-0000-4000-a000-000000000013",
+      "dddd0014-0000-4000-a000-000000000014",
+      "dddd1011-0000-4000-a000-000000000011",
+      "dddd1012-0000-4000-a000-000000000012",
+      "dddd1013-0000-4000-a000-000000000013",
+      "dddd2008-0000-4000-a000-000000000008",
+      "dddd2009-0000-4000-a000-000000000009",
+      "dddd3006-0000-4000-a000-000000000006",
+      "dddd3007-0000-4000-a000-000000000007",
+      "dddd4005-0000-4000-a000-000000000005",
+      "dddd4006-0000-4000-a000-000000000006"
+    ],
+    "openQuestionsAtGeneration": [
+      "Q-001: Is the ceiling area safe for passenger use?",
+      "Q-005: What is the expected main entrance reopening time?"
+    ],
+    "caveatsAtGeneration": [
+      "Based on Metis records as of 06:48 only — excludes facilities clearance and reopening logged later.",
+      "Overnight operational detail from duty pack logged in Metis after 05:42 comms engagement.",
+      "Q-001 ceiling safety and Q-005 reopening time still open at generation."
+    ],
+    "briefArtifact": {
+      "lede": "Main entrance reopened 08:12; side entrance remains available; trains running; passenger flow normalising; post-incident review in progress.",
+      "metadata": {
+        "audience": "Senior leadership",
+        "circulation": "Internal",
+        "lastRevisionLabel": "Mon 06:48",
+        "openGapsLabel": "Q-001: Is the ceiling area safe for passenger use?, Q-005: What is the expected main entrance reopening time?"
+      },
+      "full": {
+        "sections": [
+          {
+            "id": "executive-summary",
+            "title": "Executive summary",
+            "body": "Executive brief — Bramley Junction main entrance delay (V1)  Current position - Main entrance delayed after overnight planned works handback. - Station open via side entrance; trains running. - Comms engaged from 05:42 when duty manager briefed corporate affairs; duty overnight pack logged in Metis at 05:50.",
+            "confidence": "Likely",
+            "updatedAtLabel": "Mon 06:48",
+            "evidenceRefs": []
+          },
+          {
+            "id": "chronology",
+            "title": "Chronology",
+            "body": "Point-in-time record (Metis timeline reference)\n- Last revision label: Mon 06:48\n- Open gaps label: Q-001: Is the ceiling area safe for passenger use?, Q-005: What is the expected main entrance reopening time?",
+            "confidence": "Likely",
+            "updatedAtLabel": "Mon 06:48",
+            "evidenceRefs": []
+          },
+          {
+            "id": "confirmed-vs-unclear",
+            "title": "Confirmed vs unclear",
+            "body": "Confirmed facts\n- Planned overnight works scheduled with 05:30 handback target.\n- Main entrance opening delayed pending ceiling panel inspection.\n- Station remained open via side entrance with additional staffing.\n- Train services continued to call (NOC confirmed).\n- Main entrance reopened 08:12 after facilities clearance.\n\nOpen questions / unresolved needs\n- Q-001: Is the ceiling area safe for passenger use?\n- Q-005: What is the expected main entrance reopening time?",
+            "confidence": "Likely",
+            "updatedAtLabel": "Mon 06:48",
+            "evidenceRefs": []
+          },
+          {
+            "id": "narrative-map",
+            "title": "Narrative map",
+            "body": "Audience implications\n- Station operations, customer service, corporate affairs, regional leadership\n\nClaims and assumptions (register excerpt)\n- CLM-001: Planned overnight works were scheduled at Bramley Junction with expected handback before the morning peak.\n- CLM-002: Most planned works were completed as expected overnight.\n- CLM-003: Main entrance opening was delayed pending final inspection of ceiling panels near the main entrance.\n- CLM-004: The station remained open via the side entrance while the main entrance was unavailable.\n- CLM-005: Train services continued to call at Bramley Junction with no planned service changes.\n- CLM-006: Passenger impact was limited but visible at the main entrance during the early morning peak.\n- CLM-007: Some external commentary incorrectly described the station as fully shut.",
+            "confidence": "Likely",
+            "updatedAtLabel": "Mon 06:48",
+            "evidenceRefs": []
+          },
+          {
+            "id": "implications",
+            "title": "Implications",
+            "body": "Evidence base\n- SRC-001 — Planned works notice — Bramley Junction overnight (Authoritative internal record)\n- SRC-003 — Handback note — ceiling panels pending sign-off (Internal operational source)\n- SRC-004 — Station manager escalation — main entrance delay (Internal operational source)\n- SRC-006 — Network Operations — trains calling (Authoritative internal record)\n- SRC-007 — Customer service floor report (Internal operational source)\n- SRC-008 — Social monitoring — inaccurate closure posts (Social monitoring)\n- SRC-009 — Press call log — local reporter (Media enquiry)\n\nObservations\n- Main entrance vs whole station confusion\n- Reputationally visible despite modest operational impact\n- Avoid speculation on roof drainage\n- Lead with what remains available\n- Check accessibility separately\n- Future works handback focus\n\nGuardrails / wording constraints\n- Based on Metis records as of 06:48 only — excludes facilities clearance and reopening logged later.\n- Overnight operational detail from duty pack logged in Metis after 05:42 comms engagement.\n- Q-001 ceiling safety and Q-005 reopening time still open at generation.\n- Do not state main entrance has reopened.\n- Do not state facilities have cleared ceiling.",
+            "confidence": "Likely",
+            "updatedAtLabel": "Mon 06:48",
+            "evidenceRefs": []
+          },
+          {
+            "id": "recommended-actions",
+            "title": "Recommended actions",
+            "body": "1) Maintain controlled posture; update as sources change.",
+            "confidence": "Likely",
+            "updatedAtLabel": "Mon 06:48",
+            "evidenceRefs": []
+          }
+        ]
+      },
+      "executive": {
+        "blocks": [
+          {
+            "label": "Executive summary",
+            "body": "Executive brief — Bramley Junction main entrance delay (V1)  Current position - Main entrance delayed after overnight planned works handback. - Station open via side entrance; trains running. - Comms engaged from 05:42 when duty manager briefed corporate affairs; duty overnight pack logged in Metis at 05:50."
+          },
+          {
+            "label": "Current assessment",
+            "body": "Status: Ready for review\nSeverity: Important\nUrgency: High\nBriefing posture: Active\nOpen questions: Q-001: Is the ceiling area safe for passenger use?, Q-005: What is the expected main entrance reopening time?\nIssue owner: Duty Station Support"
+          },
+          {
+            "label": "Confirmed facts",
+            "body": "- Planned overnight works scheduled with 05:30 handback target.\n- Main entrance opening delayed pending ceiling panel inspection.\n- Station remained open via side entrance with additional staffing.\n- Train services continued to call (NOC confirmed).\n- Main entrance reopened 08:12 after facilities clearance."
+          },
+          {
+            "label": "Claims and assumptions",
+            "body": "- CLM-001: Planned overnight works were scheduled at Bramley Junction with expected handback before the morning peak.\n- CLM-002: Most planned works were completed as expected overnight.\n- CLM-003: Main entrance opening was delayed pending final inspection of ceiling panels near the main entrance.\n- CLM-004: The station remained open via the side entrance while the main entrance was unavailable.\n- CLM-005: Train services continued to call at Bramley Junction with no planned service changes.\n- CLM-006: Passenger impact was limited but visible at the main entrance during the early morning peak.\n- CLM-007: Some external commentary incorrectly described the station as fully shut."
+          },
+          {
+            "label": "Open questions and unresolved needs",
+            "body": "- Q-001: Is the ceiling area safe for passenger use?\n- Q-005: What is the expected main entrance reopening time?"
+          },
+          {
+            "label": "Evidence base",
+            "body": "- SRC-001 — Planned works notice — Bramley Junction overnight (Authoritative internal record)\n- SRC-003 — Handback note — ceiling panels pending sign-off (Internal operational source)\n- SRC-004 — Station manager escalation — main entrance delay (Internal operational source)\n- SRC-006 — Network Operations — trains calling (Authoritative internal record)\n- SRC-007 — Customer service floor report (Internal operational source)\n- SRC-008 — Social monitoring — inaccurate closure posts (Social monitoring)\n- SRC-009 — Press call log — local reporter (Media enquiry)"
+          },
+          {
+            "label": "Observations",
+            "body": "- Main entrance vs whole station confusion\n- Reputationally visible despite modest operational impact\n- Avoid speculation on roof drainage\n- Lead with what remains available\n- Check accessibility separately\n- Future works handback focus"
+          },
+          {
+            "label": "Audience implications",
+            "body": "- Station operations, customer service, corporate affairs, regional leadership"
+          },
+          {
+            "label": "Recommended decisions / next actions",
+            "body": "1) Maintain controlled posture; update as sources change."
+          },
+          {
+            "label": "What not to say yet / uncertainty guardrails",
+            "body": "- Based on Metis records as of 06:48 only — excludes facilities clearance and reopening logged later.\n- Overnight operational detail from duty pack logged in Metis after 05:42 comms engagement.\n- Q-001 ceiling safety and Q-005 reopening time still open at generation.\n- Do not state main entrance has reopened.\n- Do not state facilities have cleared ceiling."
+          }
+        ],
+        "immediateActions": []
+      }
+    }
+  },
+  {
+    "id": "dddd5006-0000-4000-a000-000000000006",
+    "kind": "passenger_message",
+    "title": "Updated passenger message",
+    "audience": "Passengers",
+    "intendedUse": "Updated passenger line once facilities clearance is recorded; still caveated until reopening confirmed.",
+    "status": "Approved",
+    "versionNumber": 2,
+    "generatedAt": "2026-05-11T06:22:00.000Z",
+    "supersededBy": null,
+    "linkedSourceIds": [
+      "dddd1011-0000-4000-a000-000000000011",
+      "dddd1004-0000-4000-a000-000000000004",
+      "dddd1006-0000-4000-a000-000000000006"
+    ],
+    "linkedClaimIds": [
+      "dddd2008-0000-4000-a000-000000000008",
+      "dddd2004-0000-4000-a000-000000000004",
+      "dddd2005-0000-4000-a000-000000000005"
+    ],
+    "body": "Bramley Junction station remains open via the side entrance. Trains are running as normal. The main entrance is temporarily unavailable while final checks are completed after overnight improvement works. We expect the main entrance to reopen around 08:00, subject to final confirmation. Staff are on site to help direct passengers.",
+    "doNotSay": [
+      "Do not state the main entrance has already reopened (expected ~08:00, not confirmed open yet)."
+    ],
+    "metisMessageVariantId": "dddd6105-0000-4000-a000-000000000005",
+    "metisBriefVersionId": null,
+    "templateId": "external_customer_resident_student",
+    "basedOnSnapshotAt": "2026-05-11T06:22:00.000Z",
+    "includedRecordIds": [
+      "dddd0015-0000-4000-a000-000000000015",
+      "dddd0001-0000-4000-a000-000000000001",
+      "dddd0008-0000-4000-a000-000000000008",
+      "dddd0009-0000-4000-a000-000000000009",
+      "dddd0016-0000-4000-a000-000000000016",
+      "dddd0010-0000-4000-a000-000000000010",
+      "dddd0011-0000-4000-a000-000000000011",
+      "dddd1001-0000-4000-a000-000000000001",
+      "dddd1002-0000-4000-a000-000000000002",
+      "dddd1003-0000-4000-a000-000000000003",
+      "dddd1004-0000-4000-a000-000000000004",
+      "dddd1005-0000-4000-a000-000000000005",
+      "dddd1006-0000-4000-a000-000000000006",
+      "dddd1007-0000-4000-a000-000000000007",
+      "dddd1008-0000-4000-a000-000000000008",
+      "dddd1009-0000-4000-a000-000000000009",
+      "dddd1010-0000-4000-a000-000000000010",
+      "dddd1011-0000-4000-a000-000000000011",
+      "dddd2001-0000-4000-a000-000000000001",
+      "dddd2002-0000-4000-a000-000000000002",
+      "dddd2003-0000-4000-a000-000000000003",
+      "dddd2004-0000-4000-a000-000000000004",
+      "dddd2005-0000-4000-a000-000000000005",
+      "dddd2006-0000-4000-a000-000000000006",
+      "dddd2007-0000-4000-a000-000000000007",
+      "dddd2008-0000-4000-a000-000000000008",
+      "dddd3001-0000-4000-a000-000000000001",
+      "dddd3002-0000-4000-a000-000000000002",
+      "dddd3003-0000-4000-a000-000000000003",
+      "dddd3004-0000-4000-a000-000000000004",
+      "dddd3005-0000-4000-a000-000000000005",
+      "dddd4001-0000-4000-a000-000000000001",
+      "dddd4002-0000-4000-a000-000000000002",
+      "dddd4003-0000-4000-a000-000000000003",
+      "dddd4004-0000-4000-a000-000000000004"
+    ],
+    "notYetKnownRecordIds": [
+      "dddd0012-0000-4000-a000-000000000012",
+      "dddd0013-0000-4000-a000-000000000013",
+      "dddd0014-0000-4000-a000-000000000014",
+      "dddd1012-0000-4000-a000-000000000012",
+      "dddd1013-0000-4000-a000-000000000013",
+      "dddd2009-0000-4000-a000-000000000009",
+      "dddd3006-0000-4000-a000-000000000006",
+      "dddd3007-0000-4000-a000-000000000007",
+      "dddd4005-0000-4000-a000-000000000005",
+      "dddd4006-0000-4000-a000-000000000006"
+    ],
+    "openQuestionsAtGeneration": [
+      "Q-005: What is the expected main entrance reopening time? (partially answered)"
+    ],
+    "caveatsAtGeneration": [
+      "Expected reopening around 08:00 — subject to final confirmation; not yet open at 07:22."
+    ],
+    "messageArtifact": {
+      "templateId": "external_customer_resident_student",
+      "metadata": {
+        "publicHeadline": "Bramley Junction",
+        "lastRevisionLabel": "Mon 07:22",
+        "openGapsLabel": "Q-005: What is the expected main entrance reopening time? (partially answered)",
+        "audienceLabel": "Passengers",
+        "lensSource": "issue_audience_only",
+        "issueLevelAudienceNote": null,
+        "aiWordingPolish": "deterministic_only",
+        "aiComparisonAvailable": false
+      },
+      "sections": [
+        {
+          "id": "primary",
+          "title": "Updated passenger message",
+          "body": "Bramley Junction station remains open via the side entrance. Trains are running as normal. The main entrance is temporarily unavailable while final checks are completed after overnight improvement works. We expect the main entrance to reopen around 08:00, subject to final confirmation. Staff are on site to help direct passengers."
+        }
+      ],
+      "guardrails": {
+        "mustAvoid": [
+          "Do not state the main entrance has already reopened (expected ~08:00, not confirmed open yet)."
+        ],
+        "toneNotes": "Controlled, factual, and caveated where uncertain; no speculation."
+      }
+    }
+  },
+  {
+    "id": "dddd5007-0000-4000-a000-000000000007",
+    "kind": "stakeholder_note",
+    "title": "Councillor and stakeholder note",
+    "audience": "Local authority / accessibility / transport stakeholders",
+    "intendedUse": "Caveated stakeholder update for partners; avoid overclaiming accessibility assessment completion.",
+    "status": "Ready for review",
+    "versionNumber": 1,
+    "generatedAt": "2026-05-11T06:38:00.000Z",
+    "supersededBy": null,
+    "linkedSourceIds": [
+      "dddd1011-0000-4000-a000-000000000011",
+      "dddd1010-0000-4000-a000-000000000010",
+      "dddd1004-0000-4000-a000-000000000004",
+      "dddd1009-0000-4000-a000-000000000009"
+    ],
+    "linkedClaimIds": [
+      "dddd2004-0000-4000-a000-000000000004",
+      "dddd2008-0000-4000-a000-000000000008"
+    ],
+    "body": "Stakeholder note (draft)\n\nBramley Junction remains open via the side entrance and trains are running as normal.\nThe main entrance is temporarily unavailable following overnight improvement works. Facilities clearance has been recorded; reopening is expected around 08:00 subject to final checks.\n\nMitigations\n- Additional staff/security at the side entrance and clear passenger lines in use.\n- Accessibility/wayfinding checks on temporary arrangements are in progress.",
+    "doNotSay": [
+      "Do not state that an accessibility assessment is complete if temporary signage actions are still in progress.",
+      "Do not speculate on causes beyond what facilities has confirmed."
+    ],
+    "metisMessageVariantId": "dddd6106-0000-4000-a000-000000000006",
+    "metisBriefVersionId": null,
+    "templateId": "external_customer_resident_student",
+    "basedOnSnapshotAt": "2026-05-11T06:38:00.000Z",
+    "includedRecordIds": [
+      "dddd0015-0000-4000-a000-000000000015",
+      "dddd0001-0000-4000-a000-000000000001",
+      "dddd0008-0000-4000-a000-000000000008",
+      "dddd0009-0000-4000-a000-000000000009",
+      "dddd0016-0000-4000-a000-000000000016",
+      "dddd0010-0000-4000-a000-000000000010",
+      "dddd0011-0000-4000-a000-000000000011",
+      "dddd1001-0000-4000-a000-000000000001",
+      "dddd1002-0000-4000-a000-000000000002",
+      "dddd1003-0000-4000-a000-000000000003",
+      "dddd1004-0000-4000-a000-000000000004",
+      "dddd1005-0000-4000-a000-000000000005",
+      "dddd1006-0000-4000-a000-000000000006",
+      "dddd1007-0000-4000-a000-000000000007",
+      "dddd1008-0000-4000-a000-000000000008",
+      "dddd1009-0000-4000-a000-000000000009",
+      "dddd1010-0000-4000-a000-000000000010",
+      "dddd1011-0000-4000-a000-000000000011",
+      "dddd2001-0000-4000-a000-000000000001",
+      "dddd2002-0000-4000-a000-000000000002",
+      "dddd2003-0000-4000-a000-000000000003",
+      "dddd2004-0000-4000-a000-000000000004",
+      "dddd2005-0000-4000-a000-000000000005",
+      "dddd2006-0000-4000-a000-000000000006",
+      "dddd2007-0000-4000-a000-000000000007",
+      "dddd2008-0000-4000-a000-000000000008",
+      "dddd3001-0000-4000-a000-000000000001",
+      "dddd3002-0000-4000-a000-000000000002",
+      "dddd3003-0000-4000-a000-000000000003",
+      "dddd3004-0000-4000-a000-000000000004",
+      "dddd3005-0000-4000-a000-000000000005",
+      "dddd4001-0000-4000-a000-000000000001",
+      "dddd4002-0000-4000-a000-000000000002",
+      "dddd4003-0000-4000-a000-000000000003",
+      "dddd4004-0000-4000-a000-000000000004"
+    ],
+    "notYetKnownRecordIds": [
+      "dddd0012-0000-4000-a000-000000000012",
+      "dddd0013-0000-4000-a000-000000000013",
+      "dddd0014-0000-4000-a000-000000000014",
+      "dddd1012-0000-4000-a000-000000000012",
+      "dddd1013-0000-4000-a000-000000000013",
+      "dddd2009-0000-4000-a000-000000000009",
+      "dddd3006-0000-4000-a000-000000000006",
+      "dddd3007-0000-4000-a000-000000000007",
+      "dddd4005-0000-4000-a000-000000000005",
+      "dddd4006-0000-4000-a000-000000000006"
+    ],
+    "openQuestionsAtGeneration": [
+      "Q-005: What is the expected main entrance reopening time? (partially answered)"
+    ],
+    "caveatsAtGeneration": [
+      "Accessibility formal assessment not yet in Metis at generation — wording treats accessibility as being checked."
+    ],
+    "messageArtifact": {
+      "templateId": "external_customer_resident_student",
+      "metadata": {
+        "publicHeadline": "Bramley Junction",
+        "lastRevisionLabel": "Mon 07:38",
+        "openGapsLabel": "Q-005: What is the expected main entrance reopening time? (partially answered)",
+        "audienceLabel": "Local authority / accessibility / transport stakeholders",
+        "lensSource": "issue_audience_only",
+        "issueLevelAudienceNote": null,
+        "aiWordingPolish": "deterministic_only",
+        "aiComparisonAvailable": false
+      },
+      "sections": [
+        {
+          "id": "primary",
+          "title": "Councillor and stakeholder note",
+          "body": "Stakeholder note (draft)\n\nBramley Junction remains open via the side entrance and trains are running as normal.\nThe main entrance is temporarily unavailable following overnight improvement works. Facilities clearance has been recorded; reopening is expected around 08:00 subject to final checks.\n\nMitigations\n- Additional staff/security at the side entrance and clear passenger lines in use.\n- Accessibility/wayfinding checks on temporary arrangements are in progress."
+        }
+      ],
+      "guardrails": {
+        "mustAvoid": [
+          "Do not state that an accessibility assessment is complete if temporary signage actions are still in progress.",
+          "Do not speculate on causes beyond what facilities has confirmed."
+        ],
+        "toneNotes": "Controlled, factual, and caveated where uncertain; no speculation."
+      }
+    }
+  },
+  {
+    "id": "dddd5008-0000-4000-a000-000000000008",
+    "kind": "executive_brief",
+    "title": "Executive brief V2",
+    "audience": "Senior leadership",
+    "status": "Approved",
+    "versionNumber": 2,
+    "generatedAt": "2026-05-11T07:28:00.000Z",
+    "supersededBy": null,
+    "linkedSourceIds": [
+      "dddd1011-0000-4000-a000-000000000011",
+      "dddd1013-0000-4000-a000-000000000013",
+      "dddd1010-0000-4000-a000-000000000010",
+      "dddd1008-0000-4000-a000-000000000008"
+    ],
+    "linkedClaimIds": [
+      "dddd2008-0000-4000-a000-000000000008",
+      "dddd2009-0000-4000-a000-000000000009",
+      "dddd2006-0000-4000-a000-000000000006",
+      "dddd2007-0000-4000-a000-000000000007"
+    ],
+    "body": "Executive brief — Bramley Junction update (V2)\n\nCurrent position\n- Main entrance reopened 08:12 after facilities clearance.\n- Side entrance remains available; passenger flow normalising.\n- Press/social position contained with corrective lines.\n\nWhat changed since V1\n- Facilities confirmed ceiling panels secure (SRC-011).\n- Main entrance reopened (SRC-013).\n- Passenger impact remained limited; queues manageable via side entrance.\n\nCustomer impact\n- Morning peak confusion at main doors; no significant crowding reported after mitigations.\n\nOperational position\n- Remedial roof drain repair scheduled non-urgent.\n- Executive request for post-incident review received.\n\nOpen questions\n- Accessibility signage improvements (action in progress).\n- Follow-up actions for future planned works handback (Q-007).\n\nNext actions\n- Complete post-incident review note.\n- Confirm circulation audit for governance record.",
+    "doNotSay": [],
+    "metisMessageVariantId": null,
+    "metisBriefVersionId": "dddd6002-0000-4000-a000-000000000002",
+    "templateId": null,
+    "basedOnSnapshotAt": "2026-05-11T07:28:00.000Z",
+    "includedRecordIds": [
+      "dddd0015-0000-4000-a000-000000000015",
+      "dddd0001-0000-4000-a000-000000000001",
+      "dddd0008-0000-4000-a000-000000000008",
+      "dddd0009-0000-4000-a000-000000000009",
+      "dddd0016-0000-4000-a000-000000000016",
+      "dddd0010-0000-4000-a000-000000000010",
+      "dddd0011-0000-4000-a000-000000000011",
+      "dddd0012-0000-4000-a000-000000000012",
+      "dddd0013-0000-4000-a000-000000000013",
+      "dddd1001-0000-4000-a000-000000000001",
+      "dddd1002-0000-4000-a000-000000000002",
+      "dddd1003-0000-4000-a000-000000000003",
+      "dddd1004-0000-4000-a000-000000000004",
+      "dddd1005-0000-4000-a000-000000000005",
+      "dddd1006-0000-4000-a000-000000000006",
+      "dddd1007-0000-4000-a000-000000000007",
+      "dddd1008-0000-4000-a000-000000000008",
+      "dddd1009-0000-4000-a000-000000000009",
+      "dddd1010-0000-4000-a000-000000000010",
+      "dddd1011-0000-4000-a000-000000000011",
+      "dddd1012-0000-4000-a000-000000000012",
+      "dddd1013-0000-4000-a000-000000000013",
+      "dddd2001-0000-4000-a000-000000000001",
+      "dddd2002-0000-4000-a000-000000000002",
+      "dddd2003-0000-4000-a000-000000000003",
+      "dddd2004-0000-4000-a000-000000000004",
+      "dddd2005-0000-4000-a000-000000000005",
+      "dddd2006-0000-4000-a000-000000000006",
+      "dddd2007-0000-4000-a000-000000000007",
+      "dddd2008-0000-4000-a000-000000000008",
+      "dddd2009-0000-4000-a000-000000000009",
+      "dddd3001-0000-4000-a000-000000000001",
+      "dddd3002-0000-4000-a000-000000000002",
+      "dddd3003-0000-4000-a000-000000000003",
+      "dddd3004-0000-4000-a000-000000000004",
+      "dddd3005-0000-4000-a000-000000000005",
+      "dddd3006-0000-4000-a000-000000000006",
+      "dddd4001-0000-4000-a000-000000000001",
+      "dddd4002-0000-4000-a000-000000000002",
+      "dddd4003-0000-4000-a000-000000000003",
+      "dddd4004-0000-4000-a000-000000000004",
+      "dddd4005-0000-4000-a000-000000000005"
+    ],
+    "notYetKnownRecordIds": [
+      "dddd0014-0000-4000-a000-000000000014",
+      "dddd3007-0000-4000-a000-000000000007",
+      "dddd4006-0000-4000-a000-000000000006"
+    ],
+    "openQuestionsAtGeneration": [
+      "Q-006: Are accessibility arrangements adequate while the main entrance is closed?"
+    ],
+    "caveatsAtGeneration": [],
+    "briefArtifact": {
+      "lede": "Main entrance reopened 08:12; side entrance remains available; trains running; passenger flow normalising; post-incident review in progress.",
+      "metadata": {
+        "audience": "Senior leadership",
+        "circulation": "Internal",
+        "lastRevisionLabel": "Mon 08:28",
+        "openGapsLabel": "Q-006: Are accessibility arrangements adequate while the main entrance is closed?"
+      },
+      "full": {
+        "sections": [
+          {
+            "id": "executive-summary",
+            "title": "Executive summary",
+            "body": "Executive brief — Bramley Junction update (V2)  Current position - Main entrance reopened 08:12 after facilities clearance. - Side entrance remains available; passenger flow normalising. - Press/social position contained with corrective lines.",
+            "confidence": "Likely",
+            "updatedAtLabel": "Mon 08:28",
+            "evidenceRefs": []
+          },
+          {
+            "id": "chronology",
+            "title": "Chronology",
+            "body": "Point-in-time record (Metis timeline reference)\n- Last revision label: Mon 08:28\n- Open gaps label: Q-006: Are accessibility arrangements adequate while the main entrance is closed?",
+            "confidence": "Likely",
+            "updatedAtLabel": "Mon 08:28",
+            "evidenceRefs": []
+          },
+          {
+            "id": "confirmed-vs-unclear",
+            "title": "Confirmed vs unclear",
+            "body": "Confirmed facts\n- Planned overnight works scheduled with 05:30 handback target.\n- Main entrance opening delayed pending ceiling panel inspection.\n- Station remained open via side entrance with additional staffing.\n- Train services continued to call (NOC confirmed).\n- Main entrance reopened 08:12 after facilities clearance.\n\nOpen questions / unresolved needs\n- Q-006: Are accessibility arrangements adequate while the main entrance is closed?",
+            "confidence": "Likely",
+            "updatedAtLabel": "Mon 08:28",
+            "evidenceRefs": []
+          },
+          {
+            "id": "narrative-map",
+            "title": "Narrative map",
+            "body": "Audience implications\n- Station operations, customer service, corporate affairs, regional leadership\n\nClaims and assumptions (register excerpt)\n- CLM-008: Ceiling panels in the main entrance area were later confirmed secure for passenger use.\n- CLM-009: The main entrance reopened at 08:12 following clean-up and signage checks.\n- CLM-006: Passenger impact was limited but visible at the main entrance during the early morning peak.\n- CLM-007: Some external commentary incorrectly described the station as fully shut.",
+            "confidence": "Likely",
+            "updatedAtLabel": "Mon 08:28",
+            "evidenceRefs": []
+          },
+          {
+            "id": "implications",
+            "title": "Implications",
+            "body": "Evidence base\n- SRC-011 — Facilities inspection — ceiling secure (Internal operational source)\n- SRC-013 — Reopening confirmation — main entrance (Internal operational source)\n- SRC-010 — Station update — passenger flow (Internal operational source)\n- SRC-008 — Social monitoring — inaccurate closure posts (Social monitoring)\n\nObservations\n- Main entrance vs whole station confusion\n- Reputationally visible despite modest operational impact\n- Avoid speculation on roof drainage\n- Lead with what remains available\n- Check accessibility separately\n- Future works handback focus\n\nGuardrails / wording constraints\nAvoid speculative language until records are attributable.",
+            "confidence": "Likely",
+            "updatedAtLabel": "Mon 08:28",
+            "evidenceRefs": []
+          },
+          {
+            "id": "recommended-actions",
+            "title": "Recommended actions",
+            "body": "1) Maintain controlled posture; update as sources change.",
+            "confidence": "Likely",
+            "updatedAtLabel": "Mon 08:28",
+            "evidenceRefs": []
+          }
+        ]
+      },
+      "executive": {
+        "blocks": [
+          {
+            "label": "Executive summary",
+            "body": "Executive brief — Bramley Junction update (V2)  Current position - Main entrance reopened 08:12 after facilities clearance. - Side entrance remains available; passenger flow normalising. - Press/social position contained with corrective lines."
+          },
+          {
+            "label": "Current assessment",
+            "body": "Status: Ready for review\nSeverity: Important\nUrgency: High\nBriefing posture: Active\nOpen questions: Q-006: Are accessibility arrangements adequate while the main entrance is closed?\nIssue owner: Duty Station Support"
+          },
+          {
+            "label": "What changed",
+            "body": "- Updated position based on new records added since prior revision.\n- See comparison view for detailed diffs between executive brief versions."
+          },
+          {
+            "label": "Confirmed facts",
+            "body": "- Planned overnight works scheduled with 05:30 handback target.\n- Main entrance opening delayed pending ceiling panel inspection.\n- Station remained open via side entrance with additional staffing.\n- Train services continued to call (NOC confirmed).\n- Main entrance reopened 08:12 after facilities clearance."
+          },
+          {
+            "label": "Claims and assumptions",
+            "body": "- CLM-008: Ceiling panels in the main entrance area were later confirmed secure for passenger use.\n- CLM-009: The main entrance reopened at 08:12 following clean-up and signage checks.\n- CLM-006: Passenger impact was limited but visible at the main entrance during the early morning peak.\n- CLM-007: Some external commentary incorrectly described the station as fully shut."
+          },
+          {
+            "label": "Open questions and unresolved needs",
+            "body": "- Q-006: Are accessibility arrangements adequate while the main entrance is closed?"
+          },
+          {
+            "label": "Evidence base",
+            "body": "- SRC-011 — Facilities inspection — ceiling secure (Internal operational source)\n- SRC-013 — Reopening confirmation — main entrance (Internal operational source)\n- SRC-010 — Station update — passenger flow (Internal operational source)\n- SRC-008 — Social monitoring — inaccurate closure posts (Social monitoring)"
+          },
+          {
+            "label": "Observations",
+            "body": "- Main entrance vs whole station confusion\n- Reputationally visible despite modest operational impact\n- Avoid speculation on roof drainage\n- Lead with what remains available\n- Check accessibility separately\n- Future works handback focus"
+          },
+          {
+            "label": "Audience implications",
+            "body": "- Station operations, customer service, corporate affairs, regional leadership"
+          },
+          {
+            "label": "Recommended decisions / next actions",
+            "body": "1) Maintain controlled posture; update as sources change."
+          },
+          {
+            "label": "What not to say yet / uncertainty guardrails",
+            "body": "Avoid speculative language until records are attributable."
+          }
+        ],
+        "immediateActions": []
+      }
+    }
+  },
+  {
+    "id": "dddd5009-0000-4000-a000-000000000009",
+    "kind": "post_incident_review",
+    "title": "Post-incident review note",
+    "audience": "Operations and comms leadership",
+    "status": "Draft",
+    "versionNumber": 1,
+    "generatedAt": "2026-05-11T07:45:00.000Z",
+    "supersededBy": null,
+    "linkedSourceIds": [],
+    "linkedClaimIds": [],
+    "body": "Post-incident review note — Bramley Junction planned works handback (draft)\n\nSummary\n- Overnight planned works largely succeeded; main entrance handback delayed by ceiling panel sign-off and inspection.\n- Station remained open via side entrance; trains unaffected.\n- Reputation risk driven by ‘station shut’ confusion rather than service cancellation.\n\nTimeline\n- See linked incoming updates and outputs from 05:42 comms engagement through 08:12 reopening.\n\nWhat worked\n- Early NOC confirmation on trains.\n- Side entrance opening with security support.\n- Rapid passenger/social corrective lines.\n\nWhat caused confusion\n- Main entrance closure visible to passengers without clear alternate routing signage.\n- Social posts conflating entrance closure with whole-station closure.\n\nRecommended actions\n1. Pre-agree passenger messaging pack for planned works handback delays.\n2. Temporary signage standard for side-entrance-only access.\n3. Handback checklist requiring facilities sign-off before public reopening target.\n\nOwners\n- Station operations (handback criteria).\n- Corporate affairs (messaging pack).\n- Accessibility lead (signage standard).",
+    "doNotSay": [],
+    "metisMessageVariantId": null,
+    "metisBriefVersionId": "dddd6003-0000-4000-a000-000000000003",
+    "templateId": null,
+    "basedOnSnapshotAt": "2026-05-11T07:45:00.000Z",
+    "includedRecordIds": [
+      "dddd0015-0000-4000-a000-000000000015",
+      "dddd0001-0000-4000-a000-000000000001",
+      "dddd0008-0000-4000-a000-000000000008",
+      "dddd0009-0000-4000-a000-000000000009",
+      "dddd0016-0000-4000-a000-000000000016",
+      "dddd0010-0000-4000-a000-000000000010",
+      "dddd0011-0000-4000-a000-000000000011",
+      "dddd0012-0000-4000-a000-000000000012",
+      "dddd0013-0000-4000-a000-000000000013",
+      "dddd0014-0000-4000-a000-000000000014",
+      "dddd1001-0000-4000-a000-000000000001",
+      "dddd1002-0000-4000-a000-000000000002",
+      "dddd1003-0000-4000-a000-000000000003",
+      "dddd1004-0000-4000-a000-000000000004",
+      "dddd1005-0000-4000-a000-000000000005",
+      "dddd1006-0000-4000-a000-000000000006",
+      "dddd1007-0000-4000-a000-000000000007",
+      "dddd1008-0000-4000-a000-000000000008",
+      "dddd1009-0000-4000-a000-000000000009",
+      "dddd1010-0000-4000-a000-000000000010",
+      "dddd1011-0000-4000-a000-000000000011",
+      "dddd1012-0000-4000-a000-000000000012",
+      "dddd1013-0000-4000-a000-000000000013",
+      "dddd2001-0000-4000-a000-000000000001",
+      "dddd2002-0000-4000-a000-000000000002",
+      "dddd2003-0000-4000-a000-000000000003",
+      "dddd2004-0000-4000-a000-000000000004",
+      "dddd2005-0000-4000-a000-000000000005",
+      "dddd2006-0000-4000-a000-000000000006",
+      "dddd2007-0000-4000-a000-000000000007",
+      "dddd2008-0000-4000-a000-000000000008",
+      "dddd2009-0000-4000-a000-000000000009",
+      "dddd3001-0000-4000-a000-000000000001",
+      "dddd3002-0000-4000-a000-000000000002",
+      "dddd3003-0000-4000-a000-000000000003",
+      "dddd3004-0000-4000-a000-000000000004",
+      "dddd3005-0000-4000-a000-000000000005",
+      "dddd3006-0000-4000-a000-000000000006",
+      "dddd3007-0000-4000-a000-000000000007",
+      "dddd4001-0000-4000-a000-000000000001",
+      "dddd4002-0000-4000-a000-000000000002",
+      "dddd4003-0000-4000-a000-000000000003",
+      "dddd4004-0000-4000-a000-000000000004",
+      "dddd4005-0000-4000-a000-000000000005",
+      "dddd4006-0000-4000-a000-000000000006"
+    ],
+    "notYetKnownRecordIds": [],
+    "openQuestionsAtGeneration": [
+      "Q-006: Are accessibility arrangements adequate while the main entrance is closed?",
+      "Q-007: What follow-up action is needed before future planned works?"
+    ],
+    "caveatsAtGeneration": []
+  },
+  {
+    "id": "dddd5010-0000-4000-a000-000000000010",
+    "kind": "circulation_audit",
+    "title": "Circulation audit",
+    "audience": "Governance record",
+    "status": "Approved",
+    "versionNumber": null,
+    "generatedAt": "2026-05-11T08:00:00.000Z",
+    "supersededBy": null,
+    "linkedSourceIds": [],
+    "linkedClaimIds": [],
+    "body": "Circulation audit — governance record (Mon 09:00)\n\nComms engagement\n- 05:42 Duty manager briefing to corporate affairs; Metis issue opened.\n- 05:50 Duty overnight pack logged in Metis (SRC-001–SRC-007 from duty handover).\n\nOutputs circulated / coordinated\n- 05:54 Staff holding update — station staff & customer service (after comms engagement).\n- 05:58 Passenger message — digital/PA (approved for use).\n- 05:52 Social response line — after social monitoring note (approved).\n- 06:18 Holding press line — after 06:08 press enquiry (approved for reporter window).\n- 06:48 Executive brief V1 — after 06:35 executive request.\n- 07:22 Updated passenger message — digital/PA.\n- 07:38 Stakeholder note — local authority & accessibility contacts.\n- 08:28 Executive brief V2 — senior leadership (supersedes V1 for position).\n- 08:45 Post-incident review note — operations & comms leadership (draft).\n\nAudit posture\n- All lines tied to sources recorded in Metis issue record.\n- V2 executive brief reflects reopening confirmation and facilities clearance.",
+    "doNotSay": [],
+    "metisMessageVariantId": null,
+    "metisBriefVersionId": null,
+    "templateId": null,
+    "basedOnSnapshotAt": "2026-05-11T08:00:00.000Z",
+    "includedRecordIds": [
+      "dddd0015-0000-4000-a000-000000000015",
+      "dddd0001-0000-4000-a000-000000000001",
+      "dddd0008-0000-4000-a000-000000000008",
+      "dddd0009-0000-4000-a000-000000000009",
+      "dddd0016-0000-4000-a000-000000000016",
+      "dddd0010-0000-4000-a000-000000000010",
+      "dddd0011-0000-4000-a000-000000000011",
+      "dddd0012-0000-4000-a000-000000000012",
+      "dddd0013-0000-4000-a000-000000000013",
+      "dddd0014-0000-4000-a000-000000000014",
+      "dddd1001-0000-4000-a000-000000000001",
+      "dddd1002-0000-4000-a000-000000000002",
+      "dddd1003-0000-4000-a000-000000000003",
+      "dddd1004-0000-4000-a000-000000000004",
+      "dddd1005-0000-4000-a000-000000000005",
+      "dddd1006-0000-4000-a000-000000000006",
+      "dddd1007-0000-4000-a000-000000000007",
+      "dddd1008-0000-4000-a000-000000000008",
+      "dddd1009-0000-4000-a000-000000000009",
+      "dddd1010-0000-4000-a000-000000000010",
+      "dddd1011-0000-4000-a000-000000000011",
+      "dddd1012-0000-4000-a000-000000000012",
+      "dddd1013-0000-4000-a000-000000000013",
+      "dddd2001-0000-4000-a000-000000000001",
+      "dddd2002-0000-4000-a000-000000000002",
+      "dddd2003-0000-4000-a000-000000000003",
+      "dddd2004-0000-4000-a000-000000000004",
+      "dddd2005-0000-4000-a000-000000000005",
+      "dddd2006-0000-4000-a000-000000000006",
+      "dddd2007-0000-4000-a000-000000000007",
+      "dddd2008-0000-4000-a000-000000000008",
+      "dddd2009-0000-4000-a000-000000000009",
+      "dddd3001-0000-4000-a000-000000000001",
+      "dddd3002-0000-4000-a000-000000000002",
+      "dddd3003-0000-4000-a000-000000000003",
+      "dddd3004-0000-4000-a000-000000000004",
+      "dddd3005-0000-4000-a000-000000000005",
+      "dddd3006-0000-4000-a000-000000000006",
+      "dddd3007-0000-4000-a000-000000000007",
+      "dddd4001-0000-4000-a000-000000000001",
+      "dddd4002-0000-4000-a000-000000000002",
+      "dddd4003-0000-4000-a000-000000000003",
+      "dddd4004-0000-4000-a000-000000000004",
+      "dddd4005-0000-4000-a000-000000000005",
+      "dddd4006-0000-4000-a000-000000000006"
+    ],
+    "notYetKnownRecordIds": [],
+    "openQuestionsAtGeneration": [
+      "Q-006: Are accessibility arrangements adequate while the main entrance is closed?",
+      "Q-007: What follow-up action is needed before future planned works?"
+    ],
+    "caveatsAtGeneration": []
+  }
+]

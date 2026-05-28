@@ -1,0 +1,1133 @@
+[
+  {
+    "timestamp": "2026-06-08T10:00:00.000Z",
+    "displayTime": "Mon 8 Jun, 11:00",
+    "lane": "incoming_update",
+    "title": "Product launch scope confirmed",
+    "subtitle": "Added from project source · event occurred 09:30",
+    "badge": "PRODUCT UPDATE",
+    "status": "Logged",
+    "linkedRecordType": "incoming_update",
+    "linkedRecordId": "eeee0001-0000-4000-a000-000000000001",
+    "relatedRecordIds": [
+      "eeee1001-0000-4000-a000-000000000001",
+      "eeee2001-0000-4000-a000-000000000001",
+      "eeee2002-0000-4000-a000-000000000002",
+      "eeee4002-0000-4000-a000-000000000002"
+    ],
+    "modalType": "incoming_update",
+    "intake": {
+      "eventOccurredAt": "2026-06-08T08:30:00.000Z",
+      "sourceTimestamp": "2026-06-08T08:30:00.000Z",
+      "receivedByCommsAt": "2026-06-08T10:00:00.000Z",
+      "addedToMetisAt": "2026-06-08T10:00:00.000Z",
+      "intakeRoute": "reconstructed_from_project_source"
+    }
+  },
+  {
+    "timestamp": "2026-06-08T10:00:00.000Z",
+    "displayTime": "Mon 8 Jun, 11:00",
+    "lane": "issue_record",
+    "title": "Issue record updated from Launch scope",
+    "subtitle": "+2 claims · +1 observations",
+    "badge": "RECORD UPDATED",
+    "status": "Updated",
+    "linkedRecordType": "issue_record_update",
+    "linkedRecordId": "eeee0001-0000-4000-a000-000000000001::issue_record_update",
+    "relatedRecordIds": [
+      "eeee1001-0000-4000-a000-000000000001",
+      "eeee2001-0000-4000-a000-000000000001",
+      "eeee2002-0000-4000-a000-000000000002",
+      "eeee4002-0000-4000-a000-000000000002"
+    ],
+    "modalType": "issue_record_update",
+    "impact": {
+      "linkedSourceId": "eeee1001-0000-4000-a000-000000000001",
+      "claimsAdded": [
+        "eeee2001-0000-4000-a000-000000000001",
+        "eeee2002-0000-4000-a000-000000000002"
+      ],
+      "gapsOpened": [],
+      "gapsClosed": [],
+      "observationsAdded": [
+        "eeee4002-0000-4000-a000-000000000002"
+      ],
+      "statusNote": null
+    }
+  },
+  {
+    "timestamp": "2026-06-08T10:00:00.000Z",
+    "displayTime": "Mon 8 Jun, 11:00",
+    "lane": "incoming_update",
+    "title": "Corporate Affairs opens launch readiness issue",
+    "subtitle": "Corporate Affairs · Metis issue setup · Direct to comms",
+    "badge": "COMMS INTAKE",
+    "status": "Received",
+    "linkedRecordType": "incoming_update",
+    "linkedRecordId": "eeee0002-0000-4000-a000-000000000002",
+    "relatedRecordIds": [
+      "eeee4003-0000-4000-a000-000000000003"
+    ],
+    "modalType": "incoming_update",
+    "intake": {
+      "eventOccurredAt": "2026-06-08T10:00:00.000Z",
+      "sourceTimestamp": "2026-06-08T10:00:00.000Z",
+      "receivedByCommsAt": "2026-06-08T10:00:00.000Z",
+      "addedToMetisAt": "2026-06-08T10:00:00.000Z",
+      "intakeRoute": "direct_to_comms"
+    }
+  },
+  {
+    "timestamp": "2026-06-08T10:00:00.000Z",
+    "displayTime": "Mon 8 Jun, 11:00",
+    "lane": "issue_record",
+    "title": "Issue record updated from Issue opened",
+    "subtitle": "+1 observations · status updated",
+    "badge": "RECORD UPDATED",
+    "status": "Launch readiness issue opened in Metis",
+    "linkedRecordType": "issue_record_update",
+    "linkedRecordId": "eeee0002-0000-4000-a000-000000000002::issue_record_update",
+    "relatedRecordIds": [
+      "eeee4003-0000-4000-a000-000000000003"
+    ],
+    "modalType": "issue_record_update",
+    "impact": {
+      "linkedSourceId": null,
+      "claimsAdded": [],
+      "gapsOpened": [],
+      "gapsClosed": [],
+      "observationsAdded": [
+        "eeee4003-0000-4000-a000-000000000003"
+      ],
+      "statusNote": "Launch readiness issue opened in Metis"
+    }
+  },
+  {
+    "timestamp": "2026-06-08T10:00:00.000Z",
+    "displayTime": "Mon 8 Jun, 11:00",
+    "lane": "issue_record",
+    "title": "Issue status",
+    "subtitle": "Launch readiness issue opened",
+    "badge": "DECISION",
+    "status": "Launch readiness issue opened",
+    "linkedRecordType": "issue",
+    "linkedRecordId": "eeeeeeee-eeee-4eee-aeee-eeeeeeeeee01",
+    "relatedRecordIds": [],
+    "modalType": "issue_status"
+  },
+  {
+    "timestamp": "2026-06-09T09:15:00.000Z",
+    "displayTime": "Tue 9 Jun, 10:15",
+    "lane": "incoming_update",
+    "title": "Pricing recommendation submitted",
+    "subtitle": "Commercial Pricing · pricing paper · Direct to comms",
+    "badge": "PRICING UPDATE",
+    "status": "Received",
+    "linkedRecordType": "incoming_update",
+    "linkedRecordId": "eeee0003-0000-4000-a000-000000000003",
+    "relatedRecordIds": [
+      "eeee1002-0000-4000-a000-000000000002",
+      "eeee2003-0000-4000-a000-000000000003",
+      "eeee3001-0000-4000-a000-000000000001",
+      "eeee4001-0000-4000-a000-000000000001"
+    ],
+    "modalType": "incoming_update",
+    "intake": {
+      "eventOccurredAt": "2026-06-09T09:15:00.000Z",
+      "sourceTimestamp": "2026-06-09T09:15:00.000Z",
+      "receivedByCommsAt": "2026-06-09T09:15:00.000Z",
+      "addedToMetisAt": "2026-06-09T09:15:00.000Z",
+      "intakeRoute": "direct_to_comms"
+    }
+  },
+  {
+    "timestamp": "2026-06-09T09:15:00.000Z",
+    "displayTime": "Tue 9 Jun, 10:15",
+    "lane": "issue_record",
+    "title": "Issue record updated from Pricing proposed",
+    "subtitle": "+1 claims · +1 open questions · +1 observations",
+    "badge": "RECORD UPDATED",
+    "status": "Updated",
+    "linkedRecordType": "issue_record_update",
+    "linkedRecordId": "eeee0003-0000-4000-a000-000000000003::issue_record_update",
+    "relatedRecordIds": [
+      "eeee1002-0000-4000-a000-000000000002",
+      "eeee2003-0000-4000-a000-000000000003",
+      "eeee3001-0000-4000-a000-000000000001",
+      "eeee4001-0000-4000-a000-000000000001"
+    ],
+    "modalType": "issue_record_update",
+    "impact": {
+      "linkedSourceId": "eeee1002-0000-4000-a000-000000000002",
+      "claimsAdded": [
+        "eeee2003-0000-4000-a000-000000000003"
+      ],
+      "gapsOpened": [
+        "eeee3001-0000-4000-a000-000000000001"
+      ],
+      "gapsClosed": [],
+      "observationsAdded": [
+        "eeee4001-0000-4000-a000-000000000001"
+      ],
+      "statusNote": null
+    }
+  },
+  {
+    "timestamp": "2026-06-10T08:45:00.000Z",
+    "displayTime": "Wed 10 Jun, 09:45",
+    "lane": "incoming_update",
+    "title": "Compliance review flags eligibility wording",
+    "subtitle": "Compliance · compliance review · Direct to comms",
+    "badge": "COMPLIANCE NOTE",
+    "status": "Received",
+    "linkedRecordType": "incoming_update",
+    "linkedRecordId": "eeee0004-0000-4000-a000-000000000004",
+    "relatedRecordIds": [
+      "eeee1003-0000-4000-a000-000000000003",
+      "eeee2004-0000-4000-a000-000000000004",
+      "eeee3002-0000-4000-a000-000000000002"
+    ],
+    "modalType": "incoming_update",
+    "intake": {
+      "eventOccurredAt": "2026-06-10T08:45:00.000Z",
+      "sourceTimestamp": "2026-06-10T08:45:00.000Z",
+      "receivedByCommsAt": "2026-06-10T08:45:00.000Z",
+      "addedToMetisAt": "2026-06-10T08:45:00.000Z",
+      "intakeRoute": "direct_to_comms"
+    }
+  },
+  {
+    "timestamp": "2026-06-10T08:45:00.000Z",
+    "displayTime": "Wed 10 Jun, 09:45",
+    "lane": "issue_record",
+    "title": "Issue record updated from Eligibility flag",
+    "subtitle": "+1 claims · +1 open questions",
+    "badge": "RECORD UPDATED",
+    "status": "Updated",
+    "linkedRecordType": "issue_record_update",
+    "linkedRecordId": "eeee0004-0000-4000-a000-000000000004::issue_record_update",
+    "relatedRecordIds": [
+      "eeee1003-0000-4000-a000-000000000003",
+      "eeee2004-0000-4000-a000-000000000004",
+      "eeee3002-0000-4000-a000-000000000002"
+    ],
+    "modalType": "issue_record_update",
+    "impact": {
+      "linkedSourceId": "eeee1003-0000-4000-a000-000000000003",
+      "claimsAdded": [
+        "eeee2004-0000-4000-a000-000000000004"
+      ],
+      "gapsOpened": [
+        "eeee3002-0000-4000-a000-000000000002"
+      ],
+      "gapsClosed": [],
+      "observationsAdded": [],
+      "statusNote": null
+    }
+  },
+  {
+    "timestamp": "2026-06-10T13:30:00.000Z",
+    "displayTime": "Wed 10 Jun, 14:30",
+    "lane": "incoming_update",
+    "title": "Legal approves headline subject to caveat",
+    "subtitle": "Legal · legal sign-off · Direct to comms",
+    "badge": "LEGAL NOTE",
+    "status": "Received",
+    "linkedRecordType": "incoming_update",
+    "linkedRecordId": "eeee0005-0000-4000-a000-000000000005",
+    "relatedRecordIds": [
+      "eeee1004-0000-4000-a000-000000000004",
+      "eeee2005-0000-4000-a000-000000000005",
+      "eeee3003-0000-4000-a000-000000000003",
+      "eeee4001-0000-4000-a000-000000000001"
+    ],
+    "modalType": "incoming_update",
+    "intake": {
+      "eventOccurredAt": "2026-06-10T13:30:00.000Z",
+      "sourceTimestamp": "2026-06-10T13:30:00.000Z",
+      "receivedByCommsAt": "2026-06-10T13:30:00.000Z",
+      "addedToMetisAt": "2026-06-10T13:30:00.000Z",
+      "intakeRoute": "direct_to_comms"
+    }
+  },
+  {
+    "timestamp": "2026-06-10T13:30:00.000Z",
+    "displayTime": "Wed 10 Jun, 14:30",
+    "lane": "issue_record",
+    "title": "Issue record updated from Legal caveat",
+    "subtitle": "+1 claims · +1 open questions · +1 observations",
+    "badge": "RECORD UPDATED",
+    "status": "Updated",
+    "linkedRecordType": "issue_record_update",
+    "linkedRecordId": "eeee0005-0000-4000-a000-000000000005::issue_record_update",
+    "relatedRecordIds": [
+      "eeee1004-0000-4000-a000-000000000004",
+      "eeee2005-0000-4000-a000-000000000005",
+      "eeee3003-0000-4000-a000-000000000003",
+      "eeee4001-0000-4000-a000-000000000001"
+    ],
+    "modalType": "issue_record_update",
+    "impact": {
+      "linkedSourceId": "eeee1004-0000-4000-a000-000000000004",
+      "claimsAdded": [
+        "eeee2005-0000-4000-a000-000000000005"
+      ],
+      "gapsOpened": [
+        "eeee3003-0000-4000-a000-000000000003"
+      ],
+      "gapsClosed": [],
+      "observationsAdded": [
+        "eeee4001-0000-4000-a000-000000000001"
+      ],
+      "statusNote": null
+    }
+  },
+  {
+    "timestamp": "2026-06-11T09:00:00.000Z",
+    "displayTime": "Thu 11 Jun, 10:00",
+    "lane": "incoming_update",
+    "title": "Customer operations requests approved agent line",
+    "subtitle": "Customer Operations · ops request · Direct to comms",
+    "badge": "CUSTOMER OPS",
+    "status": "Received",
+    "linkedRecordType": "incoming_update",
+    "linkedRecordId": "eeee0006-0000-4000-a000-000000000006",
+    "relatedRecordIds": [
+      "eeee1005-0000-4000-a000-000000000005",
+      "eeee2006-0000-4000-a000-000000000006",
+      "eeee3005-0000-4000-a000-000000000005",
+      "eeee4004-0000-4000-a000-000000000004"
+    ],
+    "modalType": "incoming_update",
+    "intake": {
+      "eventOccurredAt": "2026-06-11T09:00:00.000Z",
+      "sourceTimestamp": "2026-06-11T09:00:00.000Z",
+      "receivedByCommsAt": "2026-06-11T09:00:00.000Z",
+      "addedToMetisAt": "2026-06-11T09:00:00.000Z",
+      "intakeRoute": "direct_to_comms"
+    }
+  },
+  {
+    "timestamp": "2026-06-11T09:00:00.000Z",
+    "displayTime": "Thu 11 Jun, 10:00",
+    "lane": "issue_record",
+    "title": "Issue record updated from Agent line needed",
+    "subtitle": "+1 claims · +1 open questions · +1 observations",
+    "badge": "RECORD UPDATED",
+    "status": "Updated",
+    "linkedRecordType": "issue_record_update",
+    "linkedRecordId": "eeee0006-0000-4000-a000-000000000006::issue_record_update",
+    "relatedRecordIds": [
+      "eeee1005-0000-4000-a000-000000000005",
+      "eeee2006-0000-4000-a000-000000000006",
+      "eeee3005-0000-4000-a000-000000000005",
+      "eeee4004-0000-4000-a000-000000000004"
+    ],
+    "modalType": "issue_record_update",
+    "impact": {
+      "linkedSourceId": "eeee1005-0000-4000-a000-000000000005",
+      "claimsAdded": [
+        "eeee2006-0000-4000-a000-000000000006"
+      ],
+      "gapsOpened": [
+        "eeee3005-0000-4000-a000-000000000005"
+      ],
+      "gapsClosed": [],
+      "observationsAdded": [
+        "eeee4004-0000-4000-a000-000000000004"
+      ],
+      "statusNote": null
+    }
+  },
+  {
+    "timestamp": "2026-06-11T11:00:00.000Z",
+    "displayTime": "Thu 11 Jun, 12:00",
+    "lane": "metis_output",
+    "title": "Customer message variant V1",
+    "subtitle": "Customers · Approved",
+    "badge": "PASSENGER MESSAGE",
+    "status": "Approved",
+    "linkedRecordType": "output",
+    "linkedRecordId": "eeee5002-0000-4000-a000-000000000002",
+    "relatedRecordIds": [
+      "eeee1001-0000-4000-a000-000000000001",
+      "eeee1003-0000-4000-a000-000000000003",
+      "eeee1004-0000-4000-a000-000000000004",
+      "eeee2001-0000-4000-a000-000000000001",
+      "eeee2002-0000-4000-a000-000000000002",
+      "eeee2004-0000-4000-a000-000000000004",
+      "eeee2005-0000-4000-a000-000000000005"
+    ],
+    "modalType": "output"
+  },
+  {
+    "timestamp": "2026-06-11T14:00:00.000Z",
+    "displayTime": "Thu 11 Jun, 15:00",
+    "lane": "metis_output",
+    "title": "Internal staff message V1",
+    "subtitle": "Internal staff and customer-facing colleagues · Ready for review",
+    "badge": "STAFF HOLDING UPDATE",
+    "status": "Ready for review",
+    "linkedRecordType": "output",
+    "linkedRecordId": "eeee5001-0000-4000-a000-000000000001",
+    "relatedRecordIds": [
+      "eeee1001-0000-4000-a000-000000000001",
+      "eeee1003-0000-4000-a000-000000000003",
+      "eeee1004-0000-4000-a000-000000000004",
+      "eeee1005-0000-4000-a000-000000000005",
+      "eeee2001-0000-4000-a000-000000000001",
+      "eeee2002-0000-4000-a000-000000000002",
+      "eeee2004-0000-4000-a000-000000000004",
+      "eeee2005-0000-4000-a000-000000000005",
+      "eeee2006-0000-4000-a000-000000000006"
+    ],
+    "modalType": "output"
+  },
+  {
+    "timestamp": "2026-06-12T08:30:00.000Z",
+    "displayTime": "Fri 12 Jun, 09:30",
+    "lane": "incoming_update",
+    "title": "Accessibility review asks for alternative support wording",
+    "subtitle": "Accessibility and Inclusion · accessibility review · Direct to comms",
+    "badge": "ACCESSIBILITY REVIEW",
+    "status": "Received",
+    "linkedRecordType": "incoming_update",
+    "linkedRecordId": "eeee0007-0000-4000-a000-000000000007",
+    "relatedRecordIds": [
+      "eeee1006-0000-4000-a000-000000000006",
+      "eeee2007-0000-4000-a000-000000000007",
+      "eeee3006-0000-4000-a000-000000000006"
+    ],
+    "modalType": "incoming_update",
+    "intake": {
+      "eventOccurredAt": "2026-06-12T08:30:00.000Z",
+      "sourceTimestamp": "2026-06-12T08:30:00.000Z",
+      "receivedByCommsAt": "2026-06-12T08:30:00.000Z",
+      "addedToMetisAt": "2026-06-12T08:30:00.000Z",
+      "intakeRoute": "direct_to_comms"
+    }
+  },
+  {
+    "timestamp": "2026-06-12T08:30:00.000Z",
+    "displayTime": "Fri 12 Jun, 09:30",
+    "lane": "issue_record",
+    "title": "Issue record updated from Accessibility wording",
+    "subtitle": "+1 claims · +1 open questions",
+    "badge": "RECORD UPDATED",
+    "status": "Updated",
+    "linkedRecordType": "issue_record_update",
+    "linkedRecordId": "eeee0007-0000-4000-a000-000000000007::issue_record_update",
+    "relatedRecordIds": [
+      "eeee1006-0000-4000-a000-000000000006",
+      "eeee2007-0000-4000-a000-000000000007",
+      "eeee3006-0000-4000-a000-000000000006"
+    ],
+    "modalType": "issue_record_update",
+    "impact": {
+      "linkedSourceId": "eeee1006-0000-4000-a000-000000000006",
+      "claimsAdded": [
+        "eeee2007-0000-4000-a000-000000000007"
+      ],
+      "gapsOpened": [
+        "eeee3006-0000-4000-a000-000000000006"
+      ],
+      "gapsClosed": [],
+      "observationsAdded": [],
+      "statusNote": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T08:00:00.000Z",
+    "displayTime": "Mon 15 Jun, 09:00",
+    "lane": "incoming_update",
+    "title": "App release dependency still open",
+    "subtitle": "Digital Product · release status · Direct to comms",
+    "badge": "DIGITAL READINESS",
+    "status": "Received",
+    "linkedRecordType": "incoming_update",
+    "linkedRecordId": "eeee0008-0000-4000-a000-000000000008",
+    "relatedRecordIds": [
+      "eeee1007-0000-4000-a000-000000000007",
+      "eeee2008-0000-4000-a000-000000000008",
+      "eeee3004-0000-4000-a000-000000000004",
+      "eeee4006-0000-4000-a000-000000000006"
+    ],
+    "modalType": "incoming_update",
+    "intake": {
+      "eventOccurredAt": "2026-06-15T08:00:00.000Z",
+      "sourceTimestamp": "2026-06-15T08:00:00.000Z",
+      "receivedByCommsAt": "2026-06-15T08:00:00.000Z",
+      "addedToMetisAt": "2026-06-15T08:00:00.000Z",
+      "intakeRoute": "direct_to_comms"
+    }
+  },
+  {
+    "timestamp": "2026-06-15T08:00:00.000Z",
+    "displayTime": "Mon 15 Jun, 09:00",
+    "lane": "issue_record",
+    "title": "Issue record updated from App dependency open",
+    "subtitle": "+1 claims · +1 open questions · +1 observations",
+    "badge": "RECORD UPDATED",
+    "status": "Updated",
+    "linkedRecordType": "issue_record_update",
+    "linkedRecordId": "eeee0008-0000-4000-a000-000000000008::issue_record_update",
+    "relatedRecordIds": [
+      "eeee1007-0000-4000-a000-000000000007",
+      "eeee2008-0000-4000-a000-000000000008",
+      "eeee3004-0000-4000-a000-000000000004",
+      "eeee4006-0000-4000-a000-000000000006"
+    ],
+    "modalType": "issue_record_update",
+    "impact": {
+      "linkedSourceId": "eeee1007-0000-4000-a000-000000000007",
+      "claimsAdded": [
+        "eeee2008-0000-4000-a000-000000000008"
+      ],
+      "gapsOpened": [
+        "eeee3004-0000-4000-a000-000000000004"
+      ],
+      "gapsClosed": [],
+      "observationsAdded": [
+        "eeee4006-0000-4000-a000-000000000006"
+      ],
+      "statusNote": null
+    }
+  },
+  {
+    "timestamp": "2026-06-15T10:15:00.000Z",
+    "displayTime": "Mon 15 Jun, 11:15",
+    "lane": "incoming_update",
+    "title": "Executive office requests launch readiness brief",
+    "subtitle": "Executive Office · email to Corporate Affairs · Direct to comms",
+    "badge": "EXEC REQUEST",
+    "status": "Received",
+    "linkedRecordType": "incoming_update",
+    "linkedRecordId": "eeee0009-0000-4000-a000-000000000009",
+    "relatedRecordIds": [],
+    "modalType": "incoming_update",
+    "intake": {
+      "eventOccurredAt": "2026-06-15T10:15:00.000Z",
+      "sourceTimestamp": "2026-06-15T10:15:00.000Z",
+      "receivedByCommsAt": "2026-06-15T10:15:00.000Z",
+      "addedToMetisAt": "2026-06-15T10:15:00.000Z",
+      "intakeRoute": "direct_to_comms"
+    }
+  },
+  {
+    "timestamp": "2026-06-15T10:15:00.000Z",
+    "displayTime": "Mon 15 Jun, 11:15",
+    "lane": "issue_record",
+    "title": "Issue status",
+    "subtitle": "Executive readiness brief requested",
+    "badge": "DECISION",
+    "status": "Executive readiness brief requested",
+    "linkedRecordType": "issue",
+    "linkedRecordId": "eeeeeeee-eeee-4eee-aeee-eeeeeeeeee01",
+    "relatedRecordIds": [],
+    "modalType": "issue_status"
+  },
+  {
+    "timestamp": "2026-06-15T10:45:00.000Z",
+    "displayTime": "Mon 15 Jun, 11:45",
+    "lane": "metis_output",
+    "title": "Executive brief V1",
+    "subtitle": "Senior leadership · Ready for review",
+    "badge": "EXECUTIVE BRIEF",
+    "status": "Ready for review",
+    "linkedRecordType": "output",
+    "linkedRecordId": "eeee5003-0000-4000-a000-000000000003",
+    "relatedRecordIds": [
+      "eeee1001-0000-4000-a000-000000000001",
+      "eeee1002-0000-4000-a000-000000000002",
+      "eeee1003-0000-4000-a000-000000000003",
+      "eeee1004-0000-4000-a000-000000000004",
+      "eeee1005-0000-4000-a000-000000000005",
+      "eeee1006-0000-4000-a000-000000000006",
+      "eeee1007-0000-4000-a000-000000000007",
+      "eeee2001-0000-4000-a000-000000000001",
+      "eeee2002-0000-4000-a000-000000000002",
+      "eeee2003-0000-4000-a000-000000000003",
+      "eeee2004-0000-4000-a000-000000000004",
+      "eeee2005-0000-4000-a000-000000000005",
+      "eeee2006-0000-4000-a000-000000000006",
+      "eeee2007-0000-4000-a000-000000000007",
+      "eeee2008-0000-4000-a000-000000000008"
+    ],
+    "modalType": "output"
+  },
+  {
+    "timestamp": "2026-06-15T11:00:00.000Z",
+    "displayTime": "Mon 15 Jun, 12:00",
+    "lane": "issue_record",
+    "title": "Circulation · Circulated",
+    "subtitle": "Executive brief V1 — pre-approval readiness position.",
+    "badge": "CIRCULATION",
+    "status": "Ready for review",
+    "linkedRecordType": "circulation",
+    "linkedRecordId": "eeee7001-0000-4000-a000-000000000001",
+    "relatedRecordIds": [
+      "eeee5003-0000-4000-a000-000000000003"
+    ],
+    "modalType": "circulation"
+  },
+  {
+    "timestamp": "2026-06-16T09:00:00.000Z",
+    "displayTime": "Tue 16 Jun, 10:00",
+    "lane": "incoming_update",
+    "title": "Green home partner content confirmed",
+    "subtitle": "Partnerships · partner sign-off · Direct to comms",
+    "badge": "PARTNER UPDATE",
+    "status": "Received",
+    "linkedRecordType": "incoming_update",
+    "linkedRecordId": "eeee0010-0000-4000-a000-000000000010",
+    "relatedRecordIds": [
+      "eeee1008-0000-4000-a000-000000000008"
+    ],
+    "modalType": "incoming_update",
+    "intake": {
+      "eventOccurredAt": "2026-06-16T09:00:00.000Z",
+      "sourceTimestamp": "2026-06-16T09:00:00.000Z",
+      "receivedByCommsAt": "2026-06-16T09:00:00.000Z",
+      "addedToMetisAt": "2026-06-16T09:00:00.000Z",
+      "intakeRoute": "direct_to_comms"
+    }
+  },
+  {
+    "timestamp": "2026-06-16T09:00:00.000Z",
+    "displayTime": "Tue 16 Jun, 10:00",
+    "lane": "issue_record",
+    "title": "Issue record updated from Partner copy",
+    "subtitle": "Issue record updated",
+    "badge": "RECORD UPDATED",
+    "status": "Updated",
+    "linkedRecordType": "issue_record_update",
+    "linkedRecordId": "eeee0010-0000-4000-a000-000000000010::issue_record_update",
+    "relatedRecordIds": [
+      "eeee1008-0000-4000-a000-000000000008"
+    ],
+    "modalType": "issue_record_update",
+    "impact": {
+      "linkedSourceId": "eeee1008-0000-4000-a000-000000000008",
+      "claimsAdded": [],
+      "gapsOpened": [],
+      "gapsClosed": [],
+      "observationsAdded": [],
+      "statusNote": null
+    }
+  },
+  {
+    "timestamp": "2026-06-17T08:30:00.000Z",
+    "displayTime": "Wed 17 Jun, 09:30",
+    "lane": "incoming_update",
+    "title": "Trade journalist asks about upcoming savings launch",
+    "subtitle": "Press Office · media enquiry log · Direct to comms",
+    "badge": "MEDIA ENQUIRY",
+    "status": "Received",
+    "linkedRecordType": "incoming_update",
+    "linkedRecordId": "eeee0011-0000-4000-a000-000000000011",
+    "relatedRecordIds": [
+      "eeee1009-0000-4000-a000-000000000009",
+      "eeee4005-0000-4000-a000-000000000005"
+    ],
+    "modalType": "incoming_update",
+    "intake": {
+      "eventOccurredAt": "2026-06-17T08:30:00.000Z",
+      "sourceTimestamp": "2026-06-17T08:30:00.000Z",
+      "receivedByCommsAt": "2026-06-17T08:30:00.000Z",
+      "addedToMetisAt": "2026-06-17T08:30:00.000Z",
+      "intakeRoute": "direct_to_comms"
+    }
+  },
+  {
+    "timestamp": "2026-06-17T08:30:00.000Z",
+    "displayTime": "Wed 17 Jun, 09:30",
+    "lane": "issue_record",
+    "title": "Issue record updated from Trade press enquiry",
+    "subtitle": "+1 observations",
+    "badge": "RECORD UPDATED",
+    "status": "Updated",
+    "linkedRecordType": "issue_record_update",
+    "linkedRecordId": "eeee0011-0000-4000-a000-000000000011::issue_record_update",
+    "relatedRecordIds": [
+      "eeee1009-0000-4000-a000-000000000009",
+      "eeee4005-0000-4000-a000-000000000005"
+    ],
+    "modalType": "issue_record_update",
+    "impact": {
+      "linkedSourceId": "eeee1009-0000-4000-a000-000000000009",
+      "claimsAdded": [],
+      "gapsOpened": [],
+      "gapsClosed": [],
+      "observationsAdded": [
+        "eeee4005-0000-4000-a000-000000000005"
+      ],
+      "statusNote": null
+    }
+  },
+  {
+    "timestamp": "2026-06-17T09:00:00.000Z",
+    "displayTime": "Wed 17 Jun, 10:00",
+    "lane": "metis_output",
+    "title": "Press holding message variant",
+    "subtitle": "Media / press office · Ready for review",
+    "badge": "HOLDING PRESS LINE",
+    "status": "Ready for review",
+    "linkedRecordType": "output",
+    "linkedRecordId": "eeee5004-0000-4000-a000-000000000004",
+    "relatedRecordIds": [
+      "eeee1009-0000-4000-a000-000000000009",
+      "eeee1004-0000-4000-a000-000000000004",
+      "eeee1003-0000-4000-a000-000000000003",
+      "eeee2004-0000-4000-a000-000000000004",
+      "eeee2005-0000-4000-a000-000000000005"
+    ],
+    "modalType": "output"
+  },
+  {
+    "timestamp": "2026-06-17T09:30:00.000Z",
+    "displayTime": "Wed 17 Jun, 10:30",
+    "lane": "issue_record",
+    "title": "Circulation · Shared for review",
+    "subtitle": "Press holding variant after trade journalist enquiry.",
+    "badge": "CIRCULATION",
+    "status": "Ready for review",
+    "linkedRecordType": "circulation",
+    "linkedRecordId": "eeee7002-0000-4000-a000-000000000002",
+    "relatedRecordIds": [
+      "eeee5004-0000-4000-a000-000000000004"
+    ],
+    "modalType": "circulation"
+  },
+  {
+    "timestamp": "2026-06-18T09:30:00.000Z",
+    "displayTime": "Thu 18 Jun, 10:30",
+    "lane": "incoming_update",
+    "title": "App release approved for launch",
+    "subtitle": "Digital Product · release approval · Direct to comms",
+    "badge": "DIGITAL APPROVAL",
+    "status": "Received",
+    "linkedRecordType": "incoming_update",
+    "linkedRecordId": "eeee0012-0000-4000-a000-000000000012",
+    "relatedRecordIds": [
+      "eeee1010-0000-4000-a000-000000000010",
+      "eeee3004-0000-4000-a000-000000000004"
+    ],
+    "modalType": "incoming_update",
+    "intake": {
+      "eventOccurredAt": "2026-06-18T09:30:00.000Z",
+      "sourceTimestamp": "2026-06-18T09:30:00.000Z",
+      "receivedByCommsAt": "2026-06-18T09:30:00.000Z",
+      "addedToMetisAt": "2026-06-18T09:30:00.000Z",
+      "intakeRoute": "direct_to_comms"
+    }
+  },
+  {
+    "timestamp": "2026-06-18T09:30:00.000Z",
+    "displayTime": "Thu 18 Jun, 10:30",
+    "lane": "issue_record",
+    "title": "Issue record updated from App approved",
+    "subtitle": "1 questions closed",
+    "badge": "RECORD UPDATED",
+    "status": "Updated",
+    "linkedRecordType": "issue_record_update",
+    "linkedRecordId": "eeee0012-0000-4000-a000-000000000012::issue_record_update",
+    "relatedRecordIds": [
+      "eeee1010-0000-4000-a000-000000000010",
+      "eeee3004-0000-4000-a000-000000000004"
+    ],
+    "modalType": "issue_record_update",
+    "impact": {
+      "linkedSourceId": "eeee1010-0000-4000-a000-000000000010",
+      "claimsAdded": [],
+      "gapsOpened": [],
+      "gapsClosed": [
+        "eeee3004-0000-4000-a000-000000000004"
+      ],
+      "observationsAdded": [],
+      "statusNote": null
+    }
+  },
+  {
+    "timestamp": "2026-06-18T10:45:00.000Z",
+    "displayTime": "Thu 18 Jun, 11:45",
+    "lane": "incoming_update",
+    "title": "Pricing committee confirms launch rate",
+    "subtitle": "Commercial Pricing · committee minute · Direct to comms",
+    "badge": "PRICING APPROVAL",
+    "status": "Received",
+    "linkedRecordType": "incoming_update",
+    "linkedRecordId": "eeee0013-0000-4000-a000-000000000013",
+    "relatedRecordIds": [
+      "eeee1011-0000-4000-a000-000000000011",
+      "eeee2009-0000-4000-a000-000000000009",
+      "eeee3001-0000-4000-a000-000000000001",
+      "eeee3002-0000-4000-a000-000000000002"
+    ],
+    "modalType": "incoming_update",
+    "intake": {
+      "eventOccurredAt": "2026-06-18T10:45:00.000Z",
+      "sourceTimestamp": "2026-06-18T10:45:00.000Z",
+      "receivedByCommsAt": "2026-06-18T10:45:00.000Z",
+      "addedToMetisAt": "2026-06-18T10:45:00.000Z",
+      "intakeRoute": "direct_to_comms"
+    }
+  },
+  {
+    "timestamp": "2026-06-18T10:45:00.000Z",
+    "displayTime": "Thu 18 Jun, 11:45",
+    "lane": "issue_record",
+    "title": "Issue record updated from Pricing approved",
+    "subtitle": "+1 claims · 2 questions closed",
+    "badge": "RECORD UPDATED",
+    "status": "Updated",
+    "linkedRecordType": "issue_record_update",
+    "linkedRecordId": "eeee0013-0000-4000-a000-000000000013::issue_record_update",
+    "relatedRecordIds": [
+      "eeee1011-0000-4000-a000-000000000011",
+      "eeee2009-0000-4000-a000-000000000009",
+      "eeee3001-0000-4000-a000-000000000001",
+      "eeee3002-0000-4000-a000-000000000002"
+    ],
+    "modalType": "issue_record_update",
+    "impact": {
+      "linkedSourceId": "eeee1011-0000-4000-a000-000000000011",
+      "claimsAdded": [
+        "eeee2009-0000-4000-a000-000000000009"
+      ],
+      "gapsOpened": [],
+      "gapsClosed": [
+        "eeee3001-0000-4000-a000-000000000001",
+        "eeee3002-0000-4000-a000-000000000002"
+      ],
+      "observationsAdded": [],
+      "statusNote": null
+    }
+  },
+  {
+    "timestamp": "2026-06-18T10:45:00.000Z",
+    "displayTime": "Thu 18 Jun, 11:45",
+    "lane": "issue_record",
+    "title": "Issue status",
+    "subtitle": "Pricing and eligibility approved",
+    "badge": "DECISION",
+    "status": "Pricing and eligibility approved",
+    "linkedRecordType": "issue",
+    "linkedRecordId": "eeeeeeee-eeee-4eee-aeee-eeeeeeeeee01",
+    "relatedRecordIds": [],
+    "modalType": "issue_status"
+  },
+  {
+    "timestamp": "2026-06-18T11:15:00.000Z",
+    "displayTime": "Thu 18 Jun, 12:15",
+    "lane": "metis_output",
+    "title": "Executive brief V2",
+    "subtitle": "Senior leadership · Approved",
+    "badge": "EXECUTIVE BRIEF",
+    "status": "Approved",
+    "linkedRecordType": "output",
+    "linkedRecordId": "eeee5005-0000-4000-a000-000000000005",
+    "relatedRecordIds": [
+      "eeee1001-0000-4000-a000-000000000001",
+      "eeee1011-0000-4000-a000-000000000011",
+      "eeee1010-0000-4000-a000-000000000010",
+      "eeee1009-0000-4000-a000-000000000009",
+      "eeee2001-0000-4000-a000-000000000001",
+      "eeee2009-0000-4000-a000-000000000009",
+      "eeee2008-0000-4000-a000-000000000008",
+      "eeee2005-0000-4000-a000-000000000005"
+    ],
+    "modalType": "output"
+  },
+  {
+    "timestamp": "2026-06-18T11:20:00.000Z",
+    "displayTime": "Thu 18 Jun, 12:20",
+    "lane": "issue_record",
+    "title": "Compare executive brief versions",
+    "subtitle": "V1 → V2 after pricing and digital approvals",
+    "badge": "COMPARE",
+    "status": "Ready",
+    "linkedRecordType": "brief_comparison",
+    "linkedRecordId": "eeee6201-0000-4000-a000-000000000001",
+    "relatedRecordIds": [],
+    "modalType": "brief_comparison"
+  },
+  {
+    "timestamp": "2026-06-18T11:30:00.000Z",
+    "displayTime": "Thu 18 Jun, 12:30",
+    "lane": "issue_record",
+    "title": "Circulation · Circulated",
+    "subtitle": "Executive brief V2 — supersedes V1 after pricing and digital approvals.",
+    "badge": "CIRCULATION",
+    "status": "Approved",
+    "linkedRecordType": "circulation",
+    "linkedRecordId": "eeee7003-0000-4000-a000-000000000003",
+    "relatedRecordIds": [
+      "eeee5005-0000-4000-a000-000000000005"
+    ],
+    "modalType": "circulation"
+  },
+  {
+    "timestamp": "2026-06-18T12:00:00.000Z",
+    "displayTime": "Thu 18 Jun, 13:00",
+    "lane": "metis_output",
+    "title": "Customer message variant V2",
+    "subtitle": "Customers · Approved",
+    "badge": "PASSENGER MESSAGE",
+    "status": "Approved",
+    "linkedRecordType": "output",
+    "linkedRecordId": "eeee5006-0000-4000-a000-000000000006",
+    "relatedRecordIds": [
+      "eeee1011-0000-4000-a000-000000000011",
+      "eeee1010-0000-4000-a000-000000000010",
+      "eeee1001-0000-4000-a000-000000000001",
+      "eeee1006-0000-4000-a000-000000000006",
+      "eeee2009-0000-4000-a000-000000000009",
+      "eeee2008-0000-4000-a000-000000000008",
+      "eeee2001-0000-4000-a000-000000000001",
+      "eeee2007-0000-4000-a000-000000000007"
+    ],
+    "modalType": "output"
+  },
+  {
+    "timestamp": "2026-06-18T12:15:00.000Z",
+    "displayTime": "Thu 18 Jun, 13:15",
+    "lane": "issue_record",
+    "title": "Circulation · Published",
+    "subtitle": "Customer message variant V2 with approved rate and channels.",
+    "badge": "CIRCULATION",
+    "status": "Approved",
+    "linkedRecordType": "circulation",
+    "linkedRecordId": "eeee7004-0000-4000-a000-000000000004",
+    "relatedRecordIds": [
+      "eeee5006-0000-4000-a000-000000000006"
+    ],
+    "modalType": "circulation"
+  },
+  {
+    "timestamp": "2026-06-19T08:00:00.000Z",
+    "displayTime": "Fri 19 Jun, 09:00",
+    "lane": "incoming_update",
+    "title": "Launch approved for announcement",
+    "subtitle": "Launch Steering Group · go/no-go record · Direct to comms",
+    "badge": "GO NO-GO",
+    "status": "Received",
+    "linkedRecordType": "incoming_update",
+    "linkedRecordId": "eeee0014-0000-4000-a000-000000000014",
+    "relatedRecordIds": [
+      "eeee1012-0000-4000-a000-000000000012",
+      "eeee2010-0000-4000-a000-000000000010",
+      "eeee3005-0000-4000-a000-000000000005"
+    ],
+    "modalType": "incoming_update",
+    "intake": {
+      "eventOccurredAt": "2026-06-19T08:00:00.000Z",
+      "sourceTimestamp": "2026-06-19T08:00:00.000Z",
+      "receivedByCommsAt": "2026-06-19T08:00:00.000Z",
+      "addedToMetisAt": "2026-06-19T08:00:00.000Z",
+      "intakeRoute": "direct_to_comms"
+    }
+  },
+  {
+    "timestamp": "2026-06-19T08:00:00.000Z",
+    "displayTime": "Fri 19 Jun, 09:00",
+    "lane": "issue_record",
+    "title": "Issue record updated from Go for launch",
+    "subtitle": "+1 claims · 1 questions closed · status updated",
+    "badge": "RECORD UPDATED",
+    "status": "Launch approved for announcement",
+    "linkedRecordType": "issue_record_update",
+    "linkedRecordId": "eeee0014-0000-4000-a000-000000000014::issue_record_update",
+    "relatedRecordIds": [
+      "eeee1012-0000-4000-a000-000000000012",
+      "eeee2010-0000-4000-a000-000000000010",
+      "eeee3005-0000-4000-a000-000000000005"
+    ],
+    "modalType": "issue_record_update",
+    "impact": {
+      "linkedSourceId": "eeee1012-0000-4000-a000-000000000012",
+      "claimsAdded": [
+        "eeee2010-0000-4000-a000-000000000010"
+      ],
+      "gapsOpened": [],
+      "gapsClosed": [
+        "eeee3005-0000-4000-a000-000000000005"
+      ],
+      "observationsAdded": [],
+      "statusNote": "Launch approved for announcement"
+    }
+  },
+  {
+    "timestamp": "2026-06-19T08:00:00.000Z",
+    "displayTime": "Fri 19 Jun, 09:00",
+    "lane": "issue_record",
+    "title": "Issue status",
+    "subtitle": "Launch approved for announcement",
+    "badge": "DECISION",
+    "status": "Launch approved for announcement",
+    "linkedRecordType": "issue",
+    "linkedRecordId": "eeeeeeee-eeee-4eee-aeee-eeeeeeeeee01",
+    "relatedRecordIds": [],
+    "modalType": "issue_status"
+  },
+  {
+    "timestamp": "2026-06-19T08:30:00.000Z",
+    "displayTime": "Fri 19 Jun, 09:30",
+    "lane": "metis_output",
+    "title": "Stakeholder message variant",
+    "subtitle": "Internal leadership and selected external stakeholders · Approved",
+    "badge": "STAKEHOLDER NOTE",
+    "status": "Approved",
+    "linkedRecordType": "output",
+    "linkedRecordId": "eeee5007-0000-4000-a000-000000000007",
+    "relatedRecordIds": [
+      "eeee1012-0000-4000-a000-000000000012",
+      "eeee1011-0000-4000-a000-000000000011",
+      "eeee1001-0000-4000-a000-000000000001",
+      "eeee2010-0000-4000-a000-000000000010",
+      "eeee2009-0000-4000-a000-000000000009",
+      "eeee2001-0000-4000-a000-000000000001"
+    ],
+    "modalType": "output"
+  },
+  {
+    "timestamp": "2026-06-19T09:15:00.000Z",
+    "displayTime": "Fri 19 Jun, 10:15",
+    "lane": "incoming_update",
+    "title": "Post-launch watchlist requested",
+    "subtitle": "Corporate Affairs Director · director note · Direct to comms",
+    "badge": "EXEC ACTION",
+    "status": "Received",
+    "linkedRecordType": "incoming_update",
+    "linkedRecordId": "eeee0015-0000-4000-a000-000000000015",
+    "relatedRecordIds": [
+      "eeee3007-0000-4000-a000-000000000007",
+      "eeee4003-0000-4000-a000-000000000003"
+    ],
+    "modalType": "incoming_update",
+    "intake": {
+      "eventOccurredAt": "2026-06-19T09:15:00.000Z",
+      "sourceTimestamp": "2026-06-19T09:15:00.000Z",
+      "receivedByCommsAt": "2026-06-19T09:15:00.000Z",
+      "addedToMetisAt": "2026-06-19T09:15:00.000Z",
+      "intakeRoute": "direct_to_comms"
+    }
+  },
+  {
+    "timestamp": "2026-06-19T09:15:00.000Z",
+    "displayTime": "Fri 19 Jun, 10:15",
+    "lane": "issue_record",
+    "title": "Issue record updated from Watchlist requested",
+    "subtitle": "+1 open questions · +1 observations",
+    "badge": "RECORD UPDATED",
+    "status": "Updated",
+    "linkedRecordType": "issue_record_update",
+    "linkedRecordId": "eeee0015-0000-4000-a000-000000000015::issue_record_update",
+    "relatedRecordIds": [
+      "eeee3007-0000-4000-a000-000000000007",
+      "eeee4003-0000-4000-a000-000000000003"
+    ],
+    "modalType": "issue_record_update",
+    "impact": {
+      "linkedSourceId": null,
+      "claimsAdded": [],
+      "gapsOpened": [
+        "eeee3007-0000-4000-a000-000000000007"
+      ],
+      "gapsClosed": [],
+      "observationsAdded": [
+        "eeee4003-0000-4000-a000-000000000003"
+      ],
+      "statusNote": null
+    }
+  },
+  {
+    "timestamp": "2026-06-19T09:30:00.000Z",
+    "displayTime": "Fri 19 Jun, 10:30",
+    "lane": "metis_output",
+    "title": "Post-launch watchlist brief",
+    "subtitle": "Corporate Affairs and leadership · Ready for review",
+    "badge": "EXECUTIVE BRIEF",
+    "status": "Ready for review",
+    "linkedRecordType": "output",
+    "linkedRecordId": "eeee5008-0000-4000-a000-000000000008",
+    "relatedRecordIds": [
+      "eeee1012-0000-4000-a000-000000000012",
+      "eeee2010-0000-4000-a000-000000000010"
+    ],
+    "modalType": "output"
+  },
+  {
+    "timestamp": "2026-06-19T10:00:00.000Z",
+    "displayTime": "Fri 19 Jun, 11:00",
+    "lane": "metis_output",
+    "title": "Exported executive brief",
+    "subtitle": "Leadership circulation · Approved",
+    "badge": "EXECUTIVE BRIEF",
+    "status": "Approved",
+    "linkedRecordType": "output",
+    "linkedRecordId": "eeee5009-0000-4000-a000-000000000009",
+    "relatedRecordIds": [
+      "eeee1012-0000-4000-a000-000000000012",
+      "eeee1011-0000-4000-a000-000000000011",
+      "eeee2010-0000-4000-a000-000000000010",
+      "eeee2009-0000-4000-a000-000000000009"
+    ],
+    "modalType": "output"
+  },
+  {
+    "timestamp": "2026-06-19T10:05:00.000Z",
+    "displayTime": "Fri 19 Jun, 11:05",
+    "lane": "issue_record",
+    "title": "Circulation · Exported",
+    "subtitle": "HTML export of executive brief V2 for leadership circulation.",
+    "badge": "CIRCULATION",
+    "status": "Approved",
+    "linkedRecordType": "circulation",
+    "linkedRecordId": "eeee7005-0000-4000-a000-000000000005",
+    "relatedRecordIds": [
+      "eeee5009-0000-4000-a000-000000000009"
+    ],
+    "modalType": "circulation"
+  },
+  {
+    "timestamp": "2026-06-19T10:15:00.000Z",
+    "displayTime": "Fri 19 Jun, 11:15",
+    "lane": "issue_record",
+    "title": "Issue status",
+    "subtitle": "Circulation audit recorded",
+    "badge": "DECISION",
+    "status": "Circulation audit recorded",
+    "linkedRecordType": "issue",
+    "linkedRecordId": "eeeeeeee-eeee-4eee-aeee-eeeeeeeeee01",
+    "relatedRecordIds": [],
+    "modalType": "issue_status"
+  },
+  {
+    "timestamp": "2026-06-19T10:15:00.000Z",
+    "displayTime": "Fri 19 Jun, 11:15",
+    "lane": "issue_record",
+    "title": "Circulation · Audit recorded",
+    "subtitle": "Circulation audit for Green Saver launch readiness outputs.",
+    "badge": "CIRCULATION",
+    "status": "Approved",
+    "linkedRecordType": "circulation",
+    "linkedRecordId": "eeee7006-0000-4000-a000-000000000006",
+    "relatedRecordIds": [
+      "eeee5010-0000-4000-a000-000000000010"
+    ],
+    "modalType": "circulation"
+  },
+  {
+    "timestamp": "2026-06-19T10:15:00.000Z",
+    "displayTime": "Fri 19 Jun, 11:15",
+    "lane": "metis_output",
+    "title": "Circulation audit",
+    "subtitle": "Governance record · Approved",
+    "badge": "CIRCULATION AUDIT",
+    "status": "Approved",
+    "linkedRecordType": "output",
+    "linkedRecordId": "eeee5010-0000-4000-a000-000000000010",
+    "relatedRecordIds": [],
+    "modalType": "output"
+  }
+]

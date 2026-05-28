@@ -1,0 +1,370 @@
+[
+  {
+    "id": "eeee0001-0000-4000-a000-000000000001",
+    "inputType": "PRODUCT UPDATE",
+    "title": "Product launch scope confirmed",
+    "senderTeam": "Savings Product Team",
+    "channel": "launch scope note",
+    "summary": "Product confirms target launch window, intended customer group and headline proposition for Green Saver.",
+    "fullText": "Green Saver — launch scope note (fictional)\n\nProduct: Green Saver — savings product linked to funding energy-efficient home improvements.\nTarget launch window: week commencing 22 June 2026 (subject to dependencies).\nIntended customers: eligible existing and new savings customers meeting published criteria.\nHeadline proposition: support greener homes through a dedicated savings rate — final wording subject to compliance/legal.\n\n[Metis note] Logged from product launch pack when Corporate Affairs opened the readiness issue.",
+    "suggestedTimelineLabel": "Launch scope",
+    "becomesSource": true,
+    "linkedSourceId": "eeee1001-0000-4000-a000-000000000001",
+    "issueRecordImpacts": {
+      "claimsAdded": [
+        "eeee2001-0000-4000-a000-000000000001",
+        "eeee2002-0000-4000-a000-000000000002"
+      ],
+      "observationsAdded": [
+        "eeee4002-0000-4000-a000-000000000002"
+      ]
+    },
+    "eventOccurredAt": "2026-06-08T08:30:00.000Z",
+    "sourceTimestamp": "2026-06-08T08:30:00.000Z",
+    "receivedByCommsAt": "2026-06-08T10:00:00.000Z",
+    "addedToMetisAt": "2026-06-08T10:00:00.000Z",
+    "intakeRoute": "reconstructed_from_project_source"
+  },
+  {
+    "id": "eeee0002-0000-4000-a000-000000000002",
+    "inputType": "COMMS INTAKE",
+    "title": "Corporate Affairs opens launch readiness issue",
+    "senderTeam": "Corporate Affairs",
+    "channel": "Metis issue setup",
+    "summary": "Comms creates the controlled launch readiness record to track confirmed claims, open questions and approved outputs.",
+    "fullText": "Corporate Affairs — launch readiness issue opened\n\nPurpose: maintain a source-backed launch position for Green Saver across leadership, customer operations, digital and media.\nDiscipline: separate confirmed claims from open questions; no external line without approved message variant.\nDependencies tracked: pricing committee, compliance eligibility wording, legal environmental claims, app release, accessibility support.",
+    "suggestedTimelineLabel": "Issue opened",
+    "becomesSource": false,
+    "linkedSourceId": null,
+    "issueRecordImpacts": {
+      "statusNote": "Launch readiness issue opened in Metis",
+      "observationsAdded": [
+        "eeee4003-0000-4000-a000-000000000003"
+      ]
+    },
+    "eventOccurredAt": "2026-06-08T10:00:00.000Z",
+    "sourceTimestamp": "2026-06-08T10:00:00.000Z",
+    "receivedByCommsAt": "2026-06-08T10:00:00.000Z",
+    "addedToMetisAt": "2026-06-08T10:00:00.000Z",
+    "intakeRoute": "direct_to_comms"
+  },
+  {
+    "id": "eeee0003-0000-4000-a000-000000000003",
+    "inputType": "PRICING UPDATE",
+    "title": "Pricing recommendation submitted",
+    "senderTeam": "Commercial Pricing",
+    "channel": "pricing paper",
+    "summary": "Proposed launch rate and eligibility assumptions supplied; final pricing committee approval still pending.",
+    "fullText": "Pricing recommendation — Green Saver (draft)\n\nProposed launch rate: 4.25% gross/AER (fictional) for eligible balances within product limits.\nAssumptions: launch window as per product note; funding costs and competitor set as modelled 5 June.\nStatus: recommendation only — pricing committee approval required before external use.\nComms must not quote the rate externally until formal approval is recorded.",
+    "suggestedTimelineLabel": "Pricing proposed",
+    "becomesSource": true,
+    "linkedSourceId": "eeee1002-0000-4000-a000-000000000002",
+    "issueRecordImpacts": {
+      "claimsAdded": [
+        "eeee2003-0000-4000-a000-000000000003"
+      ],
+      "gapsOpened": [
+        "eeee3001-0000-4000-a000-000000000001"
+      ],
+      "observationsAdded": [
+        "eeee4001-0000-4000-a000-000000000001"
+      ]
+    },
+    "eventOccurredAt": "2026-06-09T09:15:00.000Z",
+    "sourceTimestamp": "2026-06-09T09:15:00.000Z",
+    "receivedByCommsAt": "2026-06-09T09:15:00.000Z",
+    "addedToMetisAt": "2026-06-09T09:15:00.000Z",
+    "intakeRoute": "direct_to_comms"
+  },
+  {
+    "id": "eeee0004-0000-4000-a000-000000000004",
+    "inputType": "COMPLIANCE NOTE",
+    "title": "Compliance review flags eligibility wording",
+    "senderTeam": "Compliance",
+    "channel": "compliance review",
+    "summary": "Compliance asks comms not to describe the product as available to all customers until eligibility wording is final.",
+    "fullText": "Compliance review — eligibility and fair value\n\nDo not state that Green Saver is available to all customers.\nEligibility criteria and exclusions require approved wording before customer-facing or media use.\nFair value summary to be attached to committee papers — not for external circulation.",
+    "suggestedTimelineLabel": "Eligibility flag",
+    "becomesSource": true,
+    "linkedSourceId": "eeee1003-0000-4000-a000-000000000003",
+    "issueRecordImpacts": {
+      "claimsAdded": [
+        "eeee2004-0000-4000-a000-000000000004"
+      ],
+      "gapsOpened": [
+        "eeee3002-0000-4000-a000-000000000002"
+      ]
+    },
+    "eventOccurredAt": "2026-06-10T08:45:00.000Z",
+    "sourceTimestamp": "2026-06-10T08:45:00.000Z",
+    "receivedByCommsAt": "2026-06-10T08:45:00.000Z",
+    "addedToMetisAt": "2026-06-10T08:45:00.000Z",
+    "intakeRoute": "direct_to_comms"
+  },
+  {
+    "id": "eeee0005-0000-4000-a000-000000000005",
+    "inputType": "LEGAL NOTE",
+    "title": "Legal approves headline subject to caveat",
+    "senderTeam": "Legal",
+    "channel": "legal sign-off",
+    "summary": "Legal is comfortable with the broad launch narrative but wants careful wording around environmental claims.",
+    "fullText": "Legal sign-off — Green Saver narrative (conditional)\n\nBroad launch narrative approved for internal readiness use.\nEnvironmental claims must avoid overclaiming — use 'support' / 'linked to' language, not guaranteed outcomes.\nDo not imply regulatory endorsement of green credentials.\nExternal materials remain subject to compliance-approved eligibility wording.",
+    "suggestedTimelineLabel": "Legal caveat",
+    "becomesSource": true,
+    "linkedSourceId": "eeee1004-0000-4000-a000-000000000004",
+    "issueRecordImpacts": {
+      "claimsAdded": [
+        "eeee2005-0000-4000-a000-000000000005"
+      ],
+      "gapsOpened": [
+        "eeee3003-0000-4000-a000-000000000003"
+      ],
+      "observationsAdded": [
+        "eeee4001-0000-4000-a000-000000000001"
+      ]
+    },
+    "eventOccurredAt": "2026-06-10T13:30:00.000Z",
+    "sourceTimestamp": "2026-06-10T13:30:00.000Z",
+    "receivedByCommsAt": "2026-06-10T13:30:00.000Z",
+    "addedToMetisAt": "2026-06-10T13:30:00.000Z",
+    "intakeRoute": "direct_to_comms"
+  },
+  {
+    "id": "eeee0006-0000-4000-a000-000000000006",
+    "inputType": "CUSTOMER OPS",
+    "title": "Customer operations requests approved agent line",
+    "senderTeam": "Customer Operations",
+    "channel": "ops request",
+    "summary": "Contact centre asks for a simple approved line for agents before launch announcement.",
+    "fullText": "Customer operations — agent script request\n\nContact centre needs a short approved line for inbound calls once announcement is authorised.\nAgents must not speculate on rate, eligibility or launch date until message variants are approved in Metis.\nEscalation path to product specialist team to be referenced in internal staff variant.",
+    "suggestedTimelineLabel": "Agent line needed",
+    "becomesSource": true,
+    "linkedSourceId": "eeee1005-0000-4000-a000-000000000005",
+    "issueRecordImpacts": {
+      "claimsAdded": [
+        "eeee2006-0000-4000-a000-000000000006"
+      ],
+      "gapsOpened": [
+        "eeee3005-0000-4000-a000-000000000005"
+      ],
+      "observationsAdded": [
+        "eeee4004-0000-4000-a000-000000000004"
+      ]
+    },
+    "eventOccurredAt": "2026-06-11T09:00:00.000Z",
+    "sourceTimestamp": "2026-06-11T09:00:00.000Z",
+    "receivedByCommsAt": "2026-06-11T09:00:00.000Z",
+    "addedToMetisAt": "2026-06-11T09:00:00.000Z",
+    "intakeRoute": "direct_to_comms"
+  },
+  {
+    "id": "eeee0007-0000-4000-a000-000000000007",
+    "inputType": "ACCESSIBILITY REVIEW",
+    "title": "Accessibility review asks for alternative support wording",
+    "senderTeam": "Accessibility and Inclusion",
+    "channel": "accessibility review",
+    "summary": "Accessibility team asks for clearer wording for customers who cannot use the app or need assisted digital support.",
+    "fullText": "Accessibility and inclusion review\n\nCustomer-facing materials must include assisted digital and non-digital support routes.\nDo not present app-only journeys as the only way to apply or manage the product.\nVulnerable customer considerations to be reflected in internal staff and customer variants.",
+    "suggestedTimelineLabel": "Accessibility wording",
+    "becomesSource": true,
+    "linkedSourceId": "eeee1006-0000-4000-a000-000000000006",
+    "issueRecordImpacts": {
+      "claimsAdded": [
+        "eeee2007-0000-4000-a000-000000000007"
+      ],
+      "gapsOpened": [
+        "eeee3006-0000-4000-a000-000000000006"
+      ]
+    },
+    "eventOccurredAt": "2026-06-12T08:30:00.000Z",
+    "sourceTimestamp": "2026-06-12T08:30:00.000Z",
+    "receivedByCommsAt": "2026-06-12T08:30:00.000Z",
+    "addedToMetisAt": "2026-06-12T08:30:00.000Z",
+    "intakeRoute": "direct_to_comms"
+  },
+  {
+    "id": "eeee0008-0000-4000-a000-000000000008",
+    "inputType": "DIGITAL READINESS",
+    "title": "App release dependency still open",
+    "senderTeam": "Digital Product",
+    "channel": "release status",
+    "summary": "App release is on track but final build approval is not complete.",
+    "fullText": "Digital readiness — mobile app release\n\nGreen Saver journey build on track for target launch window.\nFinal app store / release approval not yet granted.\nComms must not state that customers can apply via the app until release approval is recorded.",
+    "suggestedTimelineLabel": "App dependency open",
+    "becomesSource": true,
+    "linkedSourceId": "eeee1007-0000-4000-a000-000000000007",
+    "issueRecordImpacts": {
+      "claimsAdded": [
+        "eeee2008-0000-4000-a000-000000000008"
+      ],
+      "gapsOpened": [
+        "eeee3004-0000-4000-a000-000000000004"
+      ],
+      "observationsAdded": [
+        "eeee4006-0000-4000-a000-000000000006"
+      ]
+    },
+    "eventOccurredAt": "2026-06-15T08:00:00.000Z",
+    "sourceTimestamp": "2026-06-15T08:00:00.000Z",
+    "receivedByCommsAt": "2026-06-15T08:00:00.000Z",
+    "addedToMetisAt": "2026-06-15T08:00:00.000Z",
+    "intakeRoute": "direct_to_comms"
+  },
+  {
+    "id": "eeee0009-0000-4000-a000-000000000009",
+    "inputType": "EXEC REQUEST",
+    "title": "Executive office requests launch readiness brief",
+    "senderTeam": "Executive Office",
+    "channel": "email to Corporate Affairs",
+    "summary": "Executive office asks Corporate Affairs for a concise readiness note before the leadership meeting.",
+    "fullText": "Executive office request\n\nPlease provide a concise launch readiness brief for the leadership meeting covering:\n- confirmed position and dependencies\n- open risks and caveats\n- media and customer handling posture\n- decision points before announcement\n\nLength: maximum two pages. Audience: executive committee.",
+    "suggestedTimelineLabel": "Executive request",
+    "becomesSource": false,
+    "linkedSourceId": null,
+    "issueRecordImpacts": {},
+    "eventOccurredAt": "2026-06-15T10:15:00.000Z",
+    "sourceTimestamp": "2026-06-15T10:15:00.000Z",
+    "receivedByCommsAt": "2026-06-15T10:15:00.000Z",
+    "addedToMetisAt": "2026-06-15T10:15:00.000Z",
+    "intakeRoute": "direct_to_comms"
+  },
+  {
+    "id": "eeee0010-0000-4000-a000-000000000010",
+    "inputType": "PARTNER UPDATE",
+    "title": "Green home partner content confirmed",
+    "senderTeam": "Partnerships",
+    "channel": "partner sign-off",
+    "summary": "Partner-facing signposting copy is confirmed, but must not imply endorsement of individual suppliers.",
+    "fullText": "Partnerships — green home signposting\n\nPartner signposting copy approved for use on approved channels.\nMust not imply endorsement of individual installers or suppliers.\nComms to use approved partner wording only — no extension of environmental claims.",
+    "suggestedTimelineLabel": "Partner copy",
+    "becomesSource": true,
+    "linkedSourceId": "eeee1008-0000-4000-a000-000000000008",
+    "issueRecordImpacts": {},
+    "eventOccurredAt": "2026-06-16T09:00:00.000Z",
+    "sourceTimestamp": "2026-06-16T09:00:00.000Z",
+    "receivedByCommsAt": "2026-06-16T09:00:00.000Z",
+    "addedToMetisAt": "2026-06-16T09:00:00.000Z",
+    "intakeRoute": "direct_to_comms"
+  },
+  {
+    "id": "eeee0011-0000-4000-a000-000000000011",
+    "inputType": "MEDIA ENQUIRY",
+    "title": "Trade journalist asks about upcoming savings launch",
+    "senderTeam": "Press Office",
+    "channel": "media enquiry log",
+    "summary": "Trade journalist asks whether Northbank is launching a new green savings product.",
+    "fullText": "Media enquiry — trade press (fictional)\n\nJournalist asks whether Northbank Building Society plans a new 'green' savings product.\nQuestions: timing, rate, eligibility, environmental positioning.\nDeadline: response requested by 16:00 today for tomorrow's newsletter slot.\nNo announcement authorised until go/no-go — holding line required.",
+    "suggestedTimelineLabel": "Trade press enquiry",
+    "becomesSource": true,
+    "linkedSourceId": "eeee1009-0000-4000-a000-000000000009",
+    "issueRecordImpacts": {
+      "observationsAdded": [
+        "eeee4005-0000-4000-a000-000000000005"
+      ]
+    },
+    "eventOccurredAt": "2026-06-17T08:30:00.000Z",
+    "sourceTimestamp": "2026-06-17T08:30:00.000Z",
+    "receivedByCommsAt": "2026-06-17T08:30:00.000Z",
+    "addedToMetisAt": "2026-06-17T08:30:00.000Z",
+    "intakeRoute": "direct_to_comms"
+  },
+  {
+    "id": "eeee0012-0000-4000-a000-000000000012",
+    "inputType": "DIGITAL APPROVAL",
+    "title": "App release approved for launch",
+    "senderTeam": "Digital Product",
+    "channel": "release approval",
+    "summary": "Final app release approval confirmed. Launch dependency closed.",
+    "fullText": "Digital approval — app release\n\nFinal build approved for release in line with launch window.\nCustomers may be directed to the app journey once customer-facing messages are approved.",
+    "suggestedTimelineLabel": "App approved",
+    "becomesSource": true,
+    "linkedSourceId": "eeee1010-0000-4000-a000-000000000010",
+    "issueRecordImpacts": {
+      "gapsClosed": [
+        "eeee3004-0000-4000-a000-000000000004"
+      ]
+    },
+    "eventOccurredAt": "2026-06-18T09:30:00.000Z",
+    "sourceTimestamp": "2026-06-18T09:30:00.000Z",
+    "receivedByCommsAt": "2026-06-18T09:30:00.000Z",
+    "addedToMetisAt": "2026-06-18T09:30:00.000Z",
+    "intakeRoute": "direct_to_comms"
+  },
+  {
+    "id": "eeee0013-0000-4000-a000-000000000013",
+    "inputType": "PRICING APPROVAL",
+    "title": "Pricing committee confirms launch rate",
+    "senderTeam": "Commercial Pricing",
+    "channel": "committee minute",
+    "summary": "Final launch rate and eligibility wording approved.",
+    "fullText": "Pricing committee minute extract (fictional)\n\nLaunch rate 4.25% gross/AER approved for eligible customers within published limits.\nEligibility wording approved for external use as per compliance pack v3.\nEffective from launch date subject to go/no-go.",
+    "suggestedTimelineLabel": "Pricing approved",
+    "becomesSource": true,
+    "linkedSourceId": "eeee1011-0000-4000-a000-000000000011",
+    "issueRecordImpacts": {
+      "claimsAdded": [
+        "eeee2009-0000-4000-a000-000000000009"
+      ],
+      "gapsClosed": [
+        "eeee3001-0000-4000-a000-000000000001",
+        "eeee3002-0000-4000-a000-000000000002"
+      ]
+    },
+    "eventOccurredAt": "2026-06-18T10:45:00.000Z",
+    "sourceTimestamp": "2026-06-18T10:45:00.000Z",
+    "receivedByCommsAt": "2026-06-18T10:45:00.000Z",
+    "addedToMetisAt": "2026-06-18T10:45:00.000Z",
+    "intakeRoute": "direct_to_comms"
+  },
+  {
+    "id": "eeee0014-0000-4000-a000-000000000014",
+    "inputType": "GO NO-GO",
+    "title": "Launch approved for announcement",
+    "senderTeam": "Launch Steering Group",
+    "channel": "go/no-go record",
+    "summary": "Go/no-go confirms launch can proceed, subject to final circulation of approved brief and message variants.",
+    "fullText": "Launch steering group — go/no-go\n\nDecision: proceed to announcement in line with approved launch window.\nConditions: Executive Brief V2, customer and stakeholder message variants, and press holding line circulated via Metis audit trail.\nPost-launch monitoring for media, customer confusion, vulnerable customers and digital journey.",
+    "suggestedTimelineLabel": "Go for launch",
+    "becomesSource": true,
+    "linkedSourceId": "eeee1012-0000-4000-a000-000000000012",
+    "issueRecordImpacts": {
+      "claimsAdded": [
+        "eeee2010-0000-4000-a000-000000000010"
+      ],
+      "gapsClosed": [
+        "eeee3005-0000-4000-a000-000000000005"
+      ],
+      "statusNote": "Launch approved for announcement"
+    },
+    "eventOccurredAt": "2026-06-19T08:00:00.000Z",
+    "sourceTimestamp": "2026-06-19T08:00:00.000Z",
+    "receivedByCommsAt": "2026-06-19T08:00:00.000Z",
+    "addedToMetisAt": "2026-06-19T08:00:00.000Z",
+    "intakeRoute": "direct_to_comms"
+  },
+  {
+    "id": "eeee0015-0000-4000-a000-000000000015",
+    "inputType": "EXEC ACTION",
+    "title": "Post-launch watchlist requested",
+    "senderTeam": "Corporate Affairs Director",
+    "channel": "director note",
+    "summary": "Director asks for a short watchlist covering media, customer confusion, vulnerable customers and digital journey issues for the first 72 hours after announcement.",
+    "fullText": "Corporate Affairs Director — post-launch watchlist\n\nPlease maintain a short leadership watchlist for the first 72 hours covering:\n- trade and consumer media pickup\n- customer confusion on eligibility or environmental claims\n- vulnerable customer and assisted digital contacts\n- digital journey defects or complaints\n\nUpdate Metis issue record as items are confirmed or closed.",
+    "suggestedTimelineLabel": "Watchlist requested",
+    "becomesSource": false,
+    "linkedSourceId": null,
+    "issueRecordImpacts": {
+      "gapsOpened": [
+        "eeee3007-0000-4000-a000-000000000007"
+      ],
+      "observationsAdded": [
+        "eeee4003-0000-4000-a000-000000000003"
+      ]
+    },
+    "eventOccurredAt": "2026-06-19T09:15:00.000Z",
+    "sourceTimestamp": "2026-06-19T09:15:00.000Z",
+    "receivedByCommsAt": "2026-06-19T09:15:00.000Z",
+    "addedToMetisAt": "2026-06-19T09:15:00.000Z",
+    "intakeRoute": "direct_to_comms"
+  }
+]
