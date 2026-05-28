@@ -1,26 +1,28 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { ChevronRight, Clock, FileText, Link2, X, Zap } from "lucide-react";
 
-import type { IssueHistoryEvent, IssueHistoryLaneUi } from "@/lib/issues/issueHistoryTypes";
+import type {
+  IssueHistoryEventCard,
+  IssueHistoryLaneUi,
+  IssueHistoryModalPayload,
+} from "@/lib/issues/issueHistoryTypes";
 import { ISSUE_HISTORY_LANE_CONFIG, issueHistoryLaneToUi } from "@/lib/issues/issueHistoryTypes";
-
-import "./issue-history-timeline.css";
 
 type Props = {
   issueId: string;
   issueTitle: string;
   controlledPositionHeadline: string;
   controlledPositionDetail: string;
-  events: IssueHistoryEvent[];
+  events: IssueHistoryEventCard[];
 };
 
 const LANES: IssueHistoryLaneUi[] = ["input", "issue", "output"];
 
-function groupByTime(evts: IssueHistoryEvent[]) {
-  const map = new Map<string, IssueHistoryEvent[]>();
+function groupByTime(evts: IssueHistoryEventCard[]) {
+  const map = new Map<string, IssueHistoryEventCard[]>();
   for (const e of evts) {
     const key = `${e.day} ${e.time}`;
     const list = map.get(key) ?? [];
@@ -44,10 +46,42 @@ export function IssueHistoryTimeline({
   controlledPositionDetail,
   events,
 }: Props) {
-  const [selected, setSelected] = useState<IssueHistoryEvent | null>(null);
+  const [selected, setSelected] = useState<IssueHistoryEventCard | null>(null);
+  const [modalDetail, setModalDetail] = useState<IssueHistoryModalPayload | null>(null);
+  const [modalLoading, setModalLoading] = useState(false);
+  const [modalError, setModalError] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"summary" | "record" | "related">("summary");
   const drawerRef = useRef<HTMLDivElement>(null);
+
+  const openCard = useCallback(
+    async (event: IssueHistoryEventCard) => {
+      setSelected(event);
+      setActiveTab("summary");
+      setModalDetail(null);
+      setModalError(null);
+      setModalLoading(true);
+      try {
+        const params = new URLSearchParams({
+          eventId: event.id,
+          linkedRecordType: event.linkedRecordType,
+          linkedRecordId: event.linkedRecordId,
+          modalType: event.modalType,
+        });
+        const res = await fetch(`/api/issues/${issueId}/history-detail?${params}`, {
+          credentials: "include",
+        });
+        if (!res.ok) throw new Error("Failed to load detail");
+        const data = (await res.json()) as { modal: IssueHistoryModalPayload };
+        setModalDetail(data.modal);
+      } catch {
+        setModalError("Could not load detail for this card.");
+      } finally {
+        setModalLoading(false);
+      }
+    },
+    [issueId],
+  );
 
   const timeGroups = useMemo(() => groupByTime(events), [events]);
   const timeKeys = useMemo(
@@ -178,10 +212,7 @@ export function IssueHistoryTimeline({
                                   .filter(Boolean)
                                   .join(" ")}
                                 style={{ "--card-accent": laneConfig.color } as React.CSSProperties}
-                                onClick={() => {
-                                  setSelected(event);
-                                  setActiveTab("summary");
-                                }}
+                                onClick={() => void openCard(event)}
                                 onMouseEnter={() => setHoveredId(event.id)}
                                 onMouseLeave={() => setHoveredId(null)}
                               >
@@ -206,7 +237,7 @@ export function IssueHistoryTimeline({
                                   ) : null}
                                   {event.impactChips && event.impactChips.length > 0 ? (
                                     <div className="metis-card-chips">
-                                      {event.impactChips.map((chip) => (
+                                      {event.impactChips.map((chip: string) => (
                                         <span key={chip} className="metis-chip">
                                           {chip}
                                         </span>
@@ -299,43 +330,57 @@ export function IssueHistoryTimeline({
               </div>
 
               <div className="metis-drawer-body">
-                {activeTab === "summary" && (
+                {modalLoading ? (
                   <div className="metis-drawer-content">
-                    <p className="metis-drawer-summary-text">{selected.modal.summary}</p>
+                    <p className="metis-drawer-summary-text" style={{ fontFamily: "Inter, sans-serif" }}>
+                      Loading detail…
+                    </p>
+                  </div>
+                ) : modalError ? (
+                  <div className="metis-drawer-content">
+                    <p className="metis-drawer-summary-text" style={{ fontFamily: "Inter, sans-serif" }}>
+                      {modalError}
+                    </p>
+                  </div>
+                ) : null}
 
-                    {selected.modal.submittedUpdate ? (
+                {!modalLoading && !modalError && modalDetail && activeTab === "summary" && (
+                  <div className="metis-drawer-content">
+                    <p className="metis-drawer-summary-text">{modalDetail.summary}</p>
+
+                    {modalDetail.submittedUpdate ? (
                       <div className="metis-drawer-field">
                         <div className="metis-drawer-field-label">
-                          <Clock size={10} /> {selected.modal.submittedUpdate.heading}
+                          <Clock size={10} /> {modalDetail.submittedUpdate.heading}
                         </div>
                         <div className="metis-drawer-field-value" style={{ whiteSpace: "pre-line" }}>
-                          {selected.modal.submittedUpdate.body}
+                          {modalDetail.submittedUpdate.body}
                         </div>
                       </div>
                     ) : null}
 
-                    {selected.modal.issueRecordImpact ? (
+                    {modalDetail.issueRecordImpact ? (
                       <div className="metis-drawer-inset">
                         <div className="metis-drawer-inset-label">Metis issue record impact</div>
-                        {selected.modal.issueRecordImpact.sources?.map((s) => (
+                        {modalDetail.issueRecordImpact.sources?.map((s) => (
                           <div key={s.id} className="metis-drawer-inset-row">
                             <span className="metis-drawer-inset-key">{s.code}</span>
                             <span className="metis-drawer-inset-val">{s.label}</span>
                           </div>
                         ))}
-                        {selected.modal.issueRecordImpact.claims?.map((c) => (
+                        {modalDetail.issueRecordImpact.claims?.map((c) => (
                           <div key={c.id} className="metis-drawer-inset-row">
                             <span className="metis-drawer-inset-key">{c.code}</span>
                             <span className="metis-drawer-inset-val">{c.label}</span>
                           </div>
                         ))}
-                        {selected.modal.issueRecordImpact.questionsOpened?.map((q) => (
+                        {modalDetail.issueRecordImpact.questionsOpened?.map((q) => (
                           <div key={q.id} className="metis-drawer-inset-row">
                             <span className="metis-drawer-inset-key">{q.code}</span>
                             <span className="metis-drawer-inset-val">{q.label}</span>
                           </div>
                         ))}
-                        {selected.modal.issueRecordImpact.questionsClosed?.map((q) => (
+                        {modalDetail.issueRecordImpact.questionsClosed?.map((q) => (
                           <div key={q.id} className="metis-drawer-inset-row">
                             <span className="metis-drawer-inset-key">{q.code} closed</span>
                             <span className="metis-drawer-inset-val">{q.label}</span>
@@ -344,9 +389,9 @@ export function IssueHistoryTimeline({
                       </div>
                     ) : null}
 
-                    {selected.modal.outputMeta?.href ? (
+                    {modalDetail.outputMeta?.href ? (
                       <Link
-                        href={selected.modal.outputMeta.href}
+                        href={modalDetail.outputMeta.href}
                         className="metis-drawer-field-value"
                         style={{ color: selectedLaneConfig.textColor, fontWeight: 600 }}
                       >
@@ -356,10 +401,10 @@ export function IssueHistoryTimeline({
                   </div>
                 )}
 
-                {activeTab === "record" && (
+                {!modalLoading && !modalError && modalDetail && activeTab === "record" && (
                   <div className="metis-drawer-content">
                     <div className="metis-full-record">
-                      {(selected.modal.fullRecordSections ?? []).map((section, si) => (
+                      {(modalDetail.fullRecordSections ?? []).map((section, si) => (
                         <div key={si} className="metis-record-section">
                           {section.heading ? (
                             <div className="metis-record-section-heading">{section.heading}</div>
@@ -373,7 +418,7 @@ export function IssueHistoryTimeline({
                   </div>
                 )}
 
-                {activeTab === "related" && (
+                {activeTab === "related" && !modalLoading && (
                   <div className="metis-drawer-content">
                     {(selected.relatedRecordIds ?? []).length === 0 ? (
                       <p className="metis-drawer-summary-text">No related records linked to this card.</p>

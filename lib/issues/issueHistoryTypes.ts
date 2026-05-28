@@ -39,11 +39,11 @@ export type IssueHistoryModalPayload = {
   fullRecordSections?: { heading: string; body: string }[];
 };
 
-export type IssueHistoryEvent = {
+/** Slim card payload for initial timeline render (no large bodies). */
+export type IssueHistoryEventCard = {
   id: string;
   timestamp: string;
   displayTime: string;
-  /** For horizontal column grouping (Europe/London). */
   day: string;
   time: string;
   lane: IssueHistoryLane;
@@ -57,7 +57,6 @@ export type IssueHistoryEvent = {
   modalType: string;
   impactSummary?: IssueHistoryImpactSummary;
   impactChips?: string[];
-  modal: IssueHistoryModalPayload;
 };
 
 export type IssueHistoryProjectionMeta = {
@@ -67,9 +66,23 @@ export type IssueHistoryProjectionMeta = {
   controlledPositionDetail: string;
 };
 
-export type IssueHistoryProjection = IssueHistoryProjectionMeta & {
-  events: IssueHistoryEvent[];
+export type IssueHistoryTruncation = {
+  totalEvents: number;
+  showingEvents: number;
+  capped: boolean;
 };
+
+export type IssueHistoryTimelinePayload = IssueHistoryProjectionMeta & {
+  events: IssueHistoryEventCard[];
+  truncation: IssueHistoryTruncation;
+};
+
+/** @deprecated Use IssueHistoryEventCard for list + lazy detail fetch. */
+export type IssueHistoryEvent = IssueHistoryEventCard & {
+  modal?: IssueHistoryModalPayload;
+};
+
+export const ISSUE_HISTORY_MAX_EVENTS = 200;
 
 export const ISSUE_HISTORY_LANE_CONFIG: Record<
   IssueHistoryLaneUi,
