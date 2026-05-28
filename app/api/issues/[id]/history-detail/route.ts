@@ -28,10 +28,15 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     return NextResponse.json({ error: "Missing card identifiers" }, { status: 400 });
   }
 
+  const relatedIdsParam = url.searchParams.get("relatedRecordIds");
+  const relatedRecordIds = relatedIdsParam
+    ? relatedIdsParam.split(",").map((s) => s.trim()).filter(Boolean)
+    : [];
+
   const modal = await loadIssueHistoryEventDetail(issueId, card, {
     membershipRole: gated.ctx.membership.role,
     userId: gated.ctx.user.id,
-  });
+  }, { relatedRecordIds });
 
   endRoute();
   return NextResponse.json({ modal });

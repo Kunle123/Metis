@@ -19,8 +19,43 @@ export type IssueHistoryImpactRecord = {
   label: string;
 };
 
+export type IssueHistoryRelatedRecord = IssueHistoryImpactRecord & {
+  recordType?: string;
+  href?: string;
+};
+
+export type IssueHistorySubmitterMeta = {
+  role: string;
+  name: string;
+  confidence: string;
+  timestamp: string;
+  displayTime: string;
+};
+
+export type IssueHistoryRecordMeta = {
+  recordType: string;
+  changeSummary?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  status?: string;
+  href?: string;
+};
+
+export type IssueHistoryMessageWording = {
+  draftBody: string;
+  aiPolishedBody: string;
+  defaultMode: "controlled_draft" | "ai_polished";
+};
+
+export type IssueHistoryGuardrails = {
+  mustAvoid: string[];
+  toneNotes?: string;
+};
+
 export type IssueHistoryModalPayload = {
   summary: string;
+  submitterMeta?: IssueHistorySubmitterMeta;
+  recordMeta?: IssueHistoryRecordMeta;
   submittedUpdate?: { heading: string; body: string };
   issueRecordImpact?: {
     sources?: IssueHistoryImpactRecord[];
@@ -34,8 +69,13 @@ export type IssueHistoryModalPayload = {
     audience?: string;
     status?: string;
     versionNumber?: number;
+    templateLabel?: string;
+    generatedAt?: string;
     href?: string;
   };
+  messageWording?: IssueHistoryMessageWording;
+  guardrails?: IssueHistoryGuardrails;
+  relatedRecords?: IssueHistoryRelatedRecord[];
   fullRecordSections?: { heading: string; body: string }[];
 };
 

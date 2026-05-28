@@ -52,6 +52,7 @@ export function IssueHistoryTimeline({
   const [modalError, setModalError] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"summary" | "record" | "related">("summary");
+  const [wordingMode, setWordingMode] = useState<"controlled_draft" | "ai_polished">("ai_polished");
   const drawerRef = useRef<HTMLDivElement>(null);
 
   const openCard = useCallback(
@@ -68,12 +69,16 @@ export function IssueHistoryTimeline({
           linkedRecordId: event.linkedRecordId,
           modalType: event.modalType,
         });
+        if (event.relatedRecordIds?.length) {
+          params.set("relatedRecordIds", event.relatedRecordIds.join(","));
+        }
         const res = await fetch(`/api/issues/${issueId}/history-detail?${params}`, {
           credentials: "include",
         });
         if (!res.ok) throw new Error("Failed to load detail");
         const data = (await res.json()) as { modal: IssueHistoryModalPayload };
         setModalDetail(data.modal);
+        setWordingMode(data.modal.messageWording?.defaultMode ?? "ai_polished");
       } catch {
         setModalError("Could not load detail for this card.");
       } finally {
@@ -348,6 +353,59 @@ export function IssueHistoryTimeline({
                   <div className="metis-drawer-content">
                     <p className="metis-drawer-summary-text">{modalDetail.summary}</p>
 
+                    {modalDetail.submitterMeta ? (
+                      <div className="metis-drawer-inset">
+                        <div className="metis-drawer-inset-label">Submitted by</div>
+                        <div className="metis-drawer-inset-row">
+                          <span className="metis-drawer-inset-key">Name</span>
+                          <span className="metis-drawer-inset-val">{modalDetail.submitterMeta.name}</span>
+                        </div>
+                        <div className="metis-drawer-inset-row">
+                          <span className="metis-drawer-inset-key">Role</span>
+                          <span className="metis-drawer-inset-val">{modalDetail.submitterMeta.role}</span>
+                        </div>
+                        <div className="metis-drawer-inset-row">
+                          <span className="metis-drawer-inset-key">Confidence</span>
+                          <span className="metis-drawer-inset-val">{modalDetail.submitterMeta.confidence}</span>
+                        </div>
+                        <div className="metis-drawer-inset-row">
+                          <span className="metis-drawer-inset-key">Timestamp</span>
+                          <span className="metis-drawer-inset-val">{modalDetail.submitterMeta.displayTime}</span>
+                        </div>
+                      </div>
+                    ) : null}
+
+                    {modalDetail.recordMeta ? (
+                      <div className="metis-drawer-field">
+                        <div className="metis-drawer-field-label">Record</div>
+                        <div className="metis-drawer-field-value">
+                          {modalDetail.recordMeta.recordType}
+                          {modalDetail.recordMeta.status ? ` · ${modalDetail.recordMeta.status}` : ""}
+                        </div>
+                        {modalDetail.recordMeta.changeSummary ? (
+                          <div className="metis-drawer-field-value metis-drawer-field-value--highlight">
+                            {modalDetail.recordMeta.changeSummary}
+                          </div>
+                        ) : null}
+                        {modalDetail.recordMeta.createdAt ? (
+                          <div className="metis-drawer-field-value" style={{ fontSize: "0.75rem", color: "#5E5A50" }}>
+                            {modalDetail.recordMeta.updatedAt
+                              ? `Created ${modalDetail.recordMeta.createdAt} · Updated ${modalDetail.recordMeta.updatedAt}`
+                              : `Created ${modalDetail.recordMeta.createdAt}`}
+                          </div>
+                        ) : null}
+                        {modalDetail.recordMeta.href ? (
+                          <Link
+                            href={modalDetail.recordMeta.href}
+                            className="metis-drawer-field-value"
+                            style={{ color: selectedLaneConfig.textColor, fontWeight: 600 }}
+                          >
+                            Open in Metis →
+                          </Link>
+                        ) : null}
+                      </div>
+                    ) : null}
+
                     {modalDetail.submittedUpdate ? (
                       <div className="metis-drawer-field">
                         <div className="metis-drawer-field-label">
@@ -355,6 +413,85 @@ export function IssueHistoryTimeline({
                         </div>
                         <div className="metis-drawer-field-value" style={{ whiteSpace: "pre-line" }}>
                           {modalDetail.submittedUpdate.body}
+                        </div>
+                      </div>
+                    ) : null}
+
+                    {modalDetail.outputMeta ? (
+                      <div className="metis-drawer-inset">
+                        <div className="metis-drawer-inset-label">Output details</div>
+                        {modalDetail.outputMeta.templateLabel ? (
+                          <div className="metis-drawer-inset-row">
+                            <span className="metis-drawer-inset-key">Template</span>
+                            <span className="metis-drawer-inset-val">{modalDetail.outputMeta.templateLabel}</span>
+                          </div>
+                        ) : null}
+                        {modalDetail.outputMeta.audience ? (
+                          <div className="metis-drawer-inset-row">
+                            <span className="metis-drawer-inset-key">Audience</span>
+                            <span className="metis-drawer-inset-val">{modalDetail.outputMeta.audience}</span>
+                          </div>
+                        ) : null}
+                        {modalDetail.outputMeta.status ? (
+                          <div className="metis-drawer-inset-row">
+                            <span className="metis-drawer-inset-key">Status</span>
+                            <span className="metis-drawer-inset-val">{modalDetail.outputMeta.status}</span>
+                          </div>
+                        ) : null}
+                        {modalDetail.outputMeta.versionNumber != null ? (
+                          <div className="metis-drawer-inset-row">
+                            <span className="metis-drawer-inset-key">Version</span>
+                            <span className="metis-drawer-inset-val">v{modalDetail.outputMeta.versionNumber}</span>
+                          </div>
+                        ) : null}
+                        {modalDetail.outputMeta.generatedAt ? (
+                          <div className="metis-drawer-inset-row">
+                            <span className="metis-drawer-inset-key">Generated</span>
+                            <span className="metis-drawer-inset-val">{modalDetail.outputMeta.generatedAt}</span>
+                          </div>
+                        ) : null}
+                      </div>
+                    ) : null}
+
+                    {modalDetail.messageWording ? (
+                      <div className="metis-wording-block">
+                        <div className="metis-wording-toggle-row">
+                          <span className="metis-wording-toggle-label">Wording</span>
+                          <div className="metis-wording-toggle">
+                            <button
+                              type="button"
+                              className={`metis-wording-toggle-btn${
+                                wordingMode === "controlled_draft" ? " metis-wording-toggle-btn--active" : ""
+                              }`}
+                              onClick={() => setWordingMode("controlled_draft")}
+                            >
+                              Controlled draft
+                            </button>
+                            <button
+                              type="button"
+                              className={`metis-wording-toggle-btn${
+                                wordingMode === "ai_polished" ? " metis-wording-toggle-btn--active" : ""
+                              }`}
+                              onClick={() => setWordingMode("ai_polished")}
+                            >
+                              AI-polished wording
+                            </button>
+                          </div>
+                        </div>
+                        <div className="metis-wording-body">
+                          {(wordingMode === "ai_polished"
+                            ? modalDetail.messageWording.aiPolishedBody
+                            : modalDetail.messageWording.draftBody
+                          )
+                            .split("\n")
+                            .map((line, li) => (
+                              <p
+                                key={li}
+                                className={line.startsWith("-") ? "metis-wording-bullet" : "metis-wording-para"}
+                              >
+                                {line.startsWith("-") ? line.slice(1).trim() : line}
+                              </p>
+                            ))}
                         </div>
                       </div>
                     ) : null}
@@ -386,10 +523,39 @@ export function IssueHistoryTimeline({
                             <span className="metis-drawer-inset-val">{q.label}</span>
                           </div>
                         ))}
+                        {modalDetail.issueRecordImpact.observations?.map((o) => (
+                          <div key={o.id} className="metis-drawer-inset-row">
+                            <span className="metis-drawer-inset-key">{o.code}</span>
+                            <span className="metis-drawer-inset-val">{o.label}</span>
+                          </div>
+                        ))}
+                        {modalDetail.issueRecordImpact.statusNote ? (
+                          <div className="metis-drawer-inset-row">
+                            <span className="metis-drawer-inset-val">{modalDetail.issueRecordImpact.statusNote}</span>
+                          </div>
+                        ) : null}
                       </div>
                     ) : null}
 
-                    {modalDetail.outputMeta?.href ? (
+                    {modalDetail.guardrails?.mustAvoid.length ? (
+                      <div className="metis-drawer-field">
+                        <div className="metis-drawer-field-label">Do not say</div>
+                        <ul className="metis-drawer-impact-list">
+                          {modalDetail.guardrails.mustAvoid.map((item) => (
+                            <li key={item} className="metis-drawer-impact-item">
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                        {modalDetail.guardrails.toneNotes ? (
+                          <div className="metis-drawer-field-value" style={{ marginTop: "0.5rem", fontStyle: "italic" }}>
+                            {modalDetail.guardrails.toneNotes}
+                          </div>
+                        ) : null}
+                      </div>
+                    ) : null}
+
+                    {modalDetail.outputMeta?.href && !modalDetail.recordMeta?.href ? (
                       <Link
                         href={modalDetail.outputMeta.href}
                         className="metis-drawer-field-value"
@@ -420,16 +586,36 @@ export function IssueHistoryTimeline({
 
                 {activeTab === "related" && !modalLoading && (
                   <div className="metis-drawer-content">
-                    {(selected.relatedRecordIds ?? []).length === 0 ? (
+                    {modalError ? (
+                      <p className="metis-drawer-summary-text">{modalError}</p>
+                    ) : (modalDetail?.relatedRecords ?? []).length === 0 ? (
                       <p className="metis-drawer-summary-text">No related records linked to this card.</p>
                     ) : (
-                      <ul className="metis-drawer-impact-list">
-                        {(selected.relatedRecordIds ?? []).map((id) => (
-                          <li key={id} className="metis-drawer-impact-item">
-                            {id}
-                          </li>
+                      <div className="metis-related-list">
+                        {(modalDetail?.relatedRecords ?? []).map((rel) => (
+                          rel.href ? (
+                            <Link key={rel.id} href={rel.href} className="metis-related-card">
+                              <div className="metis-related-meta">
+                                <span className="metis-related-lane" style={{ color: selectedLaneConfig.textColor }}>
+                                  {rel.recordType ?? "Related"}
+                                </span>
+                                <span className="metis-related-time">{rel.code}</span>
+                              </div>
+                              <div className="metis-related-title">{rel.label}</div>
+                            </Link>
+                          ) : (
+                            <div key={rel.id} className="metis-related-card">
+                              <div className="metis-related-meta">
+                                <span className="metis-related-lane" style={{ color: selectedLaneConfig.textColor }}>
+                                  {rel.recordType ?? "Related"}
+                                </span>
+                                <span className="metis-related-time">{rel.code}</span>
+                              </div>
+                              <div className="metis-related-title">{rel.label}</div>
+                            </div>
+                          )
                         ))}
-                      </ul>
+                      </div>
                     )}
                   </div>
                 )}

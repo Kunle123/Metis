@@ -1,6 +1,19 @@
 import { prisma } from "@/lib/db/prisma";
 import { formatClaimCode, formatGapCode } from "@/lib/issueRecordCodes";
 import { prismaWhereInternalInputsVisibleToViewer } from "@/lib/internalInputs/internalObservationVisibility";
+import {
+  briefArtifactToRecordSections,
+  messageArtifactGuardrails,
+  messageArtifactPrimaryBody,
+  messageArtifactRecordSections,
+  messageArtifactWording,
+  parseBriefArtifact,
+  parseMessageArtifact,
+} from "./issueHistoryArtifactDetail";
+import {
+  loadIssueHistoryDisplayRegistry,
+  resolveRelatedRecordIds,
+} from "./issueHistoryDisplayCodes";
 
 import { issueHistoryPerfLog, issueHistoryPerfStart } from "./issueHistoryPerf";
 import { formatIssueHistoryAxisTime } from "./issueHistoryTime";
@@ -51,6 +64,19 @@ function templateBadge(templateId: string): string {
     media_holding_line: "PRESS LINE",
   };
   return map[templateId] ?? templateId.replace(/_/g, " ").toUpperCase();
+}
+
+function messageTemplateDisplayName(templateId: string): string {
+  switch (templateId) {
+    case "internal_staff_update":
+      return "Internal staff update";
+    case "media_holding_line":
+      return "Media holding line";
+    case "external_customer_resident_student":
+      return "External customer update";
+    default:
+      return templateId.replace(/_/g, " ");
+  }
 }
 
 function briefBadge(mode: string): string {
@@ -527,13 +553,26 @@ export async function buildIssueHistoryTimeline(
   return payload;
 }
 
+function formatHistoryDetailTimestamp(iso: Date | string): string {
+  const d = typeof iso === "string" ? new Date(iso) : iso;
+  if (Number.isNaN(d.getTime())) return "—";
+  return new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/London",
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(d);
+}
+
 /** Lazy-load modal/detail payload for one timeline card. */
 export async function loadIssueHistoryEventDetail(
   issueId: string,
   card: Pick<IssueHistoryEventCard, "linkedRecordType" | "linkedRecordId" | "modalType" | "id">,
   viewer: IssueHistoryViewer,
+  options?: { relatedRecordIds?: string[] },
 ): Promise<IssueHistoryModalPayload> {
   const end = issueHistoryPerfStart(`loadIssueHistoryEventDetail ${card.modalType}`);
+  const registry = await loadIssueHistoryDisplayRegistry(issueId);
+  const relatedRecords = resolveRelatedRecordIds(registry, options?.relatedRecordIds ?? []);
 
   let modal: IssueHistoryModalPayload;
 
@@ -543,57 +582,177 @@ export async function loadIssueHistoryEventDetail(
         where: {
           AND: [{ id: card.linkedRecordId }, prismaWhereInternalInputsVisibleToViewer(issueId, viewer)],
         },
-        select: { id: true, name: true, role: true, response: true },
+        select: {
+          id: true,
+          name: true,
+          role: true,
+          response: true,
+          confidence: true,
+          createdAt: true,
+          observationNumber: true,
+        },
       });
       if (!input) {
-        modal = { summary: "Update not found or not visible." };
+        modal = { summary: "Update not found or not visible.", relatedRecords };
         break;
       }
+
       const [links, closedGaps] = await Promise.all([
         prisma.claimInternalInput.findMany({
           where: { internalInputId: input.id, claim: { issueId } },
-          select: { claim: { select: { id: true, claimNumber: true, text: true } } },
+          select: {
+            claim: {
+              select: {
+                id: true,
+                claimNumber: true,
+                text: true,
+                sources: {
+                  select: { source: { select: { id: true, sourceCode: true, title: true } } },
+                },
+              },
+            },
+          },
         }),
         prisma.gap.findMany({
           where: { issueId, resolvedByInternalInputId: input.id },
           select: { id: true, gapNumber: true, title: true },
         }),
       ]);
-      const impactClaims = links.map((l) => ({
-        id: l.claim.id,
-        code: formatClaimCode(l.claim.claimNumber) ?? "CLM",
-        label: truncate(l.claim.text, 80),
-      }));
-      const impactClosed = closedGaps.map((g) => ({
-        id: g.id,
-        code: formatGapCode(g.gapNumber) ?? "Q",
-        label: g.title,
-      }));
+
+      const impactClaims = links.map((l) => {
+        const resolved = registry.resolve(l.claim.id);
+        return (
+          resolved ?? {
+            id: l.claim.id,
+            code: formatClaimCode(l.claim.claimNumber) ?? "CLM",
+            label: truncate(l.claim.text, 80),
+          }
+        );
+      });
+
+      const impactClosed = closedGaps.map((g) => {
+        const resolved = registry.resolve(g.id);
+        return (
+          resolved ?? {
+            id: g.id,
+            code: formatGapCode(g.gapNumber) ?? "Q",
+            label: g.title,
+          }
+        );
+      });
+
+      const sourceMap = new Map<string, { id: string; code: string; label: string }>();
+      for (const row of links) {
+        for (const cs of row.claim.sources) {
+          const resolved = registry.resolve(cs.source.id);
+          if (resolved) {
+            sourceMap.set(resolved.id, resolved);
+          } else {
+            sourceMap.set(cs.source.id, {
+              id: cs.source.id,
+              code: cs.source.sourceCode,
+              label: cs.source.title,
+            });
+          }
+        }
+      }
+      const impactSources = [...sourceMap.values()];
+
+      const submitterMeta = {
+        role: input.role.trim(),
+        name: input.name.trim() || "Unknown",
+        confidence: input.confidence.trim(),
+        timestamp: input.createdAt.toISOString(),
+        displayTime: formatHistoryDetailTimestamp(input.createdAt),
+      };
+
+      const isRecordUpdate = card.modalType === "issue_record_update";
+      const changeParts: string[] = [];
+      if (impactClaims.length) changeParts.push(`${impactClaims.length} claim(s) linked`);
+      if (impactClosed.length) changeParts.push(`${impactClosed.length} question(s) closed`);
+      if (impactSources.length) changeParts.push(`${impactSources.length} source(s) referenced`);
+
       modal = {
-        summary: truncate(input.response),
-        submittedUpdate: { heading: "Original submitted update", body: input.response },
+        summary: isRecordUpdate
+          ? `Issue record updated from ${submitterMeta.name}.`
+          : truncate(input.response, 160),
+        submitterMeta,
+        recordMeta: isRecordUpdate
+          ? {
+              recordType: "Issue record update",
+              changeSummary: changeParts.join(" · ") || "Structured record updated",
+              createdAt: formatHistoryDetailTimestamp(input.createdAt),
+              href: `/issues/${issueId}/claims`,
+            }
+          : undefined,
+        submittedUpdate: isRecordUpdate
+          ? undefined
+          : { heading: "Original submitted update", body: input.response },
         issueRecordImpact:
-          impactClaims.length || impactClosed.length
-            ? { claims: impactClaims.length ? impactClaims : undefined, questionsClosed: impactClosed.length ? impactClosed : undefined }
+          impactClaims.length || impactClosed.length || impactSources.length
+            ? {
+                sources: impactSources.length ? impactSources : undefined,
+                claims: impactClaims.length ? impactClaims : undefined,
+                questionsClosed: impactClosed.length ? impactClosed : undefined,
+              }
             : undefined,
-        fullRecordSections: [
-          { heading: "Original submitted update", body: input.response },
-          ...(impactClaims.length || impactClosed.length
-            ? [
-                {
-                  heading: "Metis issue record impact",
-                  body: [
-                    ...(impactClaims.length
-                      ? ["Claims linked:", ...impactClaims.map((c) => `→ ${c.code}: ${c.label}`)]
-                      : []),
-                    ...(impactClosed.length
-                      ? ["Open questions closed:", ...impactClosed.map((c) => `→ ${c.code}: ${c.label}`)]
-                      : []),
-                  ].join("\n"),
-                },
-              ]
-            : []),
-        ],
+        relatedRecords,
+        fullRecordSections: isRecordUpdate
+          ? [
+              {
+                heading: "What changed",
+                body: changeParts.length ? changeParts.map((p) => `- ${p}`).join("\n") : "Issue record updated.",
+              },
+              ...(impactClaims.length
+                ? [
+                    {
+                      heading: "Claims linked",
+                      body: impactClaims.map((c) => `→ ${c.code}: ${c.label}`).join("\n"),
+                    },
+                  ]
+                : []),
+              ...(impactClosed.length
+                ? [
+                    {
+                      heading: "Questions closed",
+                      body: impactClosed.map((c) => `→ ${c.code}: ${c.label}`).join("\n"),
+                    },
+                  ]
+                : []),
+              ...(impactSources.length
+                ? [
+                    {
+                      heading: "Sources referenced",
+                      body: impactSources.map((s) => `→ ${s.code}: ${s.label}`).join("\n"),
+                    },
+                  ]
+                : []),
+              {
+                heading: "Original submitted update",
+                body: input.response,
+              },
+            ]
+          : [
+              { heading: "Original submitted update", body: input.response },
+              ...(impactClaims.length || impactClosed.length || impactSources.length
+                ? [
+                    {
+                      heading: "Metis issue record impact",
+                      body: [
+                        ...(impactSources.length
+                          ? ["Sources:", ...impactSources.map((s) => `→ ${s.code}: ${s.label}`)]
+                          : []),
+                        ...(impactClaims.length
+                          ? ["Claims linked:", ...impactClaims.map((c) => `→ ${c.code}: ${c.label}`)]
+                          : []),
+                        ...(impactClosed.length
+                          ? ["Open questions closed:", ...impactClosed.map((c) => `→ ${c.code}: ${c.label}`)]
+                          : []),
+                      ].join("\n"),
+                    },
+                  ]
+                : []),
+            ],
       };
       break;
     }
@@ -601,142 +760,297 @@ export async function loadIssueHistoryEventDetail(
       const inputId = card.linkedRecordId.replace(/::issue_record_update$/, "");
       modal = await loadIssueHistoryEventDetail(
         issueId,
-        { ...card, linkedRecordType: "InternalInput", linkedRecordId: inputId, modalType: "incoming_update" },
+        { ...card, linkedRecordType: "InternalInput", linkedRecordId: inputId, modalType: "issue_record_update" },
         viewer,
+        options,
       );
       break;
     }
     case "Source": {
       const source = await prisma.source.findFirst({
         where: { id: card.linkedRecordId, issueId },
-        select: { id: true, sourceCode: true, title: true, note: true, snippet: true },
+        select: {
+          id: true,
+          sourceCode: true,
+          title: true,
+          note: true,
+          snippet: true,
+          tier: true,
+          createdAt: true,
+        },
       });
+      const resolved = source ? registry.resolve(source.id) : null;
+      const code = resolved?.code ?? source?.sourceCode ?? "SRC";
       modal = source
         ? {
             summary: truncate(source.note ?? source.title),
-            issueRecordImpact: {
-              sources: [{ id: source.id, code: source.sourceCode, label: source.title }],
+            recordMeta: {
+              recordType: "Source",
+              status: source.tier,
+              createdAt: formatHistoryDetailTimestamp(source.createdAt),
+              href: `/issues/${issueId}/sources`,
             },
+            issueRecordImpact: {
+              sources: [
+                resolved ?? {
+                  id: source.id,
+                  code,
+                  label: source.title,
+                },
+              ],
+            },
+            relatedRecords,
             fullRecordSections: [
               {
-                heading: "Source record",
-                body: [source.title, source.note, source.snippet].filter(Boolean).join("\n\n"),
+                heading: `${code} · ${source.title}`,
+                body: [source.note, source.snippet].filter(Boolean).join("\n\n"),
               },
             ],
           }
-        : { summary: "Source not found." };
+        : { summary: "Source not found.", relatedRecords };
       break;
     }
     case "Claim": {
       const claim = await prisma.claim.findFirst({
         where: { id: card.linkedRecordId, issueId },
-        select: { id: true, claimNumber: true, text: true, status: true },
+        select: {
+          id: true,
+          claimNumber: true,
+          text: true,
+          status: true,
+          createdAt: true,
+          updatedAt: true,
+        },
       });
-      const code = claim ? formatClaimCode(claim.claimNumber) ?? "CLM" : "CLM";
+      const resolved = claim ? registry.resolve(claim.id) : null;
+      const code = resolved?.code ?? (claim ? formatClaimCode(claim.claimNumber) ?? "CLM" : "CLM");
       modal = claim
         ? {
             summary: truncate(claim.text),
-            issueRecordImpact: { claims: [{ id: claim.id, code, label: claim.text }] },
+            recordMeta: {
+              recordType: "Claim",
+              status: claim.status,
+              createdAt: formatHistoryDetailTimestamp(claim.createdAt),
+              updatedAt:
+                claim.updatedAt.getTime() > claim.createdAt.getTime() + 1000
+                  ? formatHistoryDetailTimestamp(claim.updatedAt)
+                  : undefined,
+              href: `/issues/${issueId}/claims`,
+            },
+            issueRecordImpact: {
+              claims: [
+                resolved ?? {
+                  id: claim.id,
+                  code,
+                  label: truncate(claim.text, 100),
+                },
+              ],
+            },
+            relatedRecords,
             fullRecordSections: [{ heading: code, body: claim.text }],
           }
-        : { summary: "Claim not found." };
+        : { summary: "Claim not found.", relatedRecords };
       break;
     }
     case "Gap": {
       const gap = await prisma.gap.findFirst({
         where: { id: card.linkedRecordId, issueId },
-        select: { id: true, gapNumber: true, title: true, whyItMatters: true, status: true },
+        select: {
+          id: true,
+          gapNumber: true,
+          title: true,
+          whyItMatters: true,
+          status: true,
+          createdAt: true,
+          updatedAt: true,
+        },
       });
-      const code = gap ? formatGapCode(gap.gapNumber) ?? "Q" : "Q";
+      const resolved = gap ? registry.resolve(gap.id) : null;
+      const code = resolved?.code ?? (gap ? formatGapCode(gap.gapNumber) ?? "Q" : "Q");
       modal = gap
         ? {
             summary: truncate(gap.whyItMatters),
-            issueRecordImpact: {
-              questionsOpened: [{ id: gap.id, code, label: gap.title }],
+            recordMeta: {
+              recordType: "Open question",
+              status: gap.status,
+              createdAt: formatHistoryDetailTimestamp(gap.createdAt),
+              updatedAt:
+                gap.updatedAt.getTime() > gap.createdAt.getTime() + 1000
+                  ? formatHistoryDetailTimestamp(gap.updatedAt)
+                  : undefined,
+              href: `/issues/${issueId}/gaps`,
             },
-            fullRecordSections: [{ heading: code, body: `${gap.title}\n\n${gap.whyItMatters}` }],
+            issueRecordImpact: {
+              questionsOpened: [
+                resolved ?? {
+                  id: gap.id,
+                  code,
+                  label: gap.title,
+                },
+              ],
+            },
+            relatedRecords,
+            fullRecordSections: [{ heading: `${code} · ${gap.title}`, body: gap.whyItMatters }],
           }
-        : { summary: "Open question not found." };
+        : { summary: "Open question not found.", relatedRecords };
       break;
     }
     case "BriefComparison": {
       const comparison = await prisma.briefComparison.findFirst({
         where: { id: card.linkedRecordId, issueId },
-        select: { mode: true, changeCount: true },
+        select: {
+          mode: true,
+          changeCount: true,
+          createdAt: true,
+          fromBriefVersion: { select: { versionNumber: true, mode: true } },
+          toBriefVersion: { select: { versionNumber: true, mode: true } },
+        },
       });
+      const fromLabel = comparison
+        ? `${comparison.fromBriefVersion.mode} v${comparison.fromBriefVersion.versionNumber}`
+        : "—";
+      const toLabel = comparison
+        ? `${comparison.toBriefVersion.mode} v${comparison.toBriefVersion.versionNumber}`
+        : "—";
       modal = comparison
         ? {
             summary: `${comparison.changeCount} tracked changes between brief versions.`,
+            recordMeta: {
+              recordType: "Brief comparison",
+              changeSummary: `${fromLabel} → ${toLabel}`,
+              createdAt: formatHistoryDetailTimestamp(comparison.createdAt),
+              href: `/issues/${issueId}/compare?mode=${comparison.mode}`,
+            },
+            relatedRecords,
             fullRecordSections: [
               {
                 heading: "Brief comparison",
-                body: `Mode: ${comparison.mode}\nChanges: ${comparison.changeCount}`,
+                body: `Mode: ${comparison.mode}\nFrom: ${fromLabel}\nTo: ${toLabel}\nChanges: ${comparison.changeCount}`,
               },
             ],
           }
-        : { summary: "Comparison not found." };
+        : { summary: "Comparison not found.", relatedRecords };
       break;
     }
     case "BriefVersion": {
       const brief = await prisma.briefVersion.findFirst({
         where: { id: card.linkedRecordId, issueId },
-        select: { mode: true, versionNumber: true, circulationState: true },
+        select: {
+          mode: true,
+          versionNumber: true,
+          circulationState: true,
+          generatedFromIssueUpdatedAt: true,
+          createdAt: true,
+          artifact: true,
+        },
       });
       const label = brief ? briefBadge(brief.mode) : "Brief";
+      const parsedArtifact = brief ? parseBriefArtifact(brief.artifact) : null;
       modal = brief
         ? {
             summary: `${label} version ${brief.versionNumber}`,
             outputMeta: {
               status: brief.circulationState,
               versionNumber: brief.versionNumber,
+              generatedAt: formatHistoryDetailTimestamp(brief.generatedFromIssueUpdatedAt),
               href: `/issues/${issueId}/brief?mode=${brief.mode}`,
             },
-            fullRecordSections: [
-              {
-                heading: label,
-                body: `Version ${brief.versionNumber}\nCirculation: ${brief.circulationState}`,
-              },
-            ],
+            recordMeta: {
+              recordType: label,
+              status: brief.circulationState,
+              createdAt: formatHistoryDetailTimestamp(brief.createdAt),
+              href: `/issues/${issueId}/brief?mode=${brief.mode}`,
+            },
+            relatedRecords,
+            fullRecordSections: parsedArtifact
+              ? briefArtifactToRecordSections(parsedArtifact)
+              : [
+                  {
+                    heading: label,
+                    body: `Version ${brief.versionNumber}\nMode: ${brief.mode}\nCirculation: ${brief.circulationState}`,
+                  },
+                ],
           }
-        : { summary: "Brief not found." };
+        : { summary: "Brief not found.", relatedRecords };
       break;
     }
     case "MessageVariant": {
       const message = await prisma.messageVariant.findFirst({
         where: { id: card.linkedRecordId, issueId },
-        select: { templateId: true, versionNumber: true, approvalStatus: true },
+        select: {
+          templateId: true,
+          versionNumber: true,
+          approvalStatus: true,
+          generatedFromIssueUpdatedAt: true,
+          createdAt: true,
+          artifact: true,
+        },
       });
       const badge = message ? templateBadge(message.templateId) : "Message";
+      const parsedArtifact = message ? parseMessageArtifact(message.artifact) : null;
+      const wording = parsedArtifact ? messageArtifactWording(parsedArtifact) : undefined;
+      const guardrails = parsedArtifact ? messageArtifactGuardrails(parsedArtifact) : undefined;
+      const primaryBody = parsedArtifact ? messageArtifactPrimaryBody(parsedArtifact) : "";
       modal = message
         ? {
             summary: `${badge} · version ${message.versionNumber}`,
             outputMeta: {
+              audience: parsedArtifact?.metadata.audienceLabel,
               status: message.approvalStatus,
               versionNumber: message.versionNumber,
+              templateLabel: parsedArtifact
+                ? messageTemplateDisplayName(parsedArtifact.templateId)
+                : message.templateId,
+              generatedAt: formatHistoryDetailTimestamp(message.generatedFromIssueUpdatedAt),
               href: `/issues/${issueId}/messages`,
             },
-            fullRecordSections: [
-              {
-                heading: badge,
-                body: `Template: ${message.templateId}\nVersion: ${message.versionNumber}\nStatus: ${message.approvalStatus}`,
-              },
-            ],
+            messageWording: wording,
+            guardrails,
+            relatedRecords,
+            fullRecordSections: parsedArtifact
+              ? messageArtifactRecordSections(parsedArtifact)
+              : [
+                  {
+                    heading: badge,
+                    body: primaryBody || `Version ${message.versionNumber}\nStatus: ${message.approvalStatus}`,
+                  },
+                ],
           }
-        : { summary: "Message not found." };
+        : { summary: "Message not found.", relatedRecords };
       break;
     }
     case "ArtifactExport": {
       const exp = await prisma.artifactExport.findFirst({
         where: { id: card.linkedRecordId, issueId },
-        select: { filename: true, approvalStatus: true, format: true },
+        select: {
+          filename: true,
+          approvalStatus: true,
+          format: true,
+          createdAt: true,
+        },
       });
       modal = exp
         ? {
             summary: exp.filename,
-            outputMeta: { status: exp.approvalStatus, href: `/issues/${issueId}/export` },
-            fullRecordSections: [{ heading: "Export", body: exp.filename }],
+            outputMeta: {
+              status: exp.approvalStatus,
+              href: `/issues/${issueId}/export`,
+            },
+            recordMeta: {
+              recordType: "Export",
+              status: `${exp.format.toUpperCase()} · ${exp.approvalStatus}`,
+              createdAt: formatHistoryDetailTimestamp(exp.createdAt),
+              href: `/issues/${issueId}/export`,
+            },
+            relatedRecords,
+            fullRecordSections: [
+              {
+                heading: `${exp.format.toUpperCase()} export`,
+                body: `${exp.filename}\nStatus: ${exp.approvalStatus}`,
+              },
+            ],
           }
-        : { summary: "Export not found." };
+        : { summary: "Export not found.", relatedRecords };
       break;
     }
     case "CirculationEvent": {
@@ -748,25 +1062,38 @@ export async function loadIssueHistoryEventDetail(
           audienceLabel: true,
           postureState: true,
           note: true,
+          createdAt: true,
         },
       });
       modal = circ
         ? {
-            summary: circ.note ?? circ.eventType,
+            summary: circ.note ?? circ.eventType.replace(/_/g, " "),
+            recordMeta: {
+              recordType: "Circulation",
+              changeSummary: [circ.audienceLabel, circ.channel].filter(Boolean).join(" · "),
+              createdAt: formatHistoryDetailTimestamp(circ.createdAt),
+            },
+            relatedRecords,
             fullRecordSections: [
               {
-                heading: "Circulation",
-                body: [circ.eventType, circ.channel, circ.audienceLabel, circ.postureState, circ.note]
+                heading: "Circulation event",
+                body: [
+                  `Event: ${circ.eventType.replace(/_/g, " ")}`,
+                  circ.audienceLabel ? `Audience: ${circ.audienceLabel}` : null,
+                  circ.channel ? `Channel: ${circ.channel}` : null,
+                  circ.postureState ? `Posture: ${circ.postureState}` : null,
+                  circ.note ? `\n${circ.note}` : null,
+                ]
                   .filter(Boolean)
                   .join("\n"),
               },
             ],
           }
-        : { summary: "Circulation event not found." };
+        : { summary: "Circulation event not found.", relatedRecords };
       break;
     }
     default:
-      modal = { summary: "Detail not available for this card type." };
+      modal = { summary: "Detail not available for this card type.", relatedRecords };
   }
 
   end();
