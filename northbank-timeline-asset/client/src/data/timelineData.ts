@@ -104,7 +104,6 @@ export const events: TimelineEvent[] = [
     badgeLabel: 'PRODUCT UPDATE',
     title: 'Product launch scope confirmed',
     summary: 'Launch scope and product parameters added from project source. Northbank Green Saver product definition logged in Metis.',
-    impactChips: ['+2 claims', '+1 observation'],
     relatedIds: ['n_iss01', 'n_iss02'],
     fullRecord: [
       {
@@ -130,7 +129,8 @@ export const events: TimelineEvent[] = [
     time: '11:00',
     badgeLabel: 'RECORD UPDATED',
     title: 'Issue record updated from Launch scope',
-    summary: '+2 claims · +1 observations',
+    summary: '',
+    impactChips: ['+2 claims', '+1 observation'],
     relatedIds: ['n_in01'],
     fullRecord: [
       {
@@ -153,7 +153,6 @@ export const events: TimelineEvent[] = [
     badgeLabel: 'COMMS INTAKE',
     title: 'Corporate Affairs opens launch readiness issue',
     summary: 'Corporate Affairs · Metis issue setup · Direct to comms. Launch readiness issue formally opened in Metis.',
-    impactChips: ['+1 observation', 'status updated'],
     relatedIds: ['n_iss02'],
     fullRecord: [
       {
@@ -179,7 +178,8 @@ export const events: TimelineEvent[] = [
     time: '11:00',
     badgeLabel: 'RECORD UPDATED',
     title: 'Issue record updated from Issue opened',
-    summary: '+1 observations · status updated',
+    summary: '',
+    impactChips: ['+1 observation', 'status updated'],
     relatedIds: ['n_in02'],
     fullRecord: [
       {
@@ -226,7 +226,6 @@ export const events: TimelineEvent[] = [
     badgeLabel: 'PRICING UPDATE',
     title: 'Pricing recommendation submitted',
     summary: 'Commercial Pricing · pricing paper · Direct to comms. Recommended rate and pricing rationale submitted for comms review.',
-    impactChips: ['+1 claim', '+1 open question', '+1 observation'],
     relatedIds: ['n_iss04'],
     fullRecord: [
       {
@@ -252,7 +251,8 @@ export const events: TimelineEvent[] = [
     time: '10:15',
     badgeLabel: 'RECORD UPDATED',
     title: 'Issue record updated from Pricing proposed',
-    summary: '+1 claims · +1 open questions · +1 observations',
+    summary: '',
+    impactChips: ['+1 claim', '+1 open question', '+1 observation'],
     relatedIds: ['n_in03'],
     fullRecord: [
       {
@@ -277,7 +277,6 @@ export const events: TimelineEvent[] = [
     badgeLabel: 'COMPLIANCE NOTE',
     title: 'Compliance review flags eligibility wording',
     summary: 'Compliance · compliance review · Direct to comms. Eligibility wording flagged as requiring clarification before publication.',
-    impactChips: ['+1 claim', '+1 open question'],
     relatedIds: ['n_iss05'],
     fullRecord: [
       {
@@ -303,7 +302,8 @@ export const events: TimelineEvent[] = [
     time: '09:45',
     badgeLabel: 'RECORD UPDATED',
     title: 'Issue record updated from Eligibility flag',
-    summary: '+1 claims · +1 open questions',
+    summary: '',
+    impactChips: ['+1 claim', '+1 open question'],
     relatedIds: ['n_in04'],
     fullRecord: [
       {
@@ -326,7 +326,6 @@ export const events: TimelineEvent[] = [
     badgeLabel: 'LEGAL NOTE',
     title: 'Legal approves headline subject to caveat',
     summary: 'Legal · legal sign-off · Direct to comms. Headline rate approved with a required caveat on promotional terms.',
-    impactChips: ['+1 claim', '+1 open question', '+1 observation'],
     relatedIds: ['n_iss06'],
     fullRecord: [
       {
@@ -352,7 +351,8 @@ export const events: TimelineEvent[] = [
     time: '14:30',
     badgeLabel: 'RECORD UPDATED',
     title: 'Issue record updated from Legal caveat',
-    summary: '+1 claims · +1 open questions · +1 observations',
+    summary: '',
+    impactChips: ['+1 claim', '+1 open question', '+1 observation'],
     relatedIds: ['n_in05'],
     fullRecord: [
       {
@@ -377,7 +377,6 @@ export const events: TimelineEvent[] = [
     badgeLabel: 'CUSTOMER OPS',
     title: 'Customer operations requests approved agent line',
     summary: 'Customer Operations · ops request · Direct to comms. Agent-facing holding line needed before customer message is published.',
-    impactChips: ['+1 claim', '+1 open question', '+1 observation'],
     relatedIds: ['n_iss07'],
     fullRecord: [
       {
@@ -403,7 +402,8 @@ export const events: TimelineEvent[] = [
     time: '10:00',
     badgeLabel: 'RECORD UPDATED',
     title: 'Issue record updated from Agent line needed',
-    summary: '+1 claims · +1 open questions · +1 observations',
+    summary: '',
+    impactChips: ['+1 claim', '+1 open question', '+1 observation'],
     relatedIds: ['n_in06'],
     fullRecord: [
       {
@@ -540,7 +540,6 @@ Do not say
     badgeLabel: 'ACCESSIBILITY REVIEW',
     title: 'Accessibility review asks for alternative support wording',
     summary: 'Accessibility and Inclusion · accessibility review · Direct to comms. Current draft wording does not meet accessibility standards.',
-    impactChips: ['+1 claim', '+1 open question'],
     relatedIds: ['n_iss08'],
     fullRecord: [
       {
@@ -566,7 +565,8 @@ Do not say
     time: '09:30',
     badgeLabel: 'RECORD UPDATED',
     title: 'Issue record updated from Accessibility wording',
-    summary: '+1 claims · +1 open questions',
+    summary: '',
+    impactChips: ['+1 claim', '+1 open question'],
     relatedIds: ['n_in07'],
     fullRecord: [
       {
@@ -591,7 +591,6 @@ Do not say
     badgeLabel: 'DIGITAL READINESS',
     title: 'App release dependency still open',
     summary: 'Digital Product · release status · Direct to comms. App release not yet approved; dependency remains open.',
-    impactChips: ['+1 claim', '+1 open question', '+1 observation'],
     relatedIds: ['n_iss09'],
     fullRecord: [
       {
@@ -617,7 +616,8 @@ Do not say
     time: '09:00',
     badgeLabel: 'RECORD UPDATED',
     title: 'Issue record updated from App dependency open',
-    summary: '+1 claims · +1 open questions · +1 observations',
+    summary: '',
+    impactChips: ['+1 claim', '+1 open question', '+1 observation'],
     relatedIds: ['n_in08'],
     fullRecord: [
       {
@@ -795,7 +795,6 @@ Do not say
     badgeLabel: 'MEDIA ENQUIRY',
     title: 'Trade journalist asks about upcoming savings launch',
     summary: 'Press Office · media enquiry log · Direct to comms. Trade journalist enquiry triggers a press holding line.',
-    impactChips: ['+1 observation'],
     relatedIds: ['n_iss13'],
     fullRecord: [
       {
@@ -821,7 +820,8 @@ Do not say
     time: '09:30',
     badgeLabel: 'RECORD UPDATED',
     title: 'Issue record updated from Trade press enquiry',
-    summary: '+1 observations',
+    summary: '',
+    impactChips: ['+1 observation'],
     relatedIds: ['n_in11'],
     fullRecord: [
       {
@@ -924,7 +924,6 @@ When we have something to announce, we will inform customers and media through o
     badgeLabel: 'DIGITAL APPROVAL',
     title: 'App release approved for launch',
     summary: 'Digital Product · release approval · Direct to comms. App release dependency resolved.',
-    impactChips: ['1 question closed'],
     relatedIds: ['n_iss15'],
     fullRecord: [
       {
@@ -950,7 +949,8 @@ When we have something to announce, we will inform customers and media through o
     time: '10:30',
     badgeLabel: 'RECORD UPDATED',
     title: 'Issue record updated from App approved',
-    summary: '1 questions closed',
+    summary: '',
+    impactChips: ['1 question closed'],
     relatedIds: ['n_in12'],
     fullRecord: [
       {
@@ -973,7 +973,6 @@ When we have something to announce, we will inform customers and media through o
     badgeLabel: 'PRICING APPROVAL',
     title: 'Pricing committee confirms launch rate',
     summary: 'Commercial Pricing · committee minute · Direct to comms. Final launch rate confirmed by pricing committee.',
-    impactChips: ['+1 claim', '2 questions closed'],
     relatedIds: ['n_iss16', 'n_iss17'],
     fullRecord: [
       {
@@ -999,7 +998,8 @@ When we have something to announce, we will inform customers and media through o
     time: '11:45',
     badgeLabel: 'RECORD UPDATED',
     title: 'Issue record updated from Pricing approved',
-    summary: '+1 claims · 2 questions closed',
+    summary: '',
+    impactChips: ['+1 claim', '2 questions closed'],
     relatedIds: ['n_in13'],
     fullRecord: [
       {
@@ -1196,7 +1196,6 @@ When we have something to announce, we will inform customers and media through o
     badgeLabel: 'GO NO-GO',
     title: 'Launch approved for announcement',
     summary: 'Launch Steering Group · go/no-go record · Direct to comms. Go decision recorded. Launch approved for announcement.',
-    impactChips: ['+1 claim', '1 question closed', 'status updated'],
     relatedIds: ['n_iss21', 'n_iss22'],
     fullRecord: [
       {
@@ -1222,7 +1221,8 @@ When we have something to announce, we will inform customers and media through o
     time: '09:00',
     badgeLabel: 'RECORD UPDATED',
     title: 'Issue record updated from Go for launch',
-    summary: '+1 claims · 1 questions closed · status updated',
+    summary: '',
+    impactChips: ['+1 claim', '1 question closed', 'status updated'],
     relatedIds: ['n_in14'],
     fullRecord: [
       {
@@ -1322,7 +1322,6 @@ We will monitor customer, media and digital journey feedback during the first 72
     badgeLabel: 'EXEC ACTION',
     title: 'Post-launch watchlist requested',
     summary: 'Corporate Affairs Director · director note · Direct to comms. Director requests a post-launch watchlist brief.',
-    impactChips: ['+1 open question', '+1 observation'],
     relatedIds: ['n_iss23'],
     fullRecord: [
       {
@@ -1348,7 +1347,8 @@ We will monitor customer, media and digital journey feedback during the first 72
     time: '10:15',
     badgeLabel: 'RECORD UPDATED',
     title: 'Issue record updated from Watchlist requested',
-    summary: '+1 open questions · +1 observations',
+    summary: '',
+    impactChips: ['+1 open question', '+1 observation'],
     relatedIds: ['n_in15'],
     fullRecord: [
       {

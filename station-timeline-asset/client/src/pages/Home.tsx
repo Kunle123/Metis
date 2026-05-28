@@ -12,6 +12,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { events, LANE_CONFIG, type TimelineEvent, type Lane } from '@/data/timelineData';
+import { INPUT_IMPACT } from '@/data/inputImpact';
 import { X, ChevronRight, Clock, FileText, Link2, Zap } from 'lucide-react';
 
 // Group events by time column
@@ -47,13 +48,13 @@ export default function Home() {
   const timeKeys = Array.from(timeGroups.keys()).sort((a, b) => parseTimeKey(a) - parseTimeKey(b));
 
   // Highlight logic:
-  //   - On hover: only the hovered card is highlighted (no related expansion)
-  //   - On selection: selected card + all its related cards are highlighted
+  //   - On hover: only the hovered card is highlighted
+  //   - On selection: only the selected card is highlighted (related cards are NOT highlighted)
   //   - Dimming only activates when there is an active hover or selection
   const highlightedIds: Set<string> = hoveredId
     ? new Set([hoveredId])
     : selected
-    ? new Set([selected.id, ...(selected.relatedIds ?? [])])
+    ? new Set([selected.id])
     : new Set<string>();
 
   function handleCardClick(event: TimelineEvent) {
@@ -198,8 +199,10 @@ export default function Home() {
                               </span>
                             </div>
                             <div className="metis-card-title">{event.title}</div>
-                            <div className="metis-card-summary">{event.summary}</div>
-                            {event.impactChips && event.impactChips.length > 0 && (
+                            {event.summary && (
+                              <div className="metis-card-summary">{event.summary}</div>
+                            )}
+                            {event.lane === 'issue' && event.impactChips && event.impactChips.length > 0 && (
                               <div className="metis-card-chips">
                                 {event.impactChips.map((chip, ci) => (
                                   <span key={ci} className="metis-chip">{chip}</span>
@@ -427,6 +430,118 @@ export default function Home() {
               {/* ── FULL RECORD TAB ── */}
               {activeTab === 'record' && (
                 <div className="metis-drawer-content">
+                  {/* New layout for input cards: Original submitted update + Metis issue record impact */}
+                  {selected.lane === 'input' && INPUT_IMPACT[selected.title] ? (
+                    (() => {
+                      const entry = INPUT_IMPACT[selected.title];
+                      const mi = entry.metisImpact;
+                      const hasAny =
+                        !!mi.statusNote ||
+                        !!mi.linkedSource ||
+                        mi.claimsAdded.length > 0 ||
+                        mi.questionsOpened.length > 0 ||
+                        mi.questionsClosed.length > 0 ||
+                        mi.observationsAdded.length > 0;
+                      return (
+                        <div className="metis-input-record">
+                          {/* Section 1 — Original submitted update */}
+                          <div className="metis-input-record-section">
+                            <div className="metis-input-record-heading">Original submitted update</div>
+                            <div className="metis-input-record-fulltext">
+                              {entry.fullText.split('\n').map((line, li) =>
+                                line.trim() === '' ? <div key={li} className="metis-input-record-blank" /> : <p key={li}>{line}</p>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Section 2 — Metis issue record impact */}
+                          <div className="metis-input-record-section">
+                            <div className="metis-input-record-heading">Metis issue record impact</div>
+                            {!hasAny ? (
+                              <div className="metis-input-record-empty">No issue-record changes recorded from this input.</div>
+                            ) : (
+                              <div className="metis-input-record-impact">
+                                {selected.impactChips && selected.impactChips.length > 0 && (
+                                  <div className="metis-input-record-chips">
+                                    {selected.impactChips.map((c, i) => (
+                                      <span key={i} className="metis-input-record-chip">{c}</span>
+                                    ))}
+                                  </div>
+                                )}
+                                {mi.statusNote && (
+                                  <div className="metis-input-record-row">
+                                    <div className="metis-input-record-row-label">Status</div>
+                                    <div className="metis-input-record-row-value">{mi.statusNote}</div>
+                                  </div>
+                                )}
+                                {mi.linkedSource && (
+                                  <div className="metis-input-record-row">
+                                    <div className="metis-input-record-row-label">Linked source</div>
+                                    <div className="metis-input-record-row-value">
+                                      <span className="metis-input-record-code">{mi.linkedSource.code}</span>
+                                      <span className="metis-input-record-row-text">{mi.linkedSource.title}</span>
+                                    </div>
+                                  </div>
+                                )}
+                                {mi.claimsAdded.length > 0 && (
+                                  <div className="metis-input-record-block">
+                                    <div className="metis-input-record-block-label">Claims added</div>
+                                    <ul className="metis-input-record-list">
+                                      {mi.claimsAdded.map((c) => (
+                                        <li key={c.code}>
+                                          <span className="metis-input-record-code">{c.code}</span>
+                                          <span className="metis-input-record-row-text">{c.text}</span>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
+                                {mi.questionsOpened.length > 0 && (
+                                  <div className="metis-input-record-block">
+                                    <div className="metis-input-record-block-label">Questions opened</div>
+                                    <ul className="metis-input-record-list">
+                                      {mi.questionsOpened.map((q) => (
+                                        <li key={q.code}>
+                                          <span className="metis-input-record-code">{q.code}</span>
+                                          <span className="metis-input-record-row-text">{q.title}</span>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
+                                {mi.questionsClosed.length > 0 && (
+                                  <div className="metis-input-record-block">
+                                    <div className="metis-input-record-block-label">Questions closed</div>
+                                    <ul className="metis-input-record-list">
+                                      {mi.questionsClosed.map((q) => (
+                                        <li key={q.code}>
+                                          <span className="metis-input-record-code">{q.code}</span>
+                                          <span className="metis-input-record-row-text">{q.title}</span>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
+                                {mi.observationsAdded.length > 0 && (
+                                  <div className="metis-input-record-block">
+                                    <div className="metis-input-record-block-label">Observations added</div>
+                                    <ul className="metis-input-record-list">
+                                      {mi.observationsAdded.map((o) => (
+                                        <li key={o.code}>
+                                          <span className="metis-input-record-code">{o.code}</span>
+                                          <span className="metis-input-record-row-text">{o.title}</span>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })()
+                  ) : (
                   <div className="metis-full-record">
                     {(() => {
                       // fullRecord is now an array of {heading, body} objects
@@ -472,6 +587,7 @@ export default function Home() {
                       ));
                     })()}
                   </div>
+                  )}
                 </div>
               )}
 
