@@ -63,6 +63,7 @@ export default function Home() {
   const [selected, setSelected] = useState<TimelineEvent | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'summary' | 'record' | 'related'>('summary');
+  const [wordingMode, setWordingMode] = useState<'draft' | 'ai_polished'>('ai_polished');
   const drawerRef = useRef<HTMLDivElement>(null);
 
   const timeGroups = groupByTime(events);
@@ -220,6 +221,13 @@ export default function Home() {
                             </div>
                             <div className="metis-card-title">{event.title}</div>
                             <div className="metis-card-summary">{event.summary}</div>
+                            {event.impactChips && event.impactChips.length > 0 && (
+                              <div className="metis-card-chips">
+                                {event.impactChips.map((chip, ci) => (
+                                  <span key={ci} className="metis-chip">{chip}</span>
+                                ))}
+                              </div>
+                            )}
                             <div className="metis-card-cta" style={{ color: LANE_CONFIG[lane].textColor }}>
                               Open detail <ChevronRight size={10} />
                             </div>
@@ -333,6 +341,63 @@ export default function Home() {
                           <div className="metis-drawer-field-value">{selected.outputStatus}</div>
                         </div>
                       )}
+
+                      {/* AI-polish wording toggle — only shown when draftBody and aiPolishedBody are present */}
+                      {selected.draftBody && selected.aiPolishedBody && (
+                        <div className="metis-wording-block">
+                          <div className="metis-wording-toggle-row">
+                            <span className="metis-wording-toggle-label">Wording</span>
+                            <div className="metis-wording-toggle">
+                              <button
+                                className={`metis-wording-toggle-btn${wordingMode === 'draft' ? ' metis-wording-toggle-btn--active' : ''}`}
+                                onClick={() => setWordingMode('draft')}
+                              >
+                                Draft
+                              </button>
+                              <button
+                                className={`metis-wording-toggle-btn${wordingMode === 'ai_polished' ? ' metis-wording-toggle-btn--active' : ''}`}
+                                onClick={() => setWordingMode('ai_polished')}
+                              >
+                                ✦ AI polished
+                              </button>
+                            </div>
+                          </div>
+                          <div className="metis-wording-body">
+                            {(wordingMode === 'ai_polished' ? selected.aiPolishedBody : selected.draftBody)
+                              .split('\n')
+                              .map((line, li) => (
+                                <p key={li} className={line.startsWith('-') ? 'metis-wording-bullet' : 'metis-wording-para'}>
+                                  {line.startsWith('-') ? line.slice(1).trim() : line}
+                                </p>
+                              ))}
+                          </div>
+                          {wordingMode === 'ai_polished' && selected.aiPolish && (
+                            <div className="metis-wording-meta">
+                              {selected.aiPolish.preservedConstraints.length > 0 && (
+                                <div className="metis-wording-meta-section">
+                                  <div className="metis-wording-meta-label">Preserved constraints</div>
+                                  <ul className="metis-wording-meta-list">
+                                    {selected.aiPolish.preservedConstraints.map((c, i) => (
+                                      <li key={i}>{c}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+                              {selected.aiPolish.changed.length > 0 && (
+                                <div className="metis-wording-meta-section">
+                                  <div className="metis-wording-meta-label">Changes made</div>
+                                  <ul className="metis-wording-meta-list">
+                                    {selected.aiPolish.changed.map((c, i) => (
+                                      <li key={i}>{c}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
                       {selected.doNotSay && selected.doNotSay.length > 0 && (
                         <div className="metis-drawer-field">
                           <div className="metis-drawer-field-label">Do not say</div>
