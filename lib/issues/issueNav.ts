@@ -35,6 +35,7 @@ export const issueOutputsNavItems = [
 
 /** Review and coordination tools. */
 export const issueReviewNavItems = [
+  { id: "history", path: "/history", shortLabel: "History" },
   { id: "activity", path: "/activity", shortLabel: "Activity" },
   { id: "compare", path: "/compare", shortLabel: "Compare" },
   { id: "comms-plan", path: "/comms-plan", shortLabel: "Comms plan" },
