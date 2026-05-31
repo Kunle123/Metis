@@ -21,6 +21,9 @@ type Props = {
 
 const LANES: IssueHistoryLaneUi[] = ["input", "issue", "output"];
 
+/** Max titles shown on compact/mobile grouped cards before "+n more". */
+const GROUPED_TITLE_VISIBLE = 4;
+
 function groupByTime(evts: IssueHistoryEventCard[]) {
   const map = new Map<string, IssueHistoryEventCard[]>();
   for (const e of evts) {
@@ -37,6 +40,27 @@ function parseTimeKey(key: string): number {
   const [h, m] = time.split(":").map(Number);
   const dayOffset = day === "Sun" ? 0 : day === "Mon" ? 1440 : day === "Tue" ? 2880 : day === "Wed" ? 4320 : 0;
   return dayOffset + h * 60 + m;
+}
+
+function GroupedRecordTitles({ event }: { event: IssueHistoryEventCard }) {
+  const records = event.groupedRecords;
+  if (!records?.length) return null;
+
+  const visible = records.slice(0, GROUPED_TITLE_VISIBLE);
+  const overflow = records.length - visible.length;
+
+  return (
+    <ul className="metis-card-grouped-titles" aria-label="Records in this group">
+      {visible.map((record) => (
+        <li key={record.id} className="metis-card-grouped-title">
+          {record.title}
+        </li>
+      ))}
+      {overflow > 0 ? (
+        <li className="metis-card-grouped-title metis-card-grouped-title--more">+{overflow} more</li>
+      ) : null}
+    </ul>
+  );
 }
 
 export function IssueHistoryTimeline({
@@ -239,6 +263,9 @@ export function IssueHistoryTimeline({
                                   <div className="metis-card-title">{event.title}</div>
                                   {event.subtitle ? (
                                     <div className="metis-card-summary">{event.subtitle}</div>
+                                  ) : null}
+                                  {event.groupedRecords?.length ? (
+                                    <GroupedRecordTitles event={event} />
                                   ) : null}
                                   {event.impactChips && event.impactChips.length > 0 ? (
                                     <div className="metis-card-chips">

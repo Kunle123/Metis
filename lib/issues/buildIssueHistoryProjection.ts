@@ -15,6 +15,7 @@ import {
   resolveRelatedRecordIds,
 } from "./issueHistoryDisplayCodes";
 
+import { groupIssueHistoryRecordAdditions } from "./groupIssueHistoryRecordAdditions";
 import { issueHistoryPerfLog, issueHistoryPerfStart } from "./issueHistoryPerf";
 import { formatIssueHistoryAxisTime } from "./issueHistoryTime";
 import type {
@@ -529,8 +530,16 @@ export async function buildIssueHistoryTimeline(
     );
   }
 
+  const claimInputByClaimId = new Map<string, string>();
+  for (const link of claimInternalLinks) {
+    if (!claimInputByClaimId.has(link.claimId)) {
+      claimInputByClaimId.set(link.claimId, link.internalInputId);
+    }
+  }
+
   events.sort((a, b) => a.timestamp.localeCompare(b.timestamp));
-  const { events: cappedEvents, truncation } = capEvents(events);
+  const groupedEvents = groupIssueHistoryRecordAdditions(events, { claimInputByClaimId }, row);
+  const { events: cappedEvents, truncation } = capEvents(groupedEvents);
   endAssembly();
 
   const payload: IssueHistoryTimelinePayload = {
@@ -1090,6 +1099,149 @@ export async function loadIssueHistoryEventDetail(
             ],
           }
         : { summary: "Circulation event not found.", relatedRecords };
+      break;
+    }
+    case "records_added_group": {
+      const recordIds = options?.relatedRecordIds?.length
+        ? options.relatedRecordIds
+        : card.relatedRecordIds ?? [];
+
+      const [sources, claims, gaps] = await Promise.all([
+        prisma.source.findMany({
+          where: { issueId, id: { in: recordIds } },
+          select: {
+            id: true,
+            sourceCode: true,
+            title: true,
+            note: true,
+            tier: true,
+            createdAt: true,
+          },
+        }),
+        prisma.claim.findMany({
+          where: { issueId, id: { in: recordIds } },
+          select: {
+            id: true,
+            claimNumber: true,
+            text: true,
+            status: true,
+            createdAt: true,
+          },
+        }),
+        prisma.gap.findMany({
+          where: { issueId, id: { in: recordIds } },
+          select: {
+            id: true,
+            gapNumber: true,
+            title: true,
+            whyItMatters: true,
+            status: true,
+            createdAt: true,
+          },
+        }),
+      ]);
+
+      const impactSources = sources.map((source) => {
+        const resolved = registry.resolve(source.id);
+        return (
+          resolved ?? {
+            id: source.id,
+            code: source.sourceCode,
+            label: source.title,
+          }
+        );
+      });
+
+      const impactClaims = claims.map((claim) => {
+        const resolved = registry.resolve(claim.id);
+        const code = resolved?.code ?? formatClaimCode(claim.claimNumber) ?? "CLM";
+        return (
+          resolved ?? {
+            id: claim.id,
+            code,
+            label: truncate(claim.text, 100),
+          }
+        );
+      });
+
+      const impactQuestions = gaps.map((gap) => {
+        const resolved = registry.resolve(gap.id);
+        const code = resolved?.code ?? formatGapCode(gap.gapNumber) ?? "Q";
+        return (
+          resolved ?? {
+            id: gap.id,
+            code,
+            label: gap.title,
+          }
+        );
+      });
+
+      const total = impactSources.length + impactClaims.length + impactQuestions.length;
+      const summaryParts: string[] = [];
+      if (impactSources.length) summaryParts.push(`${impactSources.length} source(s)`);
+      if (impactClaims.length) summaryParts.push(`${impactClaims.length} claim(s)`);
+      if (impactQuestions.length) summaryParts.push(`${impactQuestions.length} open question(s)`);
+
+      const fullRecordSections: { heading: string; body: string }[] = [];
+      if (impactSources.length) {
+        fullRecordSections.push({
+          heading: "Sources",
+          body: sources
+            .map((s) => {
+              const code = registry.resolve(s.id)?.code ?? s.sourceCode;
+              return `→ ${code}: ${s.title}${s.note ? `\n  ${truncate(s.note, 200)}` : ""}`;
+            })
+            .join("\n\n"),
+        });
+      }
+      if (impactClaims.length) {
+        fullRecordSections.push({
+          heading: "Claims",
+          body: claims
+            .map((c) => {
+              const code = registry.resolve(c.id)?.code ?? formatClaimCode(c.claimNumber) ?? "CLM";
+              return `→ ${code}: ${truncate(c.text, 200)} (${c.status})`;
+            })
+            .join("\n\n"),
+        });
+      }
+      if (impactQuestions.length) {
+        fullRecordSections.push({
+          heading: "Open questions",
+          body: gaps
+            .map((g) => {
+              const code = registry.resolve(g.id)?.code ?? formatGapCode(g.gapNumber) ?? "Q";
+              return `→ ${code}: ${g.title}${g.whyItMatters ? `\n  ${truncate(g.whyItMatters, 200)}` : ""}`;
+            })
+            .join("\n\n"),
+        });
+      }
+
+      const earliestCreated = [...sources, ...claims, ...gaps]
+        .map((r) => r.createdAt)
+        .sort((a, b) => a.getTime() - b.getTime())[0];
+
+      modal = {
+        summary:
+          total > 0
+            ? `${total} record(s) added: ${summaryParts.join(", ")}.`
+            : "Grouped record addition.",
+        recordMeta: earliestCreated
+          ? {
+              recordType: "Records added",
+              changeSummary: summaryParts.join(" · "),
+              createdAt: formatHistoryDetailTimestamp(earliestCreated),
+              href: `/issues/${issueId}/claims`,
+            }
+          : undefined,
+        issueRecordImpact: {
+          sources: impactSources.length ? impactSources : undefined,
+          claims: impactClaims.length ? impactClaims : undefined,
+          questionsOpened: impactQuestions.length ? impactQuestions : undefined,
+        },
+        relatedRecords,
+        fullRecordSections,
+      };
       break;
     }
     default:

@@ -79,6 +79,15 @@ export type IssueHistoryModalPayload = {
   fullRecordSections?: { heading: string; body: string }[];
 };
 
+export type IssueHistoryGroupedRecordKind = "source" | "claim" | "question" | "observation";
+
+export type IssueHistoryGroupedRecordItem = {
+  kind: IssueHistoryGroupedRecordKind;
+  id: string;
+  title: string;
+  code?: string;
+};
+
 /** Slim card payload for initial timeline render (no large bodies). */
 export type IssueHistoryEventCard = {
   id: string;
@@ -97,6 +106,10 @@ export type IssueHistoryEventCard = {
   modalType: string;
   impactSummary?: IssueHistoryImpactSummary;
   impactChips?: string[];
+  /** When set, record additions sharing this key are grouped into one card. */
+  batchKey?: string;
+  /** Compact list of records in a grouped addition card. */
+  groupedRecords?: IssueHistoryGroupedRecordItem[];
 };
 
 export type IssueHistoryProjectionMeta = {

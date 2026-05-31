@@ -31,7 +31,7 @@
     "test:approval-status": "tsx lib/approvals/approvalStatus.fixtures.runner.ts",
     "test:issue-attention": "tsx lib/issues/issueAttentionSummary.fixtures.runner.ts",
     "test:issue-lifecycle": "tsx lib/issues/issueLifecycle.fixtures.runner.ts",
-    "test:issue-history": "tsx lib/issues/issueHistoryTime.fixtures.runner.ts",
+    "test:issue-history": "tsx lib/issues/issueHistoryTime.fixtures.runner.ts && tsx lib/issues/groupIssueHistoryRecordAdditions.fixtures.runner.ts",
     "test:observation-visibility": "tsx lib/internalInputs/internalObservationVisibility.fixtures.runner.ts",
     "smoke:prod": "node scripts/prod-smoke.mjs",
     "prisma": "prisma",
