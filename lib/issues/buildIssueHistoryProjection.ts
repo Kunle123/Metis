@@ -19,7 +19,7 @@ import {
 
 import { groupIssueHistoryRecordAdditions } from "./groupIssueHistoryRecordAdditions";
 import { issueHistoryPerfLog, issueHistoryPerfStart } from "./issueHistoryPerf";
-import { formatIssueHistoryAxisTime } from "./issueHistoryTime";
+import { formatIssueHistoryAxisTime, formatIssueHistoryDetailTimestamp } from "./issueHistoryTime";
 import type {
   IssueHistoryEventCard,
   IssueHistoryImpactSummary,
@@ -564,16 +564,6 @@ export async function buildIssueHistoryTimeline(
   return payload;
 }
 
-function formatHistoryDetailTimestamp(iso: Date | string): string {
-  const d = typeof iso === "string" ? new Date(iso) : iso;
-  if (Number.isNaN(d.getTime())) return "—";
-  return new Intl.DateTimeFormat("en-GB", {
-    timeZone: "Europe/London",
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(d);
-}
-
 /** Lazy-load modal/detail payload for one timeline card. */
 export async function loadIssueHistoryEventDetail(
   issueId: string,
@@ -667,7 +657,7 @@ export async function loadIssueHistoryEventDetail(
         name: input.name.trim() || "Unknown",
         confidence: input.confidence.trim(),
         timestamp: input.createdAt.toISOString(),
-        displayTime: formatHistoryDetailTimestamp(input.createdAt),
+        displayTime: formatIssueHistoryDetailTimestamp(input.createdAt),
       };
 
       const isRecordUpdate = card.modalType === "issue_record_update";
@@ -685,7 +675,7 @@ export async function loadIssueHistoryEventDetail(
           ? {
               recordType: "Issue record update",
               changeSummary: changeParts.join(" · ") || "Structured record updated",
-              createdAt: formatHistoryDetailTimestamp(input.createdAt),
+              createdAt: formatIssueHistoryDetailTimestamp(input.createdAt),
               href: `/issues/${issueId}/claims`,
             }
           : undefined,
@@ -791,7 +781,7 @@ export async function loadIssueHistoryEventDetail(
             recordMeta: {
               recordType: "Source linked",
               status: source.tier,
-              createdAt: formatHistoryDetailTimestamp(source.createdAt),
+              createdAt: formatIssueHistoryDetailTimestamp(source.createdAt),
               href: `/issues/${issueId}/sources`,
             },
             issueRecordImpact: {
@@ -844,10 +834,10 @@ export async function loadIssueHistoryEventDetail(
               recordType: isUpdatedEvent ? "Claim updated" : "Claim added",
               status: claim.status,
               changeSummary: isUpdatedEvent ? `${code} · ${claim.status}` : undefined,
-              createdAt: formatHistoryDetailTimestamp(claim.createdAt),
+              createdAt: formatIssueHistoryDetailTimestamp(claim.createdAt),
               updatedAt:
                 claim.updatedAt.getTime() > claim.createdAt.getTime() + 1000
-                  ? formatHistoryDetailTimestamp(claim.updatedAt)
+                  ? formatIssueHistoryDetailTimestamp(claim.updatedAt)
                   : undefined,
               href: `/issues/${issueId}/claims`,
             },
@@ -906,10 +896,10 @@ export async function loadIssueHistoryEventDetail(
               recordType: isResolvedEvent ? "Open question closed" : "Open question added",
               status: gap.status,
               changeSummary: isResolvedEvent ? gap.title : undefined,
-              createdAt: formatHistoryDetailTimestamp(gap.createdAt),
+              createdAt: formatIssueHistoryDetailTimestamp(gap.createdAt),
               updatedAt:
                 gap.updatedAt.getTime() > gap.createdAt.getTime() + 1000
-                  ? formatHistoryDetailTimestamp(gap.updatedAt)
+                  ? formatIssueHistoryDetailTimestamp(gap.updatedAt)
                   : undefined,
               href: `/issues/${issueId}/gaps`,
             },
@@ -957,7 +947,7 @@ export async function loadIssueHistoryEventDetail(
             recordMeta: {
               recordType: "Brief comparison",
               changeSummary: `${fromLabel} → ${toLabel}`,
-              createdAt: formatHistoryDetailTimestamp(comparison.createdAt),
+              createdAt: formatIssueHistoryDetailTimestamp(comparison.createdAt),
               href: `/issues/${issueId}/compare?mode=${comparison.mode}`,
             },
             relatedRecords,
@@ -1000,13 +990,13 @@ export async function loadIssueHistoryEventDetail(
               status: brief.circulationState,
               versionNumber: brief.versionNumber,
               templateLabel: label,
-              generatedAt: formatHistoryDetailTimestamp(brief.generatedFromIssueUpdatedAt),
+              generatedAt: formatIssueHistoryDetailTimestamp(brief.generatedFromIssueUpdatedAt),
               href: `/issues/${issueId}/brief?mode=${brief.mode}`,
             },
             recordMeta: {
               recordType: label,
               status: brief.circulationState,
-              createdAt: formatHistoryDetailTimestamp(brief.createdAt),
+              createdAt: formatIssueHistoryDetailTimestamp(brief.createdAt),
               href: `/issues/${issueId}/brief?mode=${brief.mode}`,
             },
             relatedRecords,
@@ -1049,7 +1039,7 @@ export async function loadIssueHistoryEventDetail(
               templateLabel: parsedArtifact
                 ? messageTemplateDisplayName(parsedArtifact.templateId)
                 : message.templateId,
-              generatedAt: formatHistoryDetailTimestamp(message.generatedFromIssueUpdatedAt),
+              generatedAt: formatIssueHistoryDetailTimestamp(message.generatedFromIssueUpdatedAt),
               href: `/issues/${issueId}/messages`,
             },
             messageWording: wording,
@@ -1088,7 +1078,7 @@ export async function loadIssueHistoryEventDetail(
             recordMeta: {
               recordType: "Export",
               status: `${exp.format.toUpperCase()} · ${exp.approvalStatus}`,
-              createdAt: formatHistoryDetailTimestamp(exp.createdAt),
+              createdAt: formatIssueHistoryDetailTimestamp(exp.createdAt),
               href: `/issues/${issueId}/export`,
             },
             relatedRecords,
@@ -1120,7 +1110,7 @@ export async function loadIssueHistoryEventDetail(
             recordMeta: {
               recordType: "Circulation",
               changeSummary: [circ.audienceLabel, circ.channel].filter(Boolean).join(" · "),
-              createdAt: formatHistoryDetailTimestamp(circ.createdAt),
+              createdAt: formatIssueHistoryDetailTimestamp(circ.createdAt),
             },
             relatedRecords,
             fullRecordSections: [
@@ -1131,7 +1121,7 @@ export async function loadIssueHistoryEventDetail(
                   circ.audienceLabel ? `Audience: ${circ.audienceLabel}` : null,
                   circ.channel ? `Channel: ${circ.channel}` : null,
                   circ.postureState ? `Posture: ${circ.postureState}` : null,
-                  `Recorded: ${formatHistoryDetailTimestamp(circ.createdAt)}`,
+                  `Recorded: ${formatIssueHistoryDetailTimestamp(circ.createdAt)}`,
                   circ.note ? `\n${circ.note}` : null,
                 ]
                   .filter(Boolean)
@@ -1261,7 +1251,7 @@ export async function loadIssueHistoryEventDetail(
           ? {
               recordType: "Records added",
               changeSummary: summaryParts.join(" · "),
-              createdAt: formatHistoryDetailTimestamp(earliestCreated),
+              createdAt: formatIssueHistoryDetailTimestamp(earliestCreated),
               href: `/issues/${issueId}/claims`,
             }
           : undefined,

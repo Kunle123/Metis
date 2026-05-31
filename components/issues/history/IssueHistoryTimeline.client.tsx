@@ -28,7 +28,7 @@ const GROUPED_TITLE_VISIBLE = 4;
 function groupByTime(evts: IssueHistoryEventCard[]) {
   const map = new Map<string, IssueHistoryEventCard[]>();
   for (const e of evts) {
-    const key = `${e.day} ${e.time}`;
+    const key = `${e.day}|${e.time}`;
     const list = map.get(key) ?? [];
     list.push(e);
     map.set(key, list);
@@ -36,11 +36,11 @@ function groupByTime(evts: IssueHistoryEventCard[]) {
   return map;
 }
 
-function parseTimeKey(key: string): number {
-  const [day, time] = key.split(" ");
-  const [h, m] = time.split(":").map(Number);
-  const dayOffset = day === "Sun" ? 0 : day === "Mon" ? 1440 : day === "Tue" ? 2880 : day === "Wed" ? 4320 : 0;
-  return dayOffset + h * 60 + m;
+function parseTimeGroupKey(key: string, events: IssueHistoryEventCard[]): number {
+  const ts = events[0]?.timestamp;
+  if (!ts) return 0;
+  const d = new Date(ts);
+  return Number.isNaN(d.getTime()) ? 0 : d.getTime();
 }
 
 function GroupedRecordTitles({ event }: { event: IssueHistoryEventCard }) {
@@ -198,7 +198,11 @@ export function IssueHistoryTimeline({
 
   const timeGroups = useMemo(() => groupByTime(events), [events]);
   const timeKeys = useMemo(
-    () => Array.from(timeGroups.keys()).sort((a, b) => parseTimeKey(a) - parseTimeKey(b)),
+    () =>
+      Array.from(timeGroups.keys()).sort(
+        (a, b) =>
+          parseTimeGroupKey(a, timeGroups.get(a) ?? []) - parseTimeGroupKey(b, timeGroups.get(b) ?? []),
+      ),
     [timeGroups],
   );
 
@@ -277,15 +281,18 @@ export function IssueHistoryTimeline({
             <div className="metis-time-axis-row">
               <div className="metis-time-label-spacer" />
               <div className="metis-time-axis">
-                {timeKeys.map((key) => (
+                {timeKeys.map((key) => {
+                  const [axisDay, axisTime] = key.split("|");
+                  return (
                   <div key={key} className="metis-time-col">
                     <div className="metis-time-label">
-                      <span className="metis-time-day">{key.split(" ")[0]}</span>
-                      <span className="metis-time-hour">{key.split(" ")[1]}</span>
+                      <span className="metis-time-day">{axisDay}</span>
+                      <span className="metis-time-hour">{axisTime}</span>
                     </div>
                     <div className="metis-time-tick" />
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
@@ -331,9 +338,7 @@ export function IssueHistoryTimeline({
                               >
                                 <div className="metis-card-body">
                                   <div className="metis-card-header">
-                                    <span className="metis-card-time">
-                                      {event.day} {event.time}
-                                    </span>
+                                    <span className="metis-card-time">{event.displayTime}</span>
                                     <span
                                       className="metis-card-badge"
                                       style={{
