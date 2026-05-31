@@ -132,6 +132,8 @@ export type IssueHistoryTruncation = {
 export type IssueHistoryTimelinePayload = IssueHistoryProjectionMeta & {
   events: IssueHistoryEventCard[];
   truncation: IssueHistoryTruncation;
+  /** ISO timestamp of the newest brief version on this issue, for client-side shortcuts. */
+  latestBriefTimestamp?: string | null;
 };
 
 /** @deprecated Use IssueHistoryEventCard for list + lazy detail fetch. */

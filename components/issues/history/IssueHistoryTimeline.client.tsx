@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { ChevronRight, Clock, FileText, Link2, X, Zap } from "lucide-react";
 
@@ -11,6 +11,16 @@ import type {
   IssueHistoryModalPayload,
 } from "@/lib/issues/issueHistoryTypes";
 import { ISSUE_HISTORY_LANE_CONFIG, issueHistoryLaneToUi } from "@/lib/issues/issueHistoryTypes";
+import {
+  countEventsByLane,
+  filterIssueHistoryEvents,
+  filtersAreActive,
+  historyHasOnlyInputLane,
+  type IssueHistoryDensity,
+  type IssueHistoryFilterState,
+  type IssueHistoryLaneFilter,
+  type IssueHistoryTypeFilter,
+} from "@/lib/issues/issueHistoryFilters";
 
 type Props = {
   issueId: string;
@@ -18,12 +28,58 @@ type Props = {
   controlledPositionHeadline: string;
   controlledPositionDetail: string;
   events: IssueHistoryEventCard[];
+  latestBriefTimestamp?: string | null;
 };
 
 const LANES: IssueHistoryLaneUi[] = ["input", "issue", "output"];
 
-/** Max titles shown on compact/mobile grouped cards before "+n more". */
-const GROUPED_TITLE_VISIBLE = 4;
+const LANE_FILTER_OPTIONS: { value: IssueHistoryLaneFilter; label: string }[] = [
+  { value: "all", label: "All" },
+  { value: "input", label: "Incoming updates" },
+  { value: "issue", label: "Issue record" },
+  { value: "output", label: "Outputs" },
+];
+
+const TYPE_FILTER_OPTIONS: { value: IssueHistoryTypeFilter; label: string }[] = [
+  { value: "all", label: "All types" },
+  { value: "inputs", label: "Inputs" },
+  { value: "claims_questions", label: "Claims & questions" },
+  { value: "briefs_messages", label: "Briefs & messages" },
+  { value: "circulation_export", label: "Circulation & export" },
+];
+
+const DEFAULT_FILTERS: IssueHistoryFilterState = {
+  lane: "all",
+  type: "all",
+  sinceLastBrief: false,
+  density: "comfortable",
+};
+
+function FilterChip({
+  active,
+  disabled,
+  title,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  disabled?: boolean;
+  title?: string;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      className={`metis-filter-chip${active ? " metis-filter-chip--active" : ""}`}
+      disabled={disabled}
+      title={title}
+      onClick={onClick}
+    >
+      {children}
+    </button>
+  );
+}
 
 function groupByTime(evts: IssueHistoryEventCard[]) {
   const map = new Map<string, IssueHistoryEventCard[]>();
@@ -43,11 +99,17 @@ function parseTimeGroupKey(key: string, events: IssueHistoryEventCard[]): number
   return Number.isNaN(d.getTime()) ? 0 : d.getTime();
 }
 
-function GroupedRecordTitles({ event }: { event: IssueHistoryEventCard }) {
+function GroupedRecordTitles({
+  event,
+  visibleCount,
+}: {
+  event: IssueHistoryEventCard;
+  visibleCount: number;
+}) {
   const records = event.groupedRecords;
   if (!records?.length) return null;
 
-  const visible = records.slice(0, GROUPED_TITLE_VISIBLE);
+  const visible = records.slice(0, visibleCount);
   const overflow = records.length - visible.length;
 
   return (
@@ -152,8 +214,10 @@ export function IssueHistoryTimeline({
   issueTitle,
   controlledPositionHeadline,
   controlledPositionDetail,
-  events,
+  events: allEvents,
+  latestBriefTimestamp,
 }: Props) {
+  const [filters, setFilters] = useState<IssueHistoryFilterState>(DEFAULT_FILTERS);
   const [selected, setSelected] = useState<IssueHistoryEventCard | null>(null);
   const [modalDetail, setModalDetail] = useState<IssueHistoryModalPayload | null>(null);
   const [modalLoading, setModalLoading] = useState(false);
@@ -196,7 +260,22 @@ export function IssueHistoryTimeline({
     [issueId],
   );
 
-  const timeGroups = useMemo(() => groupByTime(events), [events]);
+  const filteredEvents = useMemo(
+    () =>
+      filterIssueHistoryEvents(allEvents, {
+        lane: filters.lane,
+        type: filters.type,
+        sinceLastBrief: filters.sinceLastBrief,
+        latestBriefTimestamp,
+      }),
+    [allEvents, filters.lane, filters.type, filters.sinceLastBrief, latestBriefTimestamp],
+  );
+
+  const groupedTitleVisible = filters.density === "compact" ? 2 : 4;
+  const activeFilters = filtersAreActive(filters);
+  const showInputOnlyHint = historyHasOnlyInputLane(allEvents) && !activeFilters;
+
+  const timeGroups = useMemo(() => groupByTime(filteredEvents), [filteredEvents]);
   const timeKeys = useMemo(
     () =>
       Array.from(timeGroups.keys()).sort(
@@ -206,13 +285,15 @@ export function IssueHistoryTimeline({
     [timeGroups],
   );
 
-  const laneCount = useMemo(() => {
-    const count: Record<IssueHistoryLaneUi, number> = { input: 0, issue: 0, output: 0 };
-    for (const e of events) {
-      count[issueHistoryLaneToUi(e.lane)] += 1;
+  const laneCount = useMemo(() => countEventsByLane(filteredEvents), [filteredEvents]);
+
+  const visibleLanes = useMemo((): IssueHistoryLaneUi[] => {
+    if (filters.lane !== "all") return [filters.lane];
+    if (activeFilters) {
+      return LANES.filter((lane) => filteredEvents.some((e) => issueHistoryLaneToUi(e.lane) === lane));
     }
-    return count;
-  }, [events]);
+    return LANES;
+  }, [filters.lane, activeFilters, filteredEvents]);
 
   const highlightedIds = useMemo(() => {
     if (hoveredId) return new Set([hoveredId]);
@@ -233,7 +314,7 @@ export function IssueHistoryTimeline({
 
   return (
     <div className="issue-history-timeline">
-      <div className="metis-root">
+      <div className={`metis-root${filters.density === "compact" ? " metis-root--compact" : ""}`}>
         <header className="metis-header">
           <div className="metis-header-inner">
             <div className="metis-header-left">
@@ -266,17 +347,115 @@ export function IssueHistoryTimeline({
             ))}
             <span className="metis-legend-hint">Click any card to open the detail record</span>
           </div>
+
+          <div className="metis-controls-bar">
+            <div className="metis-controls-group">
+              <span className="metis-controls-label">Lane</span>
+              <div className="metis-controls-chips">
+                {LANE_FILTER_OPTIONS.map((option) => (
+                  <FilterChip
+                    key={option.value}
+                    active={filters.lane === option.value}
+                    onClick={() => setFilters((prev) => ({ ...prev, lane: option.value }))}
+                  >
+                    {option.label}
+                  </FilterChip>
+                ))}
+              </div>
+            </div>
+
+            <div className="metis-controls-group">
+              <span className="metis-controls-label">Type</span>
+              <div className="metis-controls-chips">
+                {TYPE_FILTER_OPTIONS.map((option) => (
+                  <FilterChip
+                    key={option.value}
+                    active={filters.type === option.value}
+                    onClick={() => setFilters((prev) => ({ ...prev, type: option.value }))}
+                  >
+                    {option.label}
+                  </FilterChip>
+                ))}
+              </div>
+            </div>
+
+            <div className="metis-controls-group metis-controls-group--shortcuts">
+              <FilterChip
+                active={filters.sinceLastBrief}
+                disabled={!latestBriefTimestamp}
+                title={
+                  latestBriefTimestamp
+                    ? "Show only events after the latest brief"
+                    : "No brief generated yet"
+                }
+                onClick={() =>
+                  setFilters((prev) => ({ ...prev, sinceLastBrief: !prev.sinceLastBrief }))
+                }
+              >
+                Since last brief
+              </FilterChip>
+
+              <span className="metis-controls-divider" aria-hidden="true" />
+
+              <span className="metis-controls-label">Density</span>
+              {(["comfortable", "compact"] as IssueHistoryDensity[]).map((density) => (
+                <FilterChip
+                  key={density}
+                  active={filters.density === density}
+                  onClick={() => setFilters((prev) => ({ ...prev, density }))}
+                >
+                  {density === "comfortable" ? "Comfortable" : "Compact"}
+                </FilterChip>
+              ))}
+
+              {activeFilters ? (
+                <>
+                  <span className="metis-controls-divider" aria-hidden="true" />
+                  <button
+                    type="button"
+                    className="metis-controls-clear"
+                    onClick={() => setFilters(DEFAULT_FILTERS)}
+                  >
+                    Clear filters
+                  </button>
+                </>
+              ) : null}
+            </div>
+          </div>
         </header>
 
         <div className="metis-layout">
-          {events.length === 0 ? (
-            <div className="px-8 py-16 text-center" style={{ color: "#5E5A50", fontFamily: "Inter, sans-serif" }}>
-              <p className="text-base">No history events yet for this issue.</p>
-              <p className="mt-2 text-sm">
-                Add updates to the record or generate outputs to populate the timeline.
+          {allEvents.length === 0 ? (
+            <div className="metis-empty-state">
+              <p className="metis-empty-state-title">No history events yet for this issue.</p>
+              <p className="metis-empty-state-body">
+                As you add incoming updates, Metis structures them into the issue record and generates
+                briefs, messages, and exports — each step appears here on the timeline.
               </p>
             </div>
+          ) : filteredEvents.length === 0 ? (
+            <div className="metis-empty-state">
+              <p className="metis-empty-state-title">No events match the current filters.</p>
+              <p className="metis-empty-state-body">
+                Try broadening the lane or type filter, or turn off “Since last brief”.
+              </p>
+              <button
+                type="button"
+                className="metis-controls-clear metis-empty-state-action"
+                onClick={() => setFilters(DEFAULT_FILTERS)}
+              >
+                Clear filters
+              </button>
+            </div>
           ) : (
+          <>
+          {showInputOnlyHint ? (
+            <div className="metis-low-data-banner">
+              You have incoming updates but no structured record changes or outputs yet. Once Metis
+              processes updates into claims, briefs or messages, those events will appear in the lanes
+              below.
+            </div>
+          ) : null}
           <div className="metis-timeline-scroll">
             <div className="metis-time-axis-row">
               <div className="metis-time-label-spacer" />
@@ -296,7 +475,7 @@ export function IssueHistoryTimeline({
               </div>
             </div>
 
-            {LANES.map((lane) => {
+            {visibleLanes.map((lane) => {
               const laneConfig = ISSUE_HISTORY_LANE_CONFIG[lane];
               return (
                 <div key={lane} className="metis-swimlane-row">
@@ -354,7 +533,7 @@ export function IssueHistoryTimeline({
                                     <div className="metis-card-summary">{event.subtitle}</div>
                                   ) : null}
                                   {event.groupedRecords?.length ? (
-                                    <GroupedRecordTitles event={event} />
+                                    <GroupedRecordTitles event={event} visibleCount={groupedTitleVisible} />
                                   ) : null}
                                   {event.impactChips && event.impactChips.length > 0 ? (
                                     <div className="metis-card-chips">
@@ -380,6 +559,7 @@ export function IssueHistoryTimeline({
               );
             })}
           </div>
+          </>
           )}
         </div>
 

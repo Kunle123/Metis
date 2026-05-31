@@ -89,6 +89,7 @@ export function IssueHistoryPageClient({
         controlledPositionHeadline={payload.controlledPositionHeadline || controlledPositionHeadline}
         controlledPositionDetail={payload.controlledPositionDetail || controlledPositionDetail}
         events={payload.events}
+        latestBriefTimestamp={payload.latestBriefTimestamp}
       />
     </>
   );

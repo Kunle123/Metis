@@ -542,6 +542,14 @@ export async function buildIssueHistoryTimeline(
   events.sort((a, b) => a.timestamp.localeCompare(b.timestamp));
   const groupedEvents = groupIssueHistoryRecordAdditions(events, { claimInputByClaimId }, row);
   const { events: cappedEvents, truncation } = capEvents(groupedEvents);
+
+  const latestBriefTimestamp =
+    briefVersions.length > 0
+      ? briefVersions
+          .reduce((latest, b) => (b.createdAt.getTime() > latest.getTime() ? b.createdAt : latest), briefVersions[0]!.createdAt)
+          .toISOString()
+      : null;
+
   endAssembly();
 
   const payload: IssueHistoryTimelinePayload = {
@@ -551,6 +559,7 @@ export async function buildIssueHistoryTimeline(
     controlledPositionDetail: [issue.status, issue.operatorPosture].filter(Boolean).join(" · "),
     events: cappedEvents,
     truncation,
+    latestBriefTimestamp,
   };
 
   issueHistoryPerfLog("serialization", {
