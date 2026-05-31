@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db/prisma";
 import { formatClaimCode, formatGapCode } from "@/lib/issueRecordCodes";
 import { prismaWhereInternalInputsVisibleToViewer } from "@/lib/internalInputs/internalObservationVisibility";
 import {
+  briefArtifactEvidenceRefs,
   briefArtifactToRecordSections,
   messageArtifactGuardrails,
   messageArtifactPrimaryBody,
@@ -12,6 +13,7 @@ import {
 } from "./issueHistoryArtifactDetail";
 import {
   loadIssueHistoryDisplayRegistry,
+  registryToImpactRecord,
   resolveRelatedRecordIds,
 } from "./issueHistoryDisplayCodes";
 
@@ -628,41 +630,34 @@ export async function loadIssueHistoryEventDetail(
         }),
       ]);
 
-      const impactClaims = links.map((l) => {
-        const resolved = registry.resolve(l.claim.id);
-        return (
-          resolved ?? {
-            id: l.claim.id,
-            code: formatClaimCode(l.claim.claimNumber) ?? "CLM",
-            label: truncate(l.claim.text, 80),
-          }
-        );
-      });
+      const impactClaims = links.map((l) =>
+        registryToImpactRecord(registry, l.claim.id, {
+          code: formatClaimCode(l.claim.claimNumber) ?? "CLM",
+          label: truncate(l.claim.text, 80),
+          recordType: "Claim",
+          href: `/issues/${issueId}/claims`,
+        }),
+      );
 
-      const impactClosed = closedGaps.map((g) => {
-        const resolved = registry.resolve(g.id);
-        return (
-          resolved ?? {
-            id: g.id,
-            code: formatGapCode(g.gapNumber) ?? "Q",
-            label: g.title,
-          }
-        );
-      });
+      const impactClosed = closedGaps.map((g) =>
+        registryToImpactRecord(registry, g.id, {
+          code: formatGapCode(g.gapNumber) ?? "Q",
+          label: g.title,
+          recordType: "Open question",
+          href: `/issues/${issueId}/gaps`,
+        }),
+      );
 
-      const sourceMap = new Map<string, { id: string; code: string; label: string }>();
+      const sourceMap = new Map<string, ReturnType<typeof registryToImpactRecord>>();
       for (const row of links) {
         for (const cs of row.claim.sources) {
-          const resolved = registry.resolve(cs.source.id);
-          if (resolved) {
-            sourceMap.set(resolved.id, resolved);
-          } else {
-            sourceMap.set(cs.source.id, {
-              id: cs.source.id,
-              code: cs.source.sourceCode,
-              label: cs.source.title,
-            });
-          }
+          const impact = registryToImpactRecord(registry, cs.source.id, {
+            code: cs.source.sourceCode,
+            label: cs.source.title,
+            recordType: "Source",
+            href: `/issues/${issueId}/sources`,
+          });
+          sourceMap.set(impact.id, impact);
         }
       }
       const impactSources = [...sourceMap.values()];
@@ -794,18 +789,19 @@ export async function loadIssueHistoryEventDetail(
         ? {
             summary: truncate(source.note ?? source.title),
             recordMeta: {
-              recordType: "Source",
+              recordType: "Source linked",
               status: source.tier,
               createdAt: formatHistoryDetailTimestamp(source.createdAt),
               href: `/issues/${issueId}/sources`,
             },
             issueRecordImpact: {
               sources: [
-                resolved ?? {
-                  id: source.id,
+                registryToImpactRecord(registry, source.id, {
                   code,
                   label: source.title,
-                },
+                  recordType: "Source",
+                  href: `/issues/${issueId}/sources`,
+                }),
               ],
             },
             relatedRecords,
@@ -820,6 +816,7 @@ export async function loadIssueHistoryEventDetail(
       break;
     }
     case "Claim": {
+      const isUpdatedEvent = card.id.startsWith("claim-updated:");
       const claim = await prisma.claim.findFirst({
         where: { id: card.linkedRecordId, issueId },
         select: {
@@ -831,14 +828,22 @@ export async function loadIssueHistoryEventDetail(
           updatedAt: true,
         },
       });
-      const resolved = claim ? registry.resolve(claim.id) : null;
-      const code = resolved?.code ?? (claim ? formatClaimCode(claim.claimNumber) ?? "CLM" : "CLM");
+      const code = claim ? formatClaimCode(claim.claimNumber) ?? "CLM" : "CLM";
+      const impactClaim = claim
+        ? registryToImpactRecord(registry, claim.id, {
+            code,
+            label: truncate(claim.text, 100),
+            recordType: "Claim",
+            href: `/issues/${issueId}/claims`,
+          })
+        : null;
       modal = claim
         ? {
-            summary: truncate(claim.text),
+            summary: isUpdatedEvent ? `${code} updated` : truncate(claim.text),
             recordMeta: {
-              recordType: "Claim",
+              recordType: isUpdatedEvent ? "Claim updated" : "Claim added",
               status: claim.status,
+              changeSummary: isUpdatedEvent ? `${code} · ${claim.status}` : undefined,
               createdAt: formatHistoryDetailTimestamp(claim.createdAt),
               updatedAt:
                 claim.updatedAt.getTime() > claim.createdAt.getTime() + 1000
@@ -846,22 +851,15 @@ export async function loadIssueHistoryEventDetail(
                   : undefined,
               href: `/issues/${issueId}/claims`,
             },
-            issueRecordImpact: {
-              claims: [
-                resolved ?? {
-                  id: claim.id,
-                  code,
-                  label: truncate(claim.text, 100),
-                },
-              ],
-            },
+            issueRecordImpact: impactClaim ? { claims: [impactClaim] } : undefined,
             relatedRecords,
-            fullRecordSections: [{ heading: code, body: claim.text }],
+            fullRecordSections: [{ heading: `${code} · ${truncate(claim.text, 72)}`, body: claim.text }],
           }
         : { summary: "Claim not found.", relatedRecords };
       break;
     }
     case "Gap": {
+      const isResolvedEvent = card.id.startsWith("gap-resolved:");
       const gap = await prisma.gap.findFirst({
         where: { id: card.linkedRecordId, issueId },
         select: {
@@ -872,16 +870,42 @@ export async function loadIssueHistoryEventDetail(
           status: true,
           createdAt: true,
           updatedAt: true,
+          resolvedByInternalInputId: true,
         },
       });
-      const resolved = gap ? registry.resolve(gap.id) : null;
-      const code = resolved?.code ?? (gap ? formatGapCode(gap.gapNumber) ?? "Q" : "Q");
+      const code = gap ? formatGapCode(gap.gapNumber) ?? "Q" : "Q";
+      const impactQuestion = gap
+        ? registryToImpactRecord(registry, gap.id, {
+            code,
+            label: gap.title,
+            recordType: "Open question",
+            href: `/issues/${issueId}/gaps`,
+          })
+        : null;
+
+      let resolutionNote: string | undefined;
+      if (gap?.resolvedByInternalInputId) {
+        const resolver = await prisma.internalInput.findFirst({
+          where: {
+            AND: [
+              { id: gap.resolvedByInternalInputId },
+              prismaWhereInternalInputsVisibleToViewer(issueId, viewer),
+            ],
+          },
+          select: { name: true, role: true, response: true },
+        });
+        if (resolver) {
+          resolutionNote = truncate(resolver.response, 300);
+        }
+      }
+
       modal = gap
         ? {
-            summary: truncate(gap.whyItMatters),
+            summary: isResolvedEvent ? `${code} closed` : truncate(gap.whyItMatters),
             recordMeta: {
-              recordType: "Open question",
+              recordType: isResolvedEvent ? "Open question closed" : "Open question added",
               status: gap.status,
+              changeSummary: isResolvedEvent ? gap.title : undefined,
               createdAt: formatHistoryDetailTimestamp(gap.createdAt),
               updatedAt:
                 gap.updatedAt.getTime() > gap.createdAt.getTime() + 1000
@@ -890,16 +914,22 @@ export async function loadIssueHistoryEventDetail(
               href: `/issues/${issueId}/gaps`,
             },
             issueRecordImpact: {
-              questionsOpened: [
-                resolved ?? {
-                  id: gap.id,
-                  code,
-                  label: gap.title,
-                },
-              ],
+              ...(isResolvedEvent && impactQuestion
+                ? { questionsClosed: [impactQuestion] }
+                : impactQuestion
+                  ? { questionsOpened: [impactQuestion] }
+                  : {}),
+              statusNote: isResolvedEvent && resolutionNote ? resolutionNote : undefined,
             },
             relatedRecords,
-            fullRecordSections: [{ heading: `${code} · ${gap.title}`, body: gap.whyItMatters }],
+            fullRecordSections: [
+              {
+                heading: `${code} · ${gap.title}`,
+                body: [gap.whyItMatters, isResolvedEvent && resolutionNote ? `Resolution:\n${resolutionNote}` : null]
+                  .filter(Boolean)
+                  .join("\n\n"),
+              },
+            ],
           }
         : { summary: "Open question not found.", relatedRecords };
       break;
@@ -955,12 +985,21 @@ export async function loadIssueHistoryEventDetail(
       });
       const label = brief ? briefBadge(brief.mode) : "Brief";
       const parsedArtifact = brief ? parseBriefArtifact(brief.artifact) : null;
+      const briefSections = parsedArtifact ? briefArtifactToRecordSections(parsedArtifact) : [];
+      const evidenceRefs = parsedArtifact ? briefArtifactEvidenceRefs(parsedArtifact) : [];
+      if (evidenceRefs.length) {
+        briefSections.push({
+          heading: "Linked record basis",
+          body: evidenceRefs.map((ref) => `→ ${ref}`).join("\n"),
+        });
+      }
       modal = brief
         ? {
             summary: `${label} version ${brief.versionNumber}`,
             outputMeta: {
               status: brief.circulationState,
               versionNumber: brief.versionNumber,
+              templateLabel: label,
               generatedAt: formatHistoryDetailTimestamp(brief.generatedFromIssueUpdatedAt),
               href: `/issues/${issueId}/brief?mode=${brief.mode}`,
             },
@@ -971,8 +1010,8 @@ export async function loadIssueHistoryEventDetail(
               href: `/issues/${issueId}/brief?mode=${brief.mode}`,
             },
             relatedRecords,
-            fullRecordSections: parsedArtifact
-              ? briefArtifactToRecordSections(parsedArtifact)
+            fullRecordSections: briefSections.length
+              ? briefSections
               : [
                   {
                     heading: label,
@@ -1014,6 +1053,7 @@ export async function loadIssueHistoryEventDetail(
               href: `/issues/${issueId}/messages`,
             },
             messageWording: wording,
+            messageBody: !wording && primaryBody.trim() ? primaryBody : undefined,
             guardrails,
             relatedRecords,
             fullRecordSections: parsedArtifact
@@ -1085,12 +1125,13 @@ export async function loadIssueHistoryEventDetail(
             relatedRecords,
             fullRecordSections: [
               {
-                heading: "Circulation event",
+                heading: circ.audienceLabel?.trim() || "Circulation event",
                 body: [
                   `Event: ${circ.eventType.replace(/_/g, " ")}`,
                   circ.audienceLabel ? `Audience: ${circ.audienceLabel}` : null,
                   circ.channel ? `Channel: ${circ.channel}` : null,
                   circ.postureState ? `Posture: ${circ.postureState}` : null,
+                  `Recorded: ${formatHistoryDetailTimestamp(circ.createdAt)}`,
                   circ.note ? `\n${circ.note}` : null,
                 ]
                   .filter(Boolean)
@@ -1102,9 +1143,7 @@ export async function loadIssueHistoryEventDetail(
       break;
     }
     case "records_added_group": {
-      const recordIds = options?.relatedRecordIds?.length
-        ? options.relatedRecordIds
-        : card.relatedRecordIds ?? [];
+      const recordIds = options?.relatedRecordIds ?? [];
 
       const [sources, claims, gaps] = await Promise.all([
         prisma.source.findMany({
@@ -1141,40 +1180,32 @@ export async function loadIssueHistoryEventDetail(
         }),
       ]);
 
-      const impactSources = sources.map((source) => {
-        const resolved = registry.resolve(source.id);
-        return (
-          resolved ?? {
-            id: source.id,
-            code: source.sourceCode,
-            label: source.title,
-          }
-        );
-      });
+      const impactSources = sources.map((source) =>
+        registryToImpactRecord(registry, source.id, {
+          code: source.sourceCode,
+          label: source.title,
+          recordType: "Source",
+          href: `/issues/${issueId}/sources`,
+        }),
+      );
 
-      const impactClaims = claims.map((claim) => {
-        const resolved = registry.resolve(claim.id);
-        const code = resolved?.code ?? formatClaimCode(claim.claimNumber) ?? "CLM";
-        return (
-          resolved ?? {
-            id: claim.id,
-            code,
-            label: truncate(claim.text, 100),
-          }
-        );
-      });
+      const impactClaims = claims.map((claim) =>
+        registryToImpactRecord(registry, claim.id, {
+          code: formatClaimCode(claim.claimNumber) ?? "CLM",
+          label: truncate(claim.text, 100),
+          recordType: "Claim",
+          href: `/issues/${issueId}/claims`,
+        }),
+      );
 
-      const impactQuestions = gaps.map((gap) => {
-        const resolved = registry.resolve(gap.id);
-        const code = resolved?.code ?? formatGapCode(gap.gapNumber) ?? "Q";
-        return (
-          resolved ?? {
-            id: gap.id,
-            code,
-            label: gap.title,
-          }
-        );
-      });
+      const impactQuestions = gaps.map((gap) =>
+        registryToImpactRecord(registry, gap.id, {
+          code: formatGapCode(gap.gapNumber) ?? "Q",
+          label: gap.title,
+          recordType: "Open question",
+          href: `/issues/${issueId}/gaps`,
+        }),
+      );
 
       const total = impactSources.length + impactClaims.length + impactQuestions.length;
       const summaryParts: string[] = [];

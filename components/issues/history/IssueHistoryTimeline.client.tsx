@@ -6,6 +6,7 @@ import { ChevronRight, Clock, FileText, Link2, X, Zap } from "lucide-react";
 
 import type {
   IssueHistoryEventCard,
+  IssueHistoryImpactRecord,
   IssueHistoryLaneUi,
   IssueHistoryModalPayload,
 } from "@/lib/issues/issueHistoryTypes";
@@ -60,6 +61,89 @@ function GroupedRecordTitles({ event }: { event: IssueHistoryEventCard }) {
         <li className="metis-card-grouped-title metis-card-grouped-title--more">+{overflow} more</li>
       ) : null}
     </ul>
+  );
+}
+
+function ImpactRecordRow({
+  record,
+  laneColor,
+  codeSuffix,
+}: {
+  record: IssueHistoryImpactRecord;
+  laneColor: string;
+  codeSuffix?: string;
+}) {
+  const codeLabel = codeSuffix ? `${record.code} ${codeSuffix}` : record.code;
+  const row = (
+    <>
+      <span className="metis-drawer-inset-key">{codeLabel}</span>
+      <span className="metis-drawer-inset-val">{record.label}</span>
+    </>
+  );
+
+  if (record.href) {
+    return (
+      <Link
+        key={record.id}
+        href={record.href}
+        className="metis-drawer-inset-row metis-drawer-impact-link"
+        style={{ color: laneColor }}
+      >
+        {row}
+      </Link>
+    );
+  }
+
+  return (
+    <div key={record.id} className="metis-drawer-inset-row">
+      {row}
+    </div>
+  );
+}
+
+function IssueRecordImpactPanel({
+  impact,
+  laneColor,
+}: {
+  impact: NonNullable<IssueHistoryModalPayload["issueRecordImpact"]>;
+  laneColor: string;
+}) {
+  const sections: { label: string; records: IssueHistoryImpactRecord[]; codeSuffix?: string }[] = [];
+  if (impact.sources?.length) sections.push({ label: "Sources", records: impact.sources });
+  if (impact.claims?.length) sections.push({ label: "Claims", records: impact.claims });
+  if (impact.questionsOpened?.length) {
+    sections.push({ label: "Open questions", records: impact.questionsOpened });
+  }
+  if (impact.questionsClosed?.length) {
+    sections.push({ label: "Questions closed", records: impact.questionsClosed, codeSuffix: "closed" });
+  }
+  if (impact.observations?.length) sections.push({ label: "Observations", records: impact.observations });
+
+  if (!sections.length && !impact.statusNote) return null;
+
+  return (
+    <div className="metis-drawer-inset metis-drawer-impact-panel">
+      <div className="metis-drawer-inset-label">Metis issue record impact</div>
+      {sections.map((section) => (
+        <div key={section.label} className="metis-drawer-impact-group">
+          <div className="metis-drawer-impact-group-label">{section.label}</div>
+          {section.records.map((record) => (
+            <ImpactRecordRow
+              key={record.id}
+              record={record}
+              laneColor={laneColor}
+              codeSuffix={section.codeSuffix}
+            />
+          ))}
+        </div>
+      ))}
+      {impact.statusNote ? (
+        <div className="metis-drawer-impact-note">
+          <div className="metis-drawer-impact-group-label">Resolution note</div>
+          <p className="metis-drawer-impact-note-text">{impact.statusNote}</p>
+        </div>
+      ) : null}
+    </div>
   );
 }
 
@@ -521,47 +605,20 @@ export function IssueHistoryTimeline({
                             ))}
                         </div>
                       </div>
+                    ) : modalDetail.messageBody ? (
+                      <div className="metis-drawer-field">
+                        <div className="metis-drawer-field-label">Message body</div>
+                        <div className="metis-drawer-field-value" style={{ whiteSpace: "pre-line" }}>
+                          {modalDetail.messageBody}
+                        </div>
+                      </div>
                     ) : null}
 
                     {modalDetail.issueRecordImpact ? (
-                      <div className="metis-drawer-inset">
-                        <div className="metis-drawer-inset-label">Metis issue record impact</div>
-                        {modalDetail.issueRecordImpact.sources?.map((s) => (
-                          <div key={s.id} className="metis-drawer-inset-row">
-                            <span className="metis-drawer-inset-key">{s.code}</span>
-                            <span className="metis-drawer-inset-val">{s.label}</span>
-                          </div>
-                        ))}
-                        {modalDetail.issueRecordImpact.claims?.map((c) => (
-                          <div key={c.id} className="metis-drawer-inset-row">
-                            <span className="metis-drawer-inset-key">{c.code}</span>
-                            <span className="metis-drawer-inset-val">{c.label}</span>
-                          </div>
-                        ))}
-                        {modalDetail.issueRecordImpact.questionsOpened?.map((q) => (
-                          <div key={q.id} className="metis-drawer-inset-row">
-                            <span className="metis-drawer-inset-key">{q.code}</span>
-                            <span className="metis-drawer-inset-val">{q.label}</span>
-                          </div>
-                        ))}
-                        {modalDetail.issueRecordImpact.questionsClosed?.map((q) => (
-                          <div key={q.id} className="metis-drawer-inset-row">
-                            <span className="metis-drawer-inset-key">{q.code} closed</span>
-                            <span className="metis-drawer-inset-val">{q.label}</span>
-                          </div>
-                        ))}
-                        {modalDetail.issueRecordImpact.observations?.map((o) => (
-                          <div key={o.id} className="metis-drawer-inset-row">
-                            <span className="metis-drawer-inset-key">{o.code}</span>
-                            <span className="metis-drawer-inset-val">{o.label}</span>
-                          </div>
-                        ))}
-                        {modalDetail.issueRecordImpact.statusNote ? (
-                          <div className="metis-drawer-inset-row">
-                            <span className="metis-drawer-inset-val">{modalDetail.issueRecordImpact.statusNote}</span>
-                          </div>
-                        ) : null}
-                      </div>
+                      <IssueRecordImpactPanel
+                        impact={modalDetail.issueRecordImpact}
+                        laneColor={selectedLaneConfig.textColor}
+                      />
                     ) : null}
 
                     {modalDetail.guardrails?.mustAvoid.length ? (

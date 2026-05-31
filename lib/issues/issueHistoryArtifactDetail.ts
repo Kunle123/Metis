@@ -81,6 +81,18 @@ export function briefArtifactToRecordSections(artifact: BriefArtifact): { headin
   return sections;
 }
 
+/** Collect unique evidence reference labels cited across brief sections. */
+export function briefArtifactEvidenceRefs(artifact: BriefArtifact): string[] {
+  const refs = new Set<string>();
+  for (const section of artifact.full.sections) {
+    for (const ref of section.evidenceRefs) {
+      const trimmed = ref.trim();
+      if (trimmed) refs.add(trimmed);
+    }
+  }
+  return [...refs];
+}
+
 export function parseBriefArtifact(raw: unknown): BriefArtifact | null {
   const parsed = BriefArtifactSchema.safeParse(raw);
   return parsed.success ? parsed.data : null;

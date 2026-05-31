@@ -7,7 +7,7 @@ import {
   parseNumericSourceCodeOrdinal,
 } from "@/lib/issueRecordCodes";
 
-import type { IssueHistoryRelatedRecord } from "./issueHistoryTypes";
+import type { IssueHistoryImpactRecord, IssueHistoryRelatedRecord } from "./issueHistoryTypes";
 
 function truncate(text: string, max = 80): string {
   const t = text.trim().replace(/\s+/g, " ");
@@ -30,7 +30,7 @@ export type IssueHistoryDisplayRegistry = {
 };
 
 export async function loadIssueHistoryDisplayRegistry(issueId: string): Promise<IssueHistoryDisplayRegistry> {
-  const [sources, claims, gaps, inputs, briefs, messages, exports] = await Promise.all([
+  const [sources, claims, gaps, inputs, briefs, messages, exports, circulations] = await Promise.all([
     prisma.source.findMany({
       where: { issueId },
       orderBy: { createdAt: "asc" },
@@ -65,6 +65,11 @@ export async function loadIssueHistoryDisplayRegistry(issueId: string): Promise<
       where: { issueId },
       orderBy: { createdAt: "asc" },
       select: { id: true, format: true, filename: true },
+    }),
+    prisma.circulationEvent.findMany({
+      where: { issueId },
+      orderBy: { createdAt: "asc" },
+      select: { id: true, audienceLabel: true, channel: true, eventType: true, createdAt: true },
     }),
   ]);
 
@@ -145,6 +150,16 @@ export async function loadIssueHistoryDisplayRegistry(issueId: string): Promise<
     });
   });
 
+  circulations.forEach((c) => {
+    const audience = c.audienceLabel?.trim() || c.channel?.trim() || c.eventType.replace(/_/g, " ");
+    byId.set(c.id, {
+      id: c.id,
+      code: "Circulation",
+      label: audience,
+      recordType: "Circulation",
+    });
+  });
+
   return {
     resolve(id: string) {
       return byId.get(id) ?? null;
@@ -165,4 +180,25 @@ export function resolveRelatedRecordIds(
     if (resolved) out.push(resolved);
   }
   return out;
+}
+
+export function registryToImpactRecord(
+  registry: IssueHistoryDisplayRegistry,
+  id: string,
+  fallback?: Pick<IssueHistoryImpactRecord, "code" | "label"> & { recordType?: string; href?: string },
+): IssueHistoryImpactRecord {
+  const resolved = registry.resolve(id);
+  if (resolved) {
+    return {
+      id: resolved.id,
+      code: resolved.code,
+      label: resolved.label,
+      href: resolved.href,
+      recordType: resolved.recordType,
+    };
+  }
+  if (fallback) {
+    return { id, code: fallback.code, label: fallback.label, href: fallback.href, recordType: fallback.recordType };
+  }
+  return { id, code: "—", label: "Unknown record" };
 }

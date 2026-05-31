@@ -758,6 +758,52 @@
   line-height: 1.4;
 }
 
+.issue-history-timeline .metis-drawer-impact-panel {
+  margin-top: 0.25rem;
+}
+
+.issue-history-timeline .metis-drawer-impact-group {
+  margin-top: 0.5rem;
+}
+
+.issue-history-timeline .metis-drawer-impact-group-label {
+  font-family: var(--font-mono);
+  font-size: 0.575rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #5E5A50;
+  margin-bottom: 0.25rem;
+}
+
+.issue-history-timeline .metis-drawer-impact-link {
+  text-decoration: none;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+
+.issue-history-timeline .metis-drawer-impact-link:hover {
+  background: rgba(38, 59, 46, 0.06);
+}
+
+.issue-history-timeline .metis-drawer-impact-link .metis-drawer-inset-val {
+  font-weight: 500;
+}
+
+.issue-history-timeline .metis-drawer-impact-note {
+  margin-top: 0.625rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(38, 59, 46, 0.12);
+}
+
+.issue-history-timeline .metis-drawer-impact-note-text {
+  margin: 0.25rem 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: #171713;
+  white-space: pre-line;
+}
+
 /* Issue record impact list */
 .issue-history-timeline .metis-drawer-impact-list {
   list-style: none;

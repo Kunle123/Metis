@@ -17,6 +17,8 @@ export type IssueHistoryImpactRecord = {
   id: string;
   code: string;
   label: string;
+  href?: string;
+  recordType?: string;
 };
 
 export type IssueHistoryRelatedRecord = IssueHistoryImpactRecord & {
@@ -74,6 +76,8 @@ export type IssueHistoryModalPayload = {
     href?: string;
   };
   messageWording?: IssueHistoryMessageWording;
+  /** Primary message body when draft/polished toggle is not available. */
+  messageBody?: string;
   guardrails?: IssueHistoryGuardrails;
   relatedRecords?: IssueHistoryRelatedRecord[];
   fullRecordSections?: { heading: string; body: string }[];
